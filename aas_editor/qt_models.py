@@ -1,4 +1,5 @@
 import typing
+import collections
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QObject, QVariant, QModelIndex, QAbstractItemModel, pyqtSignal
@@ -337,32 +338,21 @@ class AasTreeViewItem(StandardItem):
         return QtCore.QVariant()
 
     def populate(self):
-        subObjects = []
         # todo fix
         try:
-            # package populate
-            for attr in ("shells", "assets", "submodels", "concept_descriptions", "submodel", "submodel_element", "concept_dictionary"):
+            # package and standard populate
+            for attr in ("shells", "assets", "submodels", "concept_descriptions", "submodel", "submodel_element", "concept_dictionary", "asset"):
                 if hasattr(self.obj, attr):
-                    AasTreeViewItem(obj=getattr(self.obj, attr), parent=self, objStore=self.objStore, objName=attr)
+                    attr_obj = getattr(self.obj, attr)
+                    parent = AasTreeViewItem(obj=attr_obj, parent=self, objStore=self.objStore, objName=attr)
+                    if isinstance(attr_obj, collections.Iterable):
+                        for i in attr_obj:
+                            AasTreeViewItem(obj=i, parent=parent, objStore=self.objStore)
 
-            # standard item populate
-            # if hasattr(self.obj, "submodel"):
-            #     print(self.obj.submodel)
-            #     # [subObjects.append(i.resolve(self.objStore)) for i in self.obj.submodel]
-            #     (subObjects.append(i) for i in self.obj.submodel)
-            if hasattr(self.obj, "asset") and self.obj.asset:
-                # subObjects.append(self.obj.asset.resolve(self.objStore))
-                # subObjects.append(self.obj.asset)
-                AasTreeViewItem(obj=self.obj.asset, parent=self, objStore=self.objStore)
-            # if hasattr(self.obj, "submodel_element"):
-            #     (subObjects.append(i) for i in self.obj.submodel_element)
-            # if hasattr(self.obj, "concept_dictionary"):
-            #     (subObjects.append(i) for i in self.obj.concept_dictionary)
+
+
         except (KeyError, NotImplementedError) as e:
             print(e)
-
-        # for obj in subObjects:
-        #     AasTreeViewItem(obj=obj, parent=self, objStore=self.objStore)
 
 
 class Package():
