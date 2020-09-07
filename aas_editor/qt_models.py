@@ -14,21 +14,19 @@ ATTRIBUTE_COLUMN = 0
 VALUE_COLUMN = 1
 
 STRING_ATTRS = ("id", "id_short", "category", "version", "revision")
-# DICT_ATTRS = ("description",)
-# LIST_ATTRS = ("concept_dictionary", "view")
 
 # todo delete
 IMPLEMENTED_ATTRS = STRING_ATTRS + ("administration", "identification", "kind", "entity_type",)
 SUBMODEL_ATTRS = ("asset_identification_model", "bill_of_material")
 PACKAGE_ATTRS_NOT_IN_DETAILED_INFO = ("shells", "assets", "submodels", "concept_descriptions")
 
-ATTRS_NOT_IN_DETAILED_INFO = ("namespace_element_sets", "submodel", "submodel_element", "asset",
-                              "parent") + SUBMODEL_ATTRS + PACKAGE_ATTRS_NOT_IN_DETAILED_INFO  # + IMPLEMENTED_ATTRS
+# ATTRS_NOT_IN_DETAILED_INFO = ("namespace_element_sets", "submodel", "submodel_element", "asset", "parent") + SUBMODEL_ATTRS + PACKAGE_ATTRS_NOT_IN_DETAILED_INFO
+# ATTRS_IN_LEFT_TREEVIEW = ("shells", "assets", "submodels", "concept_descriptions", "submodel", "submodel_element", "concept_dictionary", "asset")
+ATTRS_NOT_IN_DETAILED_INFO = ("namespace_element_sets", "parent") + PACKAGE_ATTRS_NOT_IN_DETAILED_INFO
+ATTRS_IN_LEFT_TREEVIEW = PACKAGE_ATTRS_NOT_IN_DETAILED_INFO
 
-VALUE_ATTRS = (
-"value", "in_output_variable", "input_variable", "output_variable", "first", "second")
-ATTR_ORDER = ("id_short", "category",) + VALUE_ATTRS + (
-"kind", "entity_type", "description", "administration", "identification",)
+VALUE_ATTRS = ("value", "in_output_variable", "input_variable", "output_variable", "first", "second")
+ATTR_ORDER = ("id_short", "category",) + VALUE_ATTRS + ("kind", "entity_type", "description", "administration", "identification",)
 
 
 def name_is_special(method_name):
@@ -346,7 +344,7 @@ class AasTreeViewItem(StandardItem):
         # todo fix
         try:
             # package and standard populate
-            for attr in ("shells", "assets", "submodels", "concept_descriptions", "submodel", "submodel_element", "concept_dictionary", "asset"):
+            for attr in ATTRS_IN_LEFT_TREEVIEW:
                 if hasattr(self.obj, attr):
                     attr_obj = getattr(self.obj, attr)
                     parent = AasTreeViewItem(obj=attr_obj, parent=self, objStore=self.objStore, objName=attr)

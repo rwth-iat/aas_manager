@@ -79,7 +79,7 @@ class EditorApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.detailedInfoModel = DetailedInfoTable(mainObj=main_obj, objStore=self.objStore)
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), treeItem.data(Qt.DisplayRole))
         self.detailInfoTreeView.setModel(self.detailedInfoModel)
-        self.detailInfoTreeView.expandAll()
+        # self.detailInfoTreeView.expandAll()
         self.detailInfoTreeView.setItemDelegate(QComboBoxEnumDelegate())
         self.detailedInfoModel.valueChangeFailed.connect(self.itemDataChangeFailed)
 
