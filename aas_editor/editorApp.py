@@ -60,7 +60,7 @@ class EditorApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.aasItemsTreeView.selectionModel().currentChanged.connect(self.showTreeItemDetailedInfo)
         self.detailedInfoModel.valueChangeFailed.connect(self.itemDataChangeFailed)
         # todo delete
-        self.comboBox.currentTextChanged.connect(self.toggle_theme)
+        self.comboBox.currentTextChanged.connect(self.toggleTheme)
         self.actionLight.triggered.connect(self.setLightTheme)
         self.actionDark.triggered.connect(self.setDarkTheme)
         self.detailInfoTreeView.expanded.connect(self.hideDetailInfoParentRow)
@@ -75,6 +75,7 @@ class EditorApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
 
     def showTreeItemDetailedInfo(self, treeItem):
         main_obj = treeItem.data(Qt.UserRole)
+        self.pathLabel.setText(self.getTreeItemPath(treeItem))
         self.detailedInfoModel = DetailedInfoTable(mainObj=main_obj, objStore=self.objStore)
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), treeItem.data(Qt.DisplayRole))
         self.detailInfoTreeView.setModel(self.detailedInfoModel)
@@ -82,22 +83,29 @@ class EditorApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.detailInfoTreeView.setItemDelegate(QComboBoxEnumDelegate())
         self.detailedInfoModel.valueChangeFailed.connect(self.itemDataChangeFailed)
 
+    def getTreeItemPath(self, treeItem):
+        path = treeItem.data(Qt.DisplayRole)
+        while treeItem.parent().isValid():
+            treeItem = treeItem.parent()
+            path = f"{treeItem.data(Qt.DisplayRole)}/{path}"
+        return path
+
     def itemDataChangeFailed(self, msg):
         self.statusbar.showMessage(msg)
 
     def setLightTheme(self):
-        self.toggle_theme("light")
+        self.toggleTheme("light")
 
     def setDarkTheme(self):
-        self.toggle_theme("dark")
+        self.toggleTheme("dark")
 
-    def toggle_theme(self, theme):
+    def toggleTheme(self, theme):
         if theme == "dark":
-            self.toggle_stylesheet(DARK_THEME_PATH)
+            self.toggleStylesheet(DARK_THEME_PATH)
         elif theme == "light":
-            self.toggle_stylesheet(LIGHT_THEME_PATH)
+            self.toggleStylesheet(LIGHT_THEME_PATH)
 
-    def toggle_stylesheet(self, path):
+    def toggleStylesheet(self, path):
         '''
         Toggle the stylesheet to use the desired path in the Qt resource
         system (prefixed by `:/`) or generically (a path to a file on

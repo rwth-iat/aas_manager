@@ -172,7 +172,7 @@ class Ui_MainWindow(object):
         self.comboBox.setItemText(1, _translate("MainWindow", "dark"))
         self.lineEdit.setPlaceholderText(_translate("MainWindow", "Search"))
         self.pathLabel.setText(_translate("MainWindow", "Main browser"))
-        self.pushButton_2.setText(_translate("MainWindow", "+ Add item"))
+        self.pushButton_2.setText(_translate("MainWindow", "Resolve references"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "Selected"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "Tab 2"))
         self.menuView.setTitle(_translate("MainWindow", "View"))
