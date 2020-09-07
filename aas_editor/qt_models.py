@@ -142,9 +142,9 @@ class DetailedInfoTable(StandardTable):
 
     def __init__(self, mainObj=None, objStore=None):
         super(DetailedInfoTable, self).__init__(COLUMNS_IN_DETAILED_INFO)
-        if mainObj:
-            self.mainObj = mainObj
-            self.objStore = objStore
+        self.mainObj = mainObj
+        self.objStore = objStore
+        if self.mainObj:
             self.fillTable()
 
     def fillTable(self):
@@ -214,12 +214,12 @@ class StandardItem(QObject):
 class DetailedInfoItem(StandardItem):
     def __init__(self, obj, name, parent=None, masterObj=None, objStore=None):
         super().__init__(obj, name, parent)
+        self.dataValueHidden = False
         self.masterObj = masterObj
         self.objStore = objStore
         if masterObj or parent:
             self.parentObj = self.masterObj if self.masterObj else self.parent().obj
             self.populate()
-        self.dataValueHidden = False
 
     def data(self, role, column=VALUE_COLUMN):
         # if role == Qt.ToolTipRole:
@@ -297,13 +297,13 @@ class DetailedInfoItem(StandardItem):
         if isinstance(self.obj, (str, int, float, bool, Enum)):
             return
         elif type(self.obj) is AASReference:
-            # todo fix
-            # try:
-            #     obj = self.obj.resolve(self.objStore)
-            # except (KeyError, NotImplementedError) as e:
-            #     print(e)
-            #     obj = self.obj
             obj = self.obj
+            # if self.resolveRefs:
+            if True:
+                try:
+                    obj = self.obj.resolve(self.objStore)
+                except (KeyError, NotImplementedError) as e:
+                    print(e)
             for sub_item_attr in get_attrs4detail_info(obj):
                 DetailedInfoItem(obj=getattr(obj, sub_item_attr), name=sub_item_attr, parent=self,
                                  objStore=self.objStore)
@@ -353,9 +353,6 @@ class AasTreeViewItem(StandardItem):
                     if isinstance(attr_obj, collections.Iterable):
                         for i in attr_obj:
                             AasTreeViewItem(obj=i, parent=parent, objStore=self.objStore)
-
-
-
         except (KeyError, NotImplementedError) as e:
             print(e)
 
