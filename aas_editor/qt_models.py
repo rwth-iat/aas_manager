@@ -157,6 +157,12 @@ class DetailedInfoTable(StandardTable):
             item = DetailedInfoItem(obj, attr, masterObj=self.mainObj, objStore=self.objStore)
             self.addItem(item, QModelIndex())
 
+    def hideRowVal(self, index):
+        self.objByIndex(index).dataValueHidden = True
+
+    def showRowVal(self, index):
+        self.objByIndex(index).dataValueHidden = False
+
     def data(self, index, role):
         if not index.isValid():
             return QVariant()
@@ -213,6 +219,7 @@ class DetailedInfoItem(StandardItem):
         if masterObj or parent:
             self.parentObj = self.masterObj if self.masterObj else self.parent().obj
             self.populate()
+        self.dataValueHidden = False
 
     def data(self, role, column=VALUE_COLUMN):
         # if role == Qt.ToolTipRole:
@@ -232,9 +239,7 @@ class DetailedInfoItem(StandardItem):
                         Qt.BackgroundRole).alpha())
             return color
         if column == VALUE_COLUMN:
-            if role == Qt.DisplayRole:
-                # if self.children():
-                #     return ""
+            if role == Qt.DisplayRole and not self.dataValueHidden:
                 return str(self.obj)
             elif role == Qt.EditRole:
                 return self.obj
@@ -355,16 +360,12 @@ class AasTreeViewItem(StandardItem):
             print(e)
 
 
-class Package():
+class Package:
     def __init__(self, objStore):
         self.shells = []
         self.assets = []
         self.submodels = []
         self.concept_descriptions = []
-        # self.num_of_shells = 0
-        # self.num_of_assets = 0
-        # self.num_of_submodels = 0
-        # self.num_of_concept_descriptions = 0
         self.add_items(objStore)
 
     def add_items(self, objStore):

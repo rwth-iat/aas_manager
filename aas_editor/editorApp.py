@@ -59,9 +59,19 @@ class EditorApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
     def buildHandlers(self):
         self.aasItemsTreeView.selectionModel().currentChanged.connect(self.showTreeItemDetailedInfo)
         self.detailedInfoModel.valueChangeFailed.connect(self.itemDataChangeFailed)
+        # todo delete
         self.comboBox.currentTextChanged.connect(self.toggle_theme)
         self.actionLight.triggered.connect(self.setLightTheme)
         self.actionDark.triggered.connect(self.setDarkTheme)
+        self.detailInfoTreeView.expanded.connect(self.hideDetailInfoParentRow)
+        self.detailInfoTreeView.collapsed.connect(self.showDetailInfoRowVal)
+
+    def hideDetailInfoParentRow(self, index):
+        if self.detailedInfoModel.objByIndex(index).children():
+            self.detailedInfoModel.hideRowVal(index)
+
+    def showDetailInfoRowVal(self, index):
+        self.detailedInfoModel.showRowVal(index)
 
     def showTreeItemDetailedInfo(self, treeItem):
         main_obj = treeItem.data(Qt.UserRole)
