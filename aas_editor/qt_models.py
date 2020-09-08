@@ -1,5 +1,6 @@
 import typing
 import collections
+import re
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QObject, QVariant, QModelIndex, QAbstractItemModel, pyqtSignal
@@ -55,6 +56,15 @@ def get_attrs4detail_info(obj, excludeSpecial=True, excludeCallable=True):
     attrs.sort(key=attr_order)
     return attrs
 
+
+def simplify_info(obj):
+    res = str(obj)
+    if isinstance(obj, (AdministrativeInformation, Identifier, )):
+        res = re.sub("^[A-Z]\w*[(]", "", res)
+        res = res.rstrip(")")
+    elif isinstance(obj, Enum):
+        res = re.sub("^[A-Z]\w*[.]", "", res)
+    return res
 
 # class TreeItem(DetailedInfoItem):
 #     def __init__(self, obj, name, parent=None):
@@ -238,7 +248,7 @@ class DetailedInfoItem(StandardItem):
             return color
         if column == VALUE_COLUMN:
             if role == Qt.DisplayRole and not self.dataValueHidden:
-                return str(self.obj)
+                return simplify_info(self.obj)
             elif role == Qt.EditRole:
                 return self.obj
         elif column == ATTRIBUTE_COLUMN:

@@ -6,7 +6,10 @@ from PyQt5.QtCore import Qt
 from PyQt5.Qt import QStandardItemModel, QStandardItem
 
 from enum import Enum
-
+from aas.model.aas import *
+from aas.model.base import *
+from aas.model.concept import *
+from aas.model.submodel import *
 
 class QComboBoxEnumDelegate(QStyledItemDelegate):
     def __init__(self):
@@ -31,7 +34,7 @@ class QComboBoxEnumDelegate(QStyledItemDelegate):
 
     def setModelData(self, editor: QWidget, model: QtCore.QAbstractItemModel, index: QtCore.QModelIndex) -> None:
         if isinstance(index.model().data(index, Qt.EditRole), Enum):
-            model.setData(index, editor.currentText(), Qt.EditRole)
+            model.setData(index, eval(editor.currentText()), Qt.EditRole)
         else:
             super().setModelData(editor, model, index)
 
