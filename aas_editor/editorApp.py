@@ -6,19 +6,14 @@ from PyQt5.QtCore import QFile, QTextStream
 from .qcomboboxenumdelegate import QComboBoxEnumDelegate
 
 from .qt_models import *
-
-ATTR_COLUMN_WIDTH = 200
-
-DARK_THEME_PATH = "themes/dark.qss"
-LIGHT_THEME_PATH = "themes/light.qss"
-#LIGHT_THEME_PATH = ":/aas_editor/light.qss"
+from.settings import *
 
 
 class EditorApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-        self.setLightTheme()
+        self.toggleTheme(PREFERED_THEME)
 
         self.treeViewModel = StandardTable()
         self.aasItemsTreeView.setHeaderHidden(True)
@@ -100,10 +95,8 @@ class EditorApp(QtWidgets.QMainWindow, design.Ui_MainWindow):
         self.toggleTheme("dark")
 
     def toggleTheme(self, theme):
-        if theme == "dark":
-            self.toggleStylesheet(DARK_THEME_PATH)
-        elif theme == "light":
-            self.toggleStylesheet(LIGHT_THEME_PATH)
+        if theme in THEMES:
+            self.toggleStylesheet(THEMES[theme])
 
     def toggleStylesheet(self, path):
         '''

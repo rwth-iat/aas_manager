@@ -10,6 +10,12 @@ from aas.model.base import *
 from aas.model.concept import *
 from aas.model.submodel import *
 
+from .settings import *
+
+
+TYPES_IN_ONE_ROW = (AdministrativeInformation, Identifier,)
+TYPES_NOT_TO_POPULATE = (str, int, float, bool, Enum, ) + TYPES_IN_ONE_ROW
+
 COLUMNS_IN_DETAILED_INFO = ("attribute", "value")
 ATTRIBUTE_COLUMN = 0
 VALUE_COLUMN = 1
@@ -23,48 +29,57 @@ PACKAGE_ATTRS_NOT_IN_DETAILED_INFO = ("shells", "assets", "submodels", "concept_
 
 # ATTRS_NOT_IN_DETAILED_INFO = ("namespace_element_sets", "submodel", "submodel_element", "asset", "parent") + SUBMODEL_ATTRS + PACKAGE_ATTRS_NOT_IN_DETAILED_INFO
 # ATTRS_IN_LEFT_TREEVIEW = ("shells", "assets", "submodels", "concept_descriptions", "submodel", "submodel_element", "concept_dictionary", "asset")
-ATTRS_NOT_IN_DETAILED_INFO = ("namespace_element_sets", "parent") + PACKAGE_ATTRS_NOT_IN_DETAILED_INFO
+ATTRS_NOT_IN_DETAILED_INFO = ("namespace_element_sets",
+                              "parent") + PACKAGE_ATTRS_NOT_IN_DETAILED_INFO
 ATTRS_IN_LEFT_TREEVIEW = PACKAGE_ATTRS_NOT_IN_DETAILED_INFO
 
-VALUE_ATTRS = ("value", "in_output_variable", "input_variable", "output_variable", "first", "second")
-ATTR_ORDER = ("id_short", "category",) + VALUE_ATTRS + ("kind", "entity_type", "description", "administration", "identification",)
 
-
-def name_is_special(method_name):
+def nameIsSpecial(method_name):
     "Returns true if the method name starts with underscore"
     return method_name.startswith('_')
 
 
-def get_attrs(obj, excludeSpecial=True, excludeCallable=True):
+def getAttrs(obj, excludeSpecial=True, excludeCallable=True):
     attrs = dir(obj)
     if excludeSpecial:
-        attrs[:] = [attr for attr in attrs if not name_is_special(attr)]
+        attrs[:] = [attr for attr in attrs if not nameIsSpecial(attr)]
     if excludeCallable:
         attrs[:] = [attr for attr in attrs if not callable(getattr(obj, attr))]
     return attrs
 
 
-def attr_order(attr):
+def attrOrder(attr):
     if attr in ATTR_ORDER:
         return ATTR_ORDER.index(attr)
     return 1000
 
 
-def get_attrs4detail_info(obj, excludeSpecial=True, excludeCallable=True):
-    attrs = get_attrs(obj, excludeSpecial, excludeCallable)
+def getAttrs4detailInfo(obj, excludeSpecial=True, excludeCallable=True):
+    attrs = getAttrs(obj, excludeSpecial, excludeCallable)
     attrs[:] = [attr for attr in attrs if attr not in ATTRS_NOT_IN_DETAILED_INFO]
-    attrs.sort(key=attr_order)
+    attrs.sort(key=attrOrder)
     return attrs
 
 
-def simplify_info(obj):
+def simplifyInfo(obj, attr_name=None):
     res = str(obj)
-    if isinstance(obj, (AdministrativeInformation, Identifier, )):
+    if isinstance(obj, TYPES_IN_ONE_ROW):
         res = re.sub("^[A-Z]\w*[(]", "", res)
         res = res.rstrip(")")
     elif isinstance(obj, Enum):
         res = re.sub("^[A-Z]\w*[.]", "", res)
+    elif isinstance(obj, dict) and attr_name == "description":
+        res = getDescription(obj)
     return res
+
+
+def getDescription(descriptions: dict) -> str:
+    if descriptions:
+        for lang in PREFERED_LANGS_ORDER:
+            if lang in descriptions:
+                return descriptions.get(lang)
+        return tuple(descriptions.values())[0]
+
 
 # class TreeItem(DetailedInfoItem):
 #     def __init__(self, obj, name, parent=None):
@@ -156,7 +171,7 @@ class DetailedInfoTable(StandardTable):
             self.fillTable()
 
     def fillTable(self):
-        attrs = get_attrs4detail_info(self.mainObj)
+        attrs = getAttrs4detailInfo(self.mainObj)
         print(f"Attributes to add to detailed info: {attrs}")
 
         for attr in attrs:
@@ -248,7 +263,7 @@ class DetailedInfoItem(StandardItem):
             return color
         if column == VALUE_COLUMN:
             if role == Qt.DisplayRole and not self.dataValueHidden:
-                return simplify_info(self.obj)
+                return simplifyInfo(self.obj, self.objectName)
             elif role == Qt.EditRole:
                 return self.obj
         elif column == ATTRIBUTE_COLUMN:
@@ -302,7 +317,7 @@ class DetailedInfoItem(StandardItem):
         return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
     def populate(self):
-        if isinstance(self.obj, (str, int, float, bool, Enum)):
+        if isinstance(self.obj, TYPES_NOT_TO_POPULATE):
             return
         elif type(self.obj) is AASReference:
             obj = self.obj
@@ -312,7 +327,7 @@ class DetailedInfoItem(StandardItem):
                     obj = self.obj.resolve(self.objStore)
                 except (KeyError, NotImplementedError) as e:
                     print(e)
-            for sub_item_attr in get_attrs4detail_info(obj):
+            for sub_item_attr in getAttrs4detailInfo(obj):
                 DetailedInfoItem(obj=getattr(obj, sub_item_attr), name=sub_item_attr, parent=self,
                                  objStore=self.objStore)
         elif isinstance(self.obj, dict):
@@ -322,30 +337,22 @@ class DetailedInfoItem(StandardItem):
             for i, sub_item_obj in enumerate(self.obj):
                 DetailedInfoItem(sub_item_obj, f"item {i}", self, objStore=self.objStore)
         else:
-            for sub_item_attr in get_attrs4detail_info(self.obj):
+            for sub_item_attr in getAttrs4detailInfo(self.obj):
                 DetailedInfoItem(getattr(self.obj, sub_item_attr), sub_item_attr, self,
                                  objStore=self.objStore)
 
 
 class AasTreeViewItem(StandardItem):
     def __init__(self, obj, parent=None, objStore=None, objName=None):
-        # todo fix
-        # super().__init__(obj, obj.id_short, parent)
         super().__init__(obj, objName, parent)
         self.objStore = objStore
-        self.preffered_lang = "en-us"
         self.populate()
-
-    def set_language(self, lang):
-        self.preffered_lang = lang
 
     def data(self, role):
         if role == Qt.DisplayRole:
             return self.objectName
         if role == Qt.ToolTipRole and hasattr(self.obj, "description"):
-            return str(self.obj.description.get(self.preffered_lang))
-        if role == Qt.StatusTipRole and hasattr(self.obj, "description"):
-            return str(self.obj.description.get(self.preffered_lang))
+            return getDescription(self.obj.description)
         if role == Qt.UserRole:
             return self.obj
         return QtCore.QVariant()
@@ -357,7 +364,8 @@ class AasTreeViewItem(StandardItem):
             for attr in ATTRS_IN_LEFT_TREEVIEW:
                 if hasattr(self.obj, attr):
                     attr_obj = getattr(self.obj, attr)
-                    parent = AasTreeViewItem(obj=attr_obj, parent=self, objStore=self.objStore, objName=attr)
+                    parent = AasTreeViewItem(obj=attr_obj, parent=self, objStore=self.objStore,
+                                             objName=attr)
                     if isinstance(attr_obj, collections.Iterable):
                         for i in attr_obj:
                             AasTreeViewItem(obj=i, parent=parent, objStore=self.objStore)
