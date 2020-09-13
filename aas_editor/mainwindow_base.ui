@@ -107,7 +107,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QTreeView" name="aasItemsTreeView">
+         <widget class="QTreeView" name="packageItemsTreeView">
           <property name="sizePolicy">
            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
             <horstretch>0</horstretch>
@@ -128,6 +128,9 @@
           </property>
           <property name="focusPolicy">
            <enum>Qt::StrongFocus</enum>
+          </property>
+          <property name="contextMenuPolicy">
+           <enum>Qt::CustomContextMenu</enum>
           </property>
           <property name="frameShape">
            <enum>QFrame::StyledPanel</enum>
