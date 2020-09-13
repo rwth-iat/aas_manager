@@ -19,7 +19,7 @@ def main():
         print(i)
 
     window = EditorApp()
-    window.importPackage(obj_store)
+    window.importTestPackage(obj_store)
     window.show()
 
     app.exec_()

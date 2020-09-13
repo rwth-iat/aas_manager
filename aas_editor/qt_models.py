@@ -1,3 +1,4 @@
+# pyuic5 aas_editor/mainwindow_base.ui -o aas_editor/design.py
 import typing
 import collections
 import re
@@ -5,13 +6,16 @@ import re
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QObject, QVariant, QModelIndex, QAbstractItemModel, pyqtSignal
 from PyQt5.QtGui import QFont, QColor
+
 from aas.model.aas import *
 from aas.model.base import *
 from aas.model.concept import *
 from aas.model.submodel import *
+from aas.model.provider import *
 
 from .settings import *
 
+PACKAGE_ROLE = 1001
 
 TYPES_IN_ONE_ROW = (AdministrativeInformation, Identifier,)
 TYPES_NOT_TO_POPULATE = (str, int, float, bool, Enum, ) + TYPES_IN_ONE_ROW
@@ -25,13 +29,10 @@ STRING_ATTRS = ("id", "id_short", "category", "version", "revision")
 # todo delete
 IMPLEMENTED_ATTRS = STRING_ATTRS + ("administration", "identification", "kind", "entity_type",)
 SUBMODEL_ATTRS = ("asset_identification_model", "bill_of_material")
-PACKAGE_ATTRS_NOT_IN_DETAILED_INFO = ("shells", "assets", "submodels", "concept_descriptions")
+PACKAGE_ATTRS = ("shells", "assets", "submodels", "concept_descriptions")
 
-# ATTRS_NOT_IN_DETAILED_INFO = ("namespace_element_sets", "submodel", "submodel_element", "asset", "parent") + SUBMODEL_ATTRS + PACKAGE_ATTRS_NOT_IN_DETAILED_INFO
-# ATTRS_IN_LEFT_TREEVIEW = ("shells", "assets", "submodels", "concept_descriptions", "submodel", "submodel_element", "concept_dictionary", "asset")
-ATTRS_NOT_IN_DETAILED_INFO = ("namespace_element_sets",
-                              "parent") + PACKAGE_ATTRS_NOT_IN_DETAILED_INFO
-ATTRS_IN_LEFT_TREEVIEW = PACKAGE_ATTRS_NOT_IN_DETAILED_INFO
+ATTRS_NOT_IN_DETAILED_INFO = ("namespace_element_sets", "parent") + PACKAGE_ATTRS
+ATTRS_IN_PACKAGE_TREEVIEW = PACKAGE_ATTRS
 
 
 def nameIsSpecial(method_name):
@@ -163,10 +164,10 @@ class StandardTable(QAbstractItemModel):
 class DetailedInfoTable(StandardTable):
     valueChangeFailed = pyqtSignal(['QString'])
 
-    def __init__(self, mainObj=None, objStore=None):
+    def __init__(self, mainObj=None, package=None):
         super(DetailedInfoTable, self).__init__(COLUMNS_IN_DETAILED_INFO)
         self.mainObj = mainObj
-        self.objStore = objStore
+        self.package = package
         if self.mainObj:
             self.fillTable()
 
@@ -177,7 +178,7 @@ class DetailedInfoTable(StandardTable):
         for attr in attrs:
             print(f"Add to detailed info attribute {attr}")
             obj = getattr(self.mainObj, attr)
-            item = DetailedInfoItem(obj, attr, masterObj=self.mainObj, objStore=self.objStore)
+            item = DetailedInfoItem(obj, attr, masterObj=self.mainObj, package=self.package)
             self.addItem(item, QModelIndex())
 
     def hideRowVal(self, index):
@@ -220,7 +221,7 @@ class StandardItem(QObject):
 
     @property
     def objectName(self):
-        if hasattr(self.obj, "id_short"):
+        if hasattr(self.obj, "id_short") and self.obj.id_short:
             return self.obj.id_short
         elif self.objName:
             return self.objName
@@ -235,11 +236,11 @@ class StandardItem(QObject):
 
 
 class DetailedInfoItem(StandardItem):
-    def __init__(self, obj, name, parent=None, masterObj=None, objStore=None):
+    def __init__(self, obj, name, parent=None, masterObj=None, package=None):
         super().__init__(obj, name, parent)
         self.dataValueHidden = False
         self.masterObj = masterObj
-        self.objStore = objStore
+        self.package = package
         if masterObj or parent:
             self.parentObj = self.masterObj if self.masterObj else self.parent().obj
             self.populate()
@@ -324,28 +325,28 @@ class DetailedInfoItem(StandardItem):
             # if self.resolveRefs:
             if True:
                 try:
-                    obj = self.obj.resolve(self.objStore)
+                    obj = self.obj.resolve(self.package.objStore)
                 except (KeyError, NotImplementedError) as e:
                     print(e)
             for sub_item_attr in getAttrs4detailInfo(obj):
                 DetailedInfoItem(obj=getattr(obj, sub_item_attr), name=sub_item_attr, parent=self,
-                                 objStore=self.objStore)
+                                 package=self.package)
         elif isinstance(self.obj, dict):
             for sub_item_attr, sub_item_obj in self.obj.items():
-                DetailedInfoItem(sub_item_obj, sub_item_attr, self, objStore=self.objStore)
+                DetailedInfoItem(sub_item_obj, sub_item_attr, self, package=self.package)
         elif isinstance(self.obj, (set, list, tuple, NamespaceSet)):
             for i, sub_item_obj in enumerate(self.obj):
-                DetailedInfoItem(sub_item_obj, f"item {i}", self, objStore=self.objStore)
+                DetailedInfoItem(sub_item_obj, f"item {i}", self, package=self.package)
         else:
             for sub_item_attr in getAttrs4detailInfo(self.obj):
                 DetailedInfoItem(getattr(self.obj, sub_item_attr), sub_item_attr, self,
-                                 objStore=self.objStore)
+                                 package=self.package)
 
 
-class AasTreeViewItem(StandardItem):
-    def __init__(self, obj, parent=None, objStore=None, objName=None):
+class PackageTreeViewItem(StandardItem):
+    def __init__(self, obj, parent=None, package=None, objName=None):
         super().__init__(obj, objName, parent)
-        self.objStore = objStore
+        self.package = package
         self.populate()
 
     def data(self, role):
@@ -355,34 +356,37 @@ class AasTreeViewItem(StandardItem):
             return getDescription(self.obj.description)
         if role == Qt.UserRole:
             return self.obj
+        if role == PACKAGE_ROLE:
+            return self.package
         return QtCore.QVariant()
 
     def populate(self):
         # todo fix
         try:
             # package and standard populate
-            for attr in ATTRS_IN_LEFT_TREEVIEW:
+            for attr in ATTRS_IN_PACKAGE_TREEVIEW:
                 if hasattr(self.obj, attr):
                     attr_obj = getattr(self.obj, attr)
-                    parent = AasTreeViewItem(obj=attr_obj, parent=self, objStore=self.objStore,
-                                             objName=attr)
+                    parent = PackageTreeViewItem(obj=attr_obj, parent=self, package=self.package,
+                                                 objName=attr)
                     if isinstance(attr_obj, collections.Iterable):
                         for i in attr_obj:
-                            AasTreeViewItem(obj=i, parent=parent, objStore=self.objStore)
+                            PackageTreeViewItem(obj=i, parent=parent, package=self.package)
         except (KeyError, NotImplementedError) as e:
             print(e)
 
 
 class Package:
-    def __init__(self, objStore):
+    def __init__(self, objStore=None):
+        self.objStore = objStore if objStore else DictObjectStore()
         self.shells = []
         self.assets = []
         self.submodels = []
         self.concept_descriptions = []
-        self.add_items(objStore)
+        self.retrieveFromStore()
 
-    def add_items(self, objStore):
-        for item in objStore:
+    def retrieveFromStore(self):
+        for item in self.objStore:
             if isinstance(item, AssetAdministrationShell):
                 self.shells.append(item)
             elif isinstance(item, Asset):
@@ -392,20 +396,34 @@ class Package:
             elif isinstance(item, ConceptDescription):
                 self.concept_descriptions.append(item)
 
+    def addShell(self, shell):
+        self.objStore.add(shell)
+        self.shells.append(shell)
+
+    def addAsset(self, asset):
+        self.objStore.add(asset)
+        self.assets.append(asset)
+
+    def addSubmodel(self, submodel):
+        self.objStore.add(submodel)
+        self.submodels.append(submodel)
+
+    def addConceptDescr(self, conceptDescr):
+        self.objStore.add(conceptDescr)
+        self.concept_descriptions.append(conceptDescr)
+
     @property
-    def num_of_shells(self):
+    def numOfShells(self):
         return len(self.shells)
 
     @property
-    def num_of_assets(self):
+    def numOfAssets(self):
         return len(self.assets)
 
     @property
-    def num_of_submodels(self):
+    def numOfSubmodels(self):
         return len(self.submodels)
 
     @property
-    def num_of_concept_descriptions(self):
+    def numOfConceptDescriptions(self):
         return len(self.concept_descriptions)
-
-# ToDo logs insteads of prints
