@@ -1,7 +1,6 @@
 # pyuic5 aas_editor/mainwindow_base.ui -o aas_editor/design.py
 import typing
 import collections
-import re
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QObject, QVariant, QModelIndex, QAbstractItemModel, pyqtSignal
@@ -13,74 +12,21 @@ from aas.model.concept import *
 from aas.model.submodel import *
 from aas.model.provider import *
 
-from .settings import *
+from .settings import ATTRS_IN_PACKAGE_TREEVIEW
+from .util import getAttrs4detailInfo, simplifyInfo, getDescription
 
 PACKAGE_ROLE = 1001
+NAME_ROLE = 1002
+OBJECT_ROLE = 1003
 
-TYPES_IN_ONE_ROW = (AdministrativeInformation, Identifier,)
-TYPES_NOT_TO_POPULATE = (str, int, float, bool, Enum, ) + TYPES_IN_ONE_ROW
+TYPES_NOT_TO_POPULATE = (str, int, float, bool, Enum,)  # '+ TYPES_IN_ONE_ROW
 
 COLUMNS_IN_DETAILED_INFO = ("attribute", "value")
 ATTRIBUTE_COLUMN = 0
 VALUE_COLUMN = 1
 
 STRING_ATTRS = ("id", "id_short", "category", "version", "revision")
-
-# todo delete
-IMPLEMENTED_ATTRS = STRING_ATTRS + ("administration", "identification", "kind", "entity_type",)
 SUBMODEL_ATTRS = ("asset_identification_model", "bill_of_material")
-PACKAGE_ATTRS = ("shells", "assets", "submodels", "concept_descriptions")
-
-ATTRS_NOT_IN_DETAILED_INFO = ("namespace_element_sets", "parent") + PACKAGE_ATTRS
-ATTRS_IN_PACKAGE_TREEVIEW = PACKAGE_ATTRS
-
-
-def nameIsSpecial(method_name):
-    "Returns true if the method name starts with underscore"
-    return method_name.startswith('_')
-
-
-def getAttrs(obj, excludeSpecial=True, excludeCallable=True):
-    attrs = dir(obj)
-    if excludeSpecial:
-        attrs[:] = [attr for attr in attrs if not nameIsSpecial(attr)]
-    if excludeCallable:
-        attrs[:] = [attr for attr in attrs if not callable(getattr(obj, attr))]
-    return attrs
-
-
-def attrOrder(attr):
-    if attr in ATTR_ORDER:
-        return ATTR_ORDER.index(attr)
-    return 1000
-
-
-def getAttrs4detailInfo(obj, excludeSpecial=True, excludeCallable=True):
-    attrs = getAttrs(obj, excludeSpecial, excludeCallable)
-    attrs[:] = [attr for attr in attrs if attr not in ATTRS_NOT_IN_DETAILED_INFO]
-    attrs.sort(key=attrOrder)
-    return attrs
-
-
-def simplifyInfo(obj, attr_name=None):
-    res = str(obj)
-    if isinstance(obj, TYPES_IN_ONE_ROW):
-        res = re.sub("^[A-Z]\w*[(]", "", res)
-        res = res.rstrip(")")
-    elif isinstance(obj, Enum):
-        res = re.sub("^[A-Z]\w*[.]", "", res)
-    elif isinstance(obj, dict) and attr_name == "description":
-        res = getDescription(obj)
-    return res
-
-
-def getDescription(descriptions: dict) -> str:
-    if descriptions:
-        for lang in PREFERED_LANGS_ORDER:
-            if lang in descriptions:
-                return descriptions.get(lang)
-        return tuple(descriptions.values())[0]
-
 
 # class TreeItem(DetailedInfoItem):
 #     def __init__(self, obj, name, parent=None):
@@ -119,6 +65,12 @@ class StandardTable(QAbstractItemModel):
         return self.objByIndex(index).data(role)
 
     def addItem(self, item, parentIndex):
+        d=parentIndex.data(OBJECT_ROLE)
+        if isinstance(parentIndex.data(OBJECT_ROLE), dict):
+            dictionary = self.objByIndex(parentIndex).data(OBJECT_ROLE)
+            key = item.data(NAME_ROLE)
+            value = item.data(OBJECT_ROLE)
+            dictionary[key] = value
         self.beginInsertRows(parentIndex, self.rowCount(parentIndex), self.rowCount(parentIndex))
         item.setParent(self.objByIndex(parentIndex))
         self.endInsertRows()
@@ -221,10 +173,10 @@ class StandardItem(QObject):
 
     @property
     def objectName(self):
-        if hasattr(self.obj, "id_short") and self.obj.id_short:
-            return self.obj.id_short
-        elif self.objName:
+        if self.objName:
             return self.objName
+        elif hasattr(self.obj, "id_short") and self.obj.id_short:
+            return self.obj.id_short
         else:
             return self.obj.__class__.__name__
 
@@ -248,6 +200,10 @@ class DetailedInfoItem(StandardItem):
     def data(self, role, column=VALUE_COLUMN):
         # if role == Qt.ToolTipRole:
         #     return inspect.getdoc(self.obj)
+        if role == NAME_ROLE:
+            return self.objName
+        if role == OBJECT_ROLE:
+            return self.obj
         if role == Qt.BackgroundRole:
             color = QColor(132, 185, 225)
             if self.masterObj:
@@ -277,6 +233,11 @@ class DetailedInfoItem(StandardItem):
                 font.setBold(True)
                 return font
         return QVariant()
+
+    def setParent(self, a0: 'QObject') -> None:
+        super().setParent(a0)
+        if not self.masterObj:
+            self.parentObj = a0.obj
 
     def setData(self, value, role, column=VALUE_COLUMN):
         if role == Qt.EditRole:
@@ -344,9 +305,12 @@ class DetailedInfoItem(StandardItem):
 
 
 class PackageTreeViewItem(StandardItem):
-    def __init__(self, obj, parent=None, package=None, objName=None):
+    def __init__(self, obj, parent=None, objName=None):
         super().__init__(obj, objName, parent)
-        self.package = package
+        if parent:
+            self.package = parent.data(PACKAGE_ROLE)
+        else:
+            self.package = obj
         self.populate()
 
     def data(self, role):
@@ -360,6 +324,10 @@ class PackageTreeViewItem(StandardItem):
             return self.package
         return QtCore.QVariant()
 
+    def setParent(self, a0: 'QObject') -> None:
+        super().setParent(a0)
+        self.package = a0.data(PACKAGE_ROLE)
+
     def populate(self):
         # todo fix
         try:
@@ -367,11 +335,10 @@ class PackageTreeViewItem(StandardItem):
             for attr in ATTRS_IN_PACKAGE_TREEVIEW:
                 if hasattr(self.obj, attr):
                     attr_obj = getattr(self.obj, attr)
-                    parent = PackageTreeViewItem(obj=attr_obj, parent=self, package=self.package,
-                                                 objName=attr)
+                    parent = PackageTreeViewItem(obj=attr_obj, parent=self, objName=attr)
                     if isinstance(attr_obj, collections.Iterable):
                         for i in attr_obj:
-                            PackageTreeViewItem(obj=i, parent=parent, package=self.package)
+                            PackageTreeViewItem(obj=i, parent=parent)
         except (KeyError, NotImplementedError) as e:
             print(e)
 
@@ -427,3 +394,4 @@ class Package:
     @property
     def numOfConceptDescriptions(self):
         return len(self.concept_descriptions)
+

@@ -1,2 +1,5 @@
 Wie kriegt man descriptions of class attributes (:ivar)?? (Für ToolTip)
 Probleme mit existierenden Sample AAS they are http://www.admin-shell.io/aas/1/0 instead of http://www.admin-shell.io/aas/2/0
+
+Kann man vielleicht manche Typen nicht als str or None machen, sondern als str=""?
+    Insbesondere immer AdministrativeInformation(revision="", version="") erstellen?

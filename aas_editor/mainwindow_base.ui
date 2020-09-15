@@ -36,56 +36,12 @@
        <enum>Qt::Horizontal</enum>
       </property>
       <widget class="QWidget" name="layoutWidget">
-       <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0">
+       <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0">
         <property name="sizeConstraint">
          <enum>QLayout::SetDefaultConstraint</enum>
         </property>
         <item>
-         <widget class="QPushButton" name="pushButton">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="baseSize">
-           <size>
-            <width>256</width>
-            <height>25</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Import asset shell</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <item>
-           <widget class="QLabel" name="label">
-            <property name="text">
-             <string>Choose theme:</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QComboBox" name="comboBox">
-            <property name="currentText">
-             <string>light</string>
-            </property>
-            <item>
-             <property name="text">
-              <string>light</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>dark</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-         </layout>
+         <layout class="QHBoxLayout" name="horizontalLayout"/>
         </item>
         <item>
          <widget class="QLineEdit" name="lineEdit">
@@ -178,16 +134,16 @@
             <item>
              <widget class="QLabel" name="pathLabel">
               <property name="text">
-               <string>Main browser</string>
+               <string>path</string>
               </property>
              </widget>
             </item>
             <item>
              <layout class="QGridLayout" name="gridLayout_3">
               <item row="1" column="0">
-               <widget class="QPushButton" name="pushButton_2">
+               <widget class="QLabel" name="descrLabel">
                 <property name="text">
-                 <string>+ Add item</string>
+                 <string/>
                 </property>
                </widget>
               </item>
@@ -213,6 +169,9 @@
                   <width>429</width>
                   <height>555</height>
                  </size>
+                </property>
+                <property name="contextMenuPolicy">
+                 <enum>Qt::CustomContextMenu</enum>
                 </property>
                 <property name="frameShape">
                  <enum>QFrame::StyledPanel</enum>

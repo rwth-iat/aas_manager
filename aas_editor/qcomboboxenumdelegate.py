@@ -1,3 +1,5 @@
+import typing
+
 from PyQt5 import QtWidgets
 from PyQt5 import QtGui
 from PyQt5.QtWidgets import QWidget, QStyledItemDelegate
@@ -11,14 +13,29 @@ from aas.model.base import *
 from aas.model.concept import *
 from aas.model.submodel import *
 
+from .qt_models import NAME_ROLE
+
+STR_ATTRS = [
+    "id_short",
+    "category",
+    "version",
+    "revision",
+]
+
+STR_DICT = [
+    "description"
+]
+
 class QComboBoxEnumDelegate(QStyledItemDelegate):
     def __init__(self):
         super().__init__()
 
     def createEditor(self, parent: QWidget, option: 'QStyleOptionViewItem', index: QtCore.QModelIndex) -> QWidget:
-        if isinstance(index.model().data(index, Qt.EditRole), Enum):
+        if isinstance(index.data(Qt.EditRole), Enum):
             editor = QtWidgets.QComboBox(parent)
             editor.setAutoFillBackground(True)
+        elif index.data(NAME_ROLE) in STR_ATTRS:
+            editor = super().createEditor(parent, option, index)
         else:
             editor = super().createEditor(parent, option, index)
         return editor
