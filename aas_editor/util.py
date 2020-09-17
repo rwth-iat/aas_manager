@@ -1,20 +1,24 @@
 import re
 from enum import Enum
+from typing import List
+
+from PyQt5.QtCore import Qt, QFile, QTextStream, QModelIndex
+from PyQt5.QtWidgets import QApplication
 
 from .settings import ATTR_ORDER, PREFERED_LANGS_ORDER, ATTRS_NOT_IN_DETAILED_INFO, \
-    ATTR_INFOS_TO_SIMPLIFY
+    ATTR_INFOS_TO_SIMPLIFY, THEMES
 
 
 def nameIsSpecial(method_name):
-    "Returns true if the method name starts with underscore"
+    """Returns true if the method name starts with underscore"""
     return method_name.startswith('_')
 
 
-def getAttrs(obj, excludeSpecial=True, excludeCallable=True):
+def getAttrs(obj, exclSpecial=True, exclCallable=True):
     attrs = dir(obj)
-    if excludeSpecial:
+    if exclSpecial:
         attrs[:] = [attr for attr in attrs if not nameIsSpecial(attr)]
-    if excludeCallable:
+    if exclCallable:
         attrs[:] = [attr for attr in attrs if not callable(getattr(obj, attr))]
     return attrs
 
@@ -25,21 +29,21 @@ def attrOrder(attr):
     return 1000
 
 
-def getAttrs4detailInfo(obj, excludeSpecial=True, excludeCallable=True):
-    attrs = getAttrs(obj, excludeSpecial, excludeCallable)
+def getAttrs4detailInfo(obj, exclSpecial: bool = True, exclCallable: bool = True) -> List[str]:
+    attrs = getAttrs(obj, exclSpecial, exclCallable)
     attrs[:] = [attr for attr in attrs if attr not in ATTRS_NOT_IN_DETAILED_INFO]
     attrs.sort(key=attrOrder)
     return attrs
 
 
-def simplifyInfo(obj, attr_name=None):
+def simplifyInfo(obj, attrName: str = "") -> str:
     res = str(obj)
     if isinstance(obj, ATTR_INFOS_TO_SIMPLIFY):
         res = re.sub("^[A-Z]\w*[(]", "", res)
         res = res.rstrip(")")
     elif isinstance(obj, Enum):
         res = re.sub("^[A-Z]\w*[.]", "", res)
-    elif isinstance(obj, dict) and attr_name == "description":
+    elif isinstance(obj, dict) and attrName == "description":
         res = getDescription(obj)
     return res
 
@@ -51,11 +55,45 @@ def getDescription(descriptions: dict) -> str:
                 return descriptions.get(lang)
         return tuple(descriptions.values())[0]
 
-def getAttrDescription(attr: str, docString: str) -> str:
-    pattern = fr":param {attr}_?:(.*)"
-    res = re.search(pattern, docString)
-    if res:
-        reg = res.regs[1]
-        return docString[reg[0]: reg[1]]
-    else:
-        return ""
+
+def getAttrDoc(attr: str, doc: str) -> str:
+    if doc:
+        pattern = fr":param {attr}_?:(.*)"
+        res = re.search(pattern, doc)
+        if res:
+            reg = res.regs[1]
+            doc = doc[reg[0]: reg[1]]
+            doc = re.sub("([(]from .*[)])?", "", doc)
+            return doc
+    return ""
+
+
+def getTreeItemPath(treeItem: QModelIndex) -> str:
+    path = treeItem.data(Qt.DisplayRole)
+    while treeItem.parent().isValid():
+        treeItem = treeItem.parent()
+        path = f"{treeItem.data(Qt.DisplayRole)}/{path}"
+    return path
+
+
+def toggleTheme(theme: str) -> None:
+    if theme in THEMES:
+        toggleStylesheet(THEMES[theme])
+
+
+def toggleStylesheet(path: str) -> None:
+    """
+    Toggle the stylesheet to use the desired path in the Qt resource
+    system (prefixed by `:/`) or generically (a path to a file on
+    system).
+
+    :path:      A full path to a resource or file on system
+    """
+    # get the QApplication instance,  or crash if not set
+    app = QApplication.instance()
+    if app is None:
+        raise RuntimeError("No Qt Application found.")
+    file = QFile(path)
+    file.open(QFile.ReadOnly | QFile.Text)
+    stream = QTextStream(file)
+    app.setStyleSheet(stream.readAll())

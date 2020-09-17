@@ -15,13 +15,14 @@ class Dialog(QtWidgets.QDialog):
         self.layout.addWidget(self.buttonCancel, 10, 1)
 
 
-class AddPackageDialog(Dialog):
+class AddPackDialog(Dialog):
     def __init__(self, parent=None):
         Dialog.__init__(self, parent)
         self.setWindowTitle("Add Package")
         self.nameLabel = QtWidgets.QLabel("Package name:", self)
         self.nameLineEdit = QtWidgets.QLineEdit(self)
         self.nameLineEdit.textChanged.connect(self.validate)
+        self.nameLineEdit.setFocus()
         self.layout.addWidget(self.nameLabel, 0, 0)
         self.layout.addWidget(self.nameLineEdit, 0, 1)
 
@@ -53,6 +54,7 @@ class AddAssetDialog(Dialog):
         self.idLabel = QtWidgets.QLabel("id:", self)
         self.idLineEdit = QtWidgets.QLineEdit(defaultId, self)
         self.idLineEdit.textChanged.connect(self.validate)
+        self.idLineEdit.setFocus()
 
         self.layout.addWidget(self.kindLabel, 0, 0)
         self.layout.addWidget(self.kindComboBox, 0, 1)
@@ -81,6 +83,7 @@ class AddShellDialog(Dialog):
         self.idLabel = QtWidgets.QLabel("id:", self)
         self.idLineEdit = QtWidgets.QLineEdit(defaultId, self)
         self.idLineEdit.textChanged.connect(self.validate)
+        self.idLineEdit.setFocus()
 
         self.assetLabel = QtWidgets.QLabel("Asset:", self)
         self.assetComboBox = QtWidgets.QComboBox(self)

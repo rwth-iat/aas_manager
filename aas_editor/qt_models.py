@@ -74,6 +74,7 @@ class StandardTable(QAbstractItemModel):
         self.beginInsertRows(parentIndex, self.rowCount(parentIndex), self.rowCount(parentIndex))
         item.setParent(self.objByIndex(parentIndex))
         self.endInsertRows()
+        return self.index(item.row(), 0, parentIndex)
 
     def objByIndex(self, index):
         if not index.isValid():
@@ -204,6 +205,8 @@ class DetailedInfoItem(StandardItem):
             return self.objName
         if role == OBJECT_ROLE:
             return self.obj
+        if role == PACKAGE_ROLE:
+            return self.package
         if role == Qt.BackgroundRole:
             color = QColor(132, 185, 225)
             if self.masterObj:
@@ -314,14 +317,16 @@ class PackageTreeViewItem(StandardItem):
         self.populate()
 
     def data(self, role):
+        if role == NAME_ROLE:
+            return self.objName
+        if role == OBJECT_ROLE:
+            return self.obj
+        if role == PACKAGE_ROLE:
+            return self.package
         if role == Qt.DisplayRole:
             return self.objectName
         if role == Qt.ToolTipRole and hasattr(self.obj, "description"):
             return getDescription(self.obj.description)
-        if role == Qt.UserRole:
-            return self.obj
-        if role == PACKAGE_ROLE:
-            return self.package
         return QtCore.QVariant()
 
     def setParent(self, a0: 'QObject') -> None:
