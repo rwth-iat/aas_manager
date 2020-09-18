@@ -348,7 +348,7 @@ class PackageTreeViewItem(StandardItem):
             print(e)
 
 
-class Package:
+class Package:# todo make properties from shells, assets, submodels ...
     def __init__(self, objStore=None):
         self.objStore = objStore if objStore else DictObjectStore()
         self.shells = []

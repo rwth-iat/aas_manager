@@ -51,17 +51,25 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.packItemsTreeView.selectionModel().currentChanged.connect(self.updatePackItemContextMenu)
         self.packItemsTreeView.customContextMenuRequested.connect(self.openPackItemMenu)
 
+        self.actionLight.triggered.connect(lambda: toggleTheme("light"))
+        self.actionDark.triggered.connect(lambda: toggleTheme("dark"))
+
+    def showPackItemDetailInfo(self, packItem):
+        self.detailedInfoModel = DetailedInfoTable(mainObj=packItem.data(OBJECT_ROLE), package=packItem.data(PACKAGE_ROLE))
+        self.pathLabel.setText(getTreeItemPath(packItem))
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), packItem.data(Qt.DisplayRole))
+        self.detailInfoTreeView.setModel(self.detailedInfoModel)
+        self.detailInfoTreeView.setItemDelegate(QComboBoxEnumDelegate())
+        self.buildHandlers4DetailTreeView()
+
+    def buildHandlers4DetailTreeView(self):
+        self.detailedInfoModel.valueChangeFailed.connect(self.itemDataChangeFailed)
+        self.detailInfoTreeView.expanded.connect(self.detailedInfoModel.hideRowVal)
+        self.detailInfoTreeView.collapsed.connect(self.detailedInfoModel.showRowVal)
         self.detailInfoTreeView.selectionModel().currentChanged.connect(self.updateDetailInfoItemMenu)
         self.detailInfoTreeView.customContextMenuRequested.connect(self.openDetailInfoItemMenu)
         self.detailInfoTreeView.selectionModel().currentChanged.connect(self.showDetailInfoItemDoc)
         self.detailInfoTreeView.setItemDelegate(QComboBoxEnumDelegate())
-        self.detailedInfoModel.valueChangeFailed.connect(self.itemDataChangeFailed)
-
-        self.actionLight.triggered.connect(lambda: toggleTheme("light"))
-        self.actionDark.triggered.connect(lambda: toggleTheme("dark"))
-
-        self.detailInfoTreeView.expanded.connect(self.detailedInfoModel.hideRowVal)
-        self.detailInfoTreeView.collapsed.connect(self.detailedInfoModel.showRowVal)
 
     def showDetailInfoItemDoc(self, detailInfoItem):
         attr = detailInfoItem.data(NAME_ROLE)
@@ -95,7 +103,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         elif isinstance(index.data(OBJECT_ROLE), Submodel) or index.data(Qt.DisplayRole) == "concept_descriptions":
             self.packMenu.addAction(self.tr("Add concept description"))  # todo implement add concept descr
 
-    def openPackItemMenu(self, point):
+    def openPackItemMenu(self, point):# todo resolve issue with action overload of ctrl+N
         self.packMenu.exec_(self.packItemsTreeView.viewport().mapToGlobal(point))
 
     def updateDetailInfoItemMenu(self, index):
@@ -113,14 +121,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
     def openDetailInfoItemMenu(self, point):
         self.detailInfoMenu.exec_(self.detailInfoTreeView.viewport().mapToGlobal(point))
-
-    def showPackItemDetailInfo(self, packItem):
-        self.detailedInfoModel = DetailedInfoTable(mainObj=packItem.data(OBJECT_ROLE), package=packItem.data(PACKAGE_ROLE))
-        self.pathLabel.setText(getTreeItemPath(packItem))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), packItem.data(Qt.DisplayRole))
-        self.detailInfoTreeView.setModel(self.detailedInfoModel)
-        self.detailInfoTreeView.setItemDelegate(QComboBoxEnumDelegate())
-        self.buildHandlers()
 
     def itemDataChangeFailed(self, msg):
         QMessageBox.critical(self, "Error",msg)
