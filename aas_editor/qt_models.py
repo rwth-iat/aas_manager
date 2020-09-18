@@ -183,22 +183,22 @@ class DetailedInfoItem(StandardItem):
         if role == PACKAGE_ROLE:
             return self.package
         if role == Qt.BackgroundRole:
-            return self._defineColor()
-        if column == VALUE_COLUMN:
-            if role == Qt.DisplayRole and not self.dataValueHidden:
-                return simplifyInfo(self.obj, self.objectName)
-            elif role == Qt.EditRole:
-                return self.obj
-        elif column == ATTRIBUTE_COLUMN:
-            if role in (Qt.DisplayRole, Qt.EditRole):
+            return self._getColor()
+        if role == Qt.FontRole:
+            return self._getFont(column)
+        if role == Qt.DisplayRole:
+            if column == ATTRIBUTE_COLUMN:
                 return self.objName
-            elif role == Qt.FontRole and not isinstance(self.parentObj, dict):
-                font = QFont()
-                font.setBold(True)
-                return font
+            if column == VALUE_COLUMN and not self.dataValueHidden:
+                return simplifyInfo(self.obj, self.objectName)
+        if role == Qt.EditRole:
+            if column == ATTRIBUTE_COLUMN:
+                return self.objName
+            if column == VALUE_COLUMN:
+                return self.obj
         return QVariant()
 
-    def _defineColor(self):
+    def _getColor(self):
         color = QColor(132, 185, 225)
         if self.masterObj:
             if self.row() % 2:
@@ -212,6 +212,16 @@ class DetailedInfoItem(StandardItem):
                 color.setAlpha(
                     260 - self.parent().children()[self.row() - 1].data(Qt.BackgroundRole).alpha())
         return color
+
+    def _getFont(self, column):
+        font = QFont()
+        if column == ATTRIBUTE_COLUMN:
+            if not isinstance(self.parentObj, dict):
+                font.setBold(True)
+            if isinstance(self.obj, Reference):
+                font.setUnderline(True)
+            return font
+        return QVariant()
 
     def setParent(self, a0: 'QObject') -> None:
         super().setParent(a0)
@@ -262,12 +272,6 @@ class DetailedInfoItem(StandardItem):
             return
         elif type(self.obj) is AASReference:
             obj = self.obj
-            # if self.resolveRefs:
-            # if True:
-            #     try:
-            #         obj = self.obj.resolve(self.package.objStore)
-            #     except (KeyError, NotImplementedError) as e:
-            #         print(e)
             for sub_item_attr in getAttrs4detailInfo(obj):
                 DetailedInfoItem(obj=getattr(obj, sub_item_attr), name=sub_item_attr, parent=self,
                                  package=self.package)
