@@ -276,7 +276,7 @@ class DetailedInfoItem(StandardItem):
                 DetailedInfoItem(sub_item_obj, sub_item_attr, self, package=self.package)
         elif isinstance(self.obj, (set, list, tuple, NamespaceSet)):
             for i, sub_item_obj in enumerate(self.obj):
-                DetailedInfoItem(sub_item_obj, f"item {i}", self, package=self.package)
+                DetailedInfoItem(sub_item_obj, f"{sub_item_obj.__class__.__name__} {i}", self, package=self.package)
         else:
             for sub_item_attr in getAttrs4detailInfo(self.obj):
                 DetailedInfoItem(getattr(self.obj, sub_item_attr), sub_item_attr, self,
@@ -324,55 +324,55 @@ class PackTreeViewItem(StandardItem):
             print(e)
 
 
-class Package:# todo make properties from shells, assets, submodels ...
+class Package:
     def __init__(self, objStore=None):
         self.objStore = objStore if objStore else DictObjectStore()
-        self.shells = []
-        self.assets = []
-        self.submodels = []
-        self.concept_descriptions = []
-        self.retrieveFromStore()
 
-    def retrieveFromStore(self):
-        for item in self.objStore:
-            if isinstance(item, AssetAdministrationShell):
-                self.shells.append(item)
-            elif isinstance(item, Asset):
-                self.assets.append(item)
-            elif isinstance(item, Submodel):
-                self.submodels.append(item)
-            elif isinstance(item, ConceptDescription):
-                self.concept_descriptions.append(item)
+    @property
+    def shells(self):
+        for obj in self.objStore:
+            if isinstance(obj, AssetAdministrationShell):
+                yield obj
 
-    def addShell(self, shell):
-        self.objStore.add(shell)
-        self.shells.append(shell)
+    @property
+    def assets(self):
+        for obj in self.objStore:
+            if isinstance(obj, Asset):
+                yield obj
 
-    def addAsset(self, asset):
-        self.objStore.add(asset)
-        self.assets.append(asset)
+    @property
+    def submodels(self):
+        for obj in self.objStore:
+            if isinstance(obj, Submodel):
+                yield obj
 
-    def addSubmodel(self, submodel):
-        self.objStore.add(submodel)
-        self.submodels.append(submodel)
+    @property
+    def concept_descriptions(self):
+        for obj in self.objStore:
+            if isinstance(obj, ConceptDescription):
+                yield obj
 
-    def addConceptDescr(self, conceptDescr):
-        self.objStore.add(conceptDescr)
-        self.concept_descriptions.append(conceptDescr)
+    # @property
+    # def others(self):
+    #     for obj in self.objStore:
+    #         if not isinstance(obj, (AssetAdministrationShell, Asset, Submodel, ConceptDescription)):
+    #             yield obj
+
+    def add(self, obj):
+        self.objStore.add(obj)
 
     @property
     def numOfShells(self):
-        return len(self.shells)
+        return len(tuple(self.shells))
 
     @property
     def numOfAssets(self):
-        return len(self.assets)
+        return len(tuple(self.assets))
 
     @property
     def numOfSubmodels(self):
-        return len(self.submodels)
+        return len(tuple(self.submodels))
 
     @property
     def numOfConceptDescriptions(self):
-        return len(self.concept_descriptions)
-
+        return len(tuple(self.concept_descriptions))

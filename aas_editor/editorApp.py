@@ -153,7 +153,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         dialog.deleteLater()
 
     def addShell(self, index, shell):
-        index.data(PACKAGE_ROLE).addShell(shell)
+        index.data(PACKAGE_ROLE).add(shell)
         if index.data(Qt.DisplayRole) == "shells":
             shells = index
         elif index.parent().data(Qt.DisplayRole) == "shells":
@@ -173,7 +173,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         dialog.deleteLater()
 
     def addAsset(self, index, asset):
-        index.data(PACKAGE_ROLE).addAsset(asset)
+        index.data(PACKAGE_ROLE).add(asset)
         if index.data(Qt.DisplayRole) == "assets":
             assets = index
         elif index.parent().data(Qt.DisplayRole) == "assets":
