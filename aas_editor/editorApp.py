@@ -10,7 +10,7 @@ from .qcomboboxenumdelegate import QComboBoxEnumDelegate
 
 from .qt_models import *
 from.settings import *
-from .util import getAttrDoc, getTreeItemPath, toggleStylesheet, toggleTheme
+from .util import getTreeItemPath, toggleTheme
 
 
 class EditorApp(QMainWindow, design.Ui_MainWindow):
@@ -72,13 +72,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.detailInfoTreeView.setItemDelegate(QComboBoxEnumDelegate())
 
     def showDetailInfoItemDoc(self, detailInfoItem):
-        attr = detailInfoItem.data(NAME_ROLE)
-        if detailInfoItem.parent().isValid():
-            parent_obj = detailInfoItem.parent().data(OBJECT_ROLE)
-        else:
-            parent_obj = self.detailedInfoModel.objByIndex(detailInfoItem).masterObj
-        doc = getAttrDoc(attr, parent_obj.__init__.__doc__)
-        self.descrLabel.setText(doc)
+        self.descrLabel.setText(detailInfoItem.data(Qt.ToolTipRole))
 
     def updatePackItemContextMenu(self, index):
         self.packMenu.clear()
@@ -132,7 +126,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             descr = dialog.descrLineEdit.text()
             self.detailedInfoModel.addItem(DetailedInfoItem(obj=descr, name=lang), index)
         else:
-            print("asset adding cancelled")
+            print("Asset adding cancelled")
         dialog.deleteLater()
 
     def addPackWithDialog(self):
@@ -140,12 +134,12 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         if dialog.exec_() == QDialog.Accepted:
             self.addPack(name=dialog.nameLineEdit.text())
         else:
-            print("package adding cancelled")
+            print("Package adding cancelled")
         dialog.deleteLater()
 
     def addPack(self, name="", objStore=None):
         pack = Package(objStore)
-        self.packTreeViewModel.addItem(PackageTreeViewItem(obj=pack, objName=name), QModelIndex())
+        self.packTreeViewModel.addItem(PackTreeViewItem(obj=pack, objName=name), QModelIndex())
 
     def addShellWithDialog(self, index):
         dialog = None # todo impelement AddShellDialog(self)
@@ -164,7 +158,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             shells = index
         elif index.parent().data(Qt.DisplayRole) == "shells":
             shells = index.parent()
-        self.packTreeViewModel.addItem(PackageTreeViewItem(obj=shell), shells)
+        self.packTreeViewModel.addItem(PackTreeViewItem(obj=shell), shells)
         print("shell added")
 
     def addAssetWithDialog(self, index):
@@ -184,7 +178,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             assets = index
         elif index.parent().data(Qt.DisplayRole) == "assets":
             assets = index.parent()
-        item = self.packTreeViewModel.addItem(PackageTreeViewItem(obj=asset), assets)
+        item = self.packTreeViewModel.addItem(PackTreeViewItem(obj=asset), assets)
         self.packItemsTreeView.setFocus()
         self.packItemsTreeView.setCurrentIndex(item)
         print("asset added")

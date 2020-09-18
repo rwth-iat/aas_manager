@@ -13,7 +13,7 @@ from aas.model.submodel import *
 from aas.model.provider import *
 
 from .settings import ATTRS_IN_PACKAGE_TREEVIEW
-from .util import getAttrs4detailInfo, simplifyInfo, getDescription
+from .util import getAttrs4detailInfo, simplifyInfo, getDescription, getAttrDoc
 
 PACKAGE_ROLE = 1001
 NAME_ROLE = 1002
@@ -28,30 +28,6 @@ VALUE_COLUMN = 1
 STRING_ATTRS = ("id", "id_short", "category", "version", "revision")
 SUBMODEL_ATTRS = ("asset_identification_model", "bill_of_material")
 
-# class TreeItem(DetailedInfoItem):
-#     def __init__(self, obj, name, parent=None):
-#         super().__init__(obj, name, parent)
-#         self.has_children = True
-#         self.children_fetched = False
-#
-#     def append_child(self, item):
-#         item.parent_item = self
-#         self.child_items.append(item)
-#
-#     def insert_children(self, idx, items):
-#         self.child_items[idx:idx] = items
-#         for item in items:
-#             item.parent_item = self
-#
-#     def child(self, row):
-#         return self.child_items[row]
-#
-#     def child_count(self):
-#         return len(self.child_items)
-#
-#     def data(self, role):
-#         return QVariant()
-
 
 class StandardTable(QAbstractItemModel):
     def __init__(self, columns=("Item",)):
@@ -64,17 +40,16 @@ class StandardTable(QAbstractItemModel):
             return QVariant()
         return self.objByIndex(index).data(role)
 
-    def addItem(self, item, parentIndex):
-        d=parentIndex.data(OBJECT_ROLE)
-        if isinstance(parentIndex.data(OBJECT_ROLE), dict):
-            dictionary = self.objByIndex(parentIndex).data(OBJECT_ROLE)
+    def addItem(self, item, parent: QModelIndex):
+        if isinstance(parent.data(OBJECT_ROLE), dict):
+            dictionary = self.objByIndex(parent).data(OBJECT_ROLE)
             key = item.data(NAME_ROLE)
             value = item.data(OBJECT_ROLE)
             dictionary[key] = value
-        self.beginInsertRows(parentIndex, self.rowCount(parentIndex), self.rowCount(parentIndex))
-        item.setParent(self.objByIndex(parentIndex))
+        self.beginInsertRows(parent, self.rowCount(parent), self.rowCount(parent))
+        item.setParent(self.objByIndex(parent))
         self.endInsertRows()
-        return self.index(item.row(), 0, parentIndex)
+        return self.index(item.row(), 0, parent)
 
     def objByIndex(self, index):
         if not index.isValid():
@@ -152,11 +127,11 @@ class DetailedInfoTable(StandardTable):
             if self.objByIndex(index).setData(value, role, index.column()):
                 return True
             self.valueChangeFailed.emit(
-                f"{self.objByIndex(index).objectName} couldn't be changed to {value}")
+                f"{self.objByIndex(index).objectName} could not be changed to {value}")
         except (ValueError, AttributeError) as e:
             self.dataChanged.emit(index, index)
             self.valueChangeFailed.emit(
-                f"Error occured while setting {self.objByIndex(index).objName}: {e}")
+                f"Error occurred while setting {self.objByIndex(index).objName}: {e}")
         return False
 
     def flags(self, index: QModelIndex) -> Qt.ItemFlags:
@@ -199,8 +174,8 @@ class DetailedInfoItem(StandardItem):
             self.populate()
 
     def data(self, role, column=VALUE_COLUMN):
-        # if role == Qt.ToolTipRole:
-        #     return inspect.getdoc(self.obj)
+        if role == Qt.ToolTipRole:
+            return getAttrDoc(self.objName, self.parentObj.__init__.__doc__)
         if role == NAME_ROLE:
             return self.objName
         if role == OBJECT_ROLE:
@@ -208,34 +183,35 @@ class DetailedInfoItem(StandardItem):
         if role == PACKAGE_ROLE:
             return self.package
         if role == Qt.BackgroundRole:
-            color = QColor(132, 185, 225)
-            if self.masterObj:
-                if self.row() % 2:
-                    color.setAlpha(150)
-                else:
-                    color.setAlpha(110)
-            else:
-                if self.row() is 0:
-                    color.setAlpha(260 - self.parent().data(Qt.BackgroundRole).alpha())
-                else:
-                    color.setAlpha(260 - self.parent().children()[self.row() - 1].data(
-                        Qt.BackgroundRole).alpha())
-            return color
+            return self._defineColor()
         if column == VALUE_COLUMN:
             if role == Qt.DisplayRole and not self.dataValueHidden:
                 return simplifyInfo(self.obj, self.objectName)
             elif role == Qt.EditRole:
                 return self.obj
         elif column == ATTRIBUTE_COLUMN:
-            if role == Qt.DisplayRole:
-                return self.objName
-            elif role == Qt.EditRole:
+            if role in (Qt.DisplayRole, Qt.EditRole):
                 return self.objName
             elif role == Qt.FontRole and not isinstance(self.parentObj, dict):
                 font = QFont()
                 font.setBold(True)
                 return font
         return QVariant()
+
+    def _defineColor(self):
+        color = QColor(132, 185, 225)
+        if self.masterObj:
+            if self.row() % 2:
+                color.setAlpha(150)
+            else:
+                color.setAlpha(110)
+        else:
+            if self.row() == 0:
+                color.setAlpha(260 - self.parent().data(Qt.BackgroundRole).alpha())
+            else:
+                color.setAlpha(
+                    260 - self.parent().children()[self.row() - 1].data(Qt.BackgroundRole).alpha())
+        return color
 
     def setParent(self, a0: 'QObject') -> None:
         super().setParent(a0)
@@ -287,11 +263,11 @@ class DetailedInfoItem(StandardItem):
         elif type(self.obj) is AASReference:
             obj = self.obj
             # if self.resolveRefs:
-            if True:
-                try:
-                    obj = self.obj.resolve(self.package.objStore)
-                except (KeyError, NotImplementedError) as e:
-                    print(e)
+            # if True:
+            #     try:
+            #         obj = self.obj.resolve(self.package.objStore)
+            #     except (KeyError, NotImplementedError) as e:
+            #         print(e)
             for sub_item_attr in getAttrs4detailInfo(obj):
                 DetailedInfoItem(obj=getattr(obj, sub_item_attr), name=sub_item_attr, parent=self,
                                  package=self.package)
@@ -307,7 +283,7 @@ class DetailedInfoItem(StandardItem):
                                  package=self.package)
 
 
-class PackageTreeViewItem(StandardItem):
+class PackTreeViewItem(StandardItem):
     def __init__(self, obj, parent=None, objName=None):
         super().__init__(obj, objName, parent)
         if parent:
@@ -340,10 +316,10 @@ class PackageTreeViewItem(StandardItem):
             for attr in ATTRS_IN_PACKAGE_TREEVIEW:
                 if hasattr(self.obj, attr):
                     attr_obj = getattr(self.obj, attr)
-                    parent = PackageTreeViewItem(obj=attr_obj, parent=self, objName=attr)
+                    parent = PackTreeViewItem(obj=attr_obj, parent=self, objName=attr)
                     if isinstance(attr_obj, collections.Iterable):
                         for i in attr_obj:
-                            PackageTreeViewItem(obj=i, parent=parent)
+                            PackTreeViewItem(obj=i, parent=parent)
         except (KeyError, NotImplementedError) as e:
             print(e)
 
