@@ -160,7 +160,6 @@ class Tab(QWidget):
         super(Tab, self).__init__(parent)
         # self.pathLabel = QLabel(getTreeItemPath(packItem), self)
         self.pathLabel = QLineEdit(getTreeItemPath(packItem), self)
-        self.pathLabel.setToolTip()
         self.pathLabel.setReadOnly(True)
         self.descrLabel = QLabel(self)
         self.detailInfoMenu = QMenu(self)
