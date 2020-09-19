@@ -63,7 +63,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QTreeView" name="packageItemsTreeView">
+         <widget class="QTreeView" name="packItemsTreeView">
           <property name="sizePolicy">
            <sizepolicy hsizetype="MinimumExpanding" vsizetype="Expanding">
             <horstretch>0</horstretch>
@@ -109,7 +109,7 @@
         <item>
          <widget class="QTabWidget" name="tabWidget">
           <property name="currentIndex">
-           <number>0</number>
+           <number>-1</number>
           </property>
           <property name="elideMode">
            <enum>Qt::ElideNone</enum>
@@ -126,73 +126,6 @@
           <property name="movable">
            <bool>true</bool>
           </property>
-          <widget class="QWidget" name="tab">
-           <attribute name="title">
-            <string>Selected</string>
-           </attribute>
-           <layout class="QVBoxLayout" name="verticalLayout_4">
-            <item>
-             <widget class="QLabel" name="pathLabel">
-              <property name="text">
-               <string>path</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <layout class="QGridLayout" name="gridLayout_3">
-              <item row="1" column="0">
-               <widget class="QLabel" name="descrLabel">
-                <property name="text">
-                 <string/>
-                </property>
-               </widget>
-              </item>
-              <item row="0" column="0">
-               <widget class="QTreeView" name="detailInfoTreeView">
-                <property name="enabled">
-                 <bool>true</bool>
-                </property>
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="minimumSize">
-                 <size>
-                  <width>429</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="baseSize">
-                 <size>
-                  <width>429</width>
-                  <height>555</height>
-                 </size>
-                </property>
-                <property name="contextMenuPolicy">
-                 <enum>Qt::CustomContextMenu</enum>
-                </property>
-                <property name="frameShape">
-                 <enum>QFrame::StyledPanel</enum>
-                </property>
-                <property name="frameShadow">
-                 <enum>QFrame::Sunken</enum>
-                </property>
-                <property name="sizeAdjustPolicy">
-                 <enum>QAbstractScrollArea::AdjustToContents</enum>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
-          </widget>
-          <widget class="QWidget" name="tab_2">
-           <attribute name="title">
-            <string>Tab 2</string>
-           </attribute>
-          </widget>
          </widget>
         </item>
        </layout>

@@ -23,12 +23,10 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.packItemsTreeView.setHeaderHidden(True)
         self.packItemsTreeView.setModel(self.packTreeViewModel)
 
-        self.detailedInfoModel = DetailedInfoTable()
-        self.detailInfoTreeView.setModel(self.detailedInfoModel)
-        self.detailInfoTreeView.setColumnWidth(ATTRIBUTE_COLUMN, ATTR_COLUMN_WIDTH)
+        self.tabWidget.addTab(Tab(parent=self.tabWidget), "Welcome")
 
         self.packMenu = QMenu(self.packItemsTreeView)
-        self.detailInfoMenu = QMenu(self.detailInfoTreeView)
+        self.detailInfoMenu = QMenu()
         self.buildHandlers()
 
     def importTestPack(self, objStore):
@@ -47,32 +45,26 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             yield from recurse(root)
 
     def buildHandlers(self):
-        self.packItemsTreeView.selectionModel().currentChanged.connect(self.showPackItemDetailInfo)
+        # self.packItemsTreeView.selectionModel().currentChanged.connect(self.openPackItem)
+        self.packItemsTreeView.doubleClicked.connect(self.openPackItem)
+        self.tabWidget.tabCloseRequested.connect(self.removeTab)
         self.packItemsTreeView.selectionModel().currentChanged.connect(self.updatePackItemContextMenu)
         self.packItemsTreeView.customContextMenuRequested.connect(self.openPackItemMenu)
 
         self.actionLight.triggered.connect(lambda: toggleTheme("light"))
         self.actionDark.triggered.connect(lambda: toggleTheme("dark"))
 
-    def showPackItemDetailInfo(self, packItem):
-        self.detailedInfoModel = DetailedInfoTable(mainObj=packItem.data(OBJECT_ROLE), package=packItem.data(PACKAGE_ROLE))
-        self.pathLabel.setText(getTreeItemPath(packItem))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), packItem.data(Qt.DisplayRole))
-        self.detailInfoTreeView.setModel(self.detailedInfoModel)
-        self.detailInfoTreeView.setItemDelegate(QComboBoxEnumDelegate())
-        self.buildHandlers4DetailTreeView()
+    def openPackItem(self, packItem):
+        tab = Tab(packItem, parent=self.tabWidget)
+        self.tabWidget.addTab(tab, packItem.data(Qt.DisplayRole))
+        self.tabWidget.setCurrentWidget(tab)
 
-    def buildHandlers4DetailTreeView(self):
-        self.detailedInfoModel.valueChangeFailed.connect(self.itemDataChangeFailed)
-        self.detailInfoTreeView.expanded.connect(self.detailedInfoModel.hideRowVal)
-        self.detailInfoTreeView.collapsed.connect(self.detailedInfoModel.showRowVal)
-        self.detailInfoTreeView.selectionModel().currentChanged.connect(self.updateDetailInfoItemMenu)
-        self.detailInfoTreeView.customContextMenuRequested.connect(self.openDetailInfoItemMenu)
-        self.detailInfoTreeView.selectionModel().currentChanged.connect(self.showDetailInfoItemDoc)
-        self.detailInfoTreeView.setItemDelegate(QComboBoxEnumDelegate())
-
-    def showDetailInfoItemDoc(self, detailInfoItem):
-        self.descrLabel.setText(detailInfoItem.data(Qt.ToolTipRole))
+    def removeTab(self, index):
+        #remove tab from widget
+        widget = self.tabWidget.widget(index)
+        if widget is not None:
+            widget.deleteLater()
+        self.tabWidget.removeTab(index)
 
     def updatePackItemContextMenu(self, index):
         self.packMenu.clear()
@@ -99,35 +91,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
     def openPackItemMenu(self, point):# todo resolve issue with action overload of ctrl+N
         self.packMenu.exec_(self.packItemsTreeView.viewport().mapToGlobal(point))
-
-    def updateDetailInfoItemMenu(self, index):
-        self.detailInfoMenu.clear()
-        print("p ",self.packItemsTreeView.actions())
-        print("b ",self.detailInfoTreeView.actions())
-        for a in self.detailInfoTreeView.actions():
-            self.detailInfoTreeView.removeAction(a)
-        print("p ",self.packItemsTreeView.actions())
-        print(self.detailInfoTreeView.actions())
-
-        if index.data(NAME_ROLE) == "description":
-            act = self.detailInfoMenu.addAction(self.tr("Add description"), lambda i=index: self.addDescrWithDialog(i), QKeySequence.New)
-            self.detailInfoTreeView.addAction(act)
-
-    def openDetailInfoItemMenu(self, point):
-        self.detailInfoMenu.exec_(self.detailInfoTreeView.viewport().mapToGlobal(point))
-
-    def itemDataChangeFailed(self, msg):
-        QMessageBox.critical(self, "Error",msg)
-
-    def addDescrWithDialog(self, index):
-        dialog = AddDescriptionDialog(self)
-        if dialog.exec_() == QDialog.Accepted:
-            lang = dialog.langLineEdit.text()
-            descr = dialog.descrLineEdit.text()
-            self.detailedInfoModel.addItem(DetailedInfoItem(obj=descr, name=lang), index)
-        else:
-            print("Asset adding cancelled")
-        dialog.deleteLater()
 
     def addPackWithDialog(self):
         dialog = AddPackDialog(self)
@@ -190,3 +153,88 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         pass
 
 # ToDo logs insteads of prints
+
+
+class Tab(QWidget):
+    def __init__(self, packItem=QModelIndex(), parent=None):
+        super(Tab, self).__init__(parent)
+        # self.pathLabel = QLabel(getTreeItemPath(packItem), self)
+        self.pathLabel = QLineEdit(getTreeItemPath(packItem), self)
+        self.pathLabel.setToolTip()
+        self.pathLabel.setReadOnly(True)
+        self.descrLabel = QLabel(self)
+        self.detailInfoMenu = QMenu(self)
+        self._initTreeView(packItem)
+        self._initLayout()
+        self.buildHandlers()
+
+    def _initTreeView(self, packItem):
+        self.detailInfoTreeView = QTreeView(self)
+        self.detailInfoTreeView.setEnabled(True)
+        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.detailInfoTreeView.sizePolicy().hasHeightForWidth())
+        self.detailInfoTreeView.setSizePolicy(sizePolicy)
+        self.detailInfoTreeView.setMinimumSize(QtCore.QSize(429, 0))
+        self.detailInfoTreeView.setBaseSize(QtCore.QSize(429, 555))
+        self.detailInfoTreeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.detailInfoTreeView.setFrameShape(QFrame.StyledPanel)
+        self.detailInfoTreeView.setFrameShadow(QFrame.Sunken)
+        self.detailInfoTreeView.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
+        self.detailInfoTreeView.setObjectName("detailInfoTreeView")
+
+        self.detailedInfoModel = DetailedInfoTable(mainObj=packItem.data(OBJECT_ROLE),
+                                  package=packItem.data(PACKAGE_ROLE))
+        self.detailInfoTreeView.setModel(self.detailedInfoModel)
+        self.detailInfoTreeView.setColumnWidth(ATTRIBUTE_COLUMN, ATTR_COLUMN_WIDTH)
+        self.detailInfoTreeView.setItemDelegate(QComboBoxEnumDelegate())
+
+    def _initLayout(self):
+        self.gridLayout = QGridLayout()
+        self.gridLayout.setObjectName("gridLayout")
+        self.gridLayout.addWidget(self.descrLabel, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.detailInfoTreeView, 0, 0, 1, 1)
+        self.verticalLayout = QVBoxLayout(self)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.verticalLayout.addWidget(self.pathLabel)
+        self.verticalLayout.addLayout(self.gridLayout)
+
+    def buildHandlers(self):
+        self.detailedInfoModel.valueChangeFailed.connect(self.itemDataChangeFailed)
+        self.detailInfoTreeView.expanded.connect(self.detailedInfoModel.hideRowVal)
+        self.detailInfoTreeView.collapsed.connect(self.detailedInfoModel.showRowVal)
+        self.detailInfoTreeView.selectionModel().currentChanged.connect(self.updateDetailInfoItemMenu)
+        self.detailInfoTreeView.customContextMenuRequested.connect(self.openDetailInfoItemMenu)
+        self.detailInfoTreeView.selectionModel().currentChanged.connect(self.showDetailInfoItemDoc)
+        self.detailInfoTreeView.setItemDelegate(QComboBoxEnumDelegate())
+
+    def showDetailInfoItemDoc(self, detailInfoItem: QModelIndex):
+        self.descrLabel.setText(detailInfoItem.data(Qt.ToolTipRole))
+
+    def itemDataChangeFailed(self, msg):
+        QMessageBox.critical(self, "Error", msg) # todo find out how to pass app, not Tab
+
+    def updateDetailInfoItemMenu(self, index):
+        self.detailInfoMenu.clear()
+        # print("b ", self.actions())
+        # for a in self.actions():
+        #     self.removeAction(a)
+        # print(self.actions())
+
+        if index.data(NAME_ROLE) == "description":
+            act = self.detailInfoMenu.addAction(self.tr("Add description"), lambda i=index: self.addDescrWithDialog(i), QKeySequence.New)
+            self.addAction(act)
+
+    def openDetailInfoItemMenu(self, point):
+        self.detailInfoMenu.exec_(self.detailInfoTreeView.viewport().mapToGlobal(point))
+
+    def addDescrWithDialog(self, index):
+        dialog = AddDescriptionDialog(self)
+        if dialog.exec_() == QDialog.Accepted:
+            lang = dialog.langLineEdit.text()
+            descr = dialog.descrLineEdit.text()
+            self.detailedInfoModel.addItem(DetailedInfoItem(obj=descr, name=lang), index)
+        else:
+            print("Asset adding cancelled")
+        dialog.deleteLater()
