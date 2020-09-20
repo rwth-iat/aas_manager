@@ -10,6 +10,8 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+from aas_editor.qt_views import TreeView, TabWidget
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -51,7 +53,7 @@ class Ui_MainWindow(object):
         self.lineEdit.setBaseSize(QtCore.QSize(256, 25))
         self.lineEdit.setObjectName("lineEdit")
         self.verticalLayout.addWidget(self.lineEdit)
-        self.packItemsTreeView = QtWidgets.QTreeView(self.layoutWidget)
+        self.packItemsTreeView = TreeView(self.layoutWidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -72,7 +74,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.layoutWidget1)
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.tabWidget = QtWidgets.QTabWidget(self.layoutWidget1)
+        self.tabWidget = TabWidget(self.layoutWidget1, self.packItemsTreeView)
         self.tabWidget.setElideMode(QtCore.Qt.ElideNone)
         self.tabWidget.setUsesScrollButtons(True)
         self.tabWidget.setDocumentMode(False)

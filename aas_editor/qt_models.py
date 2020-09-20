@@ -1,16 +1,15 @@
 # pyuic5 aas_editor/mainwindow_base.ui -o aas_editor/design.py
-import typing
 import collections
+import typing
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QObject, QVariant, QModelIndex, QAbstractItemModel, pyqtSignal
 from PyQt5.QtGui import QFont, QColor
-
 from aas.model.aas import *
 from aas.model.base import *
 from aas.model.concept import *
-from aas.model.submodel import *
 from aas.model.provider import *
+from aas.model.submodel import *
 
 from .settings import ATTRS_IN_PACKAGE_TREEVIEW
 from .util import getAttrs4detailInfo, simplifyInfo, getDescription, getAttrDoc
@@ -28,6 +27,83 @@ VALUE_COLUMN = 1
 STRING_ATTRS = ("id", "id_short", "category", "version", "revision")
 SUBMODEL_ATTRS = ("asset_identification_model", "bill_of_material")
 
+
+class Package:
+    def __init__(self, objStore: DictObjectStore = None):
+        self.objStore = objStore if objStore else DictObjectStore()
+
+    @property
+    def shells(self):
+        for obj in self.objStore:
+            if isinstance(obj, AssetAdministrationShell):
+                yield obj
+
+    @property
+    def assets(self):
+        for obj in self.objStore:
+            if isinstance(obj, Asset):
+                yield obj
+
+    @property
+    def submodels(self):
+        for obj in self.objStore:
+            if isinstance(obj, Submodel):
+                yield obj
+
+    @property
+    def concept_descriptions(self):
+        for obj in self.objStore:
+            if isinstance(obj, ConceptDescription):
+                yield obj
+
+    # @property
+    # def others(self):
+    #     for obj in self.objStore:
+    #         if not isinstance(obj, (AssetAdministrationShell, Asset, Submodel, ConceptDescription)):
+    #             yield obj
+
+    def add(self, obj):
+        self.objStore.add(obj)
+
+    @property
+    def numOfShells(self):
+        return len(tuple(self.shells))
+
+    @property
+    def numOfAssets(self):
+        return len(tuple(self.assets))
+
+    @property
+    def numOfSubmodels(self):
+        return len(tuple(self.submodels))
+
+    @property
+    def numOfConceptDescriptions(self):
+        return len(tuple(self.concept_descriptions))
+
+# class TreeItem(DetailedInfoItem):
+#     def __init__(self, obj, name, parent=None):
+#         super().__init__(obj, name, parent)
+#         self.has_children = True
+#         self.children_fetched = False
+#
+#     def append_child(self, item):
+#         item.parent_item = self
+#         self.child_items.append(item)
+#
+#     def insert_children(self, idx, items):
+#         self.child_items[idx:idx] = items
+#         for item in items:
+#             item.parent_item = self
+#
+#     def child(self, row):
+#         return self.child_items[row]
+#
+#     def child_count(self):
+#         return len(self.child_items)
+#
+#     def data(self, role):
+#         return QVariant()
 
 class StandardTable(QAbstractItemModel):
     def __init__(self, columns=("Item",)):
@@ -55,6 +131,23 @@ class StandardTable(QAbstractItemModel):
         if not index.isValid():
             return self._rootItem
         return index.internalPointer()
+
+    def findItemByObj(self, obj):
+        for item in self.iterItems():
+            print("Name:", item.data(NAME_ROLE))
+            if item.data(OBJECT_ROLE) == obj:
+                return item
+
+    def iterItems(self, parent: QModelIndex = QModelIndex()):
+        def recurse(parent):
+            for row in range(self.rowCount(parent)):
+                childIndex = self.index(row, 0, parent)
+                yield childIndex
+                child = self.objByIndex(childIndex)
+                if child.children():
+                    yield from recurse(childIndex)
+
+        yield from recurse(parent)
 
     def index(self, row: int, column: int, parent: QModelIndex = ...) -> QModelIndex:
         if not self.hasIndex(row, column, parent):
@@ -92,7 +185,7 @@ class StandardTable(QAbstractItemModel):
 class DetailedInfoTable(StandardTable):
     valueChangeFailed = pyqtSignal(['QString'])
 
-    def __init__(self, mainObj=None, package=None):
+    def __init__(self, mainObj=None, package: Package = None):
         super(DetailedInfoTable, self).__init__(COLUMNS_IN_DETAILED_INFO)
         self.mainObj = mainObj
         self.package = package
@@ -164,20 +257,30 @@ class StandardItem(QObject):
 
 
 class DetailedInfoItem(StandardItem):
-    def __init__(self, obj, name, parent=None, masterObj=None, package=None):
+    def __init__(self, obj, name, parent=None, masterObj=None, package: Package = None):
         super().__init__(obj, name, parent)
         self.dataValueHidden = False
         self.masterObj = masterObj
         self.package = package
+        self.isLink = self._isLink()
         if masterObj or parent:
             self.parentObj = self.masterObj if self.masterObj else self.parent().obj
             self.populate()
+
+    def _isLink(self):
+        if self.package and isinstance(self.obj, AASReference):
+            try:
+                self.obj.resolve(self.package.objStore)
+                return True
+            except (KeyError, NotImplementedError) as e:
+                print(e)
+        return False
 
     def data(self, role, column=VALUE_COLUMN):
         if role == Qt.ToolTipRole:
             return getAttrDoc(self.objName, self.parentObj.__init__.__doc__)
         if role == NAME_ROLE:
-            return self.objName
+            return self.objectName
         if role == OBJECT_ROLE:
             return self.obj
         if role == PACKAGE_ROLE:
@@ -218,7 +321,9 @@ class DetailedInfoItem(StandardItem):
         if column == ATTRIBUTE_COLUMN:
             if not isinstance(self.parentObj, dict):
                 font.setBold(True)
-            if isinstance(self.obj, Reference):
+            return font
+        if column == VALUE_COLUMN:
+            if self.isLink:
                 font.setUnderline(True)
             return font
         return QVariant()
@@ -280,7 +385,8 @@ class DetailedInfoItem(StandardItem):
                 DetailedInfoItem(sub_item_obj, sub_item_attr, self, package=self.package)
         elif isinstance(self.obj, (set, list, tuple, NamespaceSet)):
             for i, sub_item_obj in enumerate(self.obj):
-                DetailedInfoItem(sub_item_obj, f"{sub_item_obj.__class__.__name__} {i}", self, package=self.package)
+                DetailedInfoItem(sub_item_obj, f"{sub_item_obj.__class__.__name__} {i}", self,
+                                 package=self.package)
         else:
             for sub_item_attr in getAttrs4detailInfo(self.obj):
                 DetailedInfoItem(getattr(self.obj, sub_item_attr), sub_item_attr, self,
@@ -298,7 +404,7 @@ class PackTreeViewItem(StandardItem):
 
     def data(self, role):
         if role == NAME_ROLE:
-            return self.objName
+            return self.objectName
         if role == OBJECT_ROLE:
             return self.obj
         if role == PACKAGE_ROLE:
@@ -326,57 +432,3 @@ class PackTreeViewItem(StandardItem):
                             PackTreeViewItem(obj=i, parent=parent)
         except (KeyError, NotImplementedError) as e:
             print(e)
-
-
-class Package:
-    def __init__(self, objStore=None):
-        self.objStore = objStore if objStore else DictObjectStore()
-
-    @property
-    def shells(self):
-        for obj in self.objStore:
-            if isinstance(obj, AssetAdministrationShell):
-                yield obj
-
-    @property
-    def assets(self):
-        for obj in self.objStore:
-            if isinstance(obj, Asset):
-                yield obj
-
-    @property
-    def submodels(self):
-        for obj in self.objStore:
-            if isinstance(obj, Submodel):
-                yield obj
-
-    @property
-    def concept_descriptions(self):
-        for obj in self.objStore:
-            if isinstance(obj, ConceptDescription):
-                yield obj
-
-    # @property
-    # def others(self):
-    #     for obj in self.objStore:
-    #         if not isinstance(obj, (AssetAdministrationShell, Asset, Submodel, ConceptDescription)):
-    #             yield obj
-
-    def add(self, obj):
-        self.objStore.add(obj)
-
-    @property
-    def numOfShells(self):
-        return len(tuple(self.shells))
-
-    @property
-    def numOfAssets(self):
-        return len(tuple(self.assets))
-
-    @property
-    def numOfSubmodels(self):
-        return len(tuple(self.submodels))
-
-    @property
-    def numOfConceptDescriptions(self):
-        return len(tuple(self.concept_descriptions))
