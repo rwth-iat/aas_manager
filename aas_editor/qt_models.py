@@ -286,7 +286,9 @@ class DetailedInfoItem(StandardItem):
         if role == PACKAGE_ROLE:
             return self.package
         if role == Qt.BackgroundRole:
-            return self._getColor()
+            return self._getBgColor()
+        if role == Qt.ForegroundRole:
+            return self._getFgColor(column)
         if role == Qt.FontRole:
             return self._getFont(column)
         if role == Qt.DisplayRole:
@@ -301,7 +303,7 @@ class DetailedInfoItem(StandardItem):
                 return self.obj
         return QVariant()
 
-    def _getColor(self):
+    def _getBgColor(self):
         color = QColor(132, 185, 225)
         if self.masterObj:
             if self.row() % 2:
@@ -315,6 +317,12 @@ class DetailedInfoItem(StandardItem):
                 color.setAlpha(
                     260 - self.parent().children()[self.row() - 1].data(Qt.BackgroundRole).alpha())
         return color
+
+    def _getFgColor(self, column):
+        if column == VALUE_COLUMN:
+            if self.isLink:
+                return QColor(26, 13, 171)
+        return QVariant()
 
     def _getFont(self, column):
         font = QFont()
