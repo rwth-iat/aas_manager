@@ -2,7 +2,7 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal, QModelIndex
 from PyQt5.QtGui import QMouseEvent, QKeySequence
 from PyQt5.QtWidgets import QTreeView, QTabWidget, QWidget, QLineEdit, QLabel, QMenu, QSizePolicy, \
-    QFrame, QAbstractScrollArea, QGridLayout, QVBoxLayout, QMessageBox, QDialog
+    QFrame, QAbstractScrollArea, QGridLayout, QVBoxLayout, QMessageBox, QDialog, QShortcut
 from PyQt5.Qt import Qt
 
 from aas_editor.dialogs import AddDescriptionDialog
@@ -20,9 +20,10 @@ class TreeView(QTreeView):
         super(TreeView, self).__init__(parent)
 
     def mousePressEvent(self, e: QMouseEvent) -> None:
-        super(TreeView, self).mousePressEvent(e)
         if e.button() == Qt.MiddleButton:
-            self.wheelClicked.emit(self.currentIndex())
+            self.wheelClicked.emit(self.indexAt(e.pos()))
+        else:
+            super(TreeView, self).mousePressEvent(e)
 
 
 class PackTreeView(TreeView):
@@ -30,7 +31,7 @@ class PackTreeView(TreeView):
     __instance = None
 
     @staticmethod
-    def instance():
+    def instance() -> 'PackTreeView':
         """Instance access method"""
         if PackTreeView.__instance is None:
             PackTreeView()
@@ -45,28 +46,32 @@ class PackTreeView(TreeView):
 
 
 class TabWidget(QTabWidget):
-    def __init__(self, parent: QWidget = None, packTreeView: TreeView = None):
+    def __init__(self, parent: QWidget = None):
         super(TabWidget, self).__init__(parent)
         self.packTreeView = PackTreeView.instance()
+        # redefine shortcut here so that this works from everywhere
+        self.shortcutNextTab = QShortcut(QKeySequence(QKeySequence.NextChild), self)
         self.buildHandlers()
 
     def buildHandlers(self):
         self.tabCloseRequested.connect(self.removeTab)
+        self.currentChanged.connect(lambda i: self.packTreeView.setCurrentIndex(self.widget(i).packItem if self.count() else QModelIndex()))
+        self.shortcutNextTab.activated.connect(lambda: self.setCurrentIndex((self.count()//(self.currentIndex()+2)*(self.currentIndex()+1))))
 
-    def openPackItemTab(self, packItem: QModelIndex, newTab: bool = True, setCurrent: bool = True):
+    def openPackItemTab(self, packItem: QModelIndex, newTab: bool = True, setCurrent: bool = True) -> int:
         if newTab or not self.count():
-            self.addPackItemTab(packItem, setCurrent)
+            return self._addPackItemTab(packItem, setCurrent)
         else:
             currTab = self.currentWidget()
             currTab.openNewItem(packItem)
+            return self.currentIndex()
 
-    def addPackItemTab(self, packItem: QModelIndex, setCurrent: bool = True, tabName: str = "") -> int:
+    def _addPackItemTab(self, packItem: QModelIndex, setCurrent: bool = True) -> int:
         tab = Tab(packItem, parent=self)
-        if not tabName:
-            tabName = packItem.data(NAME_ROLE)
-        tabIndex = self.addTab(tab, tabName)
+        tabIndex = self.addTab(tab, tab.objectName)
         if setCurrent:
             self.setCurrentWidget(tab)
+            self.packTreeView.setCurrentIndex(packItem)
         return tabIndex
 
     def isTabOpen(self, tabName):
@@ -90,40 +95,51 @@ class TabWidget(QTabWidget):
         super(TabWidget, self).removeTab(index)
 
 
-class Tab(QWidget):
+class Tab(QWidget):# todo change current if change tab
     def __init__(self, packItem=QModelIndex(), parent: TabWidget = None):
         super(Tab, self).__init__(parent)
+        self.packItem = packItem
+        self.tabWidget = self.parent()
         self.packTreeView = PackTreeView.instance()
         self.pathLabel = QLineEdit(self)
         self.pathLabel.setReadOnly(True)
         self.descrLabel = QLabel(self)
         self.detailInfoMenu = QMenu(self)
         self.detailInfoTreeView = TreeView(self)
-        self.openNewItem(packItem)
+        self.openNewItem(self.packItem)
         self._initLayout()
         self.buildHandlers()
+
+    @property
+    def objectName(self) -> str:
+        return self.packItem.data(NAME_ROLE)
 
     def buildHandlers(self):
         self.detailInfoTreeView.expanded.connect(self.detailedInfoModel.hideRowVal)
         self.detailInfoTreeView.collapsed.connect(self.detailedInfoModel.showRowVal)
-        self.detailedInfoModel.valueChangeFailed.connect(self.itemDataChangeFailed) # todo find out what if new item is opened
-        self.detailInfoTreeView.selectionModel().currentChanged.connect(self.showDetailInfoItemDoc)
-        self.detailInfoTreeView.selectionModel().currentChanged.connect(self.updateDetailInfoItemMenu)
         self.detailInfoTreeView.customContextMenuRequested.connect(self.openDetailInfoItemMenu)
         self.detailInfoTreeView.setItemDelegate(QComboBoxEnumDelegate())
         self.detailInfoTreeView.clicked.connect(self.openRefTab)
         self.detailInfoTreeView.wheelClicked.connect(lambda refItem: self.openRefTab(refItem, newTab=True, setCurrent=False))
 
+    def buildHandlersForNewItem(self):
+        self.detailedInfoModel.valueChangeFailed.connect(self.itemDataChangeFailed) # todo find out what if new item is opened
+        self.detailInfoTreeView.selectionModel().currentChanged.connect(self.showDetailInfoItemDoc)
+        self.detailInfoTreeView.selectionModel().currentChanged.connect(self.updateDetailInfoItemMenu)
+
     def openNewItem(self, packItem):
         self._initTreeView(packItem)
         self.pathLabel.setText(getTreeItemPath(packItem))
+        self.packItem = packItem
+        self.tabWidget.setTabText(self.tabWidget.indexOf(self), self.objectName)
+        self.buildHandlersForNewItem()
 
-    def openRefTab(self, detailInfoItem: QModelIndex, newTab=False,setCurrent=True):
+    def openRefTab(self, detailInfoItem: QModelIndex, newTab=False, setCurrent=True):
         item = self.detailedInfoModel.objByIndex(detailInfoItem)
         if detailInfoItem.column() == VALUE_COLUMN and item.isLink:
             obj = item.obj.resolve(item.package.objStore)
-            linkedPackItem = self.parent().parent().packTreeView.model().findItemByObj(obj)
-            self.parent().parent().openPackItemTab(linkedPackItem, newTab, setCurrent)
+            linkedPackItem = self.tabWidget.packTreeView.model().findItemByObj(obj)
+            self.tabWidget.openPackItemTab(linkedPackItem, newTab, setCurrent)
 
     def showDetailInfoItemDoc(self, detailInfoItem: QModelIndex):
         self.descrLabel.setText(detailInfoItem.data(Qt.ToolTipRole))
