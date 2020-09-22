@@ -23,9 +23,17 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.tabWidget.addTab(Tab(parent=self.tabWidget), "Welcome")
 
+        self.initToolbar()
         self.packMenu = QMenu(self.packItemsTreeView)
         self.detailInfoMenu = QMenu()
         self.buildHandlers()
+
+    def initToolbar(self):
+        backwardAct = QAction(QIcon.fromTheme("go-previous"), "Back", self)
+        forwardAct = QAction(QIcon.fromTheme("go-next"), "Forward", self)
+        self.toolBar.addAction(backwardAct)
+        self.toolBar.addAction(forwardAct)
+
 
     def importTestPack(self, objStore):
         self.addPack("TestPackage", objStore)
@@ -43,17 +51,13 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             yield from recurse(root)
 
     def buildHandlers(self):
-        # self.packItemsTreeView.selectionModel().currentChanged.connect(self.openPackItem)
-        self.packItemsTreeView.doubleClicked.connect(self.tabWidget.openPackItemTab)
+        self.packItemsTreeView.selectionModel().currentChanged.connect(lambda packItem: self.tabWidget.openPackItemTab(packItem, newTab=False))
         self.packItemsTreeView.wheelClicked.connect(lambda packItem: self.tabWidget.openPackItemTab(packItem, setCurrent=False))
-        # self.tabWidget.tabCloseRequested.connect(self.tabWidget.removeTab)
-        self.packItemsTreeView.selectionModel().currentChanged.connect(
-            self.updatePackItemContextMenu)
+        self.packItemsTreeView.selectionModel().currentChanged.connect(self.updatePackItemContextMenu)
         self.packItemsTreeView.customContextMenuRequested.connect(self.openPackItemMenu)
 
         self.actionLight.triggered.connect(lambda: toggleTheme("light"))
         self.actionDark.triggered.connect(lambda: toggleTheme("dark"))
-
 
     def updatePackItemContextMenu(self, index):
         self.packMenu.clear()
