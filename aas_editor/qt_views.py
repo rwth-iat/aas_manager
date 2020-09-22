@@ -122,7 +122,7 @@ class Tab(QWidget):# todo change current if change tab
         self.descrLabel = QLabel(self)
         self.detailInfoMenu = QMenu(self)
         self.detailInfoTreeView = TreeView(self)
-        self.packItem = QModelIndex()
+        self.packItem: QModelIndex = None
         self.prevItems = []
         self.nextItems = []
         self.openNewItem(packItem)
@@ -151,7 +151,7 @@ class Tab(QWidget):# todo change current if change tab
 
     def openNewItem(self, packItem):
         if not packItem == self.packItem:
-            if self.packItem.isValid():
+            if self .packItem and self.packItem.isValid():
                 self.prevItems.append(self.packItem)
             self.nextItems.clear()
             self._openNewItem(packItem)

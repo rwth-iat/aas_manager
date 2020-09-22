@@ -29,15 +29,17 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.buildHandlers()
 
     def initToolbar(self):
-        self.backwardAct = QAction(QIcon.fromTheme("go-previous"), "Back", self)
-        self.backwardAct.setDisabled(True)
-        self.backwardAct.triggered.connect(self.tabWidget.openPrevItem)
+        self.backAct = QAction(QIcon.fromTheme("go-previous"), "Back", self)
+        self.backAct.setDisabled(True)
+        self.backAct.setShortcut(QKeySequence.Back)
+        self.backAct.triggered.connect(self.tabWidget.openPrevItem)
 
         self.forwardAct = QAction(QIcon.fromTheme("go-next"), "Forward", self)
         self.forwardAct.setDisabled(True)
+        self.forwardAct.setShortcut(QKeySequence.Forward)
         self.forwardAct.triggered.connect(self.tabWidget.openNextItem)
 
-        self.toolBar.addAction(self.backwardAct)
+        self.toolBar.addAction(self.backAct)
         self.toolBar.addAction(self.forwardAct)
 
 
