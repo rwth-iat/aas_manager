@@ -12,7 +12,7 @@ from aas.model.provider import *
 from aas.model.submodel import *
 
 from .settings import ATTRS_IN_PACKAGE_TREEVIEW
-from .util import getAttrs4detailInfo, simplifyInfo, getDescription, getAttrDoc
+from .util import getAttrs4detailInfo, simplifyInfo, getDescription, getAttrDoc, getAttrs
 
 PACKAGE_ROLE = 1001
 NAME_ROLE = 1002
@@ -56,11 +56,11 @@ class Package:
             if isinstance(obj, ConceptDescription):
                 yield obj
 
-    # @property
-    # def others(self):
-    #     for obj in self.objStore:
-    #         if not isinstance(obj, (AssetAdministrationShell, Asset, Submodel, ConceptDescription)):
-    #             yield obj
+    @property
+    def others(self):
+        for obj in self.objStore:
+            if not isinstance(obj, (AssetAdministrationShell, Asset, Submodel, ConceptDescription)):
+                yield obj
 
     def add(self, obj):
         self.objStore.add(obj)
@@ -428,9 +428,8 @@ class PackTreeViewItem(StandardItem):
         self.package = a0.data(PACKAGE_ROLE)
 
     def populate(self):
-        # todo fix
+        # todo make populate of PackTreeViewItem smarter (may be with typing check)
         try:
-            # package and standard populate
             for attr in ATTRS_IN_PACKAGE_TREEVIEW:
                 if hasattr(self.obj, attr):
                     attr_obj = getattr(self.obj, attr)
@@ -438,5 +437,12 @@ class PackTreeViewItem(StandardItem):
                     if isinstance(attr_obj, collections.Iterable):
                         for i in attr_obj:
                             PackTreeViewItem(obj=i, parent=parent)
+            for attr in ("submodel_element",):
+                if hasattr(self.obj, attr):
+                    attr_obj = getattr(self.obj, attr)
+                    if attr_obj:
+                        for i in attr_obj:
+                            PackTreeViewItem(obj=i, parent=self)
+
         except (KeyError, NotImplementedError) as e:
             print(e)
