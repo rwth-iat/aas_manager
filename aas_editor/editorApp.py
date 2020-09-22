@@ -16,6 +16,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
         toggleTheme(PREFERED_THEME)
+        self.initToolbar()
 
         self.packTreeViewModel = StandardTable()
         self.packItemsTreeView.setHeaderHidden(True)
@@ -23,16 +24,21 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.tabWidget.addTab(Tab(parent=self.tabWidget), "Welcome")
 
-        self.initToolbar()
         self.packMenu = QMenu(self.packItemsTreeView)
         self.detailInfoMenu = QMenu()
         self.buildHandlers()
 
     def initToolbar(self):
-        backwardAct = QAction(QIcon.fromTheme("go-previous"), "Back", self)
-        forwardAct = QAction(QIcon.fromTheme("go-next"), "Forward", self)
-        self.toolBar.addAction(backwardAct)
-        self.toolBar.addAction(forwardAct)
+        self.backwardAct = QAction(QIcon.fromTheme("go-previous"), "Back", self)
+        self.backwardAct.setDisabled(True)
+        self.backwardAct.triggered.connect(self.tabWidget.openPrevItem)
+
+        self.forwardAct = QAction(QIcon.fromTheme("go-next"), "Forward", self)
+        self.forwardAct.setDisabled(True)
+        self.forwardAct.triggered.connect(self.tabWidget.openNextItem)
+
+        self.toolBar.addAction(self.backwardAct)
+        self.toolBar.addAction(self.forwardAct)
 
 
     def importTestPack(self, objStore):
