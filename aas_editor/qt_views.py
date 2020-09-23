@@ -47,22 +47,32 @@ class PackTreeView(TreeView):
 
 
 class TabWidget(QTabWidget):
+    # signal for changing current item in packet treeview
+    currItemChanged = pyqtSignal(['QModelIndex'])
+
     def __init__(self, parent: QWidget = None):
         super(TabWidget, self).__init__(parent)
-        self.packTreeView = PackTreeView.instance()
-        self.app = self.window()
+        # self.packTreeView = PackTreeView.instance()
+        # self.app = self.window()
         # redefine shortcut here so that this works from everywhere
         self.shortcutNextTab = QShortcut(QKeySequence(QKeySequence.NextChild), self)
         self.buildHandlers()
 
     def buildHandlers(self):
         self.tabCloseRequested.connect(self.removeTab)
+        self.currentChanged.connect(lambda: self.currItemChanged.emit())
         self.currentChanged.connect(self._currTabChanged)
         self.shortcutNextTab.activated.connect(lambda: self.setCurrentIndex((self.count()//(self.currentIndex()+2)*(self.currentIndex()+1))))
 
+    def _currentChanged(self, index):
+        currTab: Tab = self.widget(index)
+        currTab.updateActions()
+        self.currItemChanged.emit()
+
+
     def _currTabChanged(self, index):
-        currTab = self.widget(index)
-        currTab.checkActions()
+        currTab: Tab = self.widget(index)
+        currTab.updateActions()
         if self.count():
             self.packTreeView.setCurrentIndex(self.widget(index).packItem)
         else:
@@ -74,27 +84,20 @@ class TabWidget(QTabWidget):
     def openPrevItem(self):
         self.currentWidget().openPrevItem()
 
-    def openPackItemTab(self, packItem: QModelIndex, newTab: bool = True, setCurrent: bool = True) -> int:
+    def openPackItemTab(self, packItem: QModelIndex = QModelIndex(), newTab: bool = True, setCurrent: bool = True) -> int:
         if newTab or not self.count():
-            return self._addPackItemTab(packItem, setCurrent)
+            return self.addPackItemTab(packItem, setCurrent)
         else:
-            currTab = self.currentWidget()
-            currTab.openNewItem(packItem)
+            self.currentWidget().openNewItem(packItem)
             return self.currentIndex()
 
-    def _addPackItemTab(self, packItem: QModelIndex, setCurrent: bool = True) -> int:
+    def addPackItemTab(self, packItem: QModelIndex, setCurrent: bool = True) -> int:
         tab = Tab(packItem, parent=self)
         tabIndex = self.addTab(tab, tab.objectName)
         if setCurrent:
             self.setCurrentWidget(tab)
             self.packTreeView.setCurrentIndex(packItem)
         return tabIndex
-
-    def isTabOpen(self, tabName):
-        for index in range(self.count()):
-            if self.tabText(index) == tabName:
-                return True
-        return False
 
     def setCurrentTab(self, tabName):
         for index in range(self.count()):
@@ -117,12 +120,13 @@ class Tab(QWidget):# todo change current if change tab
         self.app: 'EditorApp' = self.window()
         self.tabWidget: TabWidget = self.app.tabWidget
         self.packTreeView: PackTreeView = PackTreeView.instance()
-        self.pathLabel = QLineEdit(self)
-        self.pathLabel.setReadOnly(True)
+        self.pathLine: QLineEdit = QLineEdit(self)
+        self.pathLine.setReadOnly(True)
         self.descrLabel = QLabel(self)
         self.detailInfoMenu = QMenu(self)
         self.detailInfoTreeView = TreeView(self)
-        self.packItem: QModelIndex = None
+        self.detailedInfoModel = DetailedInfoTable()
+        self.packItem: QModelIndex = QModelIndex()
         self.prevItems = []
         self.nextItems = []
         self.openNewItem(packItem)
@@ -145,13 +149,13 @@ class Tab(QWidget):# todo change current if change tab
         self.detailInfoTreeView.wheelClicked.connect(lambda refItem: self.openRefTab(refItem, newTab=True, setCurrent=False))
 
     def buildHandlersForNewItem(self):
-        self.detailedInfoModel.valueChangeFailed.connect(self.itemDataChangeFailed) # todo find out what if new item is opened
+        self.detailedInfoModel.valueChangeFailed.connect(self.itemDataChangeFailed)
         self.detailInfoTreeView.selectionModel().currentChanged.connect(self.showDetailInfoItemDoc)
         self.detailInfoTreeView.selectionModel().currentChanged.connect(self.updateDetailInfoItemMenu)
 
     def openNewItem(self, packItem):
         if not packItem == self.packItem:
-            if self .packItem and self.packItem.isValid():
+            if self.packItem.isValid():
                 self.prevItems.append(self.packItem)
             self.nextItems.clear()
             self._openNewItem(packItem)
@@ -171,24 +175,22 @@ class Tab(QWidget):# todo change current if change tab
     def _openNewItem(self, packItem):
         self._initTreeView(packItem)
         self.packItem = packItem
-        self.pathLabel.setText(getTreeItemPath(packItem))
+        self.pathLine.setText(getTreeItemPath(packItem))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self), self.objectName)
         self.buildHandlersForNewItem()
         if self.isCurrent():
-            self.checkActions()
+            self.updateActions()
 
-    def checkActions(self):
-        # self.app.forwardAct.setEnabled(True) if self.nextItems else False
-        # self.app.backwardAct.setEnabled(True) if self.prevItems else False
+    def updateActions(self):
         if self.nextItems:
             self.app.forwardAct.setEnabled(True)
         else:
             self.app.forwardAct.setDisabled(True)
 
         if self.prevItems:
-            self.app.backwardAct.setEnabled(True)
+            self.app.backAct.setEnabled(True)
         else:
-            self.app.backwardAct.setDisabled(True)
+            self.app.backAct.setDisabled(True)
 
     def openRefTab(self, detailInfoItem: QModelIndex, newTab=False, setCurrent=True):
         item = self.detailedInfoModel.objByIndex(detailInfoItem)
@@ -258,5 +260,5 @@ class Tab(QWidget):# todo change current if change tab
         self.gridLayout.addWidget(self.detailInfoTreeView, 0, 0, 1, 1)
         self.verticalLayout = QVBoxLayout(self)
         self.verticalLayout.setObjectName("verticalLayout")
-        self.verticalLayout.addWidget(self.pathLabel)
+        self.verticalLayout.addWidget(self.pathLine)
         self.verticalLayout.addLayout(self.gridLayout)
