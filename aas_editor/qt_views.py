@@ -1,9 +1,9 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal, QModelIndex
-from PyQt5.QtGui import QMouseEvent, QKeySequence
+from PyQt5.QtGui import QMouseEvent, QKeySequence, QIcon
 from PyQt5.QtWidgets import QTreeView, QTabWidget, QWidget, QLineEdit, QLabel, QMenu, QSizePolicy, \
     QFrame, QAbstractScrollArea, QGridLayout, QVBoxLayout, QMessageBox, QDialog, QShortcut, \
-    QApplication
+    QApplication, QAction
 from PyQt5.Qt import Qt
 
 from aas_editor.dialogs import AddDescriptionDialog
@@ -52,51 +52,56 @@ class TabWidget(QTabWidget):
 
     def __init__(self, parent: QWidget = None):
         super(TabWidget, self).__init__(parent)
-        # self.packTreeView = PackTreeView.instance()
-        # self.app = self.window()
         # redefine shortcut here so that this works from everywhere
         self.shortcutNextTab = QShortcut(QKeySequence(QKeySequence.NextChild), self)
+        self.backAct = QAction(QIcon.fromTheme("go-previous"), "Back", self)
+        self.forwardAct = QAction(QIcon.fromTheme("go-next"), "Forward", self)
+        self._setupActions()
         self.buildHandlers()
+
+    def _setupActions(self):
+        self.backAct.setDisabled(True)
+        self.backAct.setShortcut(QKeySequence.Back)
+        self.backAct.setToolTip(f"Go back ({self.backAct.shortcut().toString()})")
+
+        self.forwardAct.setDisabled(True)
+        self.forwardAct.setShortcut(QKeySequence.Forward)
+        self.forwardAct.setToolTip(f"Go forward ({self.backAct.shortcut().toString()})")
 
     def buildHandlers(self):
         self.tabCloseRequested.connect(self.removeTab)
-        self.currentChanged.connect(lambda: self.currItemChanged.emit())
-        self.currentChanged.connect(self._currTabChanged)
-        self.shortcutNextTab.activated.connect(lambda: self.setCurrentIndex((self.count()//(self.currentIndex()+2)*(self.currentIndex()+1))))
+        self.currentChanged.connect(self._currentChanged)
+        self.currItemChanged.connect(self._updateActions)
+        self.backAct.triggered.connect(lambda: self.currentWidget().openNextItem())
+        self.forwardAct.triggered.connect(lambda: self.currentWidget().openPrevItem())
+        self.shortcutNextTab.activated.connect(self._switch2nextTab)
 
     def _currentChanged(self, index):
-        currTab: Tab = self.widget(index)
-        currTab.updateActions()
-        self.currItemChanged.emit()
+        self.currItemChanged.emit(self.widget(index).packItem)
 
+    def _switch2nextTab(self):
+        nextIndex = self.currentIndex() + 1
+        nextIndexPossible = (self.count() <= nextIndex)
+        self.setCurrentIndex(nextIndex) if nextIndexPossible else self.setCurrentIndex(0)
 
-    def _currTabChanged(self, index):
-        currTab: Tab = self.widget(index)
-        currTab.updateActions()
-        if self.count():
-            self.packTreeView.setCurrentIndex(self.widget(index).packItem)
-        else:
-            self.packTreeView.setCurrentIndex(QModelIndex())
+    def _updateActions(self):
+        tab: Tab = self.currentWidget()
+        self.forwardAct.setEnabled(True) if tab.nextItems else self.forwardAct.setDisabled(True)
+        self.backAct.setEnabled(True) if tab.prevItems else self.backAct.setDisabled(True)
 
-    def openNextItem(self):
-        self.currentWidget().openNextItem()
-
-    def openPrevItem(self):
-        self.currentWidget().openPrevItem()
-
-    def openPackItemTab(self, packItem: QModelIndex = QModelIndex(), newTab: bool = True, setCurrent: bool = True) -> int:
+    def openItem(self, packItem: QModelIndex = QModelIndex(), newTab: bool = True, setCurrent: bool = True) -> int:
         if newTab or not self.count():
-            return self.addPackItemTab(packItem, setCurrent)
+            return self.addItemTab(packItem, setCurrent)
         else:
-            self.currentWidget().openNewItem(packItem)
+            self.currentWidget().openItem(packItem)
             return self.currentIndex()
 
-    def addPackItemTab(self, packItem: QModelIndex, setCurrent: bool = True) -> int:
+    def addItemTab(self, packItem: QModelIndex, setCurrent: bool = True) -> int:
         tab = Tab(packItem, parent=self)
         tabIndex = self.addTab(tab, tab.objectName)
         if setCurrent:
             self.setCurrentWidget(tab)
-            self.packTreeView.setCurrentIndex(packItem)
+            self.currItemChanged.emit(packItem)
         return tabIndex
 
     def setCurrentTab(self, tabName):
@@ -114,11 +119,12 @@ class TabWidget(QTabWidget):
         super(TabWidget, self).removeTab(index)
 
 
-class Tab(QWidget):# todo change current if change tab
+class Tab(QWidget):
+
     def __init__(self, packItem=QModelIndex(), parent: TabWidget = None):
         super(Tab, self).__init__(parent)
-        self.app: 'EditorApp' = self.window()
-        self.tabWidget: TabWidget = self.app.tabWidget
+        # self.app: 'EditorApp' = self.window()
+        self.tabWidget: TabWidget = self.window().tabWidget
         self.packTreeView: PackTreeView = PackTreeView.instance()
         self.pathLine: QLineEdit = QLineEdit(self)
         self.pathLine.setReadOnly(True)
@@ -129,7 +135,7 @@ class Tab(QWidget):# todo change current if change tab
         self.packItem: QModelIndex = QModelIndex()
         self.prevItems = []
         self.nextItems = []
-        self.openNewItem(packItem)
+        self.openItem(packItem)
         self._initLayout()
         self.buildHandlers()
 
@@ -141,69 +147,56 @@ class Tab(QWidget):# todo change current if change tab
         return self.tabWidget.currentIndex() == self.tabWidget.indexOf(self)
 
     def buildHandlers(self):
-        self.detailInfoTreeView.expanded.connect(self.detailedInfoModel.hideRowVal)
-        self.detailInfoTreeView.collapsed.connect(self.detailedInfoModel.showRowVal)
         self.detailInfoTreeView.customContextMenuRequested.connect(self.openDetailInfoItemMenu)
         self.detailInfoTreeView.setItemDelegate(QComboBoxEnumDelegate())
-        self.detailInfoTreeView.clicked.connect(self.openRefTab)
-        self.detailInfoTreeView.wheelClicked.connect(lambda refItem: self.openRefTab(refItem, newTab=True, setCurrent=False))
+        self.detailInfoTreeView.clicked.connect(self.openRef)
+        self.detailInfoTreeView.wheelClicked.connect(lambda refItem: self.openRef(refItem, newTab=True, setCurrent=False))
 
     def buildHandlersForNewItem(self):
         self.detailedInfoModel.valueChangeFailed.connect(self.itemDataChangeFailed)
         self.detailInfoTreeView.selectionModel().currentChanged.connect(self.showDetailInfoItemDoc)
         self.detailInfoTreeView.selectionModel().currentChanged.connect(self.updateDetailInfoItemMenu)
 
-    def openNewItem(self, packItem):
+    def openItem(self, packItem):
         if not packItem == self.packItem:
+            self.nextItems.clear()
             if self.packItem.isValid():
                 self.prevItems.append(self.packItem)
-            self.nextItems.clear()
-            self._openNewItem(packItem)
+            self._openItem(packItem)
 
     def openPrevItem(self):
         if self.prevItems:
             prevItem = self.prevItems.pop()
             self.nextItems.append(self.packItem)
-            self._openNewItem(prevItem)
+            self._openItem(prevItem)
 
     def openNextItem(self):
         if self.nextItems:
             nextItem = self.nextItems.pop()
             self.prevItems.append(self.packItem)
-            self._openNewItem(nextItem)
+            self._openItem(nextItem)
 
-    def _openNewItem(self, packItem):
+    def _openItem(self, packItem):
         self._initTreeView(packItem)
         self.packItem = packItem
         self.pathLine.setText(getTreeItemPath(packItem))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self), self.objectName)
         self.buildHandlersForNewItem()
         if self.isCurrent():
-            self.updateActions()
+            self.tabWidget.currItemChanged.emit(self.packItem)
 
-    def updateActions(self):
-        if self.nextItems:
-            self.app.forwardAct.setEnabled(True)
-        else:
-            self.app.forwardAct.setDisabled(True)
-
-        if self.prevItems:
-            self.app.backAct.setEnabled(True)
-        else:
-            self.app.backAct.setDisabled(True)
-
-    def openRefTab(self, detailInfoItem: QModelIndex, newTab=False, setCurrent=True):
+    def openRef(self, detailInfoItem: QModelIndex, newTab=False, setCurrent=True): # todo reimplement search func findItemByObj
         item = self.detailedInfoModel.objByIndex(detailInfoItem)
         if detailInfoItem.column() == VALUE_COLUMN and item.isLink:
             obj = item.obj.resolve(item.package.objStore)
-            linkedPackItem = self.tabWidget.packTreeView.model().findItemByObj(obj)
-            self.tabWidget.openPackItemTab(linkedPackItem, newTab, setCurrent)
+            linkedPackItem = self.packTreeView.model().findItemByObj(obj)
+            self.tabWidget.openItem(linkedPackItem, newTab, setCurrent)
 
     def showDetailInfoItemDoc(self, detailInfoItem: QModelIndex):
         self.descrLabel.setText(detailInfoItem.data(Qt.ToolTipRole))
 
     def itemDataChangeFailed(self, msg):
-        QMessageBox.critical(self, "Error", msg)  # todo find out how to pass app, not Tab
+        QMessageBox.critical(self, "Error", msg)
 
     def updateDetailInfoItemMenu(self, index):
         self.detailInfoMenu.clear()

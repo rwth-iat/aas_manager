@@ -16,8 +16,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
         toggleTheme(PREFERED_THEME)
-        self.initActions()
-        self.connectActions()
         self.initToolbar()
 
         self.packTreeViewModel = StandardTable()
@@ -30,26 +28,11 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.detailInfoMenu = QMenu()
         self.buildHandlers()
 
-    def initActions(self):
-        self.backAct = QAction(QIcon.fromTheme("go-previous"), "Back", self)
-        self.backAct.setDisabled(True)
-        self.backAct.setShortcut(QKeySequence.Back)
-        self.backAct.setToolTip(f"Go back ({self.backAct.shortcut().toString()})")
-
-        self.forwardAct = QAction(QIcon.fromTheme("go-next"), "Forward", self)
-        self.forwardAct.setDisabled(True)
-        self.forwardAct.setShortcut(QKeySequence.Forward)
-        self.forwardAct.setToolTip(f"Go forward ({self.backAct.shortcut().toString()})")
-
-        # todo: save, open,
-
-    def connectActions(self):
-        self.backAct.triggered.connect(self.tabWidget.openPrevItem)
-        self.forwardAct.triggered.connect(self.tabWidget.openNextItem)
+        # todo: save, open , collapse all, expand all actions
 
     def initToolbar(self):
-        self.toolBar.addAction(self.backAct)
-        self.toolBar.addAction(self.forwardAct)
+        self.toolBar.addAction(self.tabWidget.backAct)
+        self.toolBar.addAction(self.tabWidget.forwardAct)
 
     def importTestPack(self, objStore):
         self.addPack("TestPackage", objStore)
@@ -67,8 +50,9 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             yield from recurse(root)
 
     def buildHandlers(self):
-        self.packItemsTreeView.selectionModel().currentChanged.connect(lambda packItem: self.tabWidget.openPackItemTab(packItem, newTab=False))
-        self.packItemsTreeView.wheelClicked.connect(lambda packItem: self.tabWidget.openPackItemTab(packItem, setCurrent=False))
+        self.tabWidget.currItemChanged.connect(self.packItemsTreeView.setCurrentIndex)
+        self.packItemsTreeView.selectionModel().currentChanged.connect(lambda packItem: self.tabWidget.openItem(packItem, newTab=False))
+        self.packItemsTreeView.wheelClicked.connect(lambda packItem: self.tabWidget.openItem(packItem, setCurrent=False))
         self.packItemsTreeView.selectionModel().currentChanged.connect(self.updatePackItemContextMenu)
         self.packItemsTreeView.customContextMenuRequested.connect(self.openPackItemMenu)
 

@@ -202,12 +202,6 @@ class DetailedInfoTable(StandardTable):
             item = DetailedInfoItem(obj, attr, masterObj=self.mainObj, package=self.package)
             self.addItem(item, QModelIndex())
 
-    def hideRowVal(self, index):
-        self.objByIndex(index).dataValueHidden = True
-
-    def showRowVal(self, index):
-        self.objByIndex(index).dataValueHidden = False
-
     def data(self, index, role):
         if not index.isValid():
             return QVariant()
@@ -259,7 +253,6 @@ class StandardItem(QObject):
 class DetailedInfoItem(StandardItem):
     def __init__(self, obj, name, parent=None, masterObj=None, package: Package = None):
         super().__init__(obj, name, parent)
-        self.dataValueHidden = False
         self.masterObj = masterObj
         self.package = package
         self.isLink = self._isLink()
@@ -294,7 +287,7 @@ class DetailedInfoItem(StandardItem):
         if role == Qt.DisplayRole:
             if column == ATTRIBUTE_COLUMN:
                 return self.objName
-            if column == VALUE_COLUMN and not self.dataValueHidden:
+            if column == VALUE_COLUMN:
                 return simplifyInfo(self.obj, self.objectName)
         if role == Qt.EditRole:
             if column == ATTRIBUTE_COLUMN:
