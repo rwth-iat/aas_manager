@@ -1,58 +1,86 @@
 from PyQt5 import QtWidgets
-from aas.model import base
+from PyQt5.QtWidgets import QLineEdit, QLabel, QComboBox, QPushButton, QVBoxLayout, QDialog, \
+    QDialogButtonBox
+
+from aas.model.aas import *
+from aas.model.base import *
+from aas.model.concept import *
+from aas.model.provider import *
+from aas.model.submodel import *
+
+from aas_editor.qt_models import Package
 
 
-class Dialog(QtWidgets.QDialog):
-    def __init__(self, parent=None):
-        QtWidgets.QDialog.__init__(self, parent)
-        self.buttonOk = QtWidgets.QPushButton('Ok', self)
-        self.buttonOk.clicked.connect(self.accept)
+class AddDialog(QDialog):
+    """Base abstract class for custom dialogs for adding data"""
+    def __init__(self, parent=None, windowTitle=""):
+        QDialog.__init__(self, parent)
+        self.setWindowTitle(windowTitle)
+        QBtn = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+        self.buttonBox = QDialogButtonBox(QBtn)
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+        self.buttonOk = self.buttonBox.button(QDialogButtonBox.Ok)
         self.buttonOk.setDisabled(True)
-        self.buttonCancel = QtWidgets.QPushButton('Cancel', self)
-        self.buttonCancel.clicked.connect(self.reject)
         self.layout = QtWidgets.QGridLayout(self)
-        self.layout.addWidget(self.buttonOk, 10, 0)
-        self.layout.addWidget(self.buttonCancel, 10, 1)
+        self.layout.addWidget(self.buttonBox, 10, 0, 1, 2)
+        self.setLayout(self.layout)
+
+    def getObj2add(self):
+        pass
 
 
-class AddPackDialog(Dialog):
+def checkIfAccepted(func):
+    """Decorator for checking if user clicked ok"""
+    def wrap(addDialog):
+        if addDialog.result() == QDialog.Accepted:
+            return func(addDialog)
+        else:
+            raise ValueError("Adding was cancelled")
+    return wrap
+
+
+class AddPackDialog(AddDialog):
     def __init__(self, parent=None):
-        Dialog.__init__(self, parent)
-        self.setWindowTitle("Add Package")
-        self.nameLabel = QtWidgets.QLabel("Package name:", self)
-        self.nameLineEdit = QtWidgets.QLineEdit(self)
+        AddDialog.__init__(self, parent, "Add Package")
+        self.nameLabel = QLabel("&Package name:", self)
+        self.nameLineEdit = QLineEdit(self)
+        self.nameLabel.setBuddy(self.nameLineEdit)
+
         self.nameLineEdit.textChanged.connect(self.validate)
         self.nameLineEdit.setFocus()
         self.layout.addWidget(self.nameLabel, 0, 0)
         self.layout.addWidget(self.nameLineEdit, 0, 1)
 
     def validate(self, nameText):
-        if nameText:
-            self.buttonOk.setDisabled(False)
-        else:
-            self.buttonOk.setDisabled(True)
+        self.buttonOk.setEnabled(True) if nameText else self.buttonOk.setDisabled(True)
+
+    @checkIfAccepted
+    def getObj2add(self):
+        return Package(name=self.nameLineEdit.text())
 
 
-class AddAssetDialog(Dialog):
-    def __init__(self, parent=None, defaultKind=base.AssetKind.INSTANCE,
-                 defaultIdType=base.IdentifierType.IRI, defaultId=""):
-        Dialog.__init__(self, parent)
-        self.setWindowTitle("Add asset")
-
-        self.kindLabel = QtWidgets.QLabel("Kind:", self)
-        self.kindComboBox = QtWidgets.QComboBox(self)
+class AddAssetDialog(AddDialog):
+    def __init__(self, parent=None, defaultKind=AssetKind.INSTANCE,
+                 defaultIdType=IdentifierType.IRI, defaultId=""):
+        AddDialog.__init__(self, parent, "Add asset")
+        self.kindLabel = QLabel("&Kind:", self)
+        self.kindComboBox = QComboBox(self)
+        self.kindLabel.setBuddy(self.kindComboBox)
         items = [str(member) for member in type(defaultKind)]
         self.kindComboBox.addItems(items)
         self.kindComboBox.setCurrentText(str(defaultKind))
 
-        self.idTypeLabel = QtWidgets.QLabel("id_type:", self)
-        self.idTypeComboBox = QtWidgets.QComboBox(self)
+        self.idTypeLabel = QLabel("id_&type:", self)
+        self.idTypeComboBox = QComboBox(self)
+        self.idTypeLabel.setBuddy(self.idTypeComboBox)
         items = [str(member) for member in type(defaultIdType)]
         self.idTypeComboBox.addItems(items)
         self.idTypeComboBox.setCurrentText(str(defaultIdType))
 
-        self.idLabel = QtWidgets.QLabel("id:", self)
-        self.idLineEdit = QtWidgets.QLineEdit(defaultId, self)
+        self.idLabel = QLabel("&id:", self)
+        self.idLineEdit = QLineEdit(defaultId, self)
+        self.idLabel.setBuddy(self.idLineEdit)
         self.idLineEdit.textChanged.connect(self.validate)
         self.idLineEdit.setFocus()
 
@@ -64,29 +92,33 @@ class AddAssetDialog(Dialog):
         self.layout.addWidget(self.idLineEdit, 2, 1)
 
     def validate(self, nameText):
-        if nameText:
-            self.buttonOk.setDisabled(False)
-        else:
-            self.buttonOk.setDisabled(True)
+        self.buttonOk.setEnabled(True) if nameText else self.buttonOk.setDisabled(True)
 
-class AddShellDialog(Dialog):
+    @checkIfAccepted
+    def getObj2add(self):
+        kind = eval(self.kindComboBox.currentText())
+        ident = Identifier(self.idLineEdit.text(), eval(self.idTypeComboBox.currentText()))
+        return Asset(kind, ident)
+
+
+class AddShellDialog(AddDialog):
     def __init__(self, parent=None, defaultIdType=base.IdentifierType.IRI, defaultId="", assetsToChoose=None):
-        Dialog.__init__(self, parent)
+        AddDialog.__init__(self, parent)
         self.setWindowTitle("Add shell")
 
-        self.idTypeLabel = QtWidgets.QLabel("id_type:", self)
-        self.idTypeComboBox = QtWidgets.QComboBox(self)
+        self.idTypeLabel = QLabel("id_type:", self)
+        self.idTypeComboBox = QComboBox(self)
         items = [str(member) for member in type(defaultIdType)]
         self.idTypeComboBox.addItems(items)
         self.idTypeComboBox.setCurrentText(str(defaultIdType))
 
-        self.idLabel = QtWidgets.QLabel("id:", self)
-        self.idLineEdit = QtWidgets.QLineEdit(defaultId, self)
+        self.idLabel = QLabel("id:", self)
+        self.idLineEdit = QLineEdit(defaultId, self)
         self.idLineEdit.textChanged.connect(self.validate)
         self.idLineEdit.setFocus()
 
-        self.assetLabel = QtWidgets.QLabel("Asset:", self)
-        self.assetComboBox = QtWidgets.QComboBox(self)
+        self.assetLabel = QLabel("Asset:", self)
+        self.assetComboBox = QComboBox(self)
         self.assetComboBox.addItems(assetsToChoose)
 
         self.layout.addWidget(self.idTypeLabel, 0, 0)
@@ -103,17 +135,17 @@ class AddShellDialog(Dialog):
             self.buttonOk.setDisabled(True)
 
 
-class AddDescriptionDialog(Dialog):
+class AddDescriptionDialog(AddDialog):
     def __init__(self, parent=None, defaultLang=""):
-        Dialog.__init__(self, parent)
+        AddDialog.__init__(self, parent)
         self.setWindowTitle("Add description")
 
-        self.langLabel = QtWidgets.QLabel("language:", self)
-        self.langLineEdit = QtWidgets.QLineEdit(defaultLang, self)
+        self.langLabel = QLabel("language:", self)
+        self.langLineEdit = QLineEdit(defaultLang, self)
         self.langLineEdit.textChanged.connect(self.validate)
 
-        self.descrLabel = QtWidgets.QLabel("description:", self)
-        self.descrLineEdit = QtWidgets.QLineEdit(self)
+        self.descrLabel = QLabel("description:", self)
+        self.descrLineEdit = QLineEdit(self)
         self.descrLineEdit.textChanged.connect(self.validate)
 
         self.layout.addWidget(self.langLabel, 0, 0)

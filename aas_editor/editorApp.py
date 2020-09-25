@@ -97,14 +97,15 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
     def addPackWithDialog(self):
         dialog = AddPackDialog(self)
         if dialog.exec_() == QDialog.Accepted:
-            self.addPack(name=dialog.nameLineEdit.text())
+            pack = dialog.getObj2add()
+            self.packTreeViewModel.addItem(PackTreeViewItem(obj=pack, objName=pack.name))
         else:
             print("Package adding cancelled")
         dialog.deleteLater()
 
     def addPack(self, name="", objStore=None):
-        pack = Package(objStore)
-        self.packTreeViewModel.addItem(PackTreeViewItem(obj=pack, objName=name), QModelIndex())
+        pack = Package(name=name, objStore=objStore)
+        self.packTreeViewModel.addItem(PackTreeViewItem(obj=pack, objName=name))
 
     def addShellWithDialog(self, index):
         dialog = None  # todo impelement AddShellDialog(self)
@@ -128,22 +129,18 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
     def addAssetWithDialog(self, index):
         dialog = AddAssetDialog(self)
         if dialog.exec_() == QDialog.Accepted:
-            kind = eval(dialog.kindComboBox.currentText())
-            identification = Identifier(dialog.idLineEdit.text(),
-                                        eval(dialog.idTypeComboBox.currentText()))
-            asset = Asset(kind, identification)
+            asset = dialog.getObj2add()
             self.addAsset(index, asset)
         else:
             print("asset adding cancelled")
         dialog.deleteLater()
 
     def addAsset(self, index, asset):
-        index.data(PACKAGE_ROLE).add(asset)
         if index.data(Qt.DisplayRole) == "assets":
-            assets = index
+            parent = index
         elif index.parent().data(Qt.DisplayRole) == "assets":
-            assets = index.parent()
-        item = self.packTreeViewModel.addItem(PackTreeViewItem(obj=asset), assets)
+            parent = index.parent()
+        item = self.packTreeViewModel.addItem(PackTreeViewItem(obj=asset), parent)
         self.packItemsTreeView.setFocus()
         self.packItemsTreeView.setCurrentIndex(item)
         print("asset added")

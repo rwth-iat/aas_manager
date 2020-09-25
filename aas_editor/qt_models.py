@@ -29,7 +29,8 @@ SUBMODEL_ATTRS = ("asset_identification_model", "bill_of_material")
 
 
 class Package:
-    def __init__(self, objStore: DictObjectStore = None):
+    def __init__(self, objStore: DictObjectStore = None, name=""):
+        self.name = name
         self.objStore = objStore if objStore else DictObjectStore()
 
     @property
@@ -116,8 +117,11 @@ class StandardTable(QAbstractItemModel):
             return QVariant()
         return self.objByIndex(index).data(role)
 
-    def addItem(self, item, parent: QModelIndex):
-        if isinstance(parent.data(OBJECT_ROLE), dict):
+    def addItem(self, item, parent: QModelIndex = QModelIndex()):
+        if isinstance(parent.parent().data(OBJECT_ROLE), Package):
+            pack: Package = self.objByIndex(parent.parent()).data(OBJECT_ROLE)
+            pack.add(item.data(OBJECT_ROLE))
+        elif isinstance(parent.data(OBJECT_ROLE), dict):
             dictionary = self.objByIndex(parent).data(OBJECT_ROLE)
             key = item.data(NAME_ROLE)
             value = item.data(OBJECT_ROLE)

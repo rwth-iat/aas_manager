@@ -59,6 +59,9 @@ class TabWidget(QTabWidget):
         self._setupActions()
         self.buildHandlers()
 
+    def currentWidget(self) -> 'Tab':
+        return super(TabWidget, self).currentWidget()
+
     def _setupActions(self):
         self.backAct.setDisabled(True)
         self.backAct.setShortcut(QKeySequence.Back)
@@ -72,12 +75,15 @@ class TabWidget(QTabWidget):
         self.tabCloseRequested.connect(self.removeTab)
         self.currentChanged.connect(self._currentChanged)
         self.currItemChanged.connect(self._updateActions)
-        self.backAct.triggered.connect(lambda: self.currentWidget().openNextItem())
-        self.forwardAct.triggered.connect(lambda: self.currentWidget().openPrevItem())
+        self.backAct.triggered.connect(lambda: self.currentWidget().openPrevItem())
+        self.forwardAct.triggered.connect(lambda: self.currentWidget().openNextItem())
         self.shortcutNextTab.activated.connect(self._switch2nextTab)
 
     def _currentChanged(self, index):
-        self.currItemChanged.emit(self.widget(index).packItem)
+        if index >= 0:
+            self.currItemChanged.emit(self.widget(index).packItem)
+        else:
+            self.currItemChanged.emit(QModelIndex())
 
     def _switch2nextTab(self):
         nextIndex = self.currentIndex() + 1
@@ -86,8 +92,9 @@ class TabWidget(QTabWidget):
 
     def _updateActions(self):
         tab: Tab = self.currentWidget()
-        self.forwardAct.setEnabled(True) if tab.nextItems else self.forwardAct.setDisabled(True)
-        self.backAct.setEnabled(True) if tab.prevItems else self.backAct.setDisabled(True)
+        if tab:
+            self.forwardAct.setEnabled(True) if tab.nextItems else self.forwardAct.setDisabled(True)
+            self.backAct.setEnabled(True) if tab.prevItems else self.backAct.setDisabled(True)
 
     def openItem(self, packItem: QModelIndex = QModelIndex(), newTab: bool = True, setCurrent: bool = True) -> int:
         if newTab or not self.count():
