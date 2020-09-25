@@ -1,9 +1,9 @@
 from PyQt5 import QtCore
-from PyQt5.QtCore import pyqtSignal, QModelIndex
-from PyQt5.QtGui import QMouseEvent, QKeySequence, QIcon
+from PyQt5.QtCore import pyqtSignal, QModelIndex, QItemSelectionModel
+from PyQt5.QtGui import QMouseEvent, QKeySequence, QIcon, QKeyEvent
 from PyQt5.QtWidgets import QTreeView, QTabWidget, QWidget, QLineEdit, QLabel, QMenu, QSizePolicy, \
     QFrame, QAbstractScrollArea, QGridLayout, QVBoxLayout, QMessageBox, QDialog, QShortcut, \
-    QApplication, QAction
+    QApplication, QAction, QAbstractItemView
 from PyQt5.Qt import Qt
 
 from aas_editor.dialogs import AddDescriptionDialog
@@ -25,6 +25,42 @@ class TreeView(QTreeView):
             self.wheelClicked.emit(self.indexAt(e.pos()))
         else:
             super(TreeView, self).mousePressEvent(e)
+
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        if event.key() == Qt.Key_Return:
+        # we captured the Enter key press, now we need to move to the next row
+            nextRow = self.currentIndex().row() + 1
+            if nextRow+1 > self.model().rowCount(self.currentIndex().parent()):
+                # we are all the way down, we can 't go any further
+                nextRow = nextRow - 1
+            if self.state() == QAbstractItemView.EditingState:
+                # if we are editing, confirm and move to the row below
+                nextIndex = self.model().index(nextRow, 0, self.currentIndex().parent())
+                self.setCurrentIndex(nextIndex)
+                self.selectionModel().select(nextIndex, QItemSelectionModel.ClearAndSelect)
+            else:
+                # if we're not editing, check if editable and start editing or expand/collapse
+                index2edit = self.model().index(self.currentIndex().row(), VALUE_COLUMN, self.currentIndex().parent())
+                if index2edit.flags() & Qt.ItemIsEditable:
+                    self.edit(index2edit)
+                else:
+                    index2fold = self.model().index(self.currentIndex().row(), 0,
+                                                    self.currentIndex().parent())
+                    if self.isExpanded(index2fold):
+                        self.collapse(index2fold)
+                    else:
+                        self.expand(index2fold)
+        else:
+            # any other key was pressed, inform base
+            super(TreeView, self).keyPressEvent(event)
+
+    def collapse(self, index: QtCore.QModelIndex) -> None:
+        newIndex = self.model().index(index.row(), 0, index.parent())
+        super(TreeView, self).collapse(newIndex)
+
+    def expand(self, index: QtCore.QModelIndex) -> None:
+        newIndex = self.model().index(index.row(), 0, index.parent())
+        super(TreeView, self).expand(newIndex)
 
 
 class PackTreeView(TreeView):
@@ -136,58 +172,53 @@ class Tab(QWidget):
         self.pathLine.setReadOnly(True)
         self.descrLabel = QLabel(self)
         self.attrsTreeView = TreeView(self)
-        self.detailedInfoModel = DetailedInfoTable()
+        self.attrsModel = DetailedInfoTable()
         self.packItem: QModelIndex = QModelIndex()
         self.prevItems = []
         self.nextItems = []
         self.openItem(packItem)
-        self.detailInfoMenu = QMenu(self)
+        self.attrsMenu = QMenu(self)
         self._initMenu()
         self._initLayout()
         self.buildHandlers()
 
 
     def _initMenu(self):
-        self.addAct = self.detailInfoMenu.addAction(
-            "&Add", lambda: self.addDescrWithDialog(self.attrsTreeView.currentIndex()))
+        self.addAct = self.attrsMenu.addAction("&Add", self.addHandler)
+        self.addAct.setStatusTip("Add item to selected")
         self.addAct.setDisabled(True)
-        self.detailInfoMenu.addAction(
-            "&Edit", lambda: self.attrsTreeView.edit(self.attrsTreeView.currentIndex()))
-        self.addAct.setDisabled(True)
-        self.detailInfoMenu.addSeparator()
-        self.detailInfoMenu.addAction(
-            "&Collapse",
-            lambda: self.attrsTreeView.collapse(self.attrsTreeView.currentIndex()))
-        self.detailInfoMenu.addAction(
-            "E&xpand",
-            lambda: self.attrsTreeView.expand(self.attrsTreeView.currentIndex()))
-        self.detailInfoMenu.addAction(
-            "Co&llapse all",
-            self.attrsTreeView.collapseAll)
-        self.detailInfoMenu.addAction(
-            "Ex&pand all",
-            self.attrsTreeView.expandAll)
-        self.detailInfoMenu.addSeparator()
-        self.detailInfoMenu.addAction(
-            "Open in new &tab",
-            lambda: self.openRef(self.attrsTreeView.currentIndex(), newTab=True, setCurrent=True))
-        self.detailInfoMenu.addAction(
-            "Open in &background tab",
-            lambda: self.openRef(self.attrsTreeView.currentIndex(), newTab=True, setCurrent=False))
+
+        self.EditAct = self.attrsMenu.addAction("&Edit", lambda: self.attrsTreeView.edit(self.attrsTreeView.currentIndex()))
+        self.EditAct.setStatusTip("Edit selected item")
+        self.EditAct.setDisabled(True)
+
+        self.attrsMenu.addSeparator()
+
+        self.collapseAct = self.attrsMenu.addAction("&Collapse", lambda: self.attrsTreeView.collapse(self.attrsTreeView.currentIndex()))
+        self.expandAct = self.attrsMenu.addAction("E&xpand", lambda: self.attrsTreeView.expand(self.attrsTreeView.currentIndex()))
+        self.collapseAllAct = self.attrsMenu.addAction("Co&llapse all", self.attrsTreeView.collapseAll)
+        self.expandAllAct = self.attrsMenu.addAction("Ex&pand all", self.attrsTreeView.expandAll)
+
+        self.attrsMenu.addSeparator()
+
+        self.openInNewTabAct = self.attrsMenu.addAction("Open in new &tab", lambda: self.openRef(self.attrsTreeView.currentIndex(), newTab=True, setCurrent=True))
+        self.openInBackgroundAct = self.attrsMenu.addAction("Open in &background tab", lambda: self.openRef(self.attrsTreeView.currentIndex(), newTab=True, setCurrent=False))
 
     def updateDetailInfoItemMenu(self, index):
-        pass
-        # self.detailInfoMenu.clear()
-        # # print("b ", self.actions())
-        # # for a in self.actions():
-        # #     self.removeAction(a)
-        # # print(self.actions())
-        #
-        # if index.data(NAME_ROLE) == "description":
+        self.addAct.setDisabled(True)
+        self.addAct.setText("Add")
+        if index.data(NAME_ROLE) == "description":
+            self.addAct.setEnabled(True)
         #     act = self.detailInfoMenu.addAction(self.tr("Add description"),
         #                                         lambda i=index: self.addDescrWithDialog(i),
         #                                         QKeySequence.New)
         #     self.addAction(act)
+
+    def addHandler(self):
+        index = self.attrsTreeView.currentIndex()
+        if index.data(NAME_ROLE) == "description":
+            self.addDescrWithDialog(index)
+
 
     @property
     def objectName(self) -> str:
@@ -203,7 +234,7 @@ class Tab(QWidget):
         self.attrsTreeView.wheelClicked.connect(lambda refItem: self.openRef(refItem, newTab=True, setCurrent=False))
 
     def buildHandlersForNewItem(self):
-        self.detailedInfoModel.valueChangeFailed.connect(self.itemDataChangeFailed)
+        self.attrsModel.valueChangeFailed.connect(self.itemDataChangeFailed)
         self.attrsTreeView.selectionModel().currentChanged.connect(self.showDetailInfoItemDoc)
         self.attrsTreeView.selectionModel().currentChanged.connect(self.updateDetailInfoItemMenu)
 
@@ -236,7 +267,7 @@ class Tab(QWidget):
             self.tabWidget.currItemChanged.emit(self.packItem)
 
     def openRef(self, detailInfoItem: QModelIndex, newTab=False, setCurrent=True): # todo reimplement search func findItemByObj
-        item = self.detailedInfoModel.objByIndex(detailInfoItem)
+        item = self.attrsModel.objByIndex(detailInfoItem)
         if detailInfoItem.column() == VALUE_COLUMN and item.isLink:
             obj = item.obj.resolve(item.package.objStore)
             linkedPackItem = self.packTreeView.model().findItemByObj(obj)
@@ -249,14 +280,14 @@ class Tab(QWidget):
         QMessageBox.critical(self, "Error", msg)
 
     def openDetailInfoItemMenu(self, point):
-        self.detailInfoMenu.exec_(self.attrsTreeView.viewport().mapToGlobal(point))
+        self.attrsMenu.exec_(self.attrsTreeView.viewport().mapToGlobal(point))
 
     def addDescrWithDialog(self, index):
         dialog = AddDescriptionDialog(self)
         if dialog.exec_() == QDialog.Accepted:
             lang = dialog.langLineEdit.text()
             descr = dialog.descrLineEdit.text()
-            self.detailedInfoModel.addItem(DetailedInfoItem(obj=descr, name=lang), index)
+            self.attrsModel.addItem(DetailedInfoItem(obj=descr, name=lang), index)
         else:
             print("Asset adding cancelled")
         dialog.deleteLater()
@@ -277,9 +308,9 @@ class Tab(QWidget):
         self.attrsTreeView.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
         self.attrsTreeView.setObjectName("attrsTreeView")
 
-        self.detailedInfoModel = DetailedInfoTable(mainObj=packItem.data(OBJECT_ROLE),
-                                                   package=packItem.data(PACKAGE_ROLE))
-        self.attrsTreeView.setModel(self.detailedInfoModel)
+        self.attrsModel = DetailedInfoTable(mainObj=packItem.data(OBJECT_ROLE),
+                                            package=packItem.data(PACKAGE_ROLE))
+        self.attrsTreeView.setModel(self.attrsModel)
         self.attrsTreeView.setColumnWidth(ATTRIBUTE_COLUMN, ATTR_COLUMN_WIDTH)
         self.attrsTreeView.setItemDelegate(QComboBoxEnumDelegate())
 
