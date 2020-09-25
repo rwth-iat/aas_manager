@@ -17,6 +17,9 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.setupUi(self)
         toggleTheme(PREFERED_THEME)
         self.initToolbar()
+        self.switch2rightTreeSC = QShortcut(QKeySequence("Ctrl+Right"), self)
+        self.switch2leftTreeSC = QShortcut(QKeySequence("Ctrl+Left"), self)
+
 
         self.packTreeViewModel = StandardTable()
         self.packItemsTreeView.setHeaderHidden(True)
@@ -58,6 +61,16 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.actionLight.triggered.connect(lambda: toggleTheme("light"))
         self.actionDark.triggered.connect(lambda: toggleTheme("dark"))
+
+        self.switch2rightTreeSC.activated.connect(self.switch2rightTree)
+        self.switch2leftTreeSC.activated.connect(self.packItemsTreeView.setFocus)
+
+    def switch2rightTree(self):
+        tab = self.tabWidget.currentWidget()
+        if not tab.detailInfoTreeView.currentIndex().isValid():
+            firstItem = tab.detailInfoTreeView.model().index(0, 0, QModelIndex())
+            tab.detailInfoTreeView.setCurrentIndex(firstItem)
+        self.tabWidget.currentWidget().detailInfoTreeView.setFocus()
 
     def updatePackItemContextMenu(self, index):
         self.packMenu.clear()
