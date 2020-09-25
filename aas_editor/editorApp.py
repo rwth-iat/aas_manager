@@ -1,16 +1,14 @@
 from . import design
 
-from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-
-from .dialogs import AddPackDialog, AddAssetDialog, AddDescriptionDialog
-from .qcomboboxenumdelegate import QComboBoxEnumDelegate
+from .dialogs import AddPackDialog, AddAssetDialog
 
 from .qt_models import *
-from.settings import *
-from .util import getTreeItemPath, toggleTheme
+from .qt_views import Tab
+from .settings import *
+from .util import toggleTheme
 
 
 class EditorApp(QMainWindow, design.Ui_MainWindow):
@@ -18,18 +16,26 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         super().__init__()
         self.setupUi(self)
         toggleTheme(PREFERED_THEME)
+        self.initToolbar()
+        self.switch2rightTreeSC = QShortcut(QKeySequence("Ctrl+Right"), self)
+        self.switch2leftTreeSC = QShortcut(QKeySequence("Ctrl+Left"), self)
+
 
         self.packTreeViewModel = StandardTable()
         self.packItemsTreeView.setHeaderHidden(True)
         self.packItemsTreeView.setModel(self.packTreeViewModel)
 
-        self.detailedInfoModel = DetailedInfoTable()
-        self.detailInfoTreeView.setModel(self.detailedInfoModel)
-        self.detailInfoTreeView.setColumnWidth(ATTRIBUTE_COLUMN, ATTR_COLUMN_WIDTH)
+        self.tabWidget.addTab(Tab(parent=self.tabWidget), "Welcome")
 
         self.packMenu = QMenu(self.packItemsTreeView)
-        self.detailInfoMenu = QMenu(self.detailInfoTreeView)
+        self.detailInfoMenu = QMenu()
         self.buildHandlers()
+
+        # todo: save, open , collapse all, expand all actions
+
+    def initToolbar(self):
+        self.toolBar.addAction(self.tabWidget.backAct)
+        self.toolBar.addAction(self.tabWidget.forwardAct)
 
     def importTestPack(self, objStore):
         self.addPack("TestPackage", objStore)
@@ -47,32 +53,24 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             yield from recurse(root)
 
     def buildHandlers(self):
-        self.packItemsTreeView.selectionModel().currentChanged.connect(self.showPackItemDetailInfo)
+        self.tabWidget.currItemChanged.connect(self.packItemsTreeView.setCurrentIndex)
+        self.packItemsTreeView.selectionModel().currentChanged.connect(lambda packItem: self.tabWidget.openItem(packItem, newTab=False))
+        self.packItemsTreeView.wheelClicked.connect(lambda packItem: self.tabWidget.openItem(packItem, setCurrent=False))
         self.packItemsTreeView.selectionModel().currentChanged.connect(self.updatePackItemContextMenu)
         self.packItemsTreeView.customContextMenuRequested.connect(self.openPackItemMenu)
 
         self.actionLight.triggered.connect(lambda: toggleTheme("light"))
         self.actionDark.triggered.connect(lambda: toggleTheme("dark"))
 
-    def showPackItemDetailInfo(self, packItem):
-        self.detailedInfoModel = DetailedInfoTable(mainObj=packItem.data(OBJECT_ROLE), package=packItem.data(PACKAGE_ROLE))
-        self.pathLabel.setText(getTreeItemPath(packItem))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), packItem.data(Qt.DisplayRole))
-        self.detailInfoTreeView.setModel(self.detailedInfoModel)
-        self.detailInfoTreeView.setItemDelegate(QComboBoxEnumDelegate())
-        self.buildHandlers4DetailTreeView()
+        self.switch2rightTreeSC.activated.connect(self.switch2rightTree)
+        self.switch2leftTreeSC.activated.connect(self.packItemsTreeView.setFocus)
 
-    def buildHandlers4DetailTreeView(self):
-        self.detailedInfoModel.valueChangeFailed.connect(self.itemDataChangeFailed)
-        self.detailInfoTreeView.expanded.connect(self.detailedInfoModel.hideRowVal)
-        self.detailInfoTreeView.collapsed.connect(self.detailedInfoModel.showRowVal)
-        self.detailInfoTreeView.selectionModel().currentChanged.connect(self.updateDetailInfoItemMenu)
-        self.detailInfoTreeView.customContextMenuRequested.connect(self.openDetailInfoItemMenu)
-        self.detailInfoTreeView.selectionModel().currentChanged.connect(self.showDetailInfoItemDoc)
-        self.detailInfoTreeView.setItemDelegate(QComboBoxEnumDelegate())
-
-    def showDetailInfoItemDoc(self, detailInfoItem):
-        self.descrLabel.setText(detailInfoItem.data(Qt.ToolTipRole))
+    def switch2rightTree(self):
+        tab: 'Tab' = self.tabWidget.currentWidget()
+        if not tab.attrsTreeView.currentIndex().isValid():
+            firstItem = tab.attrsTreeView.model().index(0, 0, QModelIndex())
+            tab.attrsTreeView.setCurrentIndex(firstItem)
+        self.tabWidget.currentWidget().attrsTreeView.setFocus()
 
     def updatePackItemContextMenu(self, index):
         self.packMenu.clear()
@@ -80,74 +78,54 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             self.packItemsTreeView.removeAction(a)
 
         if isinstance(index.data(OBJECT_ROLE), Package) or not index.isValid():
-            act = self.packMenu.addAction(self.tr("Add package"), self.addPackWithDialog, QKeySequence.New)
+            act = self.packMenu.addAction(self.tr("Add package"), self.addPackWithDialog,
+                                          QKeySequence.New)
             self.packItemsTreeView.addAction(act)
 
-        elif isinstance(index.data(OBJECT_ROLE), AssetAdministrationShell) or index.data(Qt.DisplayRole) == "shells":
-            act = self.packMenu.addAction(self.tr("Add shell"), lambda i=index: self.addShellWithDialog(i), QKeySequence.New)
+        elif isinstance(index.data(OBJECT_ROLE), AssetAdministrationShell) or index.data(
+                Qt.DisplayRole) == "shells":
+            act = self.packMenu.addAction(self.tr("Add shell"),
+                                          lambda i=index: self.addShellWithDialog(i),
+                                          QKeySequence.New)
             self.packItemsTreeView.addAction(act)
 
         elif isinstance(index.data(OBJECT_ROLE), Asset) or index.data(Qt.DisplayRole) == "assets":
-            act = self.packMenu.addAction(self.tr("Add asset"), lambda i=index: self.addAssetWithDialog(i), QKeySequence.New)
+            act = self.packMenu.addAction(self.tr("Add asset"),
+                                          lambda i=index: self.addAssetWithDialog(i),
+                                          QKeySequence.New)
             self.packItemsTreeView.addAction(act)
 
-        elif isinstance(index.data(OBJECT_ROLE), Submodel) or index.data(Qt.DisplayRole) == "submodels":
-            self.packMenu.addAction(self.tr("Add submodel")) # todo implement add submodel
+        elif isinstance(index.data(OBJECT_ROLE), Submodel) or index.data(
+                Qt.DisplayRole) == "submodels":
+            self.packMenu.addAction(self.tr("Add submodel"))  # todo implement add submodel
 
-        elif isinstance(index.data(OBJECT_ROLE), Submodel) or index.data(Qt.DisplayRole) == "concept_descriptions":
-            self.packMenu.addAction(self.tr("Add concept description"))  # todo implement add concept descr
+        elif isinstance(index.data(OBJECT_ROLE), Submodel) or index.data(
+                Qt.DisplayRole) == "concept_descriptions":
+            self.packMenu.addAction(
+                self.tr("Add concept description"))  # todo implement add concept descr
 
-    def openPackItemMenu(self, point):# todo resolve issue with action overload of ctrl+N
+    def openPackItemMenu(self, point):  # todo resolve issue with action overload of ctrl+N
         self.packMenu.exec_(self.packItemsTreeView.viewport().mapToGlobal(point))
-
-    def updateDetailInfoItemMenu(self, index):
-        self.detailInfoMenu.clear()
-        print("p ",self.packItemsTreeView.actions())
-        print("b ",self.detailInfoTreeView.actions())
-        for a in self.detailInfoTreeView.actions():
-            self.detailInfoTreeView.removeAction(a)
-        print("p ",self.packItemsTreeView.actions())
-        print(self.detailInfoTreeView.actions())
-
-        if index.data(NAME_ROLE) == "description":
-            act = self.detailInfoMenu.addAction(self.tr("Add description"), lambda i=index: self.addDescrWithDialog(i), QKeySequence.New)
-            self.detailInfoTreeView.addAction(act)
-
-    def openDetailInfoItemMenu(self, point):
-        self.detailInfoMenu.exec_(self.detailInfoTreeView.viewport().mapToGlobal(point))
-
-    def itemDataChangeFailed(self, msg):
-        QMessageBox.critical(self, "Error",msg)
-
-    def addDescrWithDialog(self, index):
-        dialog = AddDescriptionDialog(self)
-        if dialog.exec_() == QDialog.Accepted:
-            lang = dialog.langLineEdit.text()
-            descr = dialog.descrLineEdit.text()
-            self.detailedInfoModel.addItem(DetailedInfoItem(obj=descr, name=lang), index)
-        else:
-            print("Asset adding cancelled")
-        dialog.deleteLater()
 
     def addPackWithDialog(self):
         dialog = AddPackDialog(self)
         if dialog.exec_() == QDialog.Accepted:
-            self.addPack(name=dialog.nameLineEdit.text())
+            pack = dialog.getObj2add()
+            self.packTreeViewModel.addItem(PackTreeViewItem(obj=pack, objName=pack.name))
         else:
             print("Package adding cancelled")
         dialog.deleteLater()
 
     def addPack(self, name="", objStore=None):
-        pack = Package(objStore)
-        self.packTreeViewModel.addItem(PackTreeViewItem(obj=pack, objName=name), QModelIndex())
+        pack = Package(name=name, objStore=objStore)
+        self.packTreeViewModel.addItem(PackTreeViewItem(obj=pack, objName=name))
 
     def addShellWithDialog(self, index):
-        dialog = None # todo impelement AddShellDialog(self)
+        dialog = None  # todo impelement AddShellDialog(self)
         if dialog.exec_() == QDialog.Accepted:
             kind = eval(dialog.assetComboBox.currentText())
-            identification = Identifier(dialog.idLineEdit.text(), eval(dialog.idTypeComboBox.currentText()))
-            #shell = AssetAdministrationShell(asset, identification)
-            #self.addShell(index, shell)
+            identification = Identifier(dialog.idLineEdit.text(), eval(
+                dialog.idTypeComboBox.currentText()))  # shell = AssetAdministrationShell(asset, identification)  # self.addShell(index, shell)
         else:
             print("asset adding cancelled")
         dialog.deleteLater()
@@ -164,21 +142,18 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
     def addAssetWithDialog(self, index):
         dialog = AddAssetDialog(self)
         if dialog.exec_() == QDialog.Accepted:
-            kind = eval(dialog.kindComboBox.currentText())
-            identification = Identifier(dialog.idLineEdit.text(), eval(dialog.idTypeComboBox.currentText()))
-            asset = Asset(kind, identification)
+            asset = dialog.getObj2add()
             self.addAsset(index, asset)
         else:
             print("asset adding cancelled")
         dialog.deleteLater()
 
     def addAsset(self, index, asset):
-        index.data(PACKAGE_ROLE).add(asset)
         if index.data(Qt.DisplayRole) == "assets":
-            assets = index
+            parent = index
         elif index.parent().data(Qt.DisplayRole) == "assets":
-            assets = index.parent()
-        item = self.packTreeViewModel.addItem(PackTreeViewItem(obj=asset), assets)
+            parent = index.parent()
+        item = self.packTreeViewModel.addItem(PackTreeViewItem(obj=asset), parent)
         self.packItemsTreeView.setFocus()
         self.packItemsTreeView.setCurrentIndex(item)
         print("asset added")

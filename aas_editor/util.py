@@ -1,3 +1,4 @@
+import inspect
 import re
 from enum import Enum
 from typing import List
@@ -54,6 +55,16 @@ def getDescription(descriptions: dict) -> str:
             if lang in descriptions:
                 return descriptions.get(lang)
         return tuple(descriptions.values())[0]
+
+
+def getReqAttrs(objType, rmDefaultAttrs=True) -> dict:
+    """Return required attrs for init with their type"""
+    g = inspect.getfullargspec(objType.__init__)
+    annotations = g.annotations
+    if rmDefaultAttrs:
+        for i in range(len(g.defaults)):
+            annotations.popitem()
+    return annotations
 
 
 def getAttrDoc(attr: str, doc: str) -> str:
