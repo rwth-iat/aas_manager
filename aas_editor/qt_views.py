@@ -35,17 +35,16 @@ class TreeView(QTreeView):
                 nextRow = nextRow - 1
             if self.state() == QAbstractItemView.EditingState:
                 # if we are editing, confirm and move to the row below
-                nextIndex = self.model().index(nextRow, 0, self.currentIndex().parent())
+                nextIndex = self.currentIndex().siblingAtRow(nextRow)
                 self.setCurrentIndex(nextIndex)
                 self.selectionModel().select(nextIndex, QItemSelectionModel.ClearAndSelect)
             else:
                 # if we're not editing, check if editable and start editing or expand/collapse
-                index2edit = self.model().index(self.currentIndex().row(), VALUE_COLUMN, self.currentIndex().parent())
+                index2edit = self.currentIndex().siblingAtColumn(VALUE_COLUMN)
                 if index2edit.flags() & Qt.ItemIsEditable:
                     self.edit(index2edit)
                 else:
-                    index2fold = self.model().index(self.currentIndex().row(), 0,
-                                                    self.currentIndex().parent())
+                    index2fold = self.currentIndex().siblingAtColumn(0)
                     if self.isExpanded(index2fold):
                         self.collapse(index2fold)
                     else:
@@ -55,11 +54,11 @@ class TreeView(QTreeView):
             super(TreeView, self).keyPressEvent(event)
 
     def collapse(self, index: QtCore.QModelIndex) -> None:
-        newIndex = self.model().index(index.row(), 0, index.parent())
+        newIndex = index.siblingAtColumn(0)
         super(TreeView, self).collapse(newIndex)
 
     def expand(self, index: QtCore.QModelIndex) -> None:
-        newIndex = self.model().index(index.row(), 0, index.parent())
+        newIndex = index.siblingAtColumn(0)
         super(TreeView, self).expand(newIndex)
 
 
@@ -190,37 +189,51 @@ class Tab(QWidget):
         self.addAct.setStatusTip("Add item to selected")
         self.addAct.setDisabled(True)
 
-        self.EditAct = self.attrsMenu.addAction("&Edit", lambda: self.attrsTreeView.edit(self.attrsTreeView.currentIndex()))
-        self.EditAct.setStatusTip("Edit selected item")
-        self.EditAct.setDisabled(True)
+        self.editAct = self.attrsMenu.addAction("&Edit", lambda: self.attrsTreeView.edit(self.attrsTreeView.currentIndex()))
+        self.editAct.setStatusTip("Edit selected item")
+        self.editAct.setDisabled(True)
 
         self.attrsMenu.addSeparator()
 
-        self.collapseAct = self.attrsMenu.addAction("&Collapse", lambda: self.attrsTreeView.collapse(self.attrsTreeView.currentIndex()))
+        self.collapseAct = self.attrsMenu.addAction("C&ollapse", lambda: self.attrsTreeView.collapse(self.attrsTreeView.currentIndex()))
         self.expandAct = self.attrsMenu.addAction("E&xpand", lambda: self.attrsTreeView.expand(self.attrsTreeView.currentIndex()))
         self.collapseAllAct = self.attrsMenu.addAction("Co&llapse all", self.attrsTreeView.collapseAll)
         self.expandAllAct = self.attrsMenu.addAction("Ex&pand all", self.attrsTreeView.expandAll)
 
         self.attrsMenu.addSeparator()
 
-        self.openInNewTabAct = self.attrsMenu.addAction("Open in new &tab", lambda: self.openRef(self.attrsTreeView.currentIndex(), newTab=True, setCurrent=True))
-        self.openInBackgroundAct = self.attrsMenu.addAction("Open in &background tab", lambda: self.openRef(self.attrsTreeView.currentIndex(), newTab=True, setCurrent=False))
+        self.openInCurrTabAct = self.attrsMenu.addAction("Open in current ta&b", lambda: self.openRef(self.attrsTreeView.currentIndex().siblingAtColumn(VALUE_COLUMN), newTab=False))
+        self.openInNewTabAct = self.attrsMenu.addAction("Open in new &tab", lambda: self.openRef(self.attrsTreeView.currentIndex().siblingAtColumn(VALUE_COLUMN), newTab=True, setCurrent=True))
+        self.openInBackgroundAct = self.attrsMenu.addAction("Open in &background tab", lambda: self.openRef(self.attrsTreeView.currentIndex().siblingAtColumn(VALUE_COLUMN), newTab=True, setCurrent=False))
 
-    def updateDetailInfoItemMenu(self, index):
+    def updateDetailInfoItemMenu(self, index: QModelIndex):
         self.addAct.setDisabled(True)
         self.addAct.setText("Add")
         if index.data(NAME_ROLE) == "description":
             self.addAct.setEnabled(True)
-        #     act = self.detailInfoMenu.addAction(self.tr("Add description"),
-        #                                         lambda i=index: self.addDescrWithDialog(i),
-        #                                         QKeySequence.New)
-        #     self.addAction(act)
+            self.addAct.setText("Add description")
+
+        self.editAct.setDisabled(True)
+        if index.parent().isValid() and isinstance(index.parent().data(OBJECT_ROLE), dict):
+                indexEdit = index
+        else:
+            indexEdit = index.siblingAtColumn(VALUE_COLUMN)
+        if indexEdit.flags() & Qt.ItemIsEditable:
+            self.attrsTreeView.setCurrentIndex(indexEdit)
+            self.editAct.setEnabled(True)
+
+        self.openInCurrTabAct.setDisabled(True)
+        self.openInBackgroundAct.setDisabled(True)
+        self.openInNewTabAct.setDisabled(True)
+        if self.attrsTreeView.model().objByIndex(index).isLink:
+            self.openInCurrTabAct.setEnabled(True)
+            self.openInBackgroundAct.setEnabled(True)
+            self.openInNewTabAct.setEnabled(True)
 
     def addHandler(self):
         index = self.attrsTreeView.currentIndex()
         if index.data(NAME_ROLE) == "description":
             self.addDescrWithDialog(index)
-
 
     @property
     def objectName(self) -> str:
