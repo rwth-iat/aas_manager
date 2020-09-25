@@ -127,7 +127,6 @@ class TabWidget(QTabWidget):
 
 
 class Tab(QWidget):
-
     def __init__(self, packItem=QModelIndex(), parent: TabWidget = None):
         super(Tab, self).__init__(parent)
         # self.app: 'EditorApp' = self.window()
@@ -136,15 +135,59 @@ class Tab(QWidget):
         self.pathLine: QLineEdit = QLineEdit(self)
         self.pathLine.setReadOnly(True)
         self.descrLabel = QLabel(self)
-        self.detailInfoMenu = QMenu(self)
-        self.detailInfoTreeView = TreeView(self)
+        self.attrsTreeView = TreeView(self)
         self.detailedInfoModel = DetailedInfoTable()
         self.packItem: QModelIndex = QModelIndex()
         self.prevItems = []
         self.nextItems = []
         self.openItem(packItem)
+        self.detailInfoMenu = QMenu(self)
+        self._initMenu()
         self._initLayout()
         self.buildHandlers()
+
+
+    def _initMenu(self):
+        self.addAct = self.detailInfoMenu.addAction(
+            "&Add", lambda: self.addDescrWithDialog(self.attrsTreeView.currentIndex()))
+        self.addAct.setDisabled(True)
+        self.detailInfoMenu.addAction(
+            "&Edit", lambda: self.attrsTreeView.edit(self.attrsTreeView.currentIndex()))
+        self.addAct.setDisabled(True)
+        self.detailInfoMenu.addSeparator()
+        self.detailInfoMenu.addAction(
+            "&Collapse",
+            lambda: self.attrsTreeView.collapse(self.attrsTreeView.currentIndex()))
+        self.detailInfoMenu.addAction(
+            "E&xpand",
+            lambda: self.attrsTreeView.expand(self.attrsTreeView.currentIndex()))
+        self.detailInfoMenu.addAction(
+            "Co&llapse all",
+            self.attrsTreeView.collapseAll)
+        self.detailInfoMenu.addAction(
+            "Ex&pand all",
+            self.attrsTreeView.expandAll)
+        self.detailInfoMenu.addSeparator()
+        self.detailInfoMenu.addAction(
+            "Open in new &tab",
+            lambda: self.openRef(self.attrsTreeView.currentIndex(), newTab=True, setCurrent=True))
+        self.detailInfoMenu.addAction(
+            "Open in &background tab",
+            lambda: self.openRef(self.attrsTreeView.currentIndex(), newTab=True, setCurrent=False))
+
+    def updateDetailInfoItemMenu(self, index):
+        pass
+        # self.detailInfoMenu.clear()
+        # # print("b ", self.actions())
+        # # for a in self.actions():
+        # #     self.removeAction(a)
+        # # print(self.actions())
+        #
+        # if index.data(NAME_ROLE) == "description":
+        #     act = self.detailInfoMenu.addAction(self.tr("Add description"),
+        #                                         lambda i=index: self.addDescrWithDialog(i),
+        #                                         QKeySequence.New)
+        #     self.addAction(act)
 
     @property
     def objectName(self) -> str:
@@ -154,15 +197,15 @@ class Tab(QWidget):
         return self.tabWidget.currentIndex() == self.tabWidget.indexOf(self)
 
     def buildHandlers(self):
-        self.detailInfoTreeView.customContextMenuRequested.connect(self.openDetailInfoItemMenu)
-        self.detailInfoTreeView.setItemDelegate(QComboBoxEnumDelegate())
-        self.detailInfoTreeView.clicked.connect(self.openRef)
-        self.detailInfoTreeView.wheelClicked.connect(lambda refItem: self.openRef(refItem, newTab=True, setCurrent=False))
+        self.attrsTreeView.customContextMenuRequested.connect(self.openDetailInfoItemMenu)
+        self.attrsTreeView.setItemDelegate(QComboBoxEnumDelegate())
+        self.attrsTreeView.clicked.connect(self.openRef)
+        self.attrsTreeView.wheelClicked.connect(lambda refItem: self.openRef(refItem, newTab=True, setCurrent=False))
 
     def buildHandlersForNewItem(self):
         self.detailedInfoModel.valueChangeFailed.connect(self.itemDataChangeFailed)
-        self.detailInfoTreeView.selectionModel().currentChanged.connect(self.showDetailInfoItemDoc)
-        self.detailInfoTreeView.selectionModel().currentChanged.connect(self.updateDetailInfoItemMenu)
+        self.attrsTreeView.selectionModel().currentChanged.connect(self.showDetailInfoItemDoc)
+        self.attrsTreeView.selectionModel().currentChanged.connect(self.updateDetailInfoItemMenu)
 
     def openItem(self, packItem):
         if not packItem == self.packItem:
@@ -205,21 +248,8 @@ class Tab(QWidget):
     def itemDataChangeFailed(self, msg):
         QMessageBox.critical(self, "Error", msg)
 
-    def updateDetailInfoItemMenu(self, index):
-        self.detailInfoMenu.clear()
-        # print("b ", self.actions())
-        # for a in self.actions():
-        #     self.removeAction(a)
-        # print(self.actions())
-
-        if index.data(NAME_ROLE) == "description":
-            act = self.detailInfoMenu.addAction(self.tr("Add description"),
-                                                lambda i=index: self.addDescrWithDialog(i),
-                                                QKeySequence.New)
-            self.addAction(act)
-
     def openDetailInfoItemMenu(self, point):
-        self.detailInfoMenu.exec_(self.detailInfoTreeView.viewport().mapToGlobal(point))
+        self.detailInfoMenu.exec_(self.attrsTreeView.viewport().mapToGlobal(point))
 
     def addDescrWithDialog(self, index):
         dialog = AddDescriptionDialog(self)
@@ -232,32 +262,32 @@ class Tab(QWidget):
         dialog.deleteLater()
 
     def _initTreeView(self, packItem):
-        self.detailInfoTreeView.setExpandsOnDoubleClick(False)
-        self.detailInfoTreeView.setEnabled(True)
+        self.attrsTreeView.setExpandsOnDoubleClick(False)
+        self.attrsTreeView.setEnabled(True)
         sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.detailInfoTreeView.sizePolicy().hasHeightForWidth())
-        self.detailInfoTreeView.setSizePolicy(sizePolicy)
-        self.detailInfoTreeView.setMinimumSize(QtCore.QSize(429, 0))
-        self.detailInfoTreeView.setBaseSize(QtCore.QSize(429, 555))
-        self.detailInfoTreeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.detailInfoTreeView.setFrameShape(QFrame.StyledPanel)
-        self.detailInfoTreeView.setFrameShadow(QFrame.Sunken)
-        self.detailInfoTreeView.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
-        self.detailInfoTreeView.setObjectName("detailInfoTreeView")
+        sizePolicy.setHeightForWidth(self.attrsTreeView.sizePolicy().hasHeightForWidth())
+        self.attrsTreeView.setSizePolicy(sizePolicy)
+        self.attrsTreeView.setMinimumSize(QtCore.QSize(429, 0))
+        self.attrsTreeView.setBaseSize(QtCore.QSize(429, 555))
+        self.attrsTreeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.attrsTreeView.setFrameShape(QFrame.StyledPanel)
+        self.attrsTreeView.setFrameShadow(QFrame.Sunken)
+        self.attrsTreeView.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
+        self.attrsTreeView.setObjectName("attrsTreeView")
 
         self.detailedInfoModel = DetailedInfoTable(mainObj=packItem.data(OBJECT_ROLE),
                                                    package=packItem.data(PACKAGE_ROLE))
-        self.detailInfoTreeView.setModel(self.detailedInfoModel)
-        self.detailInfoTreeView.setColumnWidth(ATTRIBUTE_COLUMN, ATTR_COLUMN_WIDTH)
-        self.detailInfoTreeView.setItemDelegate(QComboBoxEnumDelegate())
+        self.attrsTreeView.setModel(self.detailedInfoModel)
+        self.attrsTreeView.setColumnWidth(ATTRIBUTE_COLUMN, ATTR_COLUMN_WIDTH)
+        self.attrsTreeView.setItemDelegate(QComboBoxEnumDelegate())
 
     def _initLayout(self):
         self.gridLayout = QGridLayout()
         self.gridLayout.setObjectName("gridLayout")
         self.gridLayout.addWidget(self.descrLabel, 1, 0, 1, 1)
-        self.gridLayout.addWidget(self.detailInfoTreeView, 0, 0, 1, 1)
+        self.gridLayout.addWidget(self.attrsTreeView, 0, 0, 1, 1)
         self.verticalLayout = QVBoxLayout(self)
         self.verticalLayout.setObjectName("verticalLayout")
         self.verticalLayout.addWidget(self.pathLine)

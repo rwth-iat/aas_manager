@@ -66,11 +66,11 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.switch2leftTreeSC.activated.connect(self.packItemsTreeView.setFocus)
 
     def switch2rightTree(self):
-        tab = self.tabWidget.currentWidget()
-        if not tab.detailInfoTreeView.currentIndex().isValid():
-            firstItem = tab.detailInfoTreeView.model().index(0, 0, QModelIndex())
-            tab.detailInfoTreeView.setCurrentIndex(firstItem)
-        self.tabWidget.currentWidget().detailInfoTreeView.setFocus()
+        tab: 'Tab' = self.tabWidget.currentWidget()
+        if not tab.attrsTreeView.currentIndex().isValid():
+            firstItem = tab.attrsTreeView.model().index(0, 0, QModelIndex())
+            tab.attrsTreeView.setCurrentIndex(firstItem)
+        self.tabWidget.currentWidget().attrsTreeView.setFocus()
 
     def updatePackItemContextMenu(self, index):
         self.packMenu.clear()
