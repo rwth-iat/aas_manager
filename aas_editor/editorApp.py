@@ -54,8 +54,8 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
     def buildHandlers(self):
         self.tabWidget.currItemChanged.connect(self.packItemsTreeView.setCurrentIndex)
-        self.packItemsTreeView.selectionModel().currentChanged.connect(lambda packItem: self.tabWidget.openItem(packItem, newTab=False))
-        self.packItemsTreeView.wheelClicked.connect(lambda packItem: self.tabWidget.openItem(packItem, setCurrent=False))
+        self.packItemsTreeView.selectionModel().currentChanged.connect(self.tabWidget.openItem)
+        self.packItemsTreeView.wheelClicked.connect(lambda packItem: self.tabWidget.openItemInNewTab(packItem, setCurrent=False))
         self.packItemsTreeView.selectionModel().currentChanged.connect(self.updatePackItemContextMenu)
         self.packItemsTreeView.customContextMenuRequested.connect(self.openPackItemMenu)
 

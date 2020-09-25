@@ -132,16 +132,19 @@ class TabWidget(QTabWidget):
             self.forwardAct.setEnabled(True) if tab.nextItems else self.forwardAct.setDisabled(True)
             self.backAct.setEnabled(True) if tab.prevItems else self.backAct.setDisabled(True)
 
-    def openItem(self, packItem: QModelIndex = QModelIndex(), newTab: bool = True, setCurrent: bool = True) -> int:
-        if newTab or not self.count():
-            return self.addItemTab(packItem, setCurrent)
+    def openItem(self, packItem: QModelIndex = QModelIndex()) -> int:
+        if not self.count():
+            return self.openItemInNewTab(packItem)
         else:
             self.currentWidget().openItem(packItem)
             return self.currentIndex()
 
-    def addItemTab(self, packItem: QModelIndex, setCurrent: bool = True) -> int:
+    def openItemInNewTab(self, packItem: QModelIndex, afterCurrent: bool = True, setCurrent: bool = True) -> int:
         tab = Tab(packItem, parent=self)
-        tabIndex = self.addTab(tab, tab.objectName)
+        if afterCurrent:
+            tabIndex = self.insertTab(self.currentIndex()+1, tab, tab.objectName)
+        else:
+            tabIndex = self.addTab(tab, tab.objectName)
         if setCurrent:
             self.setCurrentWidget(tab)
             self.currItemChanged.emit(packItem)
@@ -181,7 +184,6 @@ class Tab(QWidget):
         self._initMenu()
         self._initLayout()
         self.buildHandlers()
-
 
     def _initMenu(self):
         self.addAct = self.attrsMenu.addAction("&Add", self.addHandler)
@@ -266,12 +268,15 @@ class Tab(QWidget):
         if self.isCurrent():
             self.tabWidget.currItemChanged.emit(self.packItem)
 
-    def openRef(self, detailInfoItem: QModelIndex, newTab=False, setCurrent=True): # todo reimplement search func findItemByObj
+    def openRef(self, detailInfoItem: QModelIndex, newTab=True, setCurrent=True): # todo reimplement search func findItemByObj
         item = self.attrsModel.objByIndex(detailInfoItem)
         if detailInfoItem.column() == VALUE_COLUMN and item.isLink:
             obj = item.obj.resolve(item.package.objStore)
             linkedPackItem = self.packTreeView.model().findItemByObj(obj)
-            self.tabWidget.openItem(linkedPackItem, newTab, setCurrent)
+            if newTab:
+                self.tabWidget.openItemInNewTab(linkedPackItem, setCurrent=setCurrent)
+            else:
+                self.openItem(linkedPackItem)
 
     def showDetailInfoItemDoc(self, detailInfoItem: QModelIndex):
         self.descrLabel.setText(detailInfoItem.data(Qt.ToolTipRole))
