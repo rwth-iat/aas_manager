@@ -137,15 +137,17 @@ class AddShellDialog(AddDialog):
 
 class AddDescriptionDialog(AddDialog):
     def __init__(self, parent=None, defaultLang=""):
-        AddDialog.__init__(self, parent)
-        self.setWindowTitle("Add description")
+        AddDialog.__init__(self, parent, "Add description")
 
-        self.langLabel = QLabel("language:", self)
+        self.langLabel = QLabel("&Language:", self)
         self.langLineEdit = QLineEdit(defaultLang, self)
+        self.langLabel.setBuddy(self.langLineEdit)
         self.langLineEdit.textChanged.connect(self.validate)
+        self.langLineEdit.setFocus()
 
-        self.descrLabel = QLabel("description:", self)
+        self.descrLabel = QLabel("&Description:", self)
         self.descrLineEdit = QLineEdit(self)
+        self.descrLabel.setBuddy(self.descrLineEdit)
         self.descrLineEdit.textChanged.connect(self.validate)
 
         self.layout.addWidget(self.langLabel, 0, 0)
