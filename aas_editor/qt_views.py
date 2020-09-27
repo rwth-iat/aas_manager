@@ -305,9 +305,9 @@ class Tab(QWidget):
     def addDescrWithDialog(self, index):
         dialog = AddDescriptionDialog(self)
         if dialog.exec_() == QDialog.Accepted:
-            lang = dialog.langLineEdit.text()
-            descr = dialog.descrLineEdit.text()
-            self.attrsModel.addItem(DetailedInfoItem(obj=descr, name=lang), index)
+            descrUpdateDict = dialog.getObj2add()
+            for lang, descr in descrUpdateDict.items():
+                self.attrsModel.addItem(DetailedInfoItem(obj=descr, name=lang), index)
         else:
             print("Asset adding cancelled")
         dialog.deleteLater()

@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QLineEdit, QLabel, QComboBox, QPushButton, QVBoxLayout, QDialog, \
-    QDialogButtonBox
+    QDialogButtonBox, QGroupBox
 
 from aas.model.aas import *
 from aas.model.base import *
@@ -23,7 +23,7 @@ class AddDialog(QDialog):
         self.buttonOk = self.buttonBox.button(QDialogButtonBox.Ok)
         self.buttonOk.setDisabled(True)
         self.layout = QtWidgets.QGridLayout(self)
-        self.layout.addWidget(self.buttonBox, 10, 0, 1, 2)
+        self.layout.addWidget(self.buttonBox, 10, 0)
         self.setLayout(self.layout)
 
     def getObj2add(self):
@@ -135,35 +135,53 @@ class AddShellDialog(AddDialog):
             self.buttonOk.setDisabled(True)
 
 
-class AddDescriptionDialog(AddDialog):
-    def __init__(self, parent=None, defaultLang=""):
-        AddDialog.__init__(self, parent, "Add description")
+class DescrGroupBox(QGroupBox):
+    def __init__(self, title, parent=None, defaultLang=""):
+        super().__init__(title, parent)
+        layout = QtWidgets.QGridLayout(self)
 
         self.langLabel = QLabel("&Language:", self)
         self.langLineEdit = QLineEdit(defaultLang, self)
         self.langLabel.setBuddy(self.langLineEdit)
-        self.langLineEdit.textChanged.connect(self.validate)
         self.langLineEdit.setFocus()
 
         self.descrLabel = QLabel("&Description:", self)
         self.descrLineEdit = QLineEdit(self)
         self.descrLabel.setBuddy(self.descrLineEdit)
-        self.descrLineEdit.textChanged.connect(self.validate)
 
-        self.layout.addWidget(self.langLabel, 0, 0)
-        self.layout.addWidget(self.langLineEdit, 0, 1)
-        self.layout.addWidget(self.descrLabel, 0, 2)
-        self.layout.addWidget(self.descrLineEdit, 0, 3)
+        layout.addWidget(self.langLabel, 0, 0)
+        layout.addWidget(self.langLineEdit, 0, 1)
+        layout.addWidget(self.descrLabel, 0, 2)
+        layout.addWidget(self.descrLineEdit, 0, 3)
+        self.setLayout(layout)
 
-    def validate(self):
-        if self.langLineEdit.text() and self.descrLineEdit.text():
-            self.buttonOk.setDisabled(False)
-        else:
-            self.buttonOk.setDisabled(True)
+
+class AddDescriptionDialog(AddDialog):
+    def __init__(self, parent=None, defaultLang=""):
+        AddDialog.__init__(self, parent, "Add description")
+        self.buttonOk.setEnabled(True)
+
+        self.descrsLayout = QtWidgets.QGridLayout(self)
+        self.layout.addLayout(self.descrsLayout,0,0)
+
+        self.descrGroupBoxes = []
+        self.addDescrField()
+
+        plusDescr = QPushButton("+description", self)
+        plusDescr.clicked.connect(self.addDescrField)
+        self.layout.addWidget(plusDescr, 9, 0)
+
+    def addDescrField(self):
+        descrGroupBox = DescrGroupBox("", self)
+        self.descrGroupBoxes.append(descrGroupBox)
+        self.descrsLayout.addWidget(descrGroupBox)
 
     @checkIfAccepted
     def getObj2add(self):
-        lang = self.langLineEdit.text()
-        descr = self.descrLineEdit.text()
-        descrUpdateDict = {lang: descr}
+        descrUpdateDict = {}
+        for descrGroupBox in self.descrGroupBoxes:
+            lang = descrGroupBox.langLineEdit.text()
+            descr = descrGroupBox.descrLineEdit.text()
+            if lang and descr:
+                descrUpdateDict[lang] = descr
         return descrUpdateDict
