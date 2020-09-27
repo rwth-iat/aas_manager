@@ -152,11 +152,18 @@ class AddDescriptionDialog(AddDialog):
 
         self.layout.addWidget(self.langLabel, 0, 0)
         self.layout.addWidget(self.langLineEdit, 0, 1)
-        self.layout.addWidget(self.descrLabel, 1, 0)
-        self.layout.addWidget(self.descrLineEdit, 1, 1)
+        self.layout.addWidget(self.descrLabel, 0, 2)
+        self.layout.addWidget(self.descrLineEdit, 0, 3)
 
     def validate(self):
         if self.langLineEdit.text() and self.descrLineEdit.text():
             self.buttonOk.setDisabled(False)
         else:
             self.buttonOk.setDisabled(True)
+
+    @checkIfAccepted
+    def getObj2add(self):
+        lang = self.langLineEdit.text()
+        descr = self.descrLineEdit.text()
+        descrUpdateDict = {lang: descr}
+        return descrUpdateDict

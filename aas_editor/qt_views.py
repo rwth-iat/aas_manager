@@ -173,6 +173,8 @@ class Tab(QWidget):
         self.pathLine: QLineEdit = QLineEdit(self)
         self.pathLine.setReadOnly(True)
         self.descrLabel = QLabel(self)
+        self.descrLabel.setWordWrap(True)
+        self.descrLabel.setTextInteractionFlags(Qt.TextSelectableByMouse)
         self.attrsTreeView = TreeView(self)
         self.attrsModel = DetailedInfoTable()
         self.packItem: QModelIndex = QModelIndex()
