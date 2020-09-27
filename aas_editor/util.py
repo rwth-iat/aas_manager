@@ -68,8 +68,15 @@ def getReqAttrs(objType, rmDefaultAttrs=True) -> dict:
 
 
 def getAttrDoc(attr: str, doc: str) -> str:
+    """
+    Returns doc of specified parameter
+    :param attr: parameter of obj init
+    :param doc: doc of obj init
+    :return: doc of specified parameter
+    """
     if doc:
-        pattern = fr":param {attr}_?:(.*)"
+        doc = " ".join(doc.split())
+        pattern = fr":param {attr}_?:(.*?)(:param|:raises|TODO|$)"
         res = re.search(pattern, doc)
         if res:
             reg = res.regs[1]
