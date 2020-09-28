@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QLineEdit, QLabel, QComboBox, QPushButton, QVBoxLayout, QDialog, \
-    QDialogButtonBox, QGroupBox
+    QDialogButtonBox, QGroupBox, QCheckBox
 
 from aas.model.aas import *
 from aas.model.base import *
@@ -214,3 +214,50 @@ class AddAdministrationDialog(AddDialog):
         version = self.versionLineEdit.text()
         revision = self.revisionLineEdit.text()
         return AdministrativeInformation(version, revision if revision else None)
+
+
+class AddAASReferenceDialog(AddDialog):
+    def __init__(self, parent=None, defaultType=base.KeyElements.ASSET, defaultIdType=base.IdentifierType.IRI):
+        AddDialog.__init__(self, parent, "Add AASReference")
+
+        self.typeLabel = QLabel("&Type:", self)
+        self.typeComboBox = QComboBox(self)
+        items = [str(member) for member in type(defaultType)]
+        self.typeComboBox.addItems(items)
+        self.typeComboBox.setCurrentText(str(defaultType))
+
+        self.localLabel = QLabel("&Local:", self)
+        self.localCheckBox = QCheckBox("Local:", self)
+        self.localLabel.setBuddy(self.local)
+
+        self.valueLabel = QLabel("&Value:", self)
+        self.valueLineEdit = QLineEdit(self)
+        self.valueLabel.setBuddy(self.local)
+        self.valueLineEdit.setFocus()
+        
+        self.idTypeLabel = QLabel("id_type:", self)
+        self.idTypeComboBox = QComboBox(self)
+        items = [str(member) for member in type(defaultIdType)]
+        self.idTypeComboBox.addItems(items)
+        self.idTypeComboBox.setCurrentText(str(defaultIdType))
+
+        self.layout.addWidget(self.typeLabel, 0, 0)
+        self.layout.addWidget(self.typeComboBox, 0, 1)
+        self.layout.addWidget(self.localLabel, 1, 0)
+        self.layout.addWidget(self.localCheckBox, 1, 1)
+        self.layout.addWidget(self.valueLabel, 2, 0)
+        self.layout.addWidget(self.valueLineEdit, 2, 1)
+        self.layout.addWidget(self.idTypeLabel, 3, 0)
+        self.layout.addWidget(self.idTypeComboBox, 3, 1)
+
+    def validate(self, text):
+        self.buttonOk.setEnabled(True)
+
+    @checkIfAccepted
+    def getObj2add(self):
+        type = eval(self.typeComboBox.currentText())
+        local = self.localCheckBox.isChecked()
+        value = self.valueLineEdit.text()
+        id_type = eval(self.idTypeComboBox.currentText())
+        key=Key(type, local, value, id_type)
+        return AASReference((key,), type)
