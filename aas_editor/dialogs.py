@@ -165,14 +165,14 @@ class AddDescriptionDialog(AddDialog):
         self.layout.addLayout(self.descrsLayout,0,0)
 
         self.descrGroupBoxes = []
-        self.addDescrField()
+        self.addDescrField(defaultLang)
 
         plusDescr = QPushButton("+description", self)
         plusDescr.clicked.connect(self.addDescrField)
         self.layout.addWidget(plusDescr, 9, 0)
 
-    def addDescrField(self):
-        descrGroupBox = DescrGroupBox("", self)
+    def addDescrField(self, defaultLang):
+        descrGroupBox = DescrGroupBox("", self, defaultLang=defaultLang)
         self.descrGroupBoxes.append(descrGroupBox)
         self.descrsLayout.addWidget(descrGroupBox)
 
@@ -216,9 +216,10 @@ class AddAdministrationDialog(AddDialog):
         return AdministrativeInformation(version, revision if revision else None)
 
 
-class AddAASReferenceDialog(AddDialog):
-    def __init__(self, parent=None, defaultType=base.KeyElements.ASSET, defaultIdType=base.IdentifierType.IRI):
-        AddDialog.__init__(self, parent, "Add AASReference")
+class KeyGroupBox(QGroupBox):
+    def __init__(self, title, parent=None, defaultType=base.KeyElements.ASSET, defaultIdType=base.IdentifierType.IRI):
+        super().__init__(title, parent)
+        layout = QtWidgets.QGridLayout(self)
 
         self.typeLabel = QLabel("&Type:", self)
         self.typeComboBox = QComboBox(self)
@@ -228,36 +229,67 @@ class AddAASReferenceDialog(AddDialog):
 
         self.localLabel = QLabel("&Local:", self)
         self.localCheckBox = QCheckBox("Local:", self)
-        self.localLabel.setBuddy(self.local)
+        self.localLabel.setBuddy(self.localCheckBox)
 
         self.valueLabel = QLabel("&Value:", self)
         self.valueLineEdit = QLineEdit(self)
-        self.valueLabel.setBuddy(self.local)
+        self.valueLabel.setBuddy(self.valueLineEdit)
         self.valueLineEdit.setFocus()
-        
+
         self.idTypeLabel = QLabel("id_type:", self)
         self.idTypeComboBox = QComboBox(self)
         items = [str(member) for member in type(defaultIdType)]
         self.idTypeComboBox.addItems(items)
         self.idTypeComboBox.setCurrentText(str(defaultIdType))
 
-        self.layout.addWidget(self.typeLabel, 0, 0)
-        self.layout.addWidget(self.typeComboBox, 0, 1)
-        self.layout.addWidget(self.localLabel, 1, 0)
-        self.layout.addWidget(self.localCheckBox, 1, 1)
-        self.layout.addWidget(self.valueLabel, 2, 0)
-        self.layout.addWidget(self.valueLineEdit, 2, 1)
-        self.layout.addWidget(self.idTypeLabel, 3, 0)
-        self.layout.addWidget(self.idTypeComboBox, 3, 1)
+        layout.addWidget(self.typeLabel, 0, 0)
+        layout.addWidget(self.typeComboBox, 0, 1)
+        layout.addWidget(self.localLabel, 1, 0)
+        layout.addWidget(self.localCheckBox, 1, 1)
+        layout.addWidget(self.valueLabel, 2, 0)
+        layout.addWidget(self.valueLineEdit, 2, 1)
+        layout.addWidget(self.idTypeLabel, 3, 0)
+        layout.addWidget(self.idTypeComboBox, 3, 1)
+        self.setLayout(layout)
 
-    def validate(self, text):
+
+class AddAASRefDialog(AddDialog):
+    def __init__(self, parent=None, defaultType=base.KeyElements.ASSET, defaultIdType=base.IdentifierType.IRI):
+        AddDialog.__init__(self, parent, "Add AASReference")
+
         self.buttonOk.setEnabled(True)
+
+        # self.typeLabel = QLabel("&Ref. object type:", self)
+        # self.typeComboBox = QComboBox(self)
+        # items = [str(member) for member in type(_RT)]
+        # self.typeComboBox.addItems(items)
+
+        self.keysLayout = QtWidgets.QGridLayout(self)
+        self.layout.addLayout(self.keysLayout, 0, 0)
+
+        self.keyGroupBoxes = []
+        self.addKeyField(defaultType, defaultIdType)
+
+        plusKey = QPushButton("+key", self)
+        plusKey.clicked.connect(lambda: self.addKeyField(defaultType, defaultIdType))
+        self.layout.addWidget(plusKey, 9, 0)
+
+    # def validate(self, text):
+    #     self.buttonOk.setEnabled(True)
+
+    def addKeyField(self, defaultType, defaultIdType):
+        keyGroupBox = KeyGroupBox("Key", self, defaultType, defaultIdType)
+        self.keyGroupBoxes.append(keyGroupBox)
+        self.keysLayout.addWidget(keyGroupBox)
 
     @checkIfAccepted
     def getObj2add(self):
-        type = eval(self.typeComboBox.currentText())
-        local = self.localCheckBox.isChecked()
-        value = self.valueLineEdit.text()
-        id_type = eval(self.idTypeComboBox.currentText())
-        key=Key(type, local, value, id_type)
-        return AASReference((key,), type)
+        keys = []
+        for keyGroupBox in self.keyGroupBoxes:
+            type = eval(keyGroupBox.typeComboBox.currentText())
+            local = keyGroupBox.localCheckBox.isChecked()
+            value = keyGroupBox.valueLineEdit.text()
+            id_type = eval(keyGroupBox.idTypeComboBox.currentText())
+            key = Key(type, local, value, id_type)
+            keys.append(key)
+        return AASReference(tuple(keys), Referable)

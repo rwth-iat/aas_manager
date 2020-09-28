@@ -6,7 +6,8 @@ from PyQt5.QtWidgets import QTreeView, QTabWidget, QWidget, QLineEdit, QLabel, Q
     QApplication, QAction, QAbstractItemView
 from PyQt5.Qt import Qt
 
-from aas_editor.dialogs import AddDescriptionDialog, AddAdministrationDialog
+from aas_editor.dialogs import AddDescriptionDialog, AddAdministrationDialog, AddDialog, \
+    AddAASRefDialog
 from aas_editor.qcomboboxenumdelegate import QComboBoxEnumDelegate
 from aas_editor.qt_models import OBJECT_ROLE, NAME_ROLE, DetailedInfoTable, PACKAGE_ROLE, \
     ATTRIBUTE_COLUMN, DetailedInfoItem, VALUE_COLUMN
@@ -217,6 +218,9 @@ class Tab(QWidget):
         elif index.data(NAME_ROLE) == "administration" and not index.data(OBJECT_ROLE):
             self.addAct.setEnabled(True)
             self.addAct.setText("Add administration")
+        elif index.data(NAME_ROLE) in ("derived_from", "asset", "asset_identification_model", "bill_of_material", "semantic_id", "value_id", "first", "second") and not index.data(OBJECT_ROLE):
+            self.addAct.setEnabled(True)
+            self.addAct.setText("Add AASReference")
 
         self.editAct.setDisabled(True)
         if index.parent().isValid() and isinstance(index.parent().data(OBJECT_ROLE), dict):
@@ -237,10 +241,13 @@ class Tab(QWidget):
 
     def addHandler(self):
         index = self.attrsTreeView.currentIndex()
-        if index.data(NAME_ROLE) == "description":
+        attribute = index.data(NAME_ROLE)
+        if attribute == "description":
             self.addDescrWithDialog(index)
-        elif index.data(NAME_ROLE) == "administration":
+        elif attribute == "administration":
             self.addAdministrationWithDialog(index)
+        elif attribute in ("derived_from", "asset", "asset_identification_model", "bill_of_material", "semantic_id", "value_id", "first", "second"):
+            self.addAASRefWithDialog(index)
 
     @property
     def objectName(self) -> str:
@@ -324,6 +331,15 @@ class Tab(QWidget):
             self.attrsModel.replaceItemObj(administration, index)
         else:
             print("Administration adding cancelled")
+        dialog.deleteLater()
+
+    def addAASRefWithDialog(self, index):
+        dialog = AddAASRefDialog(self)
+        if dialog.exec_() == QDialog.Accepted:
+            ref = dialog.getObj2add()
+            self.attrsModel.replaceItemObj(ref, index)
+        else:
+            print("Reference adding cancelled")
         dialog.deleteLater()
 
     def _initTreeView(self, packItem):
