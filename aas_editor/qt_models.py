@@ -153,7 +153,7 @@ class StandardTable(QAbstractItemModel):
 
         yield from recurse(parent)
 
-    def index(self, row: int, column: int, parent: QModelIndex = ...) -> QModelIndex:
+    def index(self, row: int, column: int, parent: QModelIndex = QModelIndex()) -> QModelIndex:
         if not self.hasIndex(row, column, parent):
             return QModelIndex()
         parentObj = self.objByIndex(parent)
@@ -168,7 +168,7 @@ class StandardTable(QAbstractItemModel):
         row = grandParentObj.children().index(parentObj)
         return self.createIndex(row, 0, parentObj)
 
-    def rowCount(self, parent):
+    def rowCount(self, parent=QModelIndex()):
         return len(self.objByIndex(parent).children())
 
     def columnCount(self, parent=None):
@@ -230,6 +230,16 @@ class DetailedInfoTable(StandardTable):
             return Qt.NoItemFlags
 
         return self.objByIndex(index).flags(index.column())
+
+    def replaceItemObj(self, obj, index: QModelIndex = QModelIndex()):
+        self.objByIndex(index).setData(obj, Qt.EditRole)
+        self.objByIndex(index).populate()
+
+        rows=self.rowCount()
+        cols=self.columnCount()
+        top_left=self.index(0,0)
+        bot_right=self.index(rows-1, cols-1)
+        self.dataChanged.emit(top_left, bot_right)
 
 
 class StandardItem(QObject):

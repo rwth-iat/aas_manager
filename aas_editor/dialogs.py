@@ -185,3 +185,32 @@ class AddDescriptionDialog(AddDialog):
             if lang and descr:
                 descrUpdateDict[lang] = descr
         return descrUpdateDict
+
+
+class AddAdministrationDialog(AddDialog):
+    def __init__(self, parent=None):
+        AddDialog.__init__(self, parent, "Add administration")
+
+        self.versionLabel = QLabel("&Version:", self)
+        self.versionLineEdit = QLineEdit(self)
+        self.versionLabel.setBuddy(self.versionLineEdit)
+        self.versionLineEdit.setFocus()
+
+        self.revisionLabel = QLabel("&Revision:", self)
+        self.revisionLineEdit = QLineEdit(self)
+        self.revisionLabel.setBuddy(self.revisionLineEdit)
+        self.revisionLineEdit.textChanged.connect(self.validate)
+
+        self.layout.addWidget(self.revisionLabel, 0, 0)
+        self.layout.addWidget(self.revisionLineEdit, 0, 1)
+        self.layout.addWidget(self.versionLabel, 1, 0)
+        self.layout.addWidget(self.versionLineEdit, 1, 1)
+
+    def validate(self, text):
+        self.buttonOk.setEnabled(True) if text else self.buttonOk.setDisabled(True)
+
+    @checkIfAccepted
+    def getObj2add(self):
+        version = self.versionLineEdit.text()
+        revision = self.revisionLineEdit.text()
+        return AdministrativeInformation(version, revision if revision else None)

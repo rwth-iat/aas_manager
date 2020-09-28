@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QTreeView, QTabWidget, QWidget, QLineEdit, QLabel, Q
     QApplication, QAction, QAbstractItemView
 from PyQt5.Qt import Qt
 
-from aas_editor.dialogs import AddDescriptionDialog
+from aas_editor.dialogs import AddDescriptionDialog, AddAdministrationDialog
 from aas_editor.qcomboboxenumdelegate import QComboBoxEnumDelegate
 from aas_editor.qt_models import OBJECT_ROLE, NAME_ROLE, DetailedInfoTable, PACKAGE_ROLE, \
     ATTRIBUTE_COLUMN, DetailedInfoItem, VALUE_COLUMN
@@ -214,6 +214,9 @@ class Tab(QWidget):
         if index.data(NAME_ROLE) == "description":
             self.addAct.setEnabled(True)
             self.addAct.setText("Add description")
+        elif index.data(NAME_ROLE) == "administration" and not index.data(OBJECT_ROLE):
+            self.addAct.setEnabled(True)
+            self.addAct.setText("Add administration")
 
         self.editAct.setDisabled(True)
         if index.parent().isValid() and isinstance(index.parent().data(OBJECT_ROLE), dict):
@@ -236,6 +239,8 @@ class Tab(QWidget):
         index = self.attrsTreeView.currentIndex()
         if index.data(NAME_ROLE) == "description":
             self.addDescrWithDialog(index)
+        elif index.data(NAME_ROLE) == "administration":
+            self.addAdministrationWithDialog(index)
 
     @property
     def objectName(self) -> str:
@@ -310,6 +315,15 @@ class Tab(QWidget):
                 self.attrsModel.addItem(DetailedInfoItem(obj=descr, name=lang), index)
         else:
             print("Asset adding cancelled")
+        dialog.deleteLater()
+
+    def addAdministrationWithDialog(self, index):
+        dialog = AddAdministrationDialog(self)
+        if dialog.exec_() == QDialog.Accepted:
+            administration = dialog.getObj2add()
+            self.attrsModel.replaceItemObj(administration, index)
+        else:
+            print("Administration adding cancelled")
         dialog.deleteLater()
 
     def _initTreeView(self, packItem):
