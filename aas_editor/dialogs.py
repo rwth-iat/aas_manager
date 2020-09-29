@@ -1,7 +1,9 @@
-from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QLineEdit, QLabel, QComboBox, QPushButton, QVBoxLayout, QDialog, \
-    QDialogButtonBox, QGroupBox, QCheckBox
+import typing
 
+from PyQt5 import QtWidgets
+from PyQt5.QtGui import QIntValidator, QDoubleValidator
+from PyQt5.QtWidgets import QLineEdit, QLabel, QComboBox, QPushButton, QDialog, QDialogButtonBox, \
+    QGroupBox, QCheckBox
 from aas.model.aas import *
 from aas.model.base import *
 from aas.model.concept import *
@@ -9,10 +11,12 @@ from aas.model.provider import *
 from aas.model.submodel import *
 
 from aas_editor.qt_models import Package
+from aas_editor.util import getReqAttrs4init
 
 
 class AddDialog(QDialog):
     """Base abstract class for custom dialogs for adding data"""
+
     def __init__(self, parent=None, windowTitle=""):
         QDialog.__init__(self, parent)
         self.setWindowTitle(windowTitle)
@@ -22,9 +26,9 @@ class AddDialog(QDialog):
         self.buttonBox.rejected.connect(self.reject)
         self.buttonOk = self.buttonBox.button(QDialogButtonBox.Ok)
         self.buttonOk.setDisabled(True)
-        self.layout = QtWidgets.QGridLayout(self)
-        self.layout.addWidget(self.buttonBox, 10, 0)
-        self.setLayout(self.layout)
+        self.dialogLayout = QtWidgets.QVBoxLayout(self)
+        self.dialogLayout.addWidget(self.buttonBox)
+        self.setLayout(self.dialogLayout)
 
     def getObj2add(self):
         pass
@@ -32,11 +36,13 @@ class AddDialog(QDialog):
 
 def checkIfAccepted(func):
     """Decorator for checking if user clicked ok"""
+
     def wrap(addDialog):
         if addDialog.result() == QDialog.Accepted:
             return func(addDialog)
         else:
             raise ValueError("Adding was cancelled")
+
     return wrap
 
 
@@ -49,8 +55,8 @@ class AddPackDialog(AddDialog):
 
         self.nameLineEdit.textChanged.connect(self.validate)
         self.nameLineEdit.setFocus()
-        self.layout.addWidget(self.nameLabel, 0, 0)
-        self.layout.addWidget(self.nameLineEdit, 0, 1)
+        self.dialogLayout.addWidget(self.nameLabel, 0, 0)
+        self.dialogLayout.addWidget(self.nameLineEdit, 0, 1)
 
     def validate(self, nameText):
         self.buttonOk.setEnabled(True) if nameText else self.buttonOk.setDisabled(True)
@@ -84,12 +90,12 @@ class AddAssetDialog(AddDialog):
         self.idLineEdit.textChanged.connect(self.validate)
         self.idLineEdit.setFocus()
 
-        self.layout.addWidget(self.kindLabel, 0, 0)
-        self.layout.addWidget(self.kindComboBox, 0, 1)
-        self.layout.addWidget(self.idTypeLabel, 1, 0)
-        self.layout.addWidget(self.idTypeComboBox, 1, 1)
-        self.layout.addWidget(self.idLabel, 2, 0)
-        self.layout.addWidget(self.idLineEdit, 2, 1)
+        self.dialogLayout.addWidget(self.kindLabel, 0, 0)
+        self.dialogLayout.addWidget(self.kindComboBox, 0, 1)
+        self.dialogLayout.addWidget(self.idTypeLabel, 1, 0)
+        self.dialogLayout.addWidget(self.idTypeComboBox, 1, 1)
+        self.dialogLayout.addWidget(self.idLabel, 2, 0)
+        self.dialogLayout.addWidget(self.idLineEdit, 2, 1)
 
     def validate(self, nameText):
         self.buttonOk.setEnabled(True) if nameText else self.buttonOk.setDisabled(True)
@@ -102,7 +108,8 @@ class AddAssetDialog(AddDialog):
 
 
 class AddShellDialog(AddDialog):
-    def __init__(self, parent=None, defaultIdType=base.IdentifierType.IRI, defaultId="", assetsToChoose=None):
+    def __init__(self, parent=None, defaultIdType=base.IdentifierType.IRI, defaultId="",
+                 assetsToChoose=None):
         AddDialog.__init__(self, parent)
         self.setWindowTitle("Add shell")
 
@@ -121,12 +128,12 @@ class AddShellDialog(AddDialog):
         self.assetComboBox = QComboBox(self)
         self.assetComboBox.addItems(assetsToChoose)
 
-        self.layout.addWidget(self.idTypeLabel, 0, 0)
-        self.layout.addWidget(self.idTypeComboBox, 0, 1)
-        self.layout.addWidget(self.idLabel, 1, 0)
-        self.layout.addWidget(self.idLineEdit, 1, 1)
-        self.layout.addWidget(self.assetLabel, 2, 0)
-        self.layout.addWidget(self.assetComboBox, 2, 1)
+        self.dialogLayout.addWidget(self.idTypeLabel, 0, 0)
+        self.dialogLayout.addWidget(self.idTypeComboBox, 0, 1)
+        self.dialogLayout.addWidget(self.idLabel, 1, 0)
+        self.dialogLayout.addWidget(self.idLineEdit, 1, 1)
+        self.dialogLayout.addWidget(self.assetLabel, 2, 0)
+        self.dialogLayout.addWidget(self.assetComboBox, 2, 1)
 
     def validate(self, nameText):
         if nameText:
@@ -162,14 +169,14 @@ class AddDescriptionDialog(AddDialog):
         self.buttonOk.setEnabled(True)
 
         self.descrsLayout = QtWidgets.QGridLayout(self)
-        self.layout.addLayout(self.descrsLayout,0,0)
+        self.dialogLayout.addLayout(self.descrsLayout, 0, 0)
 
         self.descrGroupBoxes = []
         self.addDescrField(defaultLang)
 
         plusDescr = QPushButton("+description", self)
         plusDescr.clicked.connect(self.addDescrField)
-        self.layout.addWidget(plusDescr, 9, 0)
+        self.dialogLayout.addWidget(plusDescr, 9, 0)
 
     def addDescrField(self, defaultLang):
         descrGroupBox = DescrGroupBox("", self, defaultLang=defaultLang)
@@ -201,10 +208,10 @@ class AddAdministrationDialog(AddDialog):
         self.revisionLabel.setBuddy(self.revisionLineEdit)
         self.revisionLineEdit.textChanged.connect(self.validate)
 
-        self.layout.addWidget(self.revisionLabel, 0, 0)
-        self.layout.addWidget(self.revisionLineEdit, 0, 1)
-        self.layout.addWidget(self.versionLabel, 1, 0)
-        self.layout.addWidget(self.versionLineEdit, 1, 1)
+        self.dialogLayout.addWidget(self.revisionLabel, 0, 0)
+        self.dialogLayout.addWidget(self.revisionLineEdit, 0, 1)
+        self.dialogLayout.addWidget(self.versionLabel, 1, 0)
+        self.dialogLayout.addWidget(self.versionLineEdit, 1, 1)
 
     def validate(self, text):
         self.buttonOk.setEnabled(True) if text else self.buttonOk.setDisabled(True)
@@ -217,13 +224,14 @@ class AddAdministrationDialog(AddDialog):
 
 
 class KeyGroupBox(QGroupBox):
-    def __init__(self, title, parent=None, defaultType=base.KeyElements.ASSET, defaultIdType=base.IdentifierType.IRI):
+    def __init__(self, title, parent=None, defaultType=base.KeyElements.ASSET,
+                 defaultIdType=base.IdentifierType.IRI):
         super().__init__(title, parent)
         layout = QtWidgets.QGridLayout(self)
 
         self.typeLabel = QLabel("&Type:", self)
         self.typeComboBox = QComboBox(self)
-        items = [str(member) for member in type(defaultType)]
+        items = [str(member) for member in base.KeyElements]
         self.typeComboBox.addItems(items)
         self.typeComboBox.setCurrentText(str(defaultType))
 
@@ -238,7 +246,7 @@ class KeyGroupBox(QGroupBox):
 
         self.idTypeLabel = QLabel("id_type:", self)
         self.idTypeComboBox = QComboBox(self)
-        items = [str(member) for member in type(defaultIdType)]
+        items = [str(member) for member in base.IdentifierType]
         self.idTypeComboBox.addItems(items)
         self.idTypeComboBox.setCurrentText(str(defaultIdType))
 
@@ -254,28 +262,20 @@ class KeyGroupBox(QGroupBox):
 
 
 class AddAASRefDialog(AddDialog):
-    def __init__(self, parent=None, defaultType=base.KeyElements.ASSET, defaultIdType=base.IdentifierType.IRI):
+    def __init__(self, parent=None, defaultType=base.KeyElements.ASSET,
+                 defaultIdType=base.IdentifierType.IRI):
         AddDialog.__init__(self, parent, "Add AASReference")
-
         self.buttonOk.setEnabled(True)
 
-        # self.typeLabel = QLabel("&Ref. object type:", self)
-        # self.typeComboBox = QComboBox(self)
-        # items = [str(member) for member in type(_RT)]
-        # self.typeComboBox.addItems(items)
-
         self.keysLayout = QtWidgets.QGridLayout(self)
-        self.layout.addLayout(self.keysLayout, 0, 0)
+        self.dialogLayout.addLayout(self.keysLayout, 0, 0)
 
         self.keyGroupBoxes = []
         self.addKeyField(defaultType, defaultIdType)
 
         plusKey = QPushButton("+key", self)
         plusKey.clicked.connect(lambda: self.addKeyField(defaultType, defaultIdType))
-        self.layout.addWidget(plusKey, 9, 0)
-
-    # def validate(self, text):
-    #     self.buttonOk.setEnabled(True)
+        self.dialogLayout.addWidget(plusKey, 9, 0)
 
     def addKeyField(self, defaultType, defaultIdType):
         keyGroupBox = KeyGroupBox("Key", self, defaultType, defaultIdType)
@@ -293,3 +293,134 @@ class AddAASRefDialog(AddDialog):
             key = Key(type, local, value, id_type)
             keys.append(key)
         return AASReference(tuple(keys), Referable)
+
+
+class AddObjDialog(AddDialog):
+    def __init__(self, objType, parent=None):
+        AddDialog.__init__(self, parent, f"Add {objType.__name__}")
+        self.buttonOk.setEnabled(True)
+        self.objGroupBox = ObjGroupBox(objType, "", parent=self)
+        self.dialogLayout.insertWidget(0, self.objGroupBox)
+
+    def getInputWidget(self):
+        pass
+
+    @checkIfAccepted
+    def getObj2add(self):
+        return self.objGroupBox.getObj2add()
+
+
+class ObjGroupBox(QGroupBox):
+    def __init__(self, objType, title, parent=None):
+        super().__init__(title, parent)
+        self.objType = objType
+        self.attrWidgetDict = {}
+        layout = QtWidgets.QVBoxLayout(self)
+        reqAttrsDict = getReqAttrs4init(objType)
+        for attr, attrType in reqAttrsDict.items():
+            widgetLayout = self.getInputWidgetLayout(attr, attrType)
+            layout.addLayout(widgetLayout)
+        self.setLayout(layout)
+
+    def getInputWidgetLayout(self, attr, attrType) -> QtWidgets.QHBoxLayout:
+        layout = QtWidgets.QHBoxLayout()
+        label = QLabel(f"{attr}:")
+        widget = self.getInputWidget(attrType)
+        self.attrWidgetDict[attr] = widget
+        if isinstance(widget, QGroupBox):
+            widget.setTitle(f"{attr}:")
+        else:
+            layout.addWidget(label)
+        layout.addWidget(widget)
+        return layout
+
+    @staticmethod
+    def getInputWidget(attrType) -> QtWidgets.QWidget:
+        if issubclass(attrType, (bool, str, int, float, Enum)):
+            widget = StandardInputWidget(attrType)
+        elif issubclass(attrType, typing.Iterable):
+            argTypes = list(attrType.__args__)
+            if ... in argTypes:
+                argTypes.remove(...)
+            if len(argTypes) == 1:
+                argType = argTypes[0]
+            else:
+                raise TypeError(f"expected 1 argument, got {len(argTypes)}", argTypes)
+            widget = ListGroupBox(argType, "")
+        else:
+            widget = ObjGroupBox(attrType, "")
+        return widget
+
+    def getObj2add(self):
+        attrValueDict = {}
+        for attr, widget in self.attrWidgetDict.items():
+            attrValueDict[attr] = widget.getObj2add()
+        obj = self.objType(**attrValueDict)
+        return obj
+
+
+class ListGroupBox(QGroupBox):
+    def __init__(self, objType, title, parent=None):
+        super().__init__(title, parent)
+        self.objType = objType
+        self.layout = QtWidgets.QVBoxLayout(self)
+        self.setLayout(self.layout)
+
+        plusButton = QPushButton(f"+ {self.objType.__name__}", self)
+        plusButton.clicked.connect(self.addGroupBox)
+        self.layout.addWidget(plusButton)
+
+        self.objGroupBoxes = []
+        self.addGroupBox()
+
+    def addGroupBox(self):
+        objGroupBox = ObjGroupBox(self.objType, f"{self.objType.__name__} {len(self.objGroupBoxes)}", self)
+        self.objGroupBoxes.append(objGroupBox)
+        self.layout.insertWidget(self.layout.count()-1, objGroupBox)
+
+    def getObj2add(self):
+        listObj = []
+        for objGroupBox in self.objGroupBoxes:
+            listObj.append(objGroupBox.getObj2add())
+        castedListobj = typing.cast(self.objType, listObj)
+        return castedListobj
+
+
+class StandardInputWidget(QtWidgets.QWidget):
+    def __init__(self, attrType, parent=None):
+        super(StandardInputWidget, self).__init__(parent)
+        self.attrType = attrType
+        self.widget = self._initWidget()
+        widgetLayout = QtWidgets.QVBoxLayout(self)
+        widgetLayout.addWidget(self.widget)
+        self.setLayout(widgetLayout)
+
+    def _initWidget(self):
+        if issubclass(self.attrType, bool):
+            widget = QCheckBox(self)
+        elif issubclass(self.attrType, str):
+            widget = QLineEdit(self)
+        elif issubclass(self.attrType, int):
+            widget = QLineEdit(self)
+            widget.setValidator(QIntValidator())
+        elif issubclass(self.attrType, float):
+            widget = QLineEdit(self)
+            widget.setValidator(QDoubleValidator())
+        elif issubclass(self.attrType, Enum):
+            widget = QComboBox(self)
+            items = [str(member) for member in self.attrType]
+            widget.addItems(items)
+        return widget
+
+    def getObj2add(self):
+        if issubclass(self.attrType, bool):
+            obj = self.widget.isChecked()
+        elif issubclass(self.attrType, str):
+            obj = self.widget.text()
+        elif issubclass(self.attrType, int):
+            obj = int(self.widget.text())
+        elif issubclass(self.attrType, float):
+            obj = float(self.widget.text())
+        elif issubclass(self.attrType, Enum):
+            obj = eval(self.widget.currentText())
+        return obj

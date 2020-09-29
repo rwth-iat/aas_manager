@@ -29,7 +29,7 @@ SUBMODEL_ATTRS = ("asset_identification_model", "bill_of_material")
 
 
 class Package:
-    def __init__(self, objStore: DictObjectStore = None, name=""):
+    def __init__(self, name: str, objStore: DictObjectStore = None):
         self.name = name
         self.objStore = objStore if objStore else DictObjectStore()
 
