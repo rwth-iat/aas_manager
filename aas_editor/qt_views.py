@@ -5,15 +5,15 @@ from PyQt5.QtWidgets import QTreeView, QTabWidget, QWidget, QLineEdit, QLabel, Q
     QFrame, QAbstractScrollArea, QGridLayout, QVBoxLayout, QMessageBox, QDialog, QShortcut, \
     QApplication, QAction, QAbstractItemView
 from PyQt5.Qt import Qt
-from aas.model import AssetAdministrationShell, Asset, Submodel
+from aas.model import AssetAdministrationShell, Asset, Submodel, SubmodelElement
 
 from aas_editor.dialogs import AddDescriptionDialog, AddAdministrationDialog, AddDialog, \
-    AddAASRefDialog, AddObjDialog
+    AddAASRefDialog, AddObjDialog, ChooseFromDialog
 from aas_editor.qcomboboxenumdelegate import QComboBoxEnumDelegate
 from aas_editor.qt_models import OBJECT_ROLE, NAME_ROLE, DetailedInfoTable, PACKAGE_ROLE, \
     ATTRIBUTE_COLUMN, DetailedInfoItem, VALUE_COLUMN, PackTreeViewItem
 from aas_editor.settings import ATTR_COLUMN_WIDTH
-from aas_editor.util import getTreeItemPath
+from aas_editor.util import getTreeItemPath, inheritors
 
 
 class TreeView(QTreeView):
@@ -114,7 +114,6 @@ class PackTreeView(TreeView):
         self.openInNewTabAct = self.attrsMenu.addAction("Open in new &tab", lambda: self.openInNewTabClicked.emit(self.currentIndex()))
         self.openInBackgroundAct = self.attrsMenu.addAction("Open in &background tab", lambda: self.openInBackgroundTabClicked.emit(self.currentIndex()))
 
-
     def addHandler(self):
         index = self.currentIndex()
         attribute = index.data(NAME_ROLE)
@@ -124,6 +123,12 @@ class PackTreeView(TreeView):
             self.addItemWithDialog(index, Asset)
         elif attribute == "submodels":
             self.addItemWithDialog(index, Submodel)
+        elif isinstance(index.data(OBJECT_ROLE), Submodel):
+            classesToChoose = inheritors(SubmodelElement)
+            dialog = ChooseFromDialog(classesToChoose, "Choose submodel element type", self)
+            if dialog.exec_() == QDialog.Accepted:
+                kls = dialog.getObj2add()
+                self.addItemWithDialog(index, kls)
 
     def addItemWithDialog(self, index, objType):
         dialog = AddObjDialog(objType, self)

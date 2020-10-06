@@ -108,6 +108,19 @@ def getAttrDoc(attr: str, doc: str) -> str:
     return ""
 
 
+def inheritors(klass) -> set:
+    """Return all inheritors of the class"""
+    subclasses = set()
+    work = [klass]
+    while work:
+        parent = work.pop()
+        for child in parent.__subclasses__():
+            if child not in subclasses:
+                subclasses.add(child)
+                work.append(child)
+    return subclasses
+
+
 def getTreeItemPath(treeItem: QModelIndex) -> str:
     path = treeItem.data(Qt.DisplayRole)
     while treeItem.parent().isValid():

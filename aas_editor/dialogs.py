@@ -436,3 +436,19 @@ class StandardInputWidget(QtWidgets.QWidget):
         elif issubclass(self.attrType, Enum):
             obj = eval(self.widget.currentText())
         return obj
+
+
+class ChooseFromDialog(AddDialog):
+    def __init__(self, objList, title, parent=None):
+        super(ChooseFromDialog, self).__init__(parent, title)
+        self.buttonOk.setEnabled(True)
+
+        self.objComboBox = QComboBox(self)
+        for obj in objList:
+            self.objComboBox.addItem(str(obj), obj)
+        self.dialogLayout.insertWidget(0, self.objComboBox)
+
+    @checkIfAccepted
+    def getObj2add(self):
+        obj = self.objComboBox.currentData()
+        return obj
