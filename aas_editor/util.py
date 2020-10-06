@@ -58,14 +58,35 @@ def getDescription(descriptions: dict) -> str:
         return tuple(descriptions.values())[0]
 
 
-def getReqAttrs4init(objType, rmDefaultAttrs=True) -> dict:
-    """Return required attrs for init with their type"""
+def getReqParams4init(objType, rmDefaultAttrs=True) -> dict:
+    """Return required params for init with their type"""
     g = inspect.getfullargspec(objType.__init__)
-    annotations = g.annotations.copy()
+    params = g.annotations.copy()
+
     if rmDefaultAttrs and g.defaults:
         for i in range(len(g.defaults)):
-            annotations.popitem()
-    return annotations
+            params.popitem()
+
+    try:
+        params.pop('return')
+    except KeyError:
+        pass
+
+    for param in params:
+        if _isOptional(params[param]):
+            args = list(params[param].__args__)
+            args.remove(None.__class__)
+            params[param] = args[0]
+
+    return params
+
+
+def _isOptional(param):
+    if param.__class__ == typing.Union.__class__ and \
+            None.__class__ in param.__args__ and \
+            len(param.__args__) == 2:
+        return True
+    return False
 
 
 def getAttrDoc(attr: str, doc: str) -> str:

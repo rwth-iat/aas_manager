@@ -11,7 +11,7 @@ from aas.model.provider import *
 from aas.model.submodel import *
 
 from aas_editor.qt_models import Package
-from aas_editor.util import getReqAttrs4init
+from aas_editor.util import getReqParams4init
 
 
 class AddDialog(QDialog):
@@ -311,18 +311,23 @@ class AddObjDialog(AddDialog):
 
 
 class ObjGroupBox(QGroupBox):
-    def __init__(self, objType, title, parent=None):
+    def __init__(self, objType, title, parent=None, attrsToHide: dict = None):
         super().__init__(title, parent)
         self.objType = objType
+        self.attrsToHide = attrsToHide if attrsToHide else {}
         self.attrWidgetDict = {}
         layout = QtWidgets.QVBoxLayout(self)
-        reqAttrsDict = getReqAttrs4init(objType)
+        reqAttrsDict = getReqParams4init(objType)
+        if self.attrsToHide:
+            for attr in self.attrsToHide:
+                reqAttrsDict.pop(attr)
         for attr, attrType in reqAttrsDict.items():
             widgetLayout = self.getInputWidgetLayout(attr, attrType)
             layout.addLayout(widgetLayout)
         self.setLayout(layout)
 
     def getInputWidgetLayout(self, attr, attrType) -> QtWidgets.QHBoxLayout:
+        print(f"Getting widget for attr: {attr} of type: {attrType}")
         layout = QtWidgets.QHBoxLayout()
         label = QLabel(f"{attr}:")
         widget = self.getInputWidget(attrType)
@@ -336,9 +341,10 @@ class ObjGroupBox(QGroupBox):
 
     @staticmethod
     def getInputWidget(attrType) -> QtWidgets.QWidget:
+        print(attrType, attrType.__str__, attrType.__repr__, attrType.__class__)
         if issubclass(attrType, (bool, str, int, float, Enum)):
             widget = StandardInputWidget(attrType)
-        elif issubclass(attrType, typing.Iterable):
+        elif issubclass(attrType, (list, tuple)):# typing.Iterable):
             argTypes = list(attrType.__args__)
             if ... in argTypes:
                 argTypes.remove(...)
@@ -347,14 +353,19 @@ class ObjGroupBox(QGroupBox):
             else:
                 raise TypeError(f"expected 1 argument, got {len(argTypes)}", argTypes)
             widget = ListGroupBox(argType, "")
+        elif hasattr(attrType, "_gorg") and issubclass(attrType._gorg, AASReference): # todo check if gorg is ok in other versions of python
+            type_ = attrType.__args__[0]
+            widget = ObjGroupBox(attrType, "", None, attrsToHide={"type_":type_})
         else:
-            widget = ObjGroupBox(attrType, "")
+            widget = ObjGroupBox(attrType, "", None)
         return widget
 
     def getObj2add(self):
         attrValueDict = {}
         for attr, widget in self.attrWidgetDict.items():
             attrValueDict[attr] = widget.getObj2add()
+        for attr, value in self.attrsToHide.items():
+            attrValueDict[attr] = value
         obj = self.objType(**attrValueDict)
         return obj
 
@@ -374,7 +385,8 @@ class ListGroupBox(QGroupBox):
         self.addGroupBox()
 
     def addGroupBox(self):
-        objGroupBox = ObjGroupBox(self.objType, f"{self.objType.__name__} {len(self.objGroupBoxes)}", self)
+        objGroupBox = ObjGroupBox(self.objType,
+                                  f"{self.objType.__name__} {len(self.objGroupBoxes)}", self)
         self.objGroupBoxes.append(objGroupBox)
         self.layout.insertWidget(self.layout.count()-1, objGroupBox)
 

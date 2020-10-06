@@ -3,7 +3,7 @@ from . import design
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from .dialogs import AddPackDialog, AddAssetDialog
+from .dialogs import AddPackDialog, AddAssetDialog, AddObjDialog
 
 from .qt_models import *
 from .qt_views import Tab
@@ -20,15 +20,12 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.switch2rightTreeSC = QShortcut(QKeySequence("Ctrl+Right"), self)
         self.switch2leftTreeSC = QShortcut(QKeySequence("Ctrl+Left"), self)
 
-
         self.packTreeViewModel = StandardTable()
         self.packItemsTreeView.setHeaderHidden(True)
         self.packItemsTreeView.setModel(self.packTreeViewModel)
 
         self.tabWidget.addTab(Tab(parent=self.tabWidget), "Welcome")
 
-        self.packMenu = QMenu(self.packItemsTreeView)
-        self.detailInfoMenu = QMenu()
         self.buildHandlers()
 
         # todo: save, open , collapse all, expand all actions
@@ -54,18 +51,20 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
     def buildHandlers(self):
         self.tabWidget.currItemChanged.connect(self.packItemsTreeView.setCurrentIndex)
+
+        self.packItemsTreeView.wheelClicked.connect(self.tabWidget.openItemInBackgroundTab)
+        self.packItemsTreeView.openInBackgroundTabClicked.connect(self.tabWidget.openItemInBackgroundTab)
+        self.packItemsTreeView.openInNewTabClicked.connect(self.tabWidget.openItemInNewTab)
+        self.packItemsTreeView.openInCurrTabClicked.connect(self.tabWidget.openItem)
         self.packItemsTreeView.selectionModel().currentChanged.connect(self.tabWidget.openItem)
-        self.packItemsTreeView.wheelClicked.connect(lambda packItem: self.tabWidget.openItemInNewTab(packItem, setCurrent=False))
-        self.packItemsTreeView.selectionModel().currentChanged.connect(self.updatePackItemContextMenu)
-        self.packItemsTreeView.customContextMenuRequested.connect(self.openPackItemMenu)
 
         self.actionLight.triggered.connect(lambda: toggleTheme("light"))
         self.actionDark.triggered.connect(lambda: toggleTheme("dark"))
 
-        self.switch2rightTreeSC.activated.connect(self.switch2rightTree)
+        self.switch2rightTreeSC.activated.connect(self.setFocus2rightTree)
         self.switch2leftTreeSC.activated.connect(self.packItemsTreeView.setFocus)
 
-    def switch2rightTree(self):
+    def setFocus2rightTree(self):
         tab: 'Tab' = self.tabWidget.currentWidget()
         if not tab.attrsTreeView.currentIndex().isValid():
             firstItem = tab.attrsTreeView.model().index(0, 0, QModelIndex())
@@ -97,15 +96,24 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         elif isinstance(index.data(OBJECT_ROLE), Submodel) or index.data(
                 Qt.DisplayRole) == "submodels":
-            self.packMenu.addAction(self.tr("Add submodel"))  # todo implement add submodel
+            self.packMenu.addAction(self.tr("Add submodel"),
+                                    lambda i=index: self.addItemWithDialog(i, Submodel))  # todo implement add submodel
 
         elif isinstance(index.data(OBJECT_ROLE), Submodel) or index.data(
                 Qt.DisplayRole) == "concept_descriptions":
             self.packMenu.addAction(
                 self.tr("Add concept description"))  # todo implement add concept descr
 
-    def openPackItemMenu(self, point):  # todo resolve issue with action overload of ctrl+N
-        self.packMenu.exec_(self.packItemsTreeView.viewport().mapToGlobal(point))
+    def addItemWithDialog(self, index, objType):
+        dialog = AddObjDialog(objType, self)
+        if dialog.exec_() == QDialog.Accepted:
+            obj = dialog.getObj2add()
+            item = self.packTreeViewModel.addItem(PackTreeViewItem(obj=obj), index)
+        else:
+            print("Item adding cancelled")
+        dialog.deleteLater()
+        self.packItemsTreeView.setFocus()
+        self.packItemsTreeView.setCurrentIndex(item)
 
     def addPackWithDialog(self):
         dialog = AddPackDialog(self)
