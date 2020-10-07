@@ -13,7 +13,7 @@ from aas.model.base import *
 from aas.model.concept import *
 from aas.model.submodel import *
 
-from .qt_models import NAME_ROLE
+from .models import NAME_ROLE
 
 STR_ATTRS = [
     "id_short",

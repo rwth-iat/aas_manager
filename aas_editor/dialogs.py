@@ -10,7 +10,7 @@ from aas.model.concept import *
 from aas.model.provider import *
 from aas.model.submodel import *
 
-from aas_editor.qt_models import Package
+from aas_editor.models import Package
 from aas_editor.util import getReqParams4init, issubtype
 
 
@@ -44,102 +44,6 @@ def checkIfAccepted(func):
             raise ValueError("Adding was cancelled")
 
     return wrap
-
-
-class AddPackDialog(AddDialog):
-    def __init__(self, parent=None):
-        AddDialog.__init__(self, parent, "Add Package")
-        self.nameLabel = QLabel("&Package name:", self)
-        self.nameLineEdit = QLineEdit(self)
-        self.nameLabel.setBuddy(self.nameLineEdit)
-
-        self.nameLineEdit.textChanged.connect(self.validate)
-        self.nameLineEdit.setFocus()
-        self.dialogLayout.addWidget(self.nameLabel, 0, 0)
-        self.dialogLayout.addWidget(self.nameLineEdit, 0, 1)
-
-    def validate(self, nameText):
-        self.buttonOk.setEnabled(True) if nameText else self.buttonOk.setDisabled(True)
-
-    @checkIfAccepted
-    def getObj2add(self):
-        return Package(name=self.nameLineEdit.text())
-
-
-class AddAssetDialog(AddDialog):
-    def __init__(self, parent=None, defaultKind=AssetKind.INSTANCE,
-                 defaultIdType=IdentifierType.IRI, defaultId=""):
-        AddDialog.__init__(self, parent, "Add asset")
-        self.kindLabel = QLabel("&Kind:", self)
-        self.kindComboBox = QComboBox(self)
-        self.kindLabel.setBuddy(self.kindComboBox)
-        items = [str(member) for member in type(defaultKind)]
-        self.kindComboBox.addItems(items)
-        self.kindComboBox.setCurrentText(str(defaultKind))
-
-        self.idTypeLabel = QLabel("id_&type:", self)
-        self.idTypeComboBox = QComboBox(self)
-        self.idTypeLabel.setBuddy(self.idTypeComboBox)
-        items = [str(member) for member in type(defaultIdType)]
-        self.idTypeComboBox.addItems(items)
-        self.idTypeComboBox.setCurrentText(str(defaultIdType))
-
-        self.idLabel = QLabel("&id:", self)
-        self.idLineEdit = QLineEdit(defaultId, self)
-        self.idLabel.setBuddy(self.idLineEdit)
-        self.idLineEdit.textChanged.connect(self.validate)
-        self.idLineEdit.setFocus()
-
-        self.dialogLayout.addWidget(self.kindLabel, 0, 0)
-        self.dialogLayout.addWidget(self.kindComboBox, 0, 1)
-        self.dialogLayout.addWidget(self.idTypeLabel, 1, 0)
-        self.dialogLayout.addWidget(self.idTypeComboBox, 1, 1)
-        self.dialogLayout.addWidget(self.idLabel, 2, 0)
-        self.dialogLayout.addWidget(self.idLineEdit, 2, 1)
-
-    def validate(self, nameText):
-        self.buttonOk.setEnabled(True) if nameText else self.buttonOk.setDisabled(True)
-
-    @checkIfAccepted
-    def getObj2add(self):
-        kind = eval(self.kindComboBox.currentText())
-        ident = Identifier(self.idLineEdit.text(), eval(self.idTypeComboBox.currentText()))
-        return Asset(kind, ident)
-
-
-class AddShellDialog(AddDialog):
-    def __init__(self, parent=None, defaultIdType=base.IdentifierType.IRI, defaultId="",
-                 assetsToChoose=None):
-        AddDialog.__init__(self, parent)
-        self.setWindowTitle("Add shell")
-
-        self.idTypeLabel = QLabel("id_type:", self)
-        self.idTypeComboBox = QComboBox(self)
-        items = [str(member) for member in type(defaultIdType)]
-        self.idTypeComboBox.addItems(items)
-        self.idTypeComboBox.setCurrentText(str(defaultIdType))
-
-        self.idLabel = QLabel("id:", self)
-        self.idLineEdit = QLineEdit(defaultId, self)
-        self.idLineEdit.textChanged.connect(self.validate)
-        self.idLineEdit.setFocus()
-
-        self.assetLabel = QLabel("Asset:", self)
-        self.assetComboBox = QComboBox(self)
-        self.assetComboBox.addItems(assetsToChoose)
-
-        self.dialogLayout.addWidget(self.idTypeLabel, 0, 0)
-        self.dialogLayout.addWidget(self.idTypeComboBox, 0, 1)
-        self.dialogLayout.addWidget(self.idLabel, 1, 0)
-        self.dialogLayout.addWidget(self.idLineEdit, 1, 1)
-        self.dialogLayout.addWidget(self.assetLabel, 2, 0)
-        self.dialogLayout.addWidget(self.assetComboBox, 2, 1)
-
-    def validate(self, nameText):
-        if nameText:
-            self.buttonOk.setDisabled(False)
-        else:
-            self.buttonOk.setDisabled(True)
 
 
 class DescrGroupBox(QGroupBox):
@@ -192,107 +96,6 @@ class AddDescriptionDialog(AddDialog):
             if lang and descr:
                 descrUpdateDict[lang] = descr
         return descrUpdateDict
-
-
-class AddAdministrationDialog(AddDialog):
-    def __init__(self, parent=None):
-        AddDialog.__init__(self, parent, "Add administration")
-
-        self.versionLabel = QLabel("&Version:", self)
-        self.versionLineEdit = QLineEdit(self)
-        self.versionLabel.setBuddy(self.versionLineEdit)
-        self.versionLineEdit.setFocus()
-
-        self.revisionLabel = QLabel("&Revision:", self)
-        self.revisionLineEdit = QLineEdit(self)
-        self.revisionLabel.setBuddy(self.revisionLineEdit)
-        self.revisionLineEdit.textChanged.connect(self.validate)
-
-        self.dialogLayout.addWidget(self.revisionLabel, 0, 0)
-        self.dialogLayout.addWidget(self.revisionLineEdit, 0, 1)
-        self.dialogLayout.addWidget(self.versionLabel, 1, 0)
-        self.dialogLayout.addWidget(self.versionLineEdit, 1, 1)
-
-    def validate(self, text):
-        self.buttonOk.setEnabled(True) if text else self.buttonOk.setDisabled(True)
-
-    @checkIfAccepted
-    def getObj2add(self):
-        version = self.versionLineEdit.text()
-        revision = self.revisionLineEdit.text()
-        return AdministrativeInformation(version, revision if revision else None)
-
-
-class KeyGroupBox(QGroupBox):
-    def __init__(self, title, parent=None, defaultType=base.KeyElements.ASSET,
-                 defaultIdType=base.IdentifierType.IRI):
-        super().__init__(title, parent)
-        layout = QtWidgets.QGridLayout(self)
-
-        self.typeLabel = QLabel("&Type:", self)
-        self.typeComboBox = QComboBox(self)
-        items = [str(member) for member in base.KeyElements]
-        self.typeComboBox.addItems(items)
-        self.typeComboBox.setCurrentText(str(defaultType))
-
-        self.localLabel = QLabel("&Local:", self)
-        self.localCheckBox = QCheckBox("Local:", self)
-        self.localLabel.setBuddy(self.localCheckBox)
-
-        self.valueLabel = QLabel("&Value:", self)
-        self.valueLineEdit = QLineEdit(self)
-        self.valueLabel.setBuddy(self.valueLineEdit)
-        self.valueLineEdit.setFocus()
-
-        self.idTypeLabel = QLabel("id_type:", self)
-        self.idTypeComboBox = QComboBox(self)
-        items = [str(member) for member in base.IdentifierType]
-        self.idTypeComboBox.addItems(items)
-        self.idTypeComboBox.setCurrentText(str(defaultIdType))
-
-        layout.addWidget(self.typeLabel, 0, 0)
-        layout.addWidget(self.typeComboBox, 0, 1)
-        layout.addWidget(self.localLabel, 1, 0)
-        layout.addWidget(self.localCheckBox, 1, 1)
-        layout.addWidget(self.valueLabel, 2, 0)
-        layout.addWidget(self.valueLineEdit, 2, 1)
-        layout.addWidget(self.idTypeLabel, 3, 0)
-        layout.addWidget(self.idTypeComboBox, 3, 1)
-        self.setLayout(layout)
-
-
-class AddAASRefDialog(AddDialog):
-    def __init__(self, parent=None, defaultType=base.KeyElements.ASSET,
-                 defaultIdType=base.IdentifierType.IRI):
-        AddDialog.__init__(self, parent, "Add AASReference")
-        self.buttonOk.setEnabled(True)
-
-        self.keysLayout = QtWidgets.QGridLayout(self)
-        self.dialogLayout.addLayout(self.keysLayout, 0, 0)
-
-        self.keyGroupBoxes = []
-        self.addKeyField(defaultType, defaultIdType)
-
-        plusKey = QPushButton("+key", self)
-        plusKey.clicked.connect(lambda: self.addKeyField(defaultType, defaultIdType))
-        self.dialogLayout.addWidget(plusKey, 9, 0)
-
-    def addKeyField(self, defaultType, defaultIdType):
-        keyGroupBox = KeyGroupBox("Key", self, defaultType, defaultIdType)
-        self.keyGroupBoxes.append(keyGroupBox)
-        self.keysLayout.addWidget(keyGroupBox)
-
-    @checkIfAccepted
-    def getObj2add(self):
-        keys = []
-        for keyGroupBox in self.keyGroupBoxes:
-            type = eval(keyGroupBox.typeComboBox.currentText())
-            local = keyGroupBox.localCheckBox.isChecked()
-            value = keyGroupBox.valueLineEdit.text()
-            id_type = eval(keyGroupBox.idTypeComboBox.currentText())
-            key = Key(type, local, value, id_type)
-            keys.append(key)
-        return AASReference(tuple(keys), Referable)
 
 
 class AddObjDialog(AddDialog):
