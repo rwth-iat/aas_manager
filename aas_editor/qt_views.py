@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QTreeView, QTabWidget, QWidget, QLineEdit, QLabel, Q
     QFrame, QAbstractScrollArea, QGridLayout, QVBoxLayout, QMessageBox, QDialog, QShortcut, \
     QApplication, QAction, QAbstractItemView
 from PyQt5.Qt import Qt
-from aas.model import AssetAdministrationShell, Asset, Submodel, SubmodelElement
+from aas.model import AssetAdministrationShell, Asset, Submodel, SubmodelElement, AdministrativeInformation
 
 from aas_editor.dialogs import AddDescriptionDialog, AddAdministrationDialog, AddDialog, \
     AddAASRefDialog, AddObjDialog, ChooseFromDialog
@@ -13,7 +13,7 @@ from aas_editor.qcomboboxenumdelegate import QComboBoxEnumDelegate
 from aas_editor.qt_models import OBJECT_ROLE, NAME_ROLE, DetailedInfoTable, PACKAGE_ROLE, \
     ATTRIBUTE_COLUMN, DetailedInfoItem, VALUE_COLUMN, PackTreeViewItem
 from aas_editor.settings import ATTR_COLUMN_WIDTH
-from aas_editor.util import getTreeItemPath, inheritors
+from aas_editor.util import getTreeItemPath, inheritors, getAttrTypeHint
 
 
 class TreeView(QTreeView):
@@ -118,20 +118,20 @@ class PackTreeView(TreeView):
         index = self.currentIndex()
         attribute = index.data(NAME_ROLE)
         if attribute == "shells":
-            self.addItemWithDialog(index, AssetAdministrationShell)
+            self.addItemWithDialog(index, AssetAdministrationShell, objName="Asset Administration Shell")
         elif attribute == "assets":
-            self.addItemWithDialog(index, Asset)
+            self.addItemWithDialog(index, Asset, objName="Asset")
         elif attribute == "submodels":
-            self.addItemWithDialog(index, Submodel)
+            self.addItemWithDialog(index, Submodel, objName="Submodel")
         elif isinstance(index.data(OBJECT_ROLE), Submodel):
             classesToChoose = inheritors(SubmodelElement)
             dialog = ChooseFromDialog(classesToChoose, "Choose submodel element type", self)
             if dialog.exec_() == QDialog.Accepted:
                 kls = dialog.getObj2add()
-                self.addItemWithDialog(index, kls)
+                self.addItemWithDialog(index, kls, objName="Submodel Element")
 
-    def addItemWithDialog(self, index, objType):
-        dialog = AddObjDialog(objType, self)
+    def addItemWithDialog(self, index, objType, objName=""):
+        dialog = AddObjDialog(objType, self, objName=objName)
         if dialog.exec_() == QDialog.Accepted:
             obj = dialog.getObj2add()
             item = self.model().addItem(PackTreeViewItem(obj=obj), index)
@@ -180,7 +180,7 @@ class AttrsTreeView(TreeView):
         self.selectionModel().currentChanged.connect(self.updateDetailInfoItemMenu)
 
     def updateDetailInfoItemMenu(self, index: QModelIndex):
-        self.addAct.setDisabled(True)
+        self.addAct.setEnabled(True)
         self.addAct.setText("Add")
         if index.data(NAME_ROLE) == "description":
             self.addAct.setEnabled(True)
@@ -213,12 +213,27 @@ class AttrsTreeView(TreeView):
     def addHandler(self):
         index = self.currentIndex()
         attribute = index.data(NAME_ROLE)
+        attrType = getAttrTypeHint(type(self.model().mainObj), attribute)
         if attribute == "description":
             self.addDescrWithDialog(index)
-        elif attribute == "administration":
-            self.addAdministrationWithDialog(index)
-        elif attribute in ("derived_from", "asset", "asset_identification_model", "bill_of_material", "semantic_id", "value_id", "first", "second"):
-            self.addAASRefWithDialog(index)
+        # elif attribute == "administration":
+        #     self.addAdministrationWithDialog(index)
+        # elif attribute in ("derived_from", "asset", "asset_identification_model", "bill_of_material", "semantic_id", "value_id", "first", "second"):
+        #     self.addAASRefWithDialog(index)
+        else:
+            self.replItemWithDialog(index, attrType)
+
+    def replItemWithDialog(self, index, objType):
+        objName = index.data(NAME_ROLE)
+        dialog = AddObjDialog(objType, self, allParams=True, objName=objName)
+        if dialog.exec_() == QDialog.Accepted:
+            obj = dialog.getObj2add()
+            item = self.model().replaceItemObj(obj, index)
+            self.setFocus()
+            self.setCurrentIndex(item)
+        else:
+            print("Item adding cancelled")
+        dialog.deleteLater()
 
     def newPackItem(self, packItem):
         self._initTreeView(packItem)

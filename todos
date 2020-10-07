@@ -1,9 +1,23 @@
 finish all add dialogs
-start working with files
-ask about XML packages for test
-open/save packages
-find out statusbar handling
-search funcs
-find usages func
+repl dialog with default obj
 choose from for references
+add add/create-button to toolbar
+copy/paste, may be with replObj func
 
+update aas package from git
+start working with files
+open/save/save as.. packages
+drag&drop features
+
+find out statusbar handling
+
+search funcs
+    search everyhere
+find usages func
+    handle if id_short or identification will be changed
+
+tab in a window
+cancel last action
+settings
+open recent
+integrate validator

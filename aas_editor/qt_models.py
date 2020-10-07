@@ -231,7 +231,7 @@ class DetailedInfoTable(StandardTable):
 
         return self.objByIndex(index).flags(index.column())
 
-    def replaceItemObj(self, obj, index: QModelIndex = QModelIndex()):
+    def replaceItemObj(self, obj, index: QModelIndex = QModelIndex()) -> QModelIndex:
         self.objByIndex(index).setData(obj, Qt.EditRole)
         self.objByIndex(index).populate()
 
@@ -240,6 +240,7 @@ class DetailedInfoTable(StandardTable):
         top_left=self.index(0,0)
         bot_right=self.index(rows-1, cols-1)
         self.dataChanged.emit(top_left, bot_right)
+        return index
 
 
 class StandardItem(QObject):

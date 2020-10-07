@@ -97,15 +97,15 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         elif isinstance(index.data(OBJECT_ROLE), Submodel) or index.data(
                 Qt.DisplayRole) == "submodels":
             self.packMenu.addAction(self.tr("Add submodel"),
-                                    lambda i=index: self.addItemWithDialog(i, Submodel))  # todo implement add submodel
+                                    lambda i=index: self.addItemWithDialog(i, Submodel, objName="Submodel"))  # todo implement add submodel
 
         elif isinstance(index.data(OBJECT_ROLE), Submodel) or index.data(
                 Qt.DisplayRole) == "concept_descriptions":
             self.packMenu.addAction(
                 self.tr("Add concept description"))  # todo implement add concept descr
 
-    def addItemWithDialog(self, index, objType):
-        dialog = AddObjDialog(objType, self)
+    def addItemWithDialog(self, index, objType, objName=""):
+        dialog = AddObjDialog(objType, self, objName=objName)
         if dialog.exec_() == QDialog.Accepted:
             obj = dialog.getObj2add()
             item = self.packTreeViewModel.addItem(PackTreeViewItem(obj=obj), index)

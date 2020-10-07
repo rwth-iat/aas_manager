@@ -62,6 +62,14 @@ def getReqParams4init(objType, rmDefaultAttrs=True) -> dict:
     """Return required params for init with their type"""
     if hasattr(objType, "__origin__"):
         objType = objType.__origin__
+
+    if issubtype(objType, (bool, str, int, float, Enum, typing.Type)):
+        params = {objType.__name__: objType}
+        return params
+    elif issubtype(objType, (list, tuple)):  # typing.Iterable):
+        params = {objType.__name__: objType}
+        return params
+
     g = inspect.getfullargspec(objType.__init__)
     params = g.annotations.copy()
 
@@ -93,10 +101,21 @@ def _isOptional(param):
 
 def issubtype(typ, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:# todo check if gorg is ok in other versions of python
     if hasattr(typ, "__origin__"):
-        return issubclass(typ.__origin__, types)
+        if typ.__origin__ == typing.Union and None.__class__ in typ.__args__ and len(typ.__args__) == 2:
+            args = list(typ.__args__)
+            args.remove(None.__class__)
+            typ = args[0]
+            return issubclass(typ, types)
+        else:
+            return issubclass(typ.__origin__, types)
     if hasattr(typ, "_gorg"):
         return issubclass(typ._gorg, types)
     return issubclass(typ, types)
+
+
+def getAttrTypeHint(objType, attr):
+    params = getReqParams4init(objType, rmDefaultAttrs=False)
+    return params[attr]
 
 
 def getAttrDoc(attr: str, doc: str) -> str:
