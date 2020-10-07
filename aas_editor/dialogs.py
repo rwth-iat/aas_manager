@@ -1,5 +1,6 @@
 import typing
 
+from PyQt5.QtCore import Qt
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIntValidator, QDoubleValidator
 from PyQt5.QtWidgets import QLineEdit, QLabel, QComboBox, QPushButton, QDialog, QDialogButtonBox, \
@@ -103,6 +104,9 @@ class AddObjDialog(AddDialog):
         AddDialog.__init__(self, parent, f"Add {objName}")
         self.buttonOk.setEnabled(True)
         self.objGroupBox = ObjGroupBox(objType, "", parent=self, allParams=allParams, objName=objName)
+        self.objGroupBox.setObjectName("mainBox")
+        self.objGroupBox.setStyleSheet("#mainBox{border:0;}")
+        self.objGroupBox.setFlat(True)
         self.dialogLayout.insertWidget(0, self.objGroupBox)
 
     def getInputWidget(self):
@@ -116,6 +120,8 @@ class AddObjDialog(AddDialog):
 class ObjGroupBox(QGroupBox):
     def __init__(self, objType, title, parent=None, attrsToHide: dict = None, allParams=False, objName=""):
         super().__init__(title, parent)
+        self.setAlignment(Qt.AlignLeft)
+
         self.objType = objType
         self.attrsToHide = attrsToHide if attrsToHide else {}
         self.attrWidgetDict = {}
