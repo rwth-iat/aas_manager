@@ -11,7 +11,7 @@ from aas.model.provider import *
 from aas.model.submodel import *
 
 from aas_editor.qt_models import Package
-from aas_editor.util import getReqParams4init
+from aas_editor.util import getReqParams4init, issubtype
 
 
 class AddDialog(QDialog):
@@ -342,9 +342,9 @@ class ObjGroupBox(QGroupBox):
     @staticmethod
     def getInputWidget(attrType) -> QtWidgets.QWidget:
         print(attrType, attrType.__str__, attrType.__repr__, attrType.__class__)
-        if issubclass(attrType, (bool, str, int, float, Enum)):
+        if issubtype(attrType, (bool, str, int, float, Enum, Type)):
             widget = StandardInputWidget(attrType)
-        elif issubclass(attrType, (list, tuple)):# typing.Iterable):
+        elif issubtype(attrType, (list, tuple)):# typing.Iterable):
             argTypes = list(attrType.__args__)
             if ... in argTypes:
                 argTypes.remove(...)
@@ -353,7 +353,7 @@ class ObjGroupBox(QGroupBox):
             else:
                 raise TypeError(f"expected 1 argument, got {len(argTypes)}", argTypes)
             widget = ListGroupBox(argType, "")
-        elif hasattr(attrType, "_gorg") and issubclass(attrType._gorg, AASReference): # todo check if gorg is ok in other versions of python
+        elif issubtype(attrType, AASReference):
             type_ = attrType.__args__[0]
             widget = ObjGroupBox(attrType, "", None, attrsToHide={"type_":type_})
         else:
@@ -408,33 +408,40 @@ class StandardInputWidget(QtWidgets.QWidget):
         self.setLayout(widgetLayout)
 
     def _initWidget(self):
-        if issubclass(self.attrType, bool):
+        if issubtype(self.attrType, bool):
             widget = QCheckBox(self)
-        elif issubclass(self.attrType, str):
+        elif issubtype(self.attrType, str):
             widget = QLineEdit(self)
-        elif issubclass(self.attrType, int):
+        elif issubtype(self.attrType, int):
             widget = QLineEdit(self)
             widget.setValidator(QIntValidator())
-        elif issubclass(self.attrType, float):
+        elif issubtype(self.attrType, float):
             widget = QLineEdit(self)
             widget.setValidator(QDoubleValidator())
-        elif issubclass(self.attrType, Enum):
+        elif issubtype(self.attrType, Enum):
             widget = QComboBox(self)
-            items = [str(member) for member in self.attrType]
-            widget.addItems(items)
+            items = [member for member in self.attrType]
+            for typ in items:
+                widget.addItem(str(typ), typ)
+        elif issubtype(self.attrType, Type):
+            widget = QComboBox(self)
+            union = self.attrType.__args__[0]
+            types = union.__args__
+            for typ in types:
+                widget.addItem(str(typ), typ)
         return widget
 
     def getObj2add(self):
-        if issubclass(self.attrType, bool):
+        if issubtype(self.attrType, bool):
             obj = self.widget.isChecked()
-        elif issubclass(self.attrType, str):
+        elif issubtype(self.attrType, str):
             obj = self.widget.text()
-        elif issubclass(self.attrType, int):
+        elif issubtype(self.attrType, int):
             obj = int(self.widget.text())
-        elif issubclass(self.attrType, float):
+        elif issubtype(self.attrType, float):
             obj = float(self.widget.text())
-        elif issubclass(self.attrType, Enum):
-            obj = eval(self.widget.currentText())
+        elif issubtype(self.attrType, (Enum, Type)):
+            obj = self.widget.currentData()
         return obj
 
 

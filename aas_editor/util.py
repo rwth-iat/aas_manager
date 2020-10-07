@@ -2,7 +2,7 @@ import inspect
 import re
 import typing
 from enum import Enum
-from typing import List
+from typing import List, Tuple, Union
 
 from PyQt5.QtCore import Qt, QFile, QTextStream, QModelIndex
 from PyQt5.QtWidgets import QApplication
@@ -60,6 +60,8 @@ def getDescription(descriptions: dict) -> str:
 
 def getReqParams4init(objType, rmDefaultAttrs=True) -> dict:
     """Return required params for init with their type"""
+    if hasattr(objType, "__origin__"):
+        objType = objType.__origin__
     g = inspect.getfullargspec(objType.__init__)
     params = g.annotations.copy()
 
@@ -87,6 +89,14 @@ def _isOptional(param):
             len(param.__args__) == 2:
         return True
     return False
+
+
+def issubtype(typ, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:# todo check if gorg is ok in other versions of python
+    if hasattr(typ, "__origin__"):
+        return issubclass(typ.__origin__, types)
+    if hasattr(typ, "_gorg"):
+        return issubclass(typ._gorg, types)
+    return issubclass(typ, types)
 
 
 def getAttrDoc(attr: str, doc: str) -> str:
