@@ -7,8 +7,8 @@ from aas.model import AssetAdministrationShell, Asset, Submodel, SubmodelElement
 
 from aas_editor.dialogs import ChooseFromDialog, AddObjDialog, AddDescriptionDialog
 from aas_editor.qcomboboxenumdelegate import QComboBoxEnumDelegate
-from aas_editor.models import VALUE_COLUMN, NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE, \
-    ATTRIBUTE_COLUMN, PackTreeViewItem, DetailedInfoItem, DetailedInfoTable
+from aas_editor.models import VALUE_COLUMN, NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE, ATTRIBUTE_COLUMN, \
+    PackTreeViewItem, DetailedInfoItem, DetailedInfoTable, Package
 from aas_editor.settings import ATTR_COLUMN_WIDTH
 from aas_editor.util import inheritors, getAttrTypeHint
 
@@ -114,18 +114,20 @@ class PackTreeView(TreeView):
     def addHandler(self):
         index = self.currentIndex()
         attribute = index.data(NAME_ROLE)
-        if attribute == "shells":
-            self.addItemWithDialog(index, AssetAdministrationShell, objName="Asset Administration Shell")
+        if isinstance(index.data(OBJECT_ROLE), Package) or not index.isValid():
+            self.addItemWithDialog(QModelIndex(), Package)
+        elif attribute == "shells":
+            self.addItemWithDialog(index, AssetAdministrationShell)
         elif attribute == "assets":
-            self.addItemWithDialog(index, Asset, objName="Asset")
+            self.addItemWithDialog(index, Asset)
         elif attribute == "submodels":
-            self.addItemWithDialog(index, Submodel, objName="Submodel")
+            self.addItemWithDialog(index, Submodel)
         elif isinstance(index.data(OBJECT_ROLE), Submodel):
             classesToChoose = inheritors(SubmodelElement)
             dialog = ChooseFromDialog(classesToChoose, "Choose submodel element type", self)
             if dialog.exec_() == QDialog.Accepted:
                 kls = dialog.getObj2add()
-                self.addItemWithDialog(index, kls, objName="Submodel Element")
+                self.addItemWithDialog(index, kls)
 
     def addItemWithDialog(self, index, objType, objName=""):
         dialog = AddObjDialog(objType, self, objName=objName)

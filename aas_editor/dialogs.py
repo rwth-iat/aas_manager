@@ -101,6 +101,7 @@ class AddDescriptionDialog(AddDialog):
 
 class AddObjDialog(AddDialog):
     def __init__(self, objType, parent=None, allParams=False, objName=""):
+        objName = objName if objName else objType.__name__
         AddDialog.__init__(self, parent, f"Add {objName}")
         self.buttonOk.setEnabled(True)
         self.objGroupBox = ObjGroupBox(objType, "", parent=self, allParams=allParams, objName=objName)
