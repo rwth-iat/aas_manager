@@ -113,6 +113,8 @@ class Ui_MainWindow(object):
         self.menuFile.addAction(self.actionOpen)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
+        self.splitter.setStretchFactor(0,1)
+        self.splitter.setStretchFactor(1,3)
 
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(-1)
