@@ -155,10 +155,11 @@ class Tab(QWidget):
             self._openItem(nextItem)
 
     def _openItem(self, packItem):
-        self.attrsTreeView._newPackItem(packItem)
-        self.attrsTreeView.selectionModel().currentChanged.connect(self.showDetailInfoItemDoc)
         self.packItem = packItem
         self.pathLine.setText(getTreeItemPath(packItem))
+        self.descrLabel.setText("")
+        self.attrsTreeView._newPackItem(packItem)
+        self.attrsTreeView.selectionModel().currentChanged.connect(self.showDetailInfoItemDoc)
         self.objectNameChanged.emit(self.objectName)
         self.currItemChanged.emit(self.packItem)
 

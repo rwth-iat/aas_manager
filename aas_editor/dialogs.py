@@ -128,19 +128,19 @@ class ObjGroupBox(QGroupBox):
         self.attrWidgetDict = {}
         layout = QtWidgets.QVBoxLayout(self)
 
-        if issubtype(objType, (bool, str, int, float, Enum, Type, list, tuple)):
-            widgetLayout = self.getInputWidgetLayout(objName, objType)
-            layout.addLayout(widgetLayout)
-        else:
-            rmDefaultAttrs = False if allParams else True
-            reqAttrsDict = getReqParams4init(objType, rmDefaultAttrs)
-            if self.attrsToHide:
-                for attr in self.attrsToHide:
-                    reqAttrsDict.pop(attr)
+        rmDefaultAttrs = False if allParams else True
+        reqAttrsDict = getReqParams4init(objType, rmDefaultAttrs)
+        if self.attrsToHide:
+            for attr in self.attrsToHide:
+                reqAttrsDict.pop(attr)
 
+        if reqAttrsDict:
             for attr, attrType in reqAttrsDict.items():
                 widgetLayout = self.getInputWidgetLayout(attr, attrType)
                 layout.addLayout(widgetLayout)
+        else:
+            widgetLayout = self.getInputWidgetLayout(objName, objType)
+            layout.addLayout(widgetLayout)
 
         self.setLayout(layout)
 
@@ -243,13 +243,13 @@ class StandardInputWidget(QtWidgets.QWidget):
             widget = QComboBox(self)
             items = [member for member in self.attrType]
             for typ in items:
-                widget.addItem(str(typ), typ)
+                widget.addItem(typ.name, typ)
         elif issubtype(self.attrType, Type):
             widget = QComboBox(self)
             union = self.attrType.__args__[0]
             types = union.__args__
             for typ in types:
-                widget.addItem(str(typ), typ)
+                widget.addItem(typ.__name__, typ)
         return widget
 
     def getObj2add(self):

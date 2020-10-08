@@ -44,7 +44,7 @@ def simplifyInfo(obj, attrName: str = "") -> str:
         res = re.sub("^[A-Z]\w*[(]", "", res)
         res = res.rstrip(")")
     elif isinstance(obj, Enum):
-        res = re.sub("^[A-Z]\w*[.]", "", res)
+        res = obj.name
     elif isinstance(obj, dict) and attrName == "description":
         res = getDescription(obj)
     return res
@@ -60,15 +60,15 @@ def getDescription(descriptions: dict) -> str:
 
 def getReqParams4init(objType, rmDefaultAttrs=True) -> dict:
     """Return required params for init with their type"""
-    if hasattr(objType, "__origin__"):
+    if hasattr(objType, "__origin__") and objType.__origin__:
         objType = objType.__origin__
 
-    if issubtype(objType, (bool, str, int, float, Enum, typing.Type)):
-        params = {objType.__name__: objType}
-        return params
-    elif issubtype(objType, (list, tuple)):  # typing.Iterable):
-        params = {objType.__name__: objType}
-        return params
+    # if issubtype(objType, (bool, str, int, float, Enum, typing.Type)):
+    #     params = {objType.__name__: objType}
+    #     return params
+    # elif issubtype(objType, (list, tuple)):  # typing.Iterable):
+    #     params = {objType.__name__: objType}
+    #     return params
 
     g = inspect.getfullargspec(objType.__init__)
     params = g.annotations.copy()

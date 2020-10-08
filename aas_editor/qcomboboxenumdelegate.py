@@ -43,15 +43,17 @@ class QComboBoxEnumDelegate(QStyledItemDelegate):
     def setEditorData(self, editor: QWidget, index: QtCore.QModelIndex) -> None:
         if isinstance(index.model().data(index, Qt.EditRole), Enum):
             currItem = index.model().data(index, Qt.EditRole)
-            items = [str(member) for member in type(currItem)]
-            editor.addItems(items)
-            editor.setCurrentText(str(currItem))
+            items = [member for member in type(currItem)]
+            for item in items:
+                editor.addItem(item.name, item)
+            editor.setCurrentText(currItem.name)
         else:
             super().setEditorData(editor, index)
 
     def setModelData(self, editor: QWidget, model: QtCore.QAbstractItemModel, index: QtCore.QModelIndex) -> None:
         if isinstance(index.model().data(index, Qt.EditRole), Enum):
-            model.setData(index, eval(editor.currentText()), Qt.EditRole)
+            obj = editor.currentData()
+            model.setData(index, obj, Qt.EditRole)
         else:
             super().setModelData(editor, model, index)
 
