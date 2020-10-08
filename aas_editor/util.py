@@ -58,22 +58,15 @@ def getDescription(descriptions: dict) -> str:
         return tuple(descriptions.values())[0]
 
 
-def getReqParams4init(objType, rmDefaultAttrs=True) -> dict:
+def getReqParams4init(objType, rmDefParams=True, attrsToHide: dict = None) -> dict:
     """Return required params for init with their type"""
     if hasattr(objType, "__origin__") and objType.__origin__:
         objType = objType.__origin__
 
-    # if issubtype(objType, (bool, str, int, float, Enum, typing.Type)):
-    #     params = {objType.__name__: objType}
-    #     return params
-    # elif issubtype(objType, (list, tuple)):  # typing.Iterable):
-    #     params = {objType.__name__: objType}
-    #     return params
-
     g = inspect.getfullargspec(objType.__init__)
     params = g.annotations.copy()
 
-    if rmDefaultAttrs and g.defaults:
+    if rmDefParams and g.defaults:
         for i in range(len(g.defaults)):
             params.popitem()
 
@@ -88,6 +81,10 @@ def getReqParams4init(objType, rmDefaultAttrs=True) -> dict:
             args.remove(None.__class__)
             params[param] = args[0]
 
+    if attrsToHide:
+        for attr in attrsToHide:
+            params.pop(attr)
+
     return params
 
 
@@ -101,6 +98,7 @@ def _isOptional(param):
 
 def issubtype(typ, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:# todo check if gorg is ok in other versions of python
     if hasattr(typ, "__origin__") and typ.__origin__:
+        print(typ.__origin__)
         if typ.__origin__ == typing.Union and None.__class__ in typ.__args__ and len(typ.__args__) == 2:
             args = list(typ.__args__)
             args.remove(None.__class__)
@@ -114,8 +112,11 @@ def issubtype(typ, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:#
 
 
 def getAttrTypeHint(objType, attr):
-    params = getReqParams4init(objType, rmDefaultAttrs=False)
-    return params[attr]
+    params = getReqParams4init(objType, rmDefParams=False)
+    try:
+        return params[attr]
+    except KeyError:
+        return params[f"{attr}_"]
 
 
 def getAttrDoc(attr: str, doc: str) -> str:

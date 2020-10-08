@@ -1,13 +1,11 @@
 from PyQt5.QtCore import QModelIndex
-from aas.model import AssetAdministrationShell, Asset, Submodel
 
 from . import design
 
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from .dialogs import AddObjDialog
-from .models import PackTreeViewItem, Package, StandardTable, OBJECT_ROLE, PACKAGE_ROLE
+from .models import PackTreeViewItem, Package, StandardTable
 
 from .views.tab import Tab
 from .settings import *
@@ -18,7 +16,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-        toggleTheme(PREFERED_THEME)
+        # toggleTheme(PREFERED_THEME)
         self.initToolbar()
         self.switch2rightTreeSC = QShortcut(QKeySequence("Ctrl+Right"), self)
         self.switch2leftTreeSC = QShortcut(QKeySequence("Ctrl+Left"), self)
@@ -36,9 +34,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
     def initToolbar(self):
         self.toolBar.addAction(self.tabWidget.backAct)
         self.toolBar.addAction(self.tabWidget.forwardAct)
-
-    def importTestPack(self, objStore):
-        self.addPack("TestPackage", objStore)
 
     def iterItems(self, root):
         def recurse(parent):
@@ -74,15 +69,8 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             tab.attrsTreeView.setCurrentIndex(firstItem)
         self.tabWidget.currentWidget().attrsTreeView.setFocus()
 
-
-    def addPackWithDialog(self):
-        dialog = AddPackDialog(self)
-        if dialog.exec_() == QDialog.Accepted:
-            pack = dialog.getObj2add()
-            self.packTreeViewModel.addItem(PackTreeViewItem(obj=pack, objName=pack.name))
-        else:
-            print("Package adding cancelled")
-        dialog.deleteLater()
+    def importTestPack(self, objStore):
+        self.addPack("TestPackage", objStore)
 
     def addPack(self, name="", objStore=None):
         pack = Package(name=name, objStore=objStore)

@@ -99,56 +99,87 @@ class AddDescriptionDialog(AddDialog):
         return descrUpdateDict
 
 
+def getInputWidget(attrType, rmDefParams=True, objName="") -> QtWidgets.QWidget:
+    print(attrType, attrType.__str__, attrType.__repr__, attrType.__class__)
+    if issubtype(attrType, (bool, str, int, float, Enum, Type)):
+        widget = StandardInputWidget(attrType)
+    elif issubtype(attrType, (list, tuple, set)):# typing.Iterable):
+        argTypes = list(attrType.__args__)
+        if ... in argTypes:
+            argTypes.remove(...)
+        if len(argTypes) == 1:
+            argType = argTypes[0]
+        else:
+            raise TypeError(f"expected 1 argument, got {len(argTypes)}", argTypes)
+        widget = ListGroupBox(argType, "")
+    elif issubtype(attrType, dict):
+        argTypes = list(attrType.__args__)
+        if ... in argTypes:
+            argTypes.remove(...)
+        if len(argTypes) == 2:
+            keyType = argTypes[0]
+            valueType = argTypes[1]
+        else:
+            raise TypeError(f"expected 2 argument, got {len(argTypes)}", argTypes)
+        widget = ListGroupBox(argType, "")
+    elif issubtype(attrType, AASReference):
+        type_ = attrType.__args__[0]
+        widget = ObjGroupBox(attrType, "", None, attrsToHide={"type_": type_},
+                             rmDefParams=rmDefParams, objName=objName)
+    else:
+        widget = ObjGroupBox(attrType, "", None, rmDefParams=rmDefParams, objName=objName)
+    return widget
+
+
 class AddObjDialog(AddDialog):
-    def __init__(self, objType, parent=None, allParams=False, objName=""):
+    def __init__(self, objType, parent=None, rmDefParams=True, objName=""):
         objName = objName if objName else objType.__name__
         AddDialog.__init__(self, parent, f"Add {objName}")
         self.buttonOk.setEnabled(True)
-        self.objGroupBox = ObjGroupBox(objType, "", parent=self, allParams=allParams, objName=objName)
-        self.objGroupBox.setObjectName("mainBox")
-        self.objGroupBox.setStyleSheet("#mainBox{border:0;}")
-        self.objGroupBox.setFlat(True)
-        self.dialogLayout.insertWidget(0, self.objGroupBox)
+        self.inputWidget = getInputWidget(objType, rmDefParams=rmDefParams, objName=objName)
+        self.inputWidget.setObjectName("mainBox")
+        self.inputWidget.setStyleSheet("#mainBox{border:0;}")
+        self.dialogLayout.insertWidget(0, self.inputWidget)
 
     def getInputWidget(self):
         pass
-
     @checkIfAccepted
     def getObj2add(self):
-        return self.objGroupBox.getObj2add()
+        return self.inputWidget.getObj2add()
 
 
-class ObjGroupBox(QGroupBox):
-    def __init__(self, objType, title, parent=None, attrsToHide: dict = None, allParams=False, objName=""):
+class GroupBox(QGroupBox):
+    def __init__(self, title, parent=None):
         super().__init__(title, parent)
         self.setAlignment(Qt.AlignLeft)
+        self.setLayout(QtWidgets.QVBoxLayout(self))
+
+
+class ObjGroupBox(GroupBox):
+    def __init__(self, objType, title, parent=None, attrsToHide: dict = None, rmDefParams=True,
+                 objName=""):
+        super().__init__(title, parent)
 
         self.objType = objType
         self.attrsToHide = attrsToHide if attrsToHide else {}
         self.attrWidgetDict = {}
-        layout = QtWidgets.QVBoxLayout(self)
 
-        rmDefaultAttrs = False if allParams else True
-        reqAttrsDict = getReqParams4init(objType, rmDefaultAttrs)
-        if self.attrsToHide:
-            for attr in self.attrsToHide:
-                reqAttrsDict.pop(attr)
+        reqAttrsDict = getReqParams4init(objType, rmDefParams, attrsToHide)
 
         if reqAttrsDict:
             for attr, attrType in reqAttrsDict.items():
                 widgetLayout = self.getInputWidgetLayout(attr, attrType)
-                layout.addLayout(widgetLayout)
+                self.layout().addLayout(widgetLayout)
         else:
             widgetLayout = self.getInputWidgetLayout(objName, objType)
-            layout.addLayout(widgetLayout)
+            self.layout().addLayout(widgetLayout)
 
-        self.setLayout(layout)
 
     def getInputWidgetLayout(self, attr, attrType) -> QtWidgets.QHBoxLayout:
         print(f"Getting widget for attr: {attr} of type: {attrType}")
         layout = QtWidgets.QHBoxLayout()
         label = QLabel(f"{attr}:")
-        widget = self.getInputWidget(attrType)
+        widget = getInputWidget(attrType)
         self.attrWidgetDict[attr] = widget
         if isinstance(widget, QGroupBox):
             widget.setTitle(f"{attr}:")
@@ -157,63 +188,35 @@ class ObjGroupBox(QGroupBox):
         layout.addWidget(widget)
         return layout
 
-    @staticmethod
-    def getInputWidget(attrType) -> QtWidgets.QWidget:
-        print(attrType, attrType.__str__, attrType.__repr__, attrType.__class__)
-        if issubtype(attrType, (bool, str, int, float, Enum, Type)):
-            widget = StandardInputWidget(attrType)
-        elif issubtype(attrType, (list, tuple)):# typing.Iterable):
-            argTypes = list(attrType.__args__)
-            if ... in argTypes:
-                argTypes.remove(...)
-            if len(argTypes) == 1:
-                argType = argTypes[0]
-            else:
-                raise TypeError(f"expected 1 argument, got {len(argTypes)}", argTypes)
-            widget = ListGroupBox(argType, "")
-        elif issubtype(attrType, AASReference):
-            type_ = attrType.__args__[0]
-            widget = ObjGroupBox(attrType, "", None, attrsToHide={"type_": type_})
-        else:
-            widget = ObjGroupBox(attrType, "", None)
-        return widget
-
     def getObj2add(self):
-        if issubtype(self.objType, (bool, str, int, float, Enum, Type, list, tuple)):
-            attr, widget = self.attrWidgetDict.popitem()
-            obj = widget.getObj2add()
-        else:
-            attrValueDict = {}
-            for attr, widget in self.attrWidgetDict.items():
-                attrValueDict[attr] = widget.getObj2add()
-            for attr, value in self.attrsToHide.items():
-                attrValueDict[attr] = value
-            obj = self.objType(**attrValueDict)
+        attrValueDict = {}
+        for attr, widget in self.attrWidgetDict.items():
+            attrValueDict[attr] = widget.getObj2add()
+        for attr, value in self.attrsToHide.items():
+            attrValueDict[attr] = value
+        obj = self.objType(**attrValueDict)
         return obj
 
 
-class ListGroupBox(QGroupBox):
+class ListGroupBox(GroupBox):
     def __init__(self, objType, title, parent=None):
         super().__init__(title, parent)
         self.objType = objType
-        self.layout = QtWidgets.QVBoxLayout(self)
-        self.setLayout(self.layout)
-
         plusButton = QPushButton(f"+ {self.objType.__name__}", self)
-        plusButton.clicked.connect(self.addGroupBox)
-        self.layout.addWidget(plusButton)
+        plusButton.clicked.connect(self.addInputWidget)
+        self.layout().addWidget(plusButton)
+        self.inputWidgets = []
+        self.addInputWidget()
 
-        self.objGroupBoxes = []
-        self.addGroupBox()
-
-    def addGroupBox(self):
-        objGroupBox = ObjGroupBox(self.objType, f"{self.objType.__name__} {len(self.objGroupBoxes)}", self)
-        self.objGroupBoxes.append(objGroupBox)
-        self.layout.insertWidget(self.layout.count()-1, objGroupBox)
+    def addInputWidget(self):
+        widget = getInputWidget(self.objType,
+                                objName=f"{self.objType.__name__} {len(self.inputWidgets)}")
+        self.inputWidgets.append(widget)
+        self.layout.insertWidget(self.layout.count()-1, widget)
 
     def getObj2add(self):
         listObj = []
-        for objGroupBox in self.objGroupBoxes:
+        for objGroupBox in self.inputWidgets:
             listObj.append(objGroupBox.getObj2add())
         castedListobj = typing.cast(self.objType, listObj)
         return castedListobj
@@ -280,3 +283,52 @@ class ChooseFromDialog(AddDialog):
     def getObj2add(self):
         obj = self.objComboBox.currentData()
         return obj
+
+
+class TypeOptionObjGroupBox(ObjGroupBox):
+    def __init__(self, objMetatype, title, parent=None, attrsToHide: dict = None, allParams=False, objName=""):
+        QGroupBox.__init__(title, parent)
+        self.setAlignment(Qt.AlignLeft)
+
+        self.objType = objType
+        self.attrsToHide = attrsToHide if attrsToHide else {}
+        self.attrWidgetDict = {}
+        layout = QtWidgets.QVBoxLayout(self)
+
+        rmDefaultAttrs = False if allParams else True
+        reqAttrsDict = getReqParams4init(objType, rmDefaultAttrs)
+        if self.attrsToHide:
+            for attr in self.attrsToHide:
+                reqAttrsDict.pop(attr)
+
+        if reqAttrsDict:
+            for attr, attrType in reqAttrsDict.items():
+                widgetLayout = self.getInputWidgetLayout(attr, attrType)
+                layout.addLayout(widgetLayout)
+        else:
+            widgetLayout = self.getInputWidgetLayout(objName, objType)
+            layout.addLayout(widgetLayout)
+
+        self.setLayout(layout)
+
+    def getInputWidgetLayout(self, attr, attrType) -> QtWidgets.QHBoxLayout:
+        print(f"Getting widget for attr: {attr} of type: {attrType}")
+        layout = QtWidgets.QHBoxLayout()
+        label = QLabel(f"{attr}:")
+        widget = getInputWidget(attrType)
+        self.attrWidgetDict[attr] = widget
+        if isinstance(widget, QGroupBox):
+            widget.setTitle(f"{attr}:")
+        else:
+            layout.addWidget(label)
+        layout.addWidget(widget)
+        return layout
+
+    # def getObj2add(self):
+    #     attrValueDict = {}
+    #     for attr, widget in self.attrWidgetDict.items():
+    #         attrValueDict[attr] = widget.getObj2add()
+    #     for attr, value in self.attrsToHide.items():
+    #         attrValueDict[attr] = value
+    #     obj = self.objType(**attrValueDict)
+    #     return obj

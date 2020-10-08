@@ -211,7 +211,7 @@ class AttrsTreeView(TreeView):
 
     def replItemWithDialog(self, index, objType):
         objName = index.data(NAME_ROLE)
-        dialog = AddObjDialog(objType, self, allParams=True, objName=objName)
+        dialog = AddObjDialog(objType, self, rmDefParams=False, objName=objName)
         if dialog.exec_() == QDialog.Accepted:
             obj = dialog.getObj2add()
             item = self.model().replaceItemObj(obj, index)
