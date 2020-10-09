@@ -1,18 +1,17 @@
 import typing
-from abc import ABCMeta
 
 from PyQt5.QtCore import Qt
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIntValidator, QDoubleValidator
 from PyQt5.QtWidgets import QLineEdit, QLabel, QComboBox, QPushButton, QDialog, QDialogButtonBox, \
-    QGroupBox, QCheckBox, QSizePolicy
+    QGroupBox, QCheckBox
+
 from aas.model.aas import *
 from aas.model.base import *
 from aas.model.concept import *
 from aas.model.provider import *
 from aas.model.submodel import *
 
-from aas_editor.models import Package
 from aas_editor.util import getReqParams4init, issubtype, inheritors, isMeta
 
 
@@ -302,7 +301,7 @@ class ChooseFromDialog(AddDialog):
         return obj
 
 
-class TypeOptionObjGroupBox(GroupBox):
+class TypeOptionObjGroupBox(GroupBox): # todo reimplement when Datatypes Data, Duration, etc. are ready
     def __init__(self, objTypes, title, parent=None, attrsToHide: dict = None, rmDefParams=False, objName=""):
         super(TypeOptionObjGroupBox, self).__init__(title, parent)
         self.rmDefParams = rmDefParams

@@ -51,7 +51,7 @@ class DetailedInfoTable(StandardTable):
 
         return self.objByIndex(index).flags(index.column())
 
-    def replaceItemObj(self, obj, index: QModelIndex = QModelIndex()) -> QModelIndex:
+    def replItemObj(self, obj, index: QModelIndex = QModelIndex()) -> QModelIndex:
         self.objByIndex(index).setData(obj, Qt.EditRole)
         self.objByIndex(index).populate()
 

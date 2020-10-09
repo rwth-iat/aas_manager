@@ -214,7 +214,7 @@ class AttrsTreeView(TreeView):
         dialog = AddObjDialog(objType, self, rmDefParams=False, objName=objName)
         if dialog.exec_() == QDialog.Accepted:
             obj = dialog.getObj2add()
-            item = self.model().replaceItemObj(obj, index)
+            item = self.model().replItemObj(obj, index)
             self.setFocus()
             self.setCurrentIndex(item)
         else:

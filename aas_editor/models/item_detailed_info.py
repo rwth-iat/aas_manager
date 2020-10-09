@@ -100,6 +100,10 @@ class DetailedInfoItem(StandardItem):
                 if isinstance(self.parentObj, list):
                     self.parentObj[self.row()] = valueToSet
                     self.obj = self.parentObj[self.row()]
+                elif isinstance(self.parentObj, set):
+                    self.parentObj.remove(self.obj)
+                    self.parentObj.add(valueToSet)
+                    self.obj = valueToSet
                 elif isinstance(self.parentObj, dict):
                     self.parentObj[self.objName] = valueToSet
                     self.obj = self.parentObj[self.objName]
