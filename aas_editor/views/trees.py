@@ -123,11 +123,11 @@ class PackTreeView(TreeView):
         elif attribute == "submodels":
             self.addItemWithDialog(index, Submodel)
         elif isinstance(index.data(OBJECT_ROLE), Submodel):
-            classesToChoose = inheritors(SubmodelElement)
-            dialog = ChooseFromDialog(classesToChoose, "Choose submodel element type", self)
-            if dialog.exec_() == QDialog.Accepted:
-                kls = dialog.getObj2add()
-                self.addItemWithDialog(index, kls)
+            # classesToChoose = inheritors(SubmodelElement)
+            # dialog = ChooseFromDialog(classesToChoose, "Choose submodel element type", self)
+            # if dialog.exec_() == QDialog.Accepted:
+            #     kls = dialog.getObj2add()
+            self.addItemWithDialog(index, SubmodelElement)
 
     def addItemWithDialog(self, index, objType, objName=""):
         dialog = AddObjDialog(objType, self, objName=objName)

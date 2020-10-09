@@ -3,3 +3,7 @@ Probleme mit existierenden Sample AAS they are http://www.admin-shell.io/aas/1/0
 
 Kann man vielleicht manche Typen nicht als str or None machen, sondern als str=""?
     Insbesondere immer AdministrativeInformation(revision="", version="") erstellen?
+
+abstract classes must be really abstract
+some datatypes must be implemented (Time, Duration etc.)
+_kind in Submodel, warum mit Unterstrich?

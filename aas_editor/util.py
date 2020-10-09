@@ -1,11 +1,13 @@
 import inspect
 import re
 import typing
+from abc import ABCMeta
 from enum import Enum
 from typing import List, Tuple, Union
 
 from PyQt5.QtCore import Qt, QFile, QTextStream, QModelIndex
 from PyQt5.QtWidgets import QApplication
+from aas.model import SubmodelElement, DataElement, SubmodelElementCollection, Event, Constraint
 
 from .settings import ATTR_ORDER, PREFERED_LANGS_ORDER, ATTRS_NOT_IN_DETAILED_INFO, \
     ATTR_INFOS_TO_SIMPLIFY, THEMES
@@ -63,7 +65,12 @@ def getReqParams4init(objType, rmDefParams=True, attrsToHide: dict = None) -> di
     if hasattr(objType, "__origin__") and objType.__origin__:
         objType = objType.__origin__
 
-    g = inspect.getfullargspec(objType.__init__)
+    if hasattr(objType, "__init__"):
+        g = inspect.getfullargspec(objType.__init__)
+    elif hasattr(objType, "__new__"):
+        g = inspect.getfullargspec(objType.__new__)
+    else:
+        raise TypeError(f"no init or new func in objectType: {objType}")
     params = g.annotations.copy()
 
     if rmDefParams and g.defaults:
@@ -76,7 +83,7 @@ def getReqParams4init(objType, rmDefParams=True, attrsToHide: dict = None) -> di
         pass
 
     for param in params:
-        if _isOptional(params[param]):
+        if isOptional(params[param]):
             args = list(params[param].__args__)
             args.remove(None.__class__)
             params[param] = args[0]
@@ -88,22 +95,47 @@ def getReqParams4init(objType, rmDefParams=True, attrsToHide: dict = None) -> di
     return params
 
 
-def _isOptional(param):
-    if param.__class__ == typing.Union.__class__ and \
-            None.__class__ in param.__args__ and \
-            len(param.__args__) == 2:
+def isOptional(typeHint):
+    if type(typeHint) == type(typing.Union) and \
+            type(None) in typeHint.__args__ and \
+            len(typeHint.__args__) == 2:
+        return True
+    return False
+
+
+def isMeta(typ):# todo reimplement if in pyi40aas abstract classes will be really abstract
+    if typ in (SubmodelElement, DataElement, SubmodelElementCollection, Event, Constraint):
+        return True
+    if inspect.isabstract(typ):
         return True
     return False
 
 
 def issubtype(typ, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:# todo check if gorg is ok in other versions of python
+    if types == Union:
+        if hasattr(typ, "__origin__") and typ.__origin__:
+            return typ.__origin__ == types
+        if hasattr(typ, "_gorg"):
+            return typ._gorg == types
+        else:
+            return typ == types
+
+    if isinstance(types, typing.Iterable) and typ in types:
+        return True
+    elif typ == types:
+        return True
     if hasattr(typ, "__origin__") and typ.__origin__:
         print(typ.__origin__)
-        if typ.__origin__ == typing.Union and None.__class__ in typ.__args__ and len(typ.__args__) == 2:
-            args = list(typ.__args__)
-            args.remove(None.__class__)
-            typ = args[0]
-            return issubclass(typ, types)
+        if typ.__origin__ == typing.Union:
+            if None.__class__ in typ.__args__ and len(typ.__args__) == 2:
+                args = list(typ.__args__)
+                args.remove(None.__class__)
+                typ = args[0]
+                return issubclass(typ, types)
+            elif isinstance(types, typing.Iterable):
+                return typ.__origin__ in types
+            else:
+                return typ.__origin__ == types
         else:
             return issubclass(typ.__origin__, types)
     if hasattr(typ, "_gorg"):
