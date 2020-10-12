@@ -65,16 +65,23 @@ def getReqParams4init(objType, rmDefParams=True, attrsToHide: dict = None) -> di
     if hasattr(objType, "__origin__") and objType.__origin__:
         objType = objType.__origin__
 
-    if hasattr(objType, "__init__"):
+    if hasattr(objType, "_field_types") and hasattr(objType, "_field_defaults"):
+        # for NamedTuple
+        params = objType._field_types.copy()
+        defaults = objType._field_defaults
+    elif hasattr(objType, "__init__"):
         g = inspect.getfullargspec(objType.__init__)
+        params = g.annotations.copy()
+        defaults = g.defaults
     elif hasattr(objType, "__new__"):
         g = inspect.getfullargspec(objType.__new__)
+        params = g.annotations.copy()
+        defaults = g.defaults
     else:
         raise TypeError(f"no init or new func in objectType: {objType}")
-    params = g.annotations.copy()
 
-    if rmDefParams and g.defaults:
-        for i in range(len(g.defaults)):
+    if rmDefParams and defaults:
+        for i in range(len(defaults)):
             params.popitem()
 
     try:
@@ -96,9 +103,17 @@ def getReqParams4init(objType, rmDefParams=True, attrsToHide: dict = None) -> di
 
 
 def isOptional(typeHint):
-    if type(typeHint) == type(typing.Union) and \
-            type(None) in typeHint.__args__ and \
-            len(typeHint.__args__) == 2:
+    if isUnion(typeHint):
+        if type(None) in typeHint.__args__:
+            if len(typeHint.__args__) == 2:
+                return True
+    return False
+
+def isUnion(typeHint):
+    if hasattr(typeHint, "__origin__"):
+        if type(typeHint.__origin__) == type(Union):
+            return True
+    if type(typeHint) == type(Union):
         return True
     return False
 
@@ -111,36 +126,57 @@ def isMeta(typ):# todo reimplement if in pyi40aas abstract classes will be reall
     return False
 
 
-def issubtype(typ, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:# todo check if gorg is ok in other versions of python
-    if types == Union:
-        if hasattr(typ, "__origin__") and typ.__origin__:
-            return typ.__origin__ == types
-        if hasattr(typ, "_gorg"):
-            return typ._gorg == types
-        else:
-            return typ == types
+def issubtype(typ, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:
+    try:
+        if isUnion(typ):
+            return any(isUnion(typ) for typ in types)
+    except TypeError:
+        return isUnion(types)
 
-    if isinstance(types, typing.Iterable) and typ in types:
-        return True
-    elif typ == types:
-        return True
-    if hasattr(typ, "__origin__") and typ.__origin__:
-        print(typ.__origin__)
-        if typ.__origin__ == typing.Union:
-            if None.__class__ in typ.__args__ and len(typ.__args__) == 2:
-                args = list(typ.__args__)
-                args.remove(None.__class__)
-                typ = args[0]
-                return issubclass(typ, types)
-            elif isinstance(types, typing.Iterable):
-                return typ.__origin__ in types
-            else:
-                return typ.__origin__ == types
-        else:
-            return issubclass(typ.__origin__, types)
-    if hasattr(typ, "_gorg"):
-        return issubclass(typ._gorg, types)
-    return issubclass(typ, types)
+    if isUnion(types):
+        return isUnion(typ)
+
+    if isOptional(typ):
+        typ1, typ2 = typ.__args__
+        typ = typ1 if typ2 is type(None) else typ2
+
+    try:
+        return issubclass(typ, types)
+    except TypeError:
+        return issubclass(typ.__origin__, types)
+
+# def issubtype(typ, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:# todo check if gorg is ok in other versions of python
+#     if types == Union:
+#         if hasattr(typ, "__origin__") and typ.__origin__:
+#             return typ.__origin__ == types
+#         if hasattr(typ, "_gorg"):
+#             return typ._gorg == types
+#         else:
+#             return typ == types
+#
+#     if isinstance(types, typing.Iterable) and typ in types:
+#         return True
+#     elif typ == types:
+#         return True
+#     if hasattr(typ, "__origin__") and typ.__origin__:
+#         print(typ.__origin__)
+#         if typ.__origin__ == typing.Union:
+#             if None.__class__ in typ.__args__ and len(typ.__args__) == 2:
+#                 args = list(typ.__args__)
+#                 args.remove(None.__class__)
+#                 typ = args[0]
+#                 if hasattr(typ, "__origin__") and typ.__origin__:
+#                     typ = typ.__origin__
+#                 return issubclass(typ, types)
+#             elif isinstance(types, typing.Iterable):
+#                 return typ.__origin__ in types
+#             else:
+#                 return typ.__origin__ == types
+#         else:
+#             return issubclass(typ.__origin__, types)
+#     if hasattr(typ, "_gorg"):
+#         return issubclass(typ._gorg, types)
+#     return issubclass(typ, types)
 
 
 def getAttrTypeHint(objType, attr):

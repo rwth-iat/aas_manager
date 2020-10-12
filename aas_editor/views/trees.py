@@ -200,14 +200,13 @@ class AttrsTreeView(TreeView):
         index = self.currentIndex()
         attribute = index.data(NAME_ROLE)
         attrType = getAttrTypeHint(type(self.model().mainObj), attribute)
-        if attribute == "description":
-            self.addDescrWithDialog(index)
+        # if attribute == "description":
+        #     self.addDescrWithDialog(index)
         # elif attribute == "administration":
         #     self.addAdministrationWithDialog(index)
         # elif attribute in ("derived_from", "asset", "asset_identification_model", "bill_of_material", "semantic_id", "value_id", "first", "second"):
         #     self.addAASRefWithDialog(index)
-        else:
-            self.replItemWithDialog(index, attrType)
+        self.replItemWithDialog(index, attrType)
 
     def replItemWithDialog(self, index, objType):
         objName = index.data(NAME_ROLE)

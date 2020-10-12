@@ -1,4 +1,4 @@
-import typing
+from typing import NamedTuple
 
 from PyQt5.QtCore import Qt
 from PyQt5 import QtWidgets
@@ -99,46 +99,29 @@ class AddDescriptionDialog(AddDialog):
         return descrUpdateDict
 
 
-def getInputWidget(attrType, rmDefParams=True, objName="", attrsToHide: dict = None, parent=None) -> QtWidgets.QWidget:
-    print(attrType, attrType.__str__, attrType.__repr__, attrType.__class__)
+def getInputWidget(objType, rmDefParams=True, objName="", attrsToHide: dict = None, parent=None) -> QtWidgets.QWidget:
+    print(objType, objType.__str__, objType.__repr__, objType.__class__)
     attrsToHide = attrsToHide if attrsToHide else {}
-    if isMeta(attrType):
-        objTypes = inheritors(attrType)
+    if isMeta(objType):
+        objTypes = inheritors(objType)
         widget = TypeOptionObjGroupBox(objTypes, "", attrsToHide=attrsToHide,
                              rmDefParams=rmDefParams, objName=objName, parent=parent)
-    elif issubtype(attrType, Union):
-        objTypes = attrType.__args__
+    elif issubtype(objType, (list, tuple, set, dict)) and not issubtype(objType, DictItem):# typing.Iterable):
+        widget = IterableGroupBox(objType, "", rmDefParams=rmDefParams, parent=parent)
+    elif issubtype(objType, Union):
+        objTypes = objType.__args__
         widget = TypeOptionObjGroupBox(objTypes, "", attrsToHide=attrsToHide,
                              rmDefParams=rmDefParams, objName=objName, parent=parent)
-    elif issubtype(attrType, AASReference):
-        if attrType.__args__:
-            type_ = attrType.__args__[0]
+    elif issubtype(objType, AASReference):
+        if objType.__args__:
+            type_ = objType.__args__[0]
             attrsToHide["type_"] = type_
-        widget = ObjGroupBox(attrType, "", attrsToHide=attrsToHide,
+        widget = ObjGroupBox(objType, "", attrsToHide=attrsToHide,
                              rmDefParams=rmDefParams, objName=objName, parent=parent)
-    elif issubtype(attrType, (bool, str, int, float, Enum, Type)):
-        widget = StandardInputWidget(attrType, parent=parent)
-    elif issubtype(attrType, (list, tuple, set)):# typing.Iterable):
-        argTypes = list(attrType.__args__)
-        if ... in argTypes:
-            argTypes.remove(...)
-        if len(argTypes) == 1:
-            argType = argTypes[0]
-        else:
-            raise TypeError(f"expected 1 argument, got {len(argTypes)}", argTypes)
-        widget = ListGroupBox(argType, "", rmDefParams=rmDefParams, parent=parent)
-    # elif issubtype(attrType, dict): # todo implement input for dict
-    #     argTypes = list(attrType.__args__)
-    #     if ... in argTypes:
-    #         argTypes.remove(...)
-    #     if len(argTypes) == 2:
-    #         keyType = argTypes[0]
-    #         valueType = argTypes[1]
-    #     else:
-    #         raise TypeError(f"expected 2 argument, got {len(argTypes)}", argTypes)
-    #     widget = ListGroupBox(argType, "")
+    elif issubtype(objType, (bool, str, int, float, Enum, Type)):
+        widget = StandardInputWidget(objType, parent=parent)
     else:
-        widget = ObjGroupBox(attrType, "", rmDefParams=rmDefParams, attrsToHide=attrsToHide,
+        widget = ObjGroupBox(objType, "", rmDefParams=rmDefParams, attrsToHide=attrsToHide,
                              objName=objName, parent=parent)
     return widget
 
@@ -208,30 +191,54 @@ class ObjGroupBox(GroupBox):
         obj = self.objType(**attrValueDict)
         return obj
 
+DictItem = NamedTuple("DictItem", key=Any, value=Any)
 
-class ListGroupBox(GroupBox):
-    def __init__(self, objType, title, parent=None, rmDefParams=True):
+class IterableGroupBox(GroupBox):
+    def __init__(self, iterableType, title, parent=None, rmDefParams=True):
         super().__init__(title, parent)
-        self.objType = objType
-        plusButton = QPushButton(f"+ {self.objType.__name__}", self)
+        self.iterableType = iterableType
+        self.argTypes = list(iterableType.__args__)
+        plusButton = QPushButton(f"+ Element", self)
         plusButton.clicked.connect(self.addInputWidget)
         self.layout().addWidget(plusButton)
         self.inputWidgets = []
         self.addInputWidget(rmDefParams)
 
     def addInputWidget(self, rmDefParams):
-        widget = getInputWidget(self.objType,
-                                objName=f"{self.objType.__name__} {len(self.inputWidgets)}",
+        if ... in self.argTypes:
+            self.argTypes.remove(...)
+
+        if not issubtype(self.iterableType, dict):
+            if len(self.argTypes) == 1:
+                argType = self.argTypes[0]
+            else:
+                raise TypeError(f"expected 1 argument, got {len(self.argTypes)}", self.argTypes)
+        else:
+            if len(self.argTypes) == 2:
+                DictItem._field_types["key"] = self.argTypes[0]
+                DictItem._field_types["value"] = self.argTypes[1]
+                argType = DictItem
+            else:
+                raise TypeError(f"expected 2 arguments, got {len(self.argTypes)}", self.argTypes)
+        widget = getInputWidget(argType,
+                                objName=f"{argType.__name__} {len(self.inputWidgets)}",
                                 rmDefParams=rmDefParams)
         self.inputWidgets.append(widget)
         self.layout().insertWidget(self.layout().count()-1, widget)
 
     def getObj2add(self):
         listObj = []
-        for objGroupBox in self.inputWidgets:
-            listObj.append(objGroupBox.getObj2add())
-        castedListobj = typing.cast(self.objType, listObj)
-        return castedListobj
+        for widget in self.inputWidgets:
+            listObj.append(widget.getObj2add())
+        if issubtype(self.iterableType, tuple):
+            obj = tuple(listObj)
+        if issubtype(self.iterableType, list):
+            obj = list(listObj)
+        if issubtype(self.iterableType, set):
+            obj = set(listObj)
+        if issubtype(self.iterableType, dict):
+            obj = dict(listObj)
+        return obj
 
 
 class StandardInputWidget(QtWidgets.QWidget):
