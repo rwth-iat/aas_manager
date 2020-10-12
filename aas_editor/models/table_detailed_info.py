@@ -52,12 +52,13 @@ class DetailedInfoTable(StandardTable):
         return self.objByIndex(index).flags(index.column())
 
     def replItemObj(self, obj, index: QModelIndex = QModelIndex()) -> QModelIndex:
-        self.objByIndex(index).setData(obj, Qt.EditRole)
-        self.objByIndex(index).populate()
+        if self.setData(index, obj, Qt.EditRole):
+            self.objByIndex(index).populate()
 
-        rows=self.rowCount()
-        cols=self.columnCount()
-        top_left=self.index(0,0)
-        bot_right=self.index(rows-1, cols-1)
-        self.dataChanged.emit(top_left, bot_right)
-        return index
+            rows=self.rowCount()
+            cols=self.columnCount()
+            top_left=self.index(0,0)
+            bot_right=self.index(rows-1, cols-1)
+            self.dataChanged.emit(top_left, bot_right)
+            return index
+        return QModelIndex()

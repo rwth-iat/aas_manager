@@ -65,10 +65,10 @@ def getReqParams4init(objType, rmDefParams=True, attrsToHide: dict = None) -> di
     if hasattr(objType, "__origin__") and objType.__origin__:
         objType = objType.__origin__
 
-    if hasattr(objType, "_field_types") and hasattr(objType, "_field_defaults"):
+    if hasattr(objType, "_field_types"):
         # for NamedTuple
         params = objType._field_types.copy()
-        defaults = objType._field_defaults
+        defaults = objType._field_defaults if hasattr(objType, "_field_defaults") else {}
     elif hasattr(objType, "__init__"):
         g = inspect.getfullargspec(objType.__init__)
         params = g.annotations.copy()

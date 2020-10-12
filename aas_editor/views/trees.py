@@ -5,12 +5,12 @@ from PyQt5.QtWidgets import QTreeView, QMenu, QAbstractItemView, QAction, QDialo
     QFrame, QAbstractScrollArea
 from aas.model import AssetAdministrationShell, Asset, Submodel, SubmodelElement
 
-from aas_editor.dialogs import ChooseFromDialog, AddObjDialog, AddDescriptionDialog
+from aas_editor.dialogs import AddObjDialog
 from aas_editor.qcomboboxenumdelegate import QComboBoxEnumDelegate
 from aas_editor.models import VALUE_COLUMN, NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE, ATTRIBUTE_COLUMN, \
     PackTreeViewItem, DetailedInfoItem, DetailedInfoTable, Package
 from aas_editor.settings import ATTR_COLUMN_WIDTH
-from aas_editor.util import inheritors, getAttrTypeHint
+from aas_editor.util import getAttrTypeHint
 
 
 class TreeView(QTreeView):
@@ -123,14 +123,10 @@ class PackTreeView(TreeView):
         elif attribute == "submodels":
             self.addItemWithDialog(index, Submodel)
         elif isinstance(index.data(OBJECT_ROLE), Submodel):
-            # classesToChoose = inheritors(SubmodelElement)
-            # dialog = ChooseFromDialog(classesToChoose, "Choose submodel element type", self)
-            # if dialog.exec_() == QDialog.Accepted:
-            #     kls = dialog.getObj2add()
             self.addItemWithDialog(index, SubmodelElement)
 
-    def addItemWithDialog(self, index, objType, objName=""):
-        dialog = AddObjDialog(objType, self, objName=objName)
+    def addItemWithDialog(self, index, objType, objName="", objVal=None):
+        dialog = AddObjDialog(objType, self, objName=objName, objVal=objVal)
         if dialog.exec_() == QDialog.Accepted:
             obj = dialog.getObj2add()
             item = self.model().addItem(PackTreeViewItem(obj=obj), index)
@@ -199,18 +195,12 @@ class AttrsTreeView(TreeView):
     def _addHandler(self):
         index = self.currentIndex()
         attribute = index.data(NAME_ROLE)
-        attrType = getAttrTypeHint(type(self.model().mainObj), attribute)
-        # if attribute == "description":
-        #     self.addDescrWithDialog(index)
-        # elif attribute == "administration":
-        #     self.addAdministrationWithDialog(index)
-        # elif attribute in ("derived_from", "asset", "asset_identification_model", "bill_of_material", "semantic_id", "value_id", "first", "second"):
-        #     self.addAASRefWithDialog(index)
-        self.replItemWithDialog(index, attrType)
+        attrType = getAttrTypeHint(type(self.model().objByIndex(index).parentObj), attribute)
+        self.replItemWithDialog(index, attrType, objVal=index.data(OBJECT_ROLE))
 
-    def replItemWithDialog(self, index, objType):
+    def replItemWithDialog(self, index, objType, objVal=None):
         objName = index.data(NAME_ROLE)
-        dialog = AddObjDialog(objType, self, rmDefParams=False, objName=objName)
+        dialog = AddObjDialog(objType, self, rmDefParams=False, objName=objName, objVal=objVal)
         if dialog.exec_() == QDialog.Accepted:
             obj = dialog.getObj2add()
             item = self.model().replItemObj(obj, index)
@@ -223,16 +213,6 @@ class AttrsTreeView(TreeView):
     def _newPackItem(self, packItem):
         self._initTreeView(packItem)
         self._buildHandlersForNewItem()
-
-    def addDescrWithDialog(self, index):
-        dialog = AddDescriptionDialog(self)
-        if dialog.exec_() == QDialog.Accepted:
-            descrUpdateDict = dialog.getObj2add()
-            for lang, descr in descrUpdateDict.items():
-                self.model().addItem(DetailedInfoItem(obj=descr, name=lang), index)
-        else:
-            print("Asset adding cancelled")
-        dialog.deleteLater()
 
     def openRef(self, detailInfoItem: QModelIndex, newTab=True, setCurrent=True): # todo reimplement search func findItemByObj
         item = self.model().objByIndex(detailInfoItem)
