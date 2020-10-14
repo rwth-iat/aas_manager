@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIntValidator, QDoubleValidator
 from PyQt5.QtWidgets import QLineEdit, QLabel, QComboBox, QPushButton, QDialog, QDialogButtonBox, \
-    QGroupBox, QCheckBox
+    QGroupBox, QCheckBox, QWidget
 
 from aas.model.aas import *
 from aas.model.base import *
@@ -180,8 +180,19 @@ class IterableGroupBox(GroupBox):
         widget = getInputWidget(argType,
                                 objName=f"{argType} {len(self.inputWidgets)}",
                                 rmDefParams=rmDefParams, objVal=objVal)
+        deleteButton = QPushButton(f"Delete", widget)
+        deleteButton.clicked.connect(lambda :self._delInputWidget(deleteButton.parent()))
+        widget.layout().addWidget(deleteButton)
         self.inputWidgets.append(widget)
         self.layout().insertWidget(self.layout().count()-1, widget)
+
+    def _delInputWidget(self, widget: QWidget):
+        self.layout().removeWidget(widget)
+        widget.close()
+        self.inputWidgets.remove(widget)
+
+        self.adjustSize()
+        self.window().adjustSize()
 
     def getObj2add(self):
         listObj = []
