@@ -114,14 +114,14 @@ class ObjGroupBox(GroupBox):
 
         if reqAttrsDict:
             for attr, attrType in reqAttrsDict.items():
-                val = getattr(objVal, attr) if objVal else None
+                val = getattr(objVal, attr.rstrip("_"), None) # todo delete when right _ will be deleted in aas models
                 widgetLayout = self._getInputWidgetLayout(attr, attrType, rmDefParams, val)
                 self.layout().addLayout(widgetLayout)
         else:
             widgetLayout = self._getInputWidgetLayout(objName, objType, rmDefParams, objVal)
             self.layout().addLayout(widgetLayout)
 
-    def _getInputWidgetLayout(self, attr, attrType, rmDefParams, objVal) -> QtWidgets.QHBoxLayout:
+    def _getInputWidgetLayout(self, attr:str, attrType, rmDefParams:bool, objVal:Any) -> QtWidgets.QHBoxLayout:
         print(f"Getting widget for attr: {attr} of type: {attrType}")
         layout = QtWidgets.QHBoxLayout()
         label = QLabel(f"{attr}:")
@@ -154,6 +154,8 @@ class IterableGroupBox(GroupBox):
         self.layout().addWidget(plusButton)
         self.inputWidgets = []
         if objVal:
+            if isinstance(objVal, dict):
+                objVal = [DictItem(key, value) for key, value in objVal.items()]
             for val in objVal:
                 self._addInputWidget(rmDefParams, val)
         else:
@@ -176,7 +178,7 @@ class IterableGroupBox(GroupBox):
             else:
                 raise TypeError(f"expected 2 arguments, got {len(self.argTypes)}", self.argTypes)
         widget = getInputWidget(argType,
-                                objName=f"{argType.__name__} {len(self.inputWidgets)}",
+                                objName=f"{argType} {len(self.inputWidgets)}",
                                 rmDefParams=rmDefParams, objVal=objVal)
         self.inputWidgets.append(widget)
         self.layout().insertWidget(self.layout().count()-1, widget)
@@ -272,20 +274,23 @@ class ChooseFromDialog(AddDialog):
 
 
 class TypeOptionObjGroupBox(GroupBox): # todo reimplement when Datatypes Data, Duration, etc. are ready
-    def __init__(self, objTypes, title, parent=None, attrsToHide: dict = None, rmDefParams=False, objName=""):
+    def __init__(self, objTypes, title, parent=None, attrsToHide: dict = None, rmDefParams=False, objName="", objVal=None):
         super(TypeOptionObjGroupBox, self).__init__(title, parent)
         self.rmDefParams = rmDefParams
-        self.attrsToHide = attrsToHide
+        self.attrsToHide = attrsToHide if attrsToHide else {}
 
+        # init type-choose combobox
         self.typeComboBox = QComboBox(self)
         for objType in objTypes:
             self.typeComboBox.addItem(objType.__name__, objType)
+        self.typeComboBox.setCurrentIndex(self.typeComboBox.findData(type(objVal)))
         self.layout().insertWidget(0, self.typeComboBox)
 
         currObjType = self.typeComboBox.currentData()
-        self.widget = getInputWidget(currObjType, rmDefParams, attrsToHide=attrsToHide, parent=self)
+        self.widget = getInputWidget(currObjType, rmDefParams, attrsToHide=attrsToHide, parent=self, objVal=objVal)
         self.layout().addWidget(self.widget)
 
+        # change input widget for new type if type in combobox changed
         self.typeComboBox.currentIndexChanged.connect(lambda i: self.replGroupBox(self.typeComboBox.itemData(i)))
 
     def replGroupBox(self, objType):

@@ -16,7 +16,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-        # toggleTheme(PREFERED_THEME)
+        toggleTheme(PREFERED_THEME)
         self.initToolbar()
         self.switch2rightTreeSC = QShortcut(QKeySequence("Ctrl+Right"), self)
         self.switch2leftTreeSC = QShortcut(QKeySequence("Ctrl+Left"), self)

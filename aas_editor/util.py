@@ -1,9 +1,8 @@
 import inspect
 import re
-import typing
 from abc import ABCMeta
 from enum import Enum
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Dict, Type
 
 from PyQt5.QtCore import Qt, QFile, QTextStream, QModelIndex
 from PyQt5.QtWidgets import QApplication
@@ -60,7 +59,7 @@ def getDescription(descriptions: dict) -> str:
         return tuple(descriptions.values())[0]
 
 
-def getReqParams4init(objType, rmDefParams=True, attrsToHide: dict = None) -> dict:
+def getReqParams4init(objType:Type, rmDefParams:bool=True, attrsToHide: dict = None) -> Dict[str, Type]:
     """Return required params for init with their type"""
     if hasattr(objType, "__origin__") and objType.__origin__:
         objType = objType.__origin__
