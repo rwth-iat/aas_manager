@@ -203,9 +203,9 @@ class AttrsTreeView(TreeView):
         dialog = AddObjDialog(objType, self, rmDefParams=False, objName=objName, objVal=objVal)
         if dialog.exec_() == QDialog.Accepted:
             obj = dialog.getObj2add()
-            item = self.model().replItemObj(obj, index)
+            self.model().setData(index, obj, Qt.EditRole)
             self.setFocus()
-            self.setCurrentIndex(item)
+            self.setCurrentIndex(index)
         else:
             print("Item adding cancelled")
         dialog.deleteLater()
@@ -242,8 +242,7 @@ class AttrsTreeView(TreeView):
         self.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
         self.setObjectName("attrsTreeView")
 
-        attrsModel = DetailedInfoTable(mainObj=packItem.data(OBJECT_ROLE),
-                                       package=packItem.data(PACKAGE_ROLE))
+        attrsModel = DetailedInfoTable(packItem)
         self.setModel(attrsModel)
         self.setColumnWidth(ATTRIBUTE_COLUMN, ATTR_COLUMN_WIDTH)
         self.setItemDelegate(QComboBoxEnumDelegate())
