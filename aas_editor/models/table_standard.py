@@ -2,13 +2,13 @@ from typing import Any
 
 from PyQt5.QtCore import QAbstractItemModel, QVariant, QModelIndex, Qt
 
-from aas_editor.models import OBJECT_ROLE, NAME_ROLE, Package, DetailedInfoItem
+from aas_editor.models import OBJECT_ROLE, NAME_ROLE, Package, DetailedInfoItem, StandardItem
 
 
 class StandardTable(QAbstractItemModel):
-    def __init__(self, columns=("Item",)):
+    def __init__(self, columns=("Item",), rootItem: StandardItem = None):
         super(StandardTable, self).__init__()
-        self._rootItem = DetailedInfoItem(self, "")
+        self._rootItem = rootItem if rootItem else DetailedInfoItem(None, "", None)
         self._columns = columns
 
     def data(self, index, role):
@@ -51,7 +51,7 @@ class StandardTable(QAbstractItemModel):
     def hasChildren(self, parent: QModelIndex = ...) -> bool:
         return True if self.rowCount(parent) else False
 
-    def objByIndex(self, index):
+    def objByIndex(self, index: QModelIndex):
         if not index.isValid():
             return self._rootItem
         return index.internalPointer()
@@ -70,8 +70,11 @@ class StandardTable(QAbstractItemModel):
     def findItemByObj(self, obj): #todo redefine to match()
         for item in self.iterItems():
             print("Name:", item.data(NAME_ROLE))
-            if item.data(OBJECT_ROLE) == obj:
-                return item
+            try:
+                if item.data(OBJECT_ROLE) == obj:
+                    return item
+            except AttributeError:
+                continue
 
     def addItem(self, item, parent: QModelIndex = QModelIndex()): # todo redefine to insertRows
         if isinstance(parent.parent().data(OBJECT_ROLE), Package):
