@@ -31,6 +31,6 @@ THEMES = {
 }
 
 PACKAGE_ATTRS = ("shells", "assets", "submodels", "concept_descriptions", "others")
-ATTRS_NOT_IN_DETAILED_INFO = ("namespace_element_sets", "parent", "submodel_element") + PACKAGE_ATTRS
+ATTRS_NOT_IN_DETAILED_INFO = ("gi_code", "gi_frame", "gi_running", "gi_yieldfrom", "namespace_element_sets", "parent", "submodel_element") + PACKAGE_ATTRS
 ATTRS_IN_PACKAGE_TREEVIEW = PACKAGE_ATTRS
 ATTR_INFOS_TO_SIMPLIFY = (AdministrativeInformation, Identifier,)
