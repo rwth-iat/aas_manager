@@ -10,23 +10,27 @@ from aas_editor.util import getAttrDoc, simplifyInfo, getAttrs4detailInfo
 
 
 class DetailedInfoItem(StandardItem):
-    def __init__(self, obj, name, parent=None, masterObj=None, package: Package = None):
+    def __init__(self, obj, name, parent=None, package: Package = None):
         super().__init__(obj, name, parent)
-        self.masterObj = masterObj
         self.package = package
-        self.isLink = self._isLink()
-        if masterObj or parent:
-            self.parentObj = self.masterObj if self.masterObj else self.parent().obj
-            self.populate()
+        self.populate()
 
-    def _isLink(self):
-        if self.package and isinstance(self.obj, AASReference):
-            try:
-                self.obj.resolve(self.package.objStore)
-                return True
-            except (KeyError, NotImplementedError) as e:
-                print(e)
-        return False
+    # @property
+    # def parentObj(self):
+    #     try:
+    #         self.parent().obj
+    #     except AttributeError:
+    #         return None
+    #
+    # @property
+    # def isLink(self):
+    #     if self.package and isinstance(self.obj, AASReference):
+    #         try:
+    #             self.obj.resolve(self.package.objStore)
+    #             return True
+    #         except (AttributeError, KeyError, NotImplementedError) as e:
+    #             print(e)
+    #     return False
 
     def data(self, role, column=VALUE_COLUMN):
         if role == Qt.ToolTipRole:
@@ -37,12 +41,6 @@ class DetailedInfoItem(StandardItem):
             return self.obj
         if role == PACKAGE_ROLE:
             return self.package
-        if role == Qt.BackgroundRole:
-            return self._getBgColor()
-        if role == Qt.ForegroundRole:
-            return self._getFgColor(column)
-        if role == Qt.FontRole:
-            return self._getFont(column)
         if role == Qt.DisplayRole:
             if column == ATTRIBUTE_COLUMN:
                 return self.objName
@@ -55,43 +53,10 @@ class DetailedInfoItem(StandardItem):
                 return self.obj
         return QVariant()
 
-    def _getBgColor(self):
-        color = QColor(132, 185, 225)
-        if self.masterObj:
-            if self.row() % 2:
-                color.setAlpha(150)
-            else:
-                color.setAlpha(110)
-        else:
-            if self.row() == 0:
-                color.setAlpha(260 - self.parent().data(Qt.BackgroundRole).alpha())
-            else:
-                color.setAlpha(
-                    260 - self.parent().children()[self.row() - 1].data(Qt.BackgroundRole).alpha())
-        return color
-
-    def _getFgColor(self, column):
-        if column == VALUE_COLUMN:
-            if self.isLink:
-                return QColor(26, 13, 171)
-        return QVariant()
-
-    def _getFont(self, column):
-        font = QFont()
-        if column == ATTRIBUTE_COLUMN:
-            if not isinstance(self.parentObj, dict):
-                font.setBold(True)
-            return font
-        if column == VALUE_COLUMN:
-            if self.isLink:
-                font.setUnderline(True)
-            return font
-        return QVariant()
-
-    def setParent(self, a0: 'QObject') -> None:
-        super().setParent(a0)
-        if a0 and not self.masterObj:
-            self.parentObj = a0.obj
+    # def setParent(self, a0: 'QObject') -> None:
+    #     super().setParent(a0)
+    #     if a0 and not self.masterObj:
+    #         self.parentObj = a0.obj
 
     def setData(self, value, role, column=VALUE_COLUMN):
         if role == Qt.EditRole:
@@ -131,14 +96,14 @@ class DetailedInfoItem(StandardItem):
             return value
         return value
 
-    def flags(self, column):
-        if column == ATTRIBUTE_COLUMN and not isinstance(self.parentObj, dict):
-            return Qt.ItemIsEnabled | Qt.ItemIsSelectable
-
-        if self.children():
-            return Qt.ItemIsEnabled | Qt.ItemIsSelectable
-
-        return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
+    # def flags(self, column):
+    #     if column == ATTR_COLUMN and not isinstance(self.parentObj, dict):
+    #         return Qt.ItemIsEnabled | Qt.ItemIsSelectable
+    #
+    #     if self.children():
+    #         return Qt.ItemIsEnabled | Qt.ItemIsSelectable
+    #
+    #     return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
     def populate(self):
         if isinstance(self.obj, TYPES_NOT_TO_POPULATE):

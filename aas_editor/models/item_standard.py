@@ -1,4 +1,5 @@
 from PyQt5.QtCore import QObject
+from aas.model import AASReference
 
 
 class StandardItem(QObject):
@@ -15,6 +16,23 @@ class StandardItem(QObject):
             return self.obj.id_short
         else:
             return self.obj.__class__.__name__
+
+    @property
+    def parentObj(self):
+        try:
+            self.parent().obj
+        except AttributeError:
+            return None
+
+    @property
+    def isLink(self):
+        if self.package and isinstance(self.obj, AASReference):
+            try:
+                self.obj.resolve(self.package.objStore)
+                return True
+            except (AttributeError, KeyError, NotImplementedError) as e:
+                print(e)
+        return False
 
     def row(self):
         if self.parent():
