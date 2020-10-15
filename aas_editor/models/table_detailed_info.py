@@ -73,8 +73,6 @@ class DetailedInfoTable(StandardTable):
 
     def removeRows(self, row: int, count: int, parent: QModelIndex = ...) -> bool:
         parentObj = self.objByIndex(parent)
-        # if not isinstance(parentObj.obj, Iterable):
-        #     return False
 
         self.beginRemoveRows(parent, row, row+count-1)
         for n in range(count):
