@@ -20,7 +20,7 @@ class StandardItem(QObject):
     @property
     def parentObj(self):
         try:
-            self.parent().obj
+            return self.parent().obj
         except AttributeError:
             return None
 
