@@ -1,8 +1,9 @@
-import typing
+from typing import Any, Iterable
 
 from PyQt5.QtCore import pyqtSignal, QModelIndex, QVariant, Qt
 
-from aas_editor.models import Package, COLUMNS_IN_DETAILED_INFO, DetailedInfoItem, StandardTable
+from aas_editor.models import Package, COLUMNS_IN_DETAILED_INFO, DetailedInfoItem, StandardTable, \
+    VALUE_COLUMN
 from aas_editor.util import getAttrs4detailInfo
 
 
@@ -31,14 +32,20 @@ class DetailedInfoTable(StandardTable):
             return QVariant()
         return self.objByIndex(index).data(role, index.column())
 
-    def setData(self, index: QModelIndex, value: typing.Any, role: int = ...) -> bool:
+    def setData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
         if not index.isValid():
             return QVariant()
         try:
+            if self.hasChildren(index):
+                self.removeRows(0, self.rowCount(index), index)
+
             if self.objByIndex(index).setData(value, role, index.column()):
+                self.dataChanged.emit(index,
+                                      index.child(self.rowCount(index), self.columnCount(index)))
                 return True
-            self.valueChangeFailed.emit(
-                f"{self.objByIndex(index).objectName} could not be changed to {value}")
+            else:
+                self.valueChangeFailed.emit(
+                    f"{self.objByIndex(index).objectName} could not be changed to {value}")
         except (ValueError, AttributeError) as e:
             self.dataChanged.emit(index, index)
             self.valueChangeFailed.emit(
@@ -52,13 +59,36 @@ class DetailedInfoTable(StandardTable):
         return self.objByIndex(index).flags(index.column())
 
     def replItemObj(self, obj, index: QModelIndex = QModelIndex()) -> QModelIndex:
+        index = index.siblingAtColumn(VALUE_COLUMN)
+        # self.beginInsertRows(index, 0, self.rowCount(index))
         if self.setData(index, obj, Qt.EditRole):
-            self.objByIndex(index).populate()
-
-            rows=self.rowCount()
-            cols=self.columnCount()
-            top_left=self.index(0,0)
-            bot_right=self.index(rows-1, cols-1)
-            self.dataChanged.emit(top_left, bot_right)
+            # self.objByIndex(index).populate()
+            # rows=self.rowCount(index)
+            # cols=self.columnCount(index)
+            # top_left=self.index(0,0)
+            # bot_right=self.index(rows-1, cols-1)
+            # self.dataChanged.emit(index, index.child(self.rowCount(index), self.columnCount(index)))
+            # self.endInsertRows()
             return index
         return QModelIndex()
+
+    def insertRows(self, row: int, count: int, parent: QModelIndex = ...) -> bool:
+        # todo implement
+        pass
+
+    def removeRows(self, row: int, count: int, parent: QModelIndex = ...) -> bool:
+        parentObj = self.objByIndex(parent)
+        if not isinstance(parentObj.obj, Iterable):
+            return False
+
+        self.beginRemoveRows(parent, row, row+count-1)
+        for n in range(count):
+            child = parentObj.children()[row]
+            child.setParent(None)
+            # child.deleteLater()
+        self.endRemoveRows()
+        return True
+
+    def revert(self) -> None:
+        pass
+        # todo implement for row editing

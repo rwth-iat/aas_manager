@@ -90,7 +90,7 @@ class DetailedInfoItem(StandardItem):
 
     def setParent(self, a0: 'QObject') -> None:
         super().setParent(a0)
-        if not self.masterObj:
+        if a0 and not self.masterObj:
             self.parentObj = a0.obj
 
     def setData(self, value, role, column=VALUE_COLUMN):
@@ -111,6 +111,10 @@ class DetailedInfoItem(StandardItem):
                     setattr(self.parentObj, self.objName, valueToSet)
                     self.obj = getattr(self.parentObj, self.objName)
                 if self.obj == valueToSet:
+                    # for child in self.children():
+                    #     child.setParent(None)
+                    #     # child.deleteLater()
+                    self.populate()
                     return True
             elif column == ATTRIBUTE_COLUMN:
                 if isinstance(self.parentObj, dict):
