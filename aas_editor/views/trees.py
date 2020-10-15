@@ -1,3 +1,5 @@
+from collections import Iterable
+
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal, Qt, QItemSelectionModel, QModelIndex
 from PyQt5.QtGui import QMouseEvent, QKeyEvent
@@ -10,7 +12,7 @@ from aas_editor.qcomboboxenumdelegate import QComboBoxEnumDelegate
 from aas_editor.models import VALUE_COLUMN, NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE, ATTRIBUTE_COLUMN, \
     PackTreeViewItem, DetailedInfoItem, DetailedInfoTable, Package
 from aas_editor.settings import ATTR_COLUMN_WIDTH
-from aas_editor.util import getAttrTypeHint
+from aas_editor.util import getAttrTypeHint, issubtype
 
 
 class TreeView(QTreeView):
@@ -140,12 +142,17 @@ class PackTreeView(TreeView):
 class AttrsTreeView(TreeView):
     def __init__(self, parent):
         super(AttrsTreeView, self).__init__(parent)
-        self._updateMenu()
+        self._createMenu()
         self._buildHandlers()
         self.packTreeView: PackTreeView = PackTreeView.instance()
 
-    def _updateMenu(self):
+    def _createMenu(self):
         menuActions = self.attrsMenu.actions()
+
+        self.editCreateAct = QAction("E&dit/create in dialog")
+        self.editCreateAct.setStatusTip("Edit/create selected item in dialog")
+        self.editCreateAct.setDisabled(True)
+        self.attrsMenu.insertAction(menuActions[0], self.editCreateAct)
 
         self.editAct = QAction("&Edit")
         self.editAct.setStatusTip("Edit selected item")
@@ -159,6 +166,7 @@ class AttrsTreeView(TreeView):
 
         self.addAct.triggered.connect(self._addHandler)
         self.editAct.triggered.connect(lambda: self.edit(self.currentIndex()))
+        self.editCreateAct.triggered.connect(self._editCreateHandler)
 
         self.openInCurrTabAct = self.attrsMenu.addAction("Open in current ta&b", lambda: self.openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), newTab=False))
         self.openInNewTabAct = self.attrsMenu.addAction("Open in new &tab", lambda: self.openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN)))
@@ -174,6 +182,7 @@ class AttrsTreeView(TreeView):
         self.selectionModel().currentChanged.connect(self._updateDetailInfoItemMenu)
 
     def _updateDetailInfoItemMenu(self, index: QModelIndex):
+        # update edit action
         if index.flags() & Qt.ItemIsEditable:
             self.editAct.setEnabled(True)
         elif index.siblingAtColumn(VALUE_COLUMN).flags() & Qt.ItemIsEditable:
@@ -181,18 +190,32 @@ class AttrsTreeView(TreeView):
             self.setCurrentIndex(valColIndex)
             self.editAct.setEnabled(True)
         else:
-            self.editAct.setDisabled(True)
+            self.editAct.setEnabled(False)
 
+        # update add action
+        obj = index.data(OBJECT_ROLE)
+        if isinstance(obj, Iterable):
+            self.addAct.setEnabled(True)
+        else:
+            self.addAct.setEnabled(False)
+
+        # update open actions
         if self.model().objByIndex(index).isLink:
             self.openInCurrTabAct.setEnabled(True)
             self.openInBackgroundAct.setEnabled(True)
             self.openInNewTabAct.setEnabled(True)
         else:
-            self.openInCurrTabAct.setDisabled(True)
-            self.openInBackgroundAct.setDisabled(True)
-            self.openInNewTabAct.setDisabled(True)
+            self.openInCurrTabAct.setEnabled(False)
+            self.openInBackgroundAct.setEnabled(False)
+            self.openInNewTabAct.setEnabled(False)
 
     def _addHandler(self):
+        index = self.currentIndex()
+        attribute = index.data(NAME_ROLE)
+        attrType = getAttrTypeHint(type(self.model().objByIndex(index).parentObj), attribute)
+        self.replItemWithDialog(index, attrType, objVal=index.data(OBJECT_ROLE))
+
+    def _editCreateHandler(self):
         index = self.currentIndex()
         attribute = index.data(NAME_ROLE)
         attrType = getAttrTypeHint(type(self.model().objByIndex(index).parentObj), attribute)
