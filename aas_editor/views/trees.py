@@ -152,17 +152,16 @@ class AttrsTreeView(TreeView):
         self.editCreateAct = QAction("E&dit/create in dialog")
         self.editCreateAct.setStatusTip("Edit/create selected item in dialog")
         self.editCreateAct.setDisabled(True)
-        self.attrsMenu.insertAction(menuActions[0], self.editCreateAct)
 
         self.editAct = QAction("&Edit")
         self.editAct.setStatusTip("Edit selected item")
         self.editAct.setDisabled(True)
-        self.attrsMenu.insertAction(menuActions[0], self.editAct)
 
         self.addAct = QAction("&Add")
         self.addAct.setStatusTip("Add item to selected")
-        self.addAct.setEnabled(True)
-        self.attrsMenu.insertAction(self.editAct, self.addAct)
+        self.addAct.setDisabled(True)
+
+        self.attrsMenu.insertActions(menuActions[0], (self.editAct, self.editCreateAct, self.addAct))
 
         self.addAct.triggered.connect(self._addHandler)
         self.editAct.triggered.connect(lambda: self.edit(self.currentIndex()))
@@ -182,6 +181,9 @@ class AttrsTreeView(TreeView):
         self.selectionModel().currentChanged.connect(self._updateDetailInfoItemMenu)
 
     def _updateDetailInfoItemMenu(self, index: QModelIndex):
+        # update edit/create action
+        self.editCreateAct.setEnabled(True)
+
         # update edit action
         if index.flags() & Qt.ItemIsEditable:
             self.editAct.setEnabled(True)
@@ -213,7 +215,7 @@ class AttrsTreeView(TreeView):
         index = self.currentIndex()
         attribute = index.data(NAME_ROLE)
         attrType = getAttrTypeHint(type(self.model().objByIndex(index).parentObj), attribute)
-        self.replItemWithDialog(index, attrType, objVal=index.data(OBJECT_ROLE))
+        self.addItemWithDialog(index, attrType)
 
     def _editCreateHandler(self):
         index = self.currentIndex()
@@ -221,12 +223,25 @@ class AttrsTreeView(TreeView):
         attrType = getAttrTypeHint(type(self.model().objByIndex(index).parentObj), attribute)
         self.replItemWithDialog(index, attrType, objVal=index.data(OBJECT_ROLE))
 
-    def replItemWithDialog(self, index, objType, objVal=None):
+    def replItemWithDialog(self, index, objType, objVal=None, windowTitle=""):
         objName = index.data(NAME_ROLE)
-        dialog = AddObjDialog(objType, self, rmDefParams=False, objName=objName, objVal=objVal)
+        windowTitle = windowTitle if windowTitle else f"Edit {objName}"
+        dialog = AddObjDialog(objType, self, rmDefParams=False, objName=objName, objVal=objVal, windowTitle=windowTitle)
         if dialog.exec_() == QDialog.Accepted:
             obj = dialog.getObj2add()
             self.model().setData(index, obj, Qt.EditRole)
+            self.setFocus()
+            self.setCurrentIndex(index)
+        else:
+            print("Item editing cancelled")
+        dialog.deleteLater()
+
+    def addItemWithDialog(self, index, objType, objVal=None, windowTitle=""):
+        objName = index.data(NAME_ROLE)
+        dialog = AddObjDialog(objType, self, rmDefParams=False, objName=objName, objVal=objVal, windowTitle=windowTitle)
+        if dialog.exec_() == QDialog.Accepted:
+            obj = dialog.getObj2add()
+            self.model().addData(index, obj, Qt.EditRole)
             self.setFocus()
             self.setCurrentIndex(index)
         else:

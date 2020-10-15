@@ -78,9 +78,10 @@ def getInputWidget(objType, rmDefParams=True, objName="", attrsToHide: dict = No
 
 
 class AddObjDialog(AddDialog):
-    def __init__(self, objType, parent=None, rmDefParams=True, objName="", objVal=None):
+    def __init__(self, objType, parent=None, rmDefParams=True, objName="", objVal=None, windowTitle=""):
         objName = objName if objName else objType.__name__
-        AddDialog.__init__(self, parent, f"Add {objName}")
+        windowTitle = windowTitle if windowTitle else f"Add {objName}"
+        AddDialog.__init__(self, parent, windowTitle)
         self.buttonOk.setEnabled(True)
         self.inputWidget = getInputWidget(objType, rmDefParams=rmDefParams, objName=objName, objVal=objVal)
         self.inputWidget.setObjectName("mainBox")

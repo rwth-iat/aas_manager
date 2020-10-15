@@ -67,20 +67,56 @@ class DetailedInfoTable(StandardTable):
                 f"Error occurred while setting {self.objByIndex(index).objName}: {e}")
         return False
 
+    def addData(self, index: QModelIndex, value: Iterable, role: int = ...) -> bool:
+        """Add items to Iterable"""
+        obj = self.objByIndex(index).obj
+        if isinstance(obj, list):
+            obj.extend(value)
+        elif isinstance(obj, set) or isinstance(obj, dict):
+            obj.update(value)
+        else:
+            raise AttributeError("The Object to add to is not iterable")
+        self.setData(index, obj, role)
+
+
     def insertRows(self, row: int, count: int, parent: QModelIndex = ...) -> bool:
         # todo implement
         pass
 
     def removeRows(self, row: int, count: int, parent: QModelIndex = ...) -> bool:
-        parentObj = self.objByIndex(parent)
+        parentItem = self.objByIndex(parent)
 
         self.beginRemoveRows(parent, row, row+count-1)
         for n in range(count):
-            child = parentObj.children()[row]
+            child = parentItem.children()[row]
             child.setParent(None)
             # child.deleteLater()
         self.endRemoveRows()
         return True
+
+    def clearRows(self, row: int, count: int, parent: QModelIndex = ...) -> bool:
+        """Delete rows if they are children of Iterable else set to Default"""
+        parentItem = self.objByIndex(parent)
+
+        self.beginRemoveRows(parent, row, row+count-1)
+        for n in range(count):
+            child = parentItem.children()[row]
+            if isinstance(parent.data(OBJECT_ROLE), list):
+                parentItem.obj.pop[row]
+                child.setParent(None)
+            elif isinstance(parent.data(OBJECT_ROLE), set):
+                parentItem.obj.remove(child.obj)
+                child.setParent(None)
+            elif isinstance(parent.data(OBJECT_ROLE), dict):
+                parentItem.obj.pop(child.obj)
+                child.setParent(None)
+        self.endRemoveRows()
+        self.dataChanged.emit(parent, parent.child(self.rowCount(parent), self.columnCount(parent)))
+        return True
+
+    def clearRow(self, row: int, parent: QModelIndex = ...) -> bool:
+        """Delete row if it is child of Iterable else set to Default"""
+        self.clearRows(row, 1, parent)
 
     def _getBgColor(self, index: QModelIndex):
         color = QColor(132, 185, 225)
