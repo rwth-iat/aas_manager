@@ -15,23 +15,6 @@ class DetailedInfoItem(StandardItem):
         self.package = package
         self.populate()
 
-    # @property
-    # def parentObj(self):
-    #     try:
-    #         self.parent().obj
-    #     except AttributeError:
-    #         return None
-    #
-    # @property
-    # def isLink(self):
-    #     if self.package and isinstance(self.obj, AASReference):
-    #         try:
-    #             self.obj.resolve(self.package.objStore)
-    #             return True
-    #         except (AttributeError, KeyError, NotImplementedError) as e:
-    #             print(e)
-    #     return False
-
     def data(self, role, column=VALUE_COLUMN):
         if role == Qt.ToolTipRole:
             return getAttrDoc(self.objName, self.parentObj.__init__.__doc__)
@@ -52,11 +35,6 @@ class DetailedInfoItem(StandardItem):
             if column == VALUE_COLUMN:
                 return self.obj
         return QVariant()
-
-    # def setParent(self, a0: 'QObject') -> None:
-    #     super().setParent(a0)
-    #     if a0 and not self.masterObj:
-    #         self.parentObj = a0.obj
 
     def setData(self, value, role, column=VALUE_COLUMN):
         if role == Qt.EditRole:
@@ -95,15 +73,6 @@ class DetailedInfoItem(StandardItem):
         if not isinstance(value, str):
             return value
         return value
-
-    # def flags(self, column):
-    #     if column == ATTR_COLUMN and not isinstance(self.parentObj, dict):
-    #         return Qt.ItemIsEnabled | Qt.ItemIsSelectable
-    #
-    #     if self.children():
-    #         return Qt.ItemIsEnabled | Qt.ItemIsSelectable
-    #
-    #     return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
     def populate(self):
         if isinstance(self.obj, TYPES_NOT_TO_POPULATE):
