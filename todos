@@ -1,8 +1,7 @@
-finish all add dialogs
-repl dialog with default obj
+copy/paste, may be with replObj func
+cancel last action
 choose from for references
 add add/create-button to toolbar
-copy/paste, may be with replObj func
 
 update aas package from git
 start working with files
@@ -17,7 +16,12 @@ find usages func
     handle if id_short or identification will be changed
 
 tab in a window
-cancel last action
 settings
 open recent
 integrate validator
+
+
+Done:
+delete
+finish all add dialogs
+repl dialog with default obj

@@ -29,8 +29,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.buildHandlers()
 
-        # todo: save, open , collapse all, expand all actions
-
     def initToolbar(self):
         self.toolBar.addAction(self.tabWidget.backAct)
         self.toolBar.addAction(self.tabWidget.forwardAct)

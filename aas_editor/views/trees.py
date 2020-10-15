@@ -2,9 +2,9 @@ from collections import Iterable
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal, Qt, QItemSelectionModel, QModelIndex
-from PyQt5.QtGui import QMouseEvent, QKeyEvent
+from PyQt5.QtGui import QMouseEvent, QKeyEvent, QKeySequence
 from PyQt5.QtWidgets import QTreeView, QMenu, QAbstractItemView, QAction, QDialog, QSizePolicy, \
-    QFrame, QAbstractScrollArea
+    QFrame, QAbstractScrollArea, QShortcut
 from aas.model import AssetAdministrationShell, Asset, Submodel, SubmodelElement
 
 from aas_editor.dialogs import AddObjDialog
@@ -12,7 +12,7 @@ from aas_editor.qcomboboxenumdelegate import QComboBoxEnumDelegate
 from aas_editor.models import VALUE_COLUMN, NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE, ATTRIBUTE_COLUMN, \
     PackTreeViewItem, DetailedInfoItem, DetailedInfoTable, Package
 from aas_editor.settings import ATTR_COLUMN_WIDTH
-from aas_editor.util import getAttrTypeHint, issubtype
+from aas_editor.util import getAttrTypeHint, issubtype, getDefaultVal
 
 
 class TreeView(QTreeView):
@@ -67,6 +67,11 @@ class TreeView(QTreeView):
                         self.collapse(index2fold)
                     else:
                         self.expand(index2fold)
+        elif event.key() == Qt.Key_Delete:
+            try:
+                self.delClearAct.trigger()
+            except AttributeError:
+                pass
         else:
             # any other key was pressed, inform base
             super(TreeView, self).keyPressEvent(event)
@@ -97,9 +102,9 @@ class PackTreeView(TreeView):
         else:
             super(PackTreeView, self).__init__(parent)
             PackTreeView.__instance = self
-            self._updateMenu()
+            self._createMenu()
 
-    def _updateMenu(self):
+    def _createMenu(self):
         menuActions = self.attrsMenu.actions()
 
         self.addAct = QAction("&Add")
@@ -146,23 +151,35 @@ class AttrsTreeView(TreeView):
         self._buildHandlers()
         self.packTreeView: PackTreeView = PackTreeView.instance()
 
+    # noinspection PyArgumentList
     def _createMenu(self):
         menuActions = self.attrsMenu.actions()
 
-        self.editCreateAct = QAction("E&dit/create in dialog")
-        self.editCreateAct.setStatusTip("Edit/create selected item in dialog")
-        self.editCreateAct.setDisabled(True)
+        self.delClearAct = QAction("Delete/clear", self,
+                                   shortcut=QKeySequence.Delete,
+                                   statusTip="Delete/clear selected item",
+                                   enabled=True)
 
-        self.editAct = QAction("&Edit")
-        self.editAct.setStatusTip("Edit selected item")
-        self.editAct.setDisabled(True)
+        self.editCreateAct = QAction("E&dit/create in dialog", self,
+                                     shortcut="Ctrl+E",
+                                     statusTip="Edit/create selected item in dialog",
+                                     enabled=False)
 
-        self.addAct = QAction("&Add")
-        self.addAct.setStatusTip("Add item to selected")
-        self.addAct.setDisabled(True)
+        self.editAct = QAction("&Edit", self,
+                               statusTip="Edit selected item",
+                               shortcut="Enter",
+                               enabled=False)
+
+        self.addAct = QAction("&Add", self,
+                              statusTip="Add item to selected",
+                              shortcut=QKeySequence.New,
+                              enabled=False)
 
         self.attrsMenu.insertActions(menuActions[0], (self.editAct, self.editCreateAct, self.addAct))
+        self.attrsMenu.insertSeparator(menuActions[0])
+        self.attrsMenu.insertAction(menuActions[0], self.delClearAct)
 
+        self.delClearAct.triggered.connect(self._delClearHandler)
         self.addAct.triggered.connect(self._addHandler)
         self.editAct.triggered.connect(lambda: self.edit(self.currentIndex()))
         self.editCreateAct.triggered.connect(self._editCreateHandler)
@@ -210,6 +227,16 @@ class AttrsTreeView(TreeView):
             self.openInCurrTabAct.setEnabled(False)
             self.openInBackgroundAct.setEnabled(False)
             self.openInNewTabAct.setEnabled(False)
+
+    def _delClearHandler(self):
+        index = self.currentIndex()
+        attribute = index.data(NAME_ROLE)
+        try:
+            parentObjType = type(self.model().objByIndex(index).parentObj)
+            defaultVal = getDefaultVal(attribute, parentObjType)
+            self.model().clearRow(index.row(), index.parent(), defaultVal)
+        except (AttributeError, IndexError):
+            self.model().clearRow(index.row(), index.parent())
 
     def _addHandler(self):
         index = self.currentIndex()

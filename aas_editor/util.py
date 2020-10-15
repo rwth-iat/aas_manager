@@ -59,8 +59,21 @@ def getDescription(descriptions: dict) -> str:
         return tuple(descriptions.values())[0]
 
 
-def getReqParams4init(objType:Type, rmDefParams:bool=True, attrsToHide: dict = None) -> Dict[str, Type]:
-    """Return required params for init with their type"""
+def getDefaultVal(param: str, objType: Type):
+    params, defaults = getParams4init(objType)
+    if params and defaults:
+        params = list(params.keys())
+        revParams = reversed(params)
+        revDefaults = list(reversed(defaults))
+        for n, par in enumerate(revParams):
+            if par == param:
+                defValue = revDefaults[n]
+                return defValue
+    raise AttributeError("No such default parameter found:", param)
+
+
+def getParams4init(objType: Type):
+    """Return params for init with their type and default values"""
     if hasattr(objType, "__origin__") and objType.__origin__:
         objType = objType.__origin__
 
@@ -78,6 +91,11 @@ def getReqParams4init(objType:Type, rmDefParams:bool=True, attrsToHide: dict = N
         defaults = g.defaults
     else:
         raise TypeError(f"no init or new func in objectType: {objType}")
+    return params, defaults
+
+def getReqParams4init(objType:Type, rmDefParams:bool=True, attrsToHide: dict = None) -> Dict[str, Type]:
+    """Return required params for init with their type"""
+    params, defaults = getParams4init(objType)
 
     if rmDefParams and defaults:
         for i in range(len(defaults)):
