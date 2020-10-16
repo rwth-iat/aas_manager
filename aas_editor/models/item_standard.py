@@ -1,12 +1,44 @@
-from PyQt5.QtCore import QObject
+from PyQt5.QtCore import QObject, QVariant
 from aas.model import AASReference
 
+from aas_editor.models import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, VALUE_COLUMN, ATTRIBUTE_COLUMN
+from aas_editor.util import getDescription, getAttrDoc, simplifyInfo
+from PyQt5.QtCore import Qt
 
 class StandardItem(QObject):
     def __init__(self, obj, name=None, parent=None):
         super().__init__(parent)
         self.obj = obj
         self.objName = name
+
+    def data(self, role, column=ATTRIBUTE_COLUMN):
+        if role == Qt.ToolTipRole:
+            if hasattr(self.obj, "description"):
+                return getDescription(self.obj.description)
+            else:
+                return getAttrDoc(self.objName, self.parentObj.__init__.__doc__)
+        if role == NAME_ROLE:
+            return self.objectName
+        if role == OBJECT_ROLE:
+            return self.obj
+        if role == PACKAGE_ROLE:
+            return self.package
+        if role == Qt.DisplayRole:
+            if column == ATTRIBUTE_COLUMN:
+                return self.objectName
+            if column == VALUE_COLUMN:
+                return simplifyInfo(self.obj, self.objectName)
+        if role == Qt.EditRole:
+            if column == ATTRIBUTE_COLUMN:
+                return self.objName
+            if column == VALUE_COLUMN:
+                return self.obj
+        return QVariant()
+
+
+    def setParent(self, a0: 'QObject') -> None:
+        super().setParent(a0)
+        self.package = a0.data(PACKAGE_ROLE)
 
     @property
     def objectName(self):

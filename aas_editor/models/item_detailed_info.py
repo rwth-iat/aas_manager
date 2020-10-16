@@ -14,27 +14,6 @@ class DetailedInfoItem(StandardItem):
         self.package = package
         self.populate()
 
-    def data(self, role, column=VALUE_COLUMN):
-        if role == Qt.ToolTipRole:
-            return getAttrDoc(self.objName, self.parentObj.__init__.__doc__)
-        if role == NAME_ROLE:
-            return self.objectName
-        if role == OBJECT_ROLE:
-            return self.obj
-        if role == PACKAGE_ROLE:
-            return self.package
-        if role == Qt.DisplayRole:
-            if column == ATTRIBUTE_COLUMN:
-                return self.objName
-            if column == VALUE_COLUMN:
-                return simplifyInfo(self.obj, self.objectName)
-        if role == Qt.EditRole:
-            if column == ATTRIBUTE_COLUMN:
-                return self.objName
-            if column == VALUE_COLUMN:
-                return self.obj
-        return QVariant()
-
     def populate(self):
         if isinstance(self.obj, TYPES_NOT_TO_POPULATE):
             return

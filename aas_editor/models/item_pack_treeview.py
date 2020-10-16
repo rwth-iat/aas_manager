@@ -17,23 +17,6 @@ class PackTreeViewItem(StandardItem):
             self.package = obj
         self.populate()
 
-    def data(self, role):
-        if role == NAME_ROLE:
-            return self.objectName
-        if role == OBJECT_ROLE:
-            return self.obj
-        if role == PACKAGE_ROLE:
-            return self.package
-        if role == Qt.DisplayRole:
-            return self.objectName
-        if role == Qt.ToolTipRole and hasattr(self.obj, "description"):
-            return getDescription(self.obj.description)
-        return QtCore.QVariant()
-
-    def setParent(self, a0: 'QObject') -> None:
-        super().setParent(a0)
-        self.package = a0.data(PACKAGE_ROLE)
-
     def populate(self):
         # todo make populate of PackTreeViewItem smarter (may be with typing check)
         try:
