@@ -67,7 +67,7 @@ class StandardItem(QObject):
             try:
                 self.obj.resolve(self.package.objStore)
                 return True
-            except (AttributeError, KeyError, NotImplementedError) as e:
+            except (AttributeError, KeyError, NotImplementedError, TypeError) as e:
                 print(e)
         elif isinstance(self.obj, LINK_TYPES):
             return True
