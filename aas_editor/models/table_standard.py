@@ -85,11 +85,6 @@ class StandardTable(QAbstractItemModel):
             except AttributeError:
                 continue
 
-
-    def addData(self, parent: QModelIndex, value: Iterable, role: int = ...) -> bool:
-        """Add items to Iterable"""
-        self.addItem1(value, parent)
-
     def addItem(self, obj: Union[Package, SubmodelElement, Iterable], parent: QModelIndex = QModelIndex()):
         # obj must be iterable if add to list, dict or set
         parentObj = self.objByIndex(parent).data(OBJECT_ROLE)
