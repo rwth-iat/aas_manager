@@ -201,12 +201,14 @@ class IterableGroupBox(GroupBox):
             listObj.append(widget.getObj2add())
         if issubtype(self.iterableType, tuple):
             obj = tuple(listObj)
-        if issubtype(self.iterableType, list):
+        elif issubtype(self.iterableType, list):
             obj = list(listObj)
-        if issubtype(self.iterableType, set):
+        elif issubtype(self.iterableType, set):
             obj = set(listObj)
-        if issubtype(self.iterableType, dict):
+        elif issubtype(self.iterableType, dict):
             obj = dict(listObj)
+        else:
+            raise TypeError("Unknown type", self.iterableType)
         return obj
 
 
