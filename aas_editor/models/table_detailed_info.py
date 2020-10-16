@@ -8,8 +8,6 @@ from aas_editor.models import Package, COLUMNS_IN_DETAILED_INFO, DetailedInfoIte
 
 
 class DetailedInfoTable(StandardTable):
-    valueChangeFailed = pyqtSignal(['QString'])
-
     def __init__(self, packItem: QModelIndex):
         self.mainObj = packItem.data(OBJECT_ROLE)
         self.package = packItem.data(PACKAGE_ROLE)
@@ -27,104 +25,6 @@ class DetailedInfoTable(StandardTable):
             return self._getFont(index)
         item = self.objByIndex(index)
         return item.data(role, index.column())
-
-    def setData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
-        if not index.isValid() or not role == Qt.EditRole:
-            return QVariant()
-        try:
-            if self.hasChildren(index):
-                self.removeRows(0, self.rowCount(index), index)
-            value = None if str(value) == "None" else value
-            item = self.objByIndex(index)
-            if isinstance(index.parent().data(OBJECT_ROLE), list):
-                item.parentObj[index.row()] = value
-                item.obj = index.parent().data(OBJECT_ROLE)[index.row()]
-            elif isinstance(index.parent().data(OBJECT_ROLE), set):
-                item.parentObj.remove(item.obj)
-                item.parentObj.add(value)
-                item.obj = value
-            elif isinstance(index.parent().data(OBJECT_ROLE), dict):
-                if index.column() == VALUE_COLUMN:
-                    item.parentObj[item.objName] = value
-                    item.obj = item.parentObj[item.objName]
-                elif index.column() == ATTRIBUTE_COLUMN:
-                    item.parentObj[value] = item.parentObj.pop(item.objName)
-                    item.objName = value
-            else:
-                setattr(item.parentObj, item.objName, value)
-                item.obj = getattr(item.parentObj, item.objName)
-            if item.obj == value:
-                item.populate()
-                self.dataChanged.emit(index,
-                                      index.child(self.rowCount(index), self.columnCount(index)))
-                return True
-            else:
-                self.valueChangeFailed.emit(
-                    f"{self.objByIndex(index).objectName} could not be changed to {value}")
-        except (ValueError, AttributeError) as e:
-            self.dataChanged.emit(index, index)
-            self.valueChangeFailed.emit(
-                f"Error occurred while setting {self.objByIndex(index).objName}: {e}")
-        return False
-
-    def addData(self, index: QModelIndex, value: Iterable, role: int = ...) -> bool:
-        """Add items to Iterable"""
-        # todo not change real obj, do it only with setdata
-        obj = self.objByIndex(index).obj
-        if isinstance(obj, list):
-            obj.extend(value)
-        elif isinstance(obj, set) or isinstance(obj, dict):
-            obj.update(value)
-        else:
-            raise AttributeError("The Object to add to is not iterable")
-        self.setData(index, obj, role)
-
-
-    def insertRows(self, row: int, count: int, parent: QModelIndex = ...) -> bool:
-        # todo implement
-        pass
-
-    def removeRows(self, row: int, count: int, parent: QModelIndex = ...) -> bool:
-        parentItem = self.objByIndex(parent)
-
-        self.beginRemoveRows(parent, row, row+count-1)
-        for n in range(count):
-            child = parentItem.children()[row]
-            child.setParent(None)
-            # child.deleteLater()
-        self.endRemoveRows()
-        return True
-
-    def clearRows(self, row: int, count: int, parent: QModelIndex = ..., defaultVal="Not given") -> bool:
-        """Delete rows if they are children of Iterable else set to Default"""
-        parentItem = self.objByIndex(parent)
-        # todo not change real obj, do it only with setdata
-
-        self.beginRemoveRows(parent, row, row+count-1)
-        for n in range(row+count-1, row-1, -1):
-            child = parentItem.children()[n]
-            if isinstance(parentItem.obj, list):
-                parentItem.obj.pop[n]
-                child.setParent(None)
-            elif isinstance(parentItem.obj, set):
-                parentItem.obj.remove(child.obj)
-                child.setParent(None)
-            elif isinstance(parentItem.obj, dict):
-                parentItem.obj.pop(child.objName)
-                child.setParent(None)
-            else:
-                if not defaultVal == "Not given":
-                    self.setData(self.index(n, 0, parent), defaultVal, Qt.EditRole)
-                else:
-                    self.valueChangeFailed.emit(
-                        f"{child.objectName} could not be deleted or set to default")
-        self.endRemoveRows()
-        self.dataChanged.emit(parent, parent.child(self.rowCount(parent), self.columnCount(parent)))
-        return True
-
-    def clearRow(self, row: int, parent: QModelIndex = ..., defaultVal="Not given") -> bool:
-        """Delete row if it is child of Iterable else set to Default"""
-        self.clearRows(row, 1, parent, defaultVal)
 
     def _getBgColor(self, index: QModelIndex):
         color = QColor(132, 185, 225)
@@ -159,12 +59,3 @@ class DetailedInfoTable(StandardTable):
             return font
         return QVariant()
 
-    def flags(self, index: QModelIndex) -> Qt.ItemFlags:
-        if not index.isValid():
-            return Qt.NoItemFlags
-
-        if (index.column() == ATTRIBUTE_COLUMN and not isinstance(index.parent().data(OBJECT_ROLE), dict)) \
-                or self.hasChildren(index):
-            return Qt.ItemIsEnabled | Qt.ItemIsSelectable
-
-        return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
