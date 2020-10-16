@@ -1,11 +1,7 @@
 import collections
 
-from PyQt5 import QtCore
-from PyQt5.QtCore import Qt
-
-from aas_editor.models import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, StandardItem
+from aas_editor.models import PACKAGE_ROLE, StandardItem
 from aas_editor.settings import ATTRS_IN_PACKAGE_TREEVIEW
-from aas_editor.util import getDescription
 
 
 class PackTreeViewItem(StandardItem):
@@ -23,7 +19,8 @@ class PackTreeViewItem(StandardItem):
             for attr in ATTRS_IN_PACKAGE_TREEVIEW:
                 if hasattr(self.obj, attr):
                     attr_obj = getattr(self.obj, attr)
-                    parent = PackTreeViewItem(obj=attr_obj, parent=self, objName=attr)
+                    # set package objStore as obj, so that delete works
+                    parent = PackTreeViewItem(obj=self.obj.objStore, parent=self, objName=attr)
                     if isinstance(attr_obj, collections.Iterable):
                         for i in attr_obj:
                             PackTreeViewItem(obj=i, parent=parent)
@@ -33,6 +30,7 @@ class PackTreeViewItem(StandardItem):
                     if attr_obj:
                         for i in attr_obj:
                             PackTreeViewItem(obj=i, parent=self)
+                            # todo ask if they want to make Submodel iterable, delete doesnt work
 
         except (KeyError, NotImplementedError) as e:
             print(e)

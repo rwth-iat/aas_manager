@@ -1,6 +1,7 @@
 from typing import Any, Iterable
 
 from PyQt5.QtCore import QAbstractItemModel, QVariant, QModelIndex, Qt, pyqtSignal
+from aas.model import DictObjectStore
 
 from aas_editor.models import OBJECT_ROLE, NAME_ROLE, Package, DetailedInfoItem, StandardItem, \
     ATTRIBUTE_COLUMN, VALUE_COLUMN
@@ -98,17 +99,17 @@ class StandardTable(QAbstractItemModel):
         self.endInsertRows()
         return self.index(item.row(), 0, parent)
 
-    def addData(self, index: QModelIndex, value: Iterable, role: int = ...) -> bool:
+    def addData(self, parent: QModelIndex, value: Iterable, role: int = ...) -> bool:
         """Add items to Iterable"""
         # todo not change real obj, do it only with setdata
-        obj = self.objByIndex(index).obj
+        obj = self.objByIndex(parent).obj
         if isinstance(obj, list):
             obj.extend(value)
         elif isinstance(obj, set) or isinstance(obj, dict):
             obj.update(value)
         else:
             raise AttributeError("The Object to add to is not iterable")
-        self.setData(index, obj, role)
+        self.setData(parent, obj, role)
 
     def setData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
         if not index.isValid() or not role == Qt.EditRole:
@@ -176,6 +177,9 @@ class StandardTable(QAbstractItemModel):
                 child.setParent(None)
             elif isinstance(parentItem.obj, dict):
                 parentItem.obj.pop(child.objName)
+                child.setParent(None)
+            elif isinstance(parentItem.obj, DictObjectStore):
+                parentItem.obj.discard(child.obj)
                 child.setParent(None)
             else:
                 if not defaultVal == "Not given":

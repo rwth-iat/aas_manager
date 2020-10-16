@@ -40,7 +40,10 @@ class StandardItem(QObject):
 
     def setParent(self, a0: 'QObject') -> None:
         super().setParent(a0)
-        self.package = a0.data(PACKAGE_ROLE)
+        try:
+            self.package = a0.data(PACKAGE_ROLE)
+        except AttributeError:
+            pass
 
     @property
     def objectName(self):
