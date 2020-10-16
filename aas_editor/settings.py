@@ -1,4 +1,5 @@
-from aas.model import AdministrativeInformation, Identifier
+from aas.model import AdministrativeInformation, Identifier, Submodel, AASReference, Asset, \
+    SubmodelElement, AssetAdministrationShell, ConceptDescription, ConceptDictionary
 
 ATTR_COLUMN_WIDTH = 200
 
@@ -34,3 +35,4 @@ PACKAGE_ATTRS = ("shells", "assets", "submodels", "concept_descriptions", "other
 ATTRS_NOT_IN_DETAILED_INFO = ("gi_code", "gi_frame", "gi_running", "gi_yieldfrom", "namespace_element_sets", "parent", "submodel_element") + PACKAGE_ATTRS
 ATTRS_IN_PACKAGE_TREEVIEW = PACKAGE_ATTRS
 ATTR_INFOS_TO_SIMPLIFY = (AdministrativeInformation, Identifier,)
+LINK_TYPES = (AASReference, Submodel, Asset, SubmodelElement, AssetAdministrationShell, ConceptDescription, ConceptDictionary)

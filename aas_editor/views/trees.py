@@ -27,13 +27,24 @@ class TreeView(QTreeView):
         self._initMenu()
         self.customContextMenuRequested.connect(self.openDetailInfoItemMenu)
 
+    # noinspection PyArgumentList
     def _initMenu(self):
+        self.delClearAct = QAction("Delete/clear", self,
+                                   shortcut=QKeySequence.Delete,
+                                   statusTip="Delete/clear selected item",
+                                   enabled=True)
+        self.delClearAct.triggered.connect(self._delClearHandler)
+        self.attrsMenu.addAction(self.delClearAct)
+
         self.attrsMenu.addSeparator()
         self.collapseAct = self.attrsMenu.addAction("C&ollapse", lambda: self.collapse(self.currentIndex()))
         self.expandAct = self.attrsMenu.addAction("E&xpand", lambda: self.expand(self.currentIndex()))
         self.collapseAllAct = self.attrsMenu.addAction("Co&llapse all", self.collapseAll)
         self.expandAllAct = self.attrsMenu.addAction("Ex&pand all", self.expandAll)
         self.attrsMenu.addSeparator()
+        self.openInCurrTabAct = self.attrsMenu.addAction("Open in current ta&b")
+        self.openInNewTabAct = self.attrsMenu.addAction("Open in new &tab")
+        self.openInBackgroundAct = self.attrsMenu.addAction("Open in &background tab")
 
     def openDetailInfoItemMenu(self, point):
         self.attrsMenu.exec_(self.viewport().mapToGlobal(point))
@@ -84,6 +95,15 @@ class TreeView(QTreeView):
         newIndex = index.siblingAtColumn(0)
         super(TreeView, self).expand(newIndex)
 
+    def _delClearHandler(self):
+        index = self.currentIndex()
+        attribute = index.data(NAME_ROLE)
+        try:
+            parentObjType = type(self.model().objByIndex(index).parentObj)
+            defaultVal = getDefaultVal(attribute, parentObjType)
+            self.model().clearRow(index.row(), index.parent(), defaultVal)
+        except (AttributeError, IndexError):
+            self.model().clearRow(index.row(), index.parent())
 
 class PackTreeView(TreeView):
     """Singleton class"""
@@ -102,9 +122,9 @@ class PackTreeView(TreeView):
         else:
             super(PackTreeView, self).__init__(parent)
             PackTreeView.__instance = self
-            self._createMenu()
+            self._upgradeMenu()
 
-    def _createMenu(self):
+    def _upgradeMenu(self):
         menuActions = self.attrsMenu.actions()
 
         self.addAct = QAction("&Add")
@@ -113,10 +133,9 @@ class PackTreeView(TreeView):
         self.attrsMenu.insertAction(menuActions[0], self.addAct)
 
         self.addAct.triggered.connect(self.addHandler)
-
-        self.openInCurrTabAct = self.attrsMenu.addAction("Open in current ta&b", lambda: self.openInCurrTabClicked.emit(self.currentIndex()))
-        self.openInNewTabAct = self.attrsMenu.addAction("Open in new &tab", lambda: self.openInNewTabClicked.emit(self.currentIndex()))
-        self.openInBackgroundAct = self.attrsMenu.addAction("Open in &background tab", lambda: self.openInBackgroundTabClicked.emit(self.currentIndex()))
+        self.openInCurrTabAct.triggered.connect(lambda: self.openInCurrTabClicked.emit(self.currentIndex()))
+        self.openInNewTabAct.triggered.connect(lambda: self.openInNewTabClicked.emit(self.currentIndex()))
+        self.openInBackgroundAct.triggered.connect(lambda: self.openInBackgroundTabClicked.emit(self.currentIndex()))
 
     def addHandler(self):
         index = self.currentIndex()
@@ -147,18 +166,13 @@ class PackTreeView(TreeView):
 class AttrsTreeView(TreeView):
     def __init__(self, parent):
         super(AttrsTreeView, self).__init__(parent)
-        self._createMenu()
+        self._upgradeMenu()
         self._buildHandlers()
         self.packTreeView: PackTreeView = PackTreeView.instance()
 
     # noinspection PyArgumentList
-    def _createMenu(self):
+    def _upgradeMenu(self):
         menuActions = self.attrsMenu.actions()
-
-        self.delClearAct = QAction("Delete/clear", self,
-                                   shortcut=QKeySequence.Delete,
-                                   statusTip="Delete/clear selected item",
-                                   enabled=True)
 
         self.editCreateAct = QAction("E&dit/create in dialog", self,
                                      shortcut="Ctrl+E",
@@ -177,16 +191,13 @@ class AttrsTreeView(TreeView):
 
         self.attrsMenu.insertActions(menuActions[0], (self.editAct, self.editCreateAct, self.addAct))
         self.attrsMenu.insertSeparator(menuActions[0])
-        self.attrsMenu.insertAction(menuActions[0], self.delClearAct)
 
-        self.delClearAct.triggered.connect(self._delClearHandler)
         self.addAct.triggered.connect(self._addHandler)
         self.editAct.triggered.connect(lambda: self.edit(self.currentIndex()))
         self.editCreateAct.triggered.connect(self._editCreateHandler)
-
-        self.openInCurrTabAct = self.attrsMenu.addAction("Open in current ta&b", lambda: self.openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), newTab=False))
-        self.openInNewTabAct = self.attrsMenu.addAction("Open in new &tab", lambda: self.openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN)))
-        self.openInBackgroundAct = self.attrsMenu.addAction("Open in &background tab", lambda: self.openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), setCurrent=False))
+        self.openInCurrTabAct.triggered.connect(lambda: self.openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), newTab=False))
+        self.openInNewTabAct.triggered.connect(lambda: self.openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN)))
+        self.openInBackgroundAct.triggered.connect(lambda: self.openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), setCurrent=False))
 
     def _buildHandlers(self):
         self.setItemDelegate(QComboBoxEnumDelegate())
@@ -227,16 +238,6 @@ class AttrsTreeView(TreeView):
             self.openInCurrTabAct.setEnabled(False)
             self.openInBackgroundAct.setEnabled(False)
             self.openInNewTabAct.setEnabled(False)
-
-    def _delClearHandler(self):
-        index = self.currentIndex()
-        attribute = index.data(NAME_ROLE)
-        try:
-            parentObjType = type(self.model().objByIndex(index).parentObj)
-            defaultVal = getDefaultVal(attribute, parentObjType)
-            self.model().clearRow(index.row(), index.parent(), defaultVal)
-        except (AttributeError, IndexError):
-            self.model().clearRow(index.row(), index.parent())
 
     def _addHandler(self):
         index = self.currentIndex()

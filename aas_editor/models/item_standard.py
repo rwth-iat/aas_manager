@@ -2,8 +2,10 @@ from PyQt5.QtCore import QObject, QVariant
 from aas.model import AASReference
 
 from aas_editor.models import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, VALUE_COLUMN, ATTRIBUTE_COLUMN
+from aas_editor.settings import LINK_TYPES
 from aas_editor.util import getDescription, getAttrDoc, simplifyInfo
 from PyQt5.QtCore import Qt
+
 
 class StandardItem(QObject):
     def __init__(self, obj, name=None, parent=None):
@@ -64,6 +66,8 @@ class StandardItem(QObject):
                 return True
             except (AttributeError, KeyError, NotImplementedError) as e:
                 print(e)
+        elif isinstance(self.obj, LINK_TYPES):
+            return True
         return False
 
     def row(self):
