@@ -56,7 +56,7 @@ class TreeView(QTreeView):
             super(TreeView, self).mousePressEvent(e)
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
-        if event.key() == Qt.Key_Return:
+        if event.key() in (Qt.Key_Return, Qt.Key_Enter):
         # we captured the Enter key press, now we need to move to the next row
             nextRow = self.currentIndex().row() + 1
             if nextRow+1 > self.model().rowCount(self.currentIndex().parent()):
