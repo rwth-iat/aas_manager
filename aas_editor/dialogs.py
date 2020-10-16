@@ -57,6 +57,7 @@ def getInputWidget(objType, rmDefParams=True, objName="", attrsToHide: dict = No
         objTypes = inheritors(objType)
         widget = TypeOptionObjGroupBox(objTypes, "", attrsToHide=attrsToHide,
                              rmDefParams=rmDefParams, objName=objName, parent=parent)
+    # TODO if type is iterable make tuple, now it stuck in meta
     elif issubtype(objType, (list, tuple, set, dict)) and not issubtype(objType, DictItem):# typing.Iterable):
         widget = IterableGroupBox(objType, "", rmDefParams=rmDefParams, parent=parent, objVal=objVal)
     elif issubtype(objType, Union):

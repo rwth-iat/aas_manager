@@ -1,10 +1,10 @@
-from typing import Any, Iterable
+from typing import Any, Iterable, Union
 
 from PyQt5.QtCore import QAbstractItemModel, QVariant, QModelIndex, Qt, pyqtSignal
-from aas.model import DictObjectStore
+from aas.model import DictObjectStore, Submodel, NamespaceSet, SubmodelElement
 
 from aas_editor.models import OBJECT_ROLE, NAME_ROLE, Package, DetailedInfoItem, StandardItem, \
-    ATTRIBUTE_COLUMN, VALUE_COLUMN
+    ATTRIBUTE_COLUMN, VALUE_COLUMN, PackTreeViewItem
 
 
 class StandardTable(QAbstractItemModel):
@@ -85,31 +85,43 @@ class StandardTable(QAbstractItemModel):
             except AttributeError:
                 continue
 
-    def addItem(self, item, parent: QModelIndex = QModelIndex()): # todo redefine to insertRows
-        if isinstance(parent.parent().data(OBJECT_ROLE), Package):
-            pack: Package = self.objByIndex(parent.parent()).data(OBJECT_ROLE)
-            pack.add(item.data(OBJECT_ROLE))
-        elif isinstance(parent.data(OBJECT_ROLE), dict):
-            dictionary = self.objByIndex(parent).data(OBJECT_ROLE)
-            key = item.data(NAME_ROLE)
-            value = item.data(OBJECT_ROLE)
-            dictionary[key] = value
-        self.beginInsertRows(parent, self.rowCount(parent), self.rowCount(parent))
-        item.setParent(self.objByIndex(parent))
-        self.endInsertRows()
-        return self.index(item.row(), 0, parent)
 
     def addData(self, parent: QModelIndex, value: Iterable, role: int = ...) -> bool:
         """Add items to Iterable"""
-        # todo not change real obj, do it only with setdata
-        obj = self.objByIndex(parent).obj
-        if isinstance(obj, list):
-            obj.extend(value)
-        elif isinstance(obj, set) or isinstance(obj, dict):
-            obj.update(value)
+        self.addItem1(value, parent)
+
+    def addItem(self, obj: Union[Package, SubmodelElement, Iterable], parent: QModelIndex = QModelIndex()):
+        # obj must be iterable if add to list, dict or set
+        parentObj = self.objByIndex(parent).data(OBJECT_ROLE)
+        if isinstance(parentObj, DictObjectStore):
+            parentObj.add(obj)
+        elif isinstance(parentObj, Submodel):
+            parentObj.submodel_element.add(obj) # todo change if they make Submodel iterable
+        elif isinstance(parentObj, list):
+            parentObj.extend(obj)
+        elif isinstance(parentObj, set) or isinstance(parentObj, dict):
+            parentObj.update(obj)
+        elif isinstance(obj, Package):
+            self.beginInsertRows(parent, self.rowCount(parent), self.rowCount(parent))
+            item = PackTreeViewItem(obj, objName=obj.name)
+            item.setParent(self.objByIndex(QModelIndex()))
+            self.endInsertRows()
+            return True
         else:
-            raise AttributeError("The Object to add to is not iterable")
-        self.setData(parent, obj, role)
+            raise AttributeError("The Object could not be added")
+        self.update(parent)
+        return True
+
+    def update(self, index: QModelIndex):
+        if not index.isValid():
+            return QVariant()
+        if self.hasChildren(index):
+            self.removeRows(0, self.rowCount(index), index)
+        self.beginInsertRows(index, self.rowCount(index), self.rowCount(index))
+        self.objByIndex(index).populate()
+        self.endInsertRows()
+        self.dataChanged.emit(index, index.child(self.rowCount(index), self.columnCount(index)))
+        return True
 
     def setData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
         if not index.isValid() or not role == Qt.EditRole:
@@ -164,7 +176,6 @@ class StandardTable(QAbstractItemModel):
     def clearRows(self, row: int, count: int, parent: QModelIndex = ..., defaultVal="Not given") -> bool:
         """Delete rows if they are children of Iterable else set to Default"""
         parentItem = self.objByIndex(parent)
-        # todo not change real obj, do it only with setdata
 
         self.beginRemoveRows(parent, row, row+count-1)
         for n in range(row+count-1, row-1, -1):
@@ -178,7 +189,7 @@ class StandardTable(QAbstractItemModel):
             elif isinstance(parentItem.obj, dict):
                 parentItem.obj.pop(child.objName)
                 child.setParent(None)
-            elif isinstance(parentItem.obj, DictObjectStore):
+            elif isinstance(parentItem.obj, (DictObjectStore, NamespaceSet)):
                 parentItem.obj.discard(child.obj)
                 child.setParent(None)
             else:

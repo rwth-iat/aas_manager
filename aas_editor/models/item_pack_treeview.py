@@ -17,13 +17,15 @@ class PackTreeViewItem(StandardItem):
         # todo make populate of PackTreeViewItem smarter (may be with typing check)
         try:
             for attr in ATTRS_IN_PACKAGE_TREEVIEW:
+                # if obj is Package
                 if hasattr(self.obj, attr):
-                    attr_obj = getattr(self.obj, attr)
                     # set package objStore as obj, so that delete works
-                    parent = PackTreeViewItem(obj=self.obj.objStore, parent=self, objName=attr)
-                    if isinstance(attr_obj, collections.Iterable):
-                        for i in attr_obj:
-                            PackTreeViewItem(obj=i, parent=parent)
+                    PackTreeViewItem(obj=self.obj.objStore, parent=self, objName=attr)
+                # if obj is shells or assets or submodels or concept_descriptions or others
+                elif self.objName == attr:
+                    items = getattr(self.parentObj, attr)
+                    for i in items:
+                        PackTreeViewItem(obj=i, parent=self)
             for attr in ("submodel_element",):
                 if hasattr(self.obj, attr):
                     attr_obj = getattr(self.obj, attr)

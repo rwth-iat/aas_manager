@@ -72,7 +72,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
     def addPack(self, name="", objStore=None):
         pack = Package(name=name, objStore=objStore)
-        self.packTreeViewModel.addItem(PackTreeViewItem(obj=pack, objName=name))
+        self.packTreeViewModel.addItem(pack)
 
 
 

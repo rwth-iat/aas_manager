@@ -151,13 +151,13 @@ class PackTreeView(TreeView):
         elif isinstance(index.data(OBJECT_ROLE), Submodel):
             self.addItemWithDialog(index, SubmodelElement)
 
-    def addItemWithDialog(self, index, objType, objName="", objVal=None):
+    def addItemWithDialog(self, parent, objType, objName="", objVal=None):
         dialog = AddObjDialog(objType, self, objName=objName, objVal=objVal)
         if dialog.exec_() == QDialog.Accepted:
             obj = dialog.getObj2add()
-            item = self.model().addItem(PackTreeViewItem(obj=obj), index)
+            self.model().addItem(obj, parent)
             self.setFocus()
-            self.setCurrentIndex(item)
+            self.setCurrentIndex(parent)
         else:
             print("Item adding cancelled")
         dialog.deleteLater()
@@ -264,14 +264,14 @@ class AttrsTreeView(TreeView):
             print("Item editing cancelled")
         dialog.deleteLater()
 
-    def addItemWithDialog(self, index, objType, objVal=None, windowTitle=""):
-        objName = index.data(NAME_ROLE)
+    def addItemWithDialog(self, parent, objType, objVal=None, windowTitle=""):
+        objName = parent.data(NAME_ROLE)
         dialog = AddObjDialog(objType, self, rmDefParams=False, objName=objName, objVal=objVal, windowTitle=windowTitle)
         if dialog.exec_() == QDialog.Accepted:
             obj = dialog.getObj2add()
-            self.model().addData(index, obj, Qt.EditRole)
+            self.model().addItem(obj, parent)
             self.setFocus()
-            self.setCurrentIndex(index)
+            self.setCurrentIndex(parent)
         else:
             print("Item adding cancelled")
         dialog.deleteLater()
