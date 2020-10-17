@@ -2,7 +2,7 @@ from collections import Iterable
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal, Qt, QItemSelectionModel, QModelIndex
-from PyQt5.QtGui import QMouseEvent, QKeyEvent, QKeySequence
+from PyQt5.QtGui import QMouseEvent, QKeyEvent, QKeySequence, QContextMenuEvent
 from PyQt5.QtWidgets import QTreeView, QMenu, QAbstractItemView, QAction, QDialog, QSizePolicy, \
     QFrame, QAbstractScrollArea, QShortcut
 from aas.model import AssetAdministrationShell, Asset, Submodel, SubmodelElement
@@ -23,23 +23,27 @@ class TreeView(QTreeView):
 
     def __init__(self, parent=None):
         super(TreeView, self).__init__(parent)
-        self.attrsMenu = QMenu(self)
-        self._initMenu()
-        self.customContextMenuRequested.connect(self.openDetailInfoItemMenu)
+        self.createActions()
+        self.createMenu()
+        self.customContextMenuRequested.connect(self.openMenu)
 
     # noinspection PyArgumentList
-    def _initMenu(self):
+    def createActions(self):
         self.addAct = QAction("&Add", self,
                               statusTip="Add item to selected",
                               shortcut=QKeySequence.New,
+                              shortcutContext=Qt.WidgetWithChildrenShortcut,
                               triggered=self._addHandler,
                               enabled=False)
+        self.addAction(self.addAct)
 
         self.delClearAct = QAction("Delete/clear", self,
-                                   shortcut=QKeySequence.Delete,
                                    statusTip="Delete/clear selected item",
+                                   shortcut=QKeySequence.Delete,
+                                   shortcutContext=Qt.WidgetWithChildrenShortcut,
                                    triggered=self._delClearHandler,
                                    enabled=True)
+        self.addAction(self.delClearAct)
 
         self.collapseAct = QAction("Collapse", self,
                                    statusTip="Collapse selected item",
@@ -74,6 +78,8 @@ class TreeView(QTreeView):
         self.openInBackgroundAct = QAction("Open in &background tab", self,
                                            statusTip="Open selected item in background tab")
 
+    def createMenu(self) -> None:
+        self.attrsMenu = QMenu(self)
         self.attrsMenu.addAction(self.addAct)
         self.attrsMenu.addSeparator()
         self.attrsMenu.addAction(self.delClearAct)
@@ -90,7 +96,7 @@ class TreeView(QTreeView):
         self.attrsMenu.addAction(self.openInNewTabAct)
         self.attrsMenu.addAction(self.openInBackgroundAct)
 
-    def openDetailInfoItemMenu(self, point):
+    def openMenu(self, point):
         self.attrsMenu.exec_(self.viewport().mapToGlobal(point))
 
     def mousePressEvent(self, e: QMouseEvent) -> None:
@@ -122,11 +128,6 @@ class TreeView(QTreeView):
                         self.collapse(index2fold)
                     else:
                         self.expand(index2fold)
-        elif event.key() == Qt.Key_Delete:
-            try:
-                self.delClearAct.trigger()
-            except AttributeError:
-                pass
         else:
             # any other key was pressed, inform base
             super(TreeView, self).keyPressEvent(event)
@@ -160,6 +161,7 @@ class TreeView(QTreeView):
             print("Item adding cancelled")
         dialog.deleteLater()
 
+
 class PackTreeView(TreeView):
     """Singleton class"""
     __instance = None
@@ -180,8 +182,6 @@ class PackTreeView(TreeView):
             self._upgradeMenu()
 
     def _upgradeMenu(self):
-        menuActions = self.attrsMenu.actions()
-
         self.addAct.setEnabled(True)
 
         self.openInCurrTabAct.triggered.connect(lambda: self.openInCurrTabClicked.emit(self.currentIndex()))
@@ -215,14 +215,16 @@ class AttrsTreeView(TreeView):
         menuActions = self.attrsMenu.actions()
 
         self.editCreateAct = QAction("E&dit/create in dialog", self,
-                                     shortcut="Ctrl+E",
                                      statusTip="Edit/create selected item in dialog",
+                                     shortcut=Qt.CTRL+Qt.Key_E,
+                                     shortcutContext=Qt.WidgetWithChildrenShortcut,
                                      triggered=self._editCreateHandler,
                                      enabled=False)
+        self.addAction(self.editCreateAct)
 
         self.editAct = QAction("&Edit", self,
                                statusTip="Edit selected item",
-                               shortcut="Enter",
+                               shortcut=Qt.Key_Enter,
                                triggered=lambda: self.edit(self.currentIndex()),
                                enabled=False)
 
@@ -297,10 +299,6 @@ class AttrsTreeView(TreeView):
             print("Item editing cancelled")
         dialog.deleteLater()
 
-    def _newPackItem(self, packItem):
-        self._initTreeView(packItem)
-        self._buildHandlersForNewItem()
-
     def openRef(self, detailInfoItem: QModelIndex, newTab=True, setCurrent=True): # todo reimplement search func findItemByObj
         item = self.model().objByIndex(detailInfoItem)
         if detailInfoItem.column() == VALUE_COLUMN and item.isLink:
@@ -312,6 +310,10 @@ class AttrsTreeView(TreeView):
                 self.openInBackgroundTabClicked.emit(linkedPackItem)
             else:
                 self.openInCurrTabClicked.emit(linkedPackItem)
+
+    def _newPackItem(self, packItem):
+        self._initTreeView(packItem)
+        self._buildHandlersForNewItem()
 
     def _initTreeView(self, packItem):
         self.setExpandsOnDoubleClick(False)
