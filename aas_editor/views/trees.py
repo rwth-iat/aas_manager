@@ -29,22 +29,66 @@ class TreeView(QTreeView):
 
     # noinspection PyArgumentList
     def _initMenu(self):
+        self.addAct = QAction("&Add", self,
+                              statusTip="Add item to selected",
+                              shortcut=QKeySequence.New,
+                              triggered=self._addHandler,
+                              enabled=False)
+
         self.delClearAct = QAction("Delete/clear", self,
                                    shortcut=QKeySequence.Delete,
                                    statusTip="Delete/clear selected item",
+                                   triggered=self._delClearHandler,
                                    enabled=True)
-        self.delClearAct.triggered.connect(self._delClearHandler)
-        self.attrsMenu.addAction(self.delClearAct)
 
+        self.collapseAct = QAction("Collapse", self,
+                                   statusTip="Collapse selected item",
+                                   triggered=lambda: self.collapse(self.currentIndex()))
+
+        self.collapseRecAct = QAction("Collapse recursively", self,
+                                      statusTip="Collapse recursively selected item",
+                                      triggered=lambda: self.collapse(self.currentIndex()))
+
+        self.collapseAllAct = QAction("Collapse all", self,
+                                      statusTip="Collapse all items",
+                                      triggered=self.collapseAll)
+
+        self.expandAct = QAction("Expand", self,
+                                 statusTip="Expand selected item",
+                                 triggered=lambda: self.expand(self.currentIndex()))
+
+        self.expandRecAct = QAction("Expand recursively", self,
+                                    statusTip="Expand recursively selected item",
+                                    triggered=lambda: self.expandRecursively(self.currentIndex()))
+
+        self.expandAllAct = QAction("Expand all", self,
+                                    statusTip="Expand all items",
+                                    triggered=self.expandAll)
+
+        self.openInCurrTabAct = QAction("Open in current ta&b", self,
+                                        statusTip="Open selected item in current tab")
+
+        self.openInNewTabAct = QAction("Open in new &tab", self,
+                                       statusTip="Open selected item in new tab")
+
+        self.openInBackgroundAct = QAction("Open in &background tab", self,
+                                           statusTip="Open selected item in background tab")
+
+        self.attrsMenu.addAction(self.addAct)
         self.attrsMenu.addSeparator()
-        self.collapseAct = self.attrsMenu.addAction("C&ollapse", lambda: self.collapse(self.currentIndex()))
-        self.expandAct = self.attrsMenu.addAction("E&xpand", lambda: self.expand(self.currentIndex()))
-        self.collapseAllAct = self.attrsMenu.addAction("Co&llapse all", self.collapseAll)
-        self.expandAllAct = self.attrsMenu.addAction("Ex&pand all", self.expandAll)
+        self.attrsMenu.addAction(self.delClearAct)
         self.attrsMenu.addSeparator()
-        self.openInCurrTabAct = self.attrsMenu.addAction("Open in current ta&b")
-        self.openInNewTabAct = self.attrsMenu.addAction("Open in new &tab")
-        self.openInBackgroundAct = self.attrsMenu.addAction("Open in &background tab")
+        self.foldingMenu = self.attrsMenu.addMenu("Folding")
+        self.foldingMenu.addAction(self.collapseAct)
+        self.foldingMenu.addAction(self.collapseRecAct)
+        self.foldingMenu.addAction(self.collapseAllAct)
+        self.foldingMenu.addAction(self.expandAct)
+        self.foldingMenu.addAction(self.expandRecAct)
+        self.foldingMenu.addAction(self.expandAllAct)
+        self.attrsMenu.addSeparator()
+        self.attrsMenu.addAction(self.openInCurrTabAct)
+        self.attrsMenu.addAction(self.openInNewTabAct)
+        self.attrsMenu.addAction(self.openInBackgroundAct)
 
     def openDetailInfoItemMenu(self, point):
         self.attrsMenu.exec_(self.viewport().mapToGlobal(point))
@@ -138,17 +182,13 @@ class PackTreeView(TreeView):
     def _upgradeMenu(self):
         menuActions = self.attrsMenu.actions()
 
-        self.addAct = QAction("&Add")
-        self.addAct.setStatusTip("Add item to selected")
         self.addAct.setEnabled(True)
-        self.attrsMenu.insertAction(menuActions[0], self.addAct)
 
-        self.addAct.triggered.connect(self.addHandler)
         self.openInCurrTabAct.triggered.connect(lambda: self.openInCurrTabClicked.emit(self.currentIndex()))
         self.openInNewTabAct.triggered.connect(lambda: self.openInNewTabClicked.emit(self.currentIndex()))
         self.openInBackgroundAct.triggered.connect(lambda: self.openInBackgroundTabClicked.emit(self.currentIndex()))
 
-    def addHandler(self):
+    def _addHandler(self):
         index = self.currentIndex()
         attribute = index.data(NAME_ROLE)
         if isinstance(index.data(OBJECT_ROLE), Package) or not index.isValid():
@@ -177,24 +217,17 @@ class AttrsTreeView(TreeView):
         self.editCreateAct = QAction("E&dit/create in dialog", self,
                                      shortcut="Ctrl+E",
                                      statusTip="Edit/create selected item in dialog",
+                                     triggered=self._editCreateHandler,
                                      enabled=False)
 
         self.editAct = QAction("&Edit", self,
                                statusTip="Edit selected item",
                                shortcut="Enter",
+                               triggered=lambda: self.edit(self.currentIndex()),
                                enabled=False)
 
-        self.addAct = QAction("&Add", self,
-                              statusTip="Add item to selected",
-                              shortcut=QKeySequence.New,
-                              enabled=False)
+        self.attrsMenu.insertActions(menuActions[0], (self.editAct, self.editCreateAct))
 
-        self.attrsMenu.insertActions(menuActions[0], (self.editAct, self.editCreateAct, self.addAct))
-        self.attrsMenu.insertSeparator(menuActions[0])
-
-        self.addAct.triggered.connect(self._addHandler)
-        self.editAct.triggered.connect(lambda: self.edit(self.currentIndex()))
-        self.editCreateAct.triggered.connect(self._editCreateHandler)
         self.openInCurrTabAct.triggered.connect(lambda: self.openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), newTab=False))
         self.openInNewTabAct.triggered.connect(lambda: self.openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN)))
         self.openInBackgroundAct.triggered.connect(lambda: self.openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), setCurrent=False))
