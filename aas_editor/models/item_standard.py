@@ -14,11 +14,13 @@ class StandardItem(QObject):
         self.objName = name
 
     def data(self, role, column=ATTRIBUTE_COLUMN):
+        if role == Qt.WhatsThisRole:
+            return getAttrDoc(self.objName, self.parentObj.__init__.__doc__)
         if role == Qt.ToolTipRole:
-            if hasattr(self.obj, "description"):
+            try:
                 return getDescription(self.obj.description)
-            else:
-                return getAttrDoc(self.objName, self.parentObj.__init__.__doc__)
+            except AttributeError:
+                pass
         if role == NAME_ROLE:
             return self.objectName
         if role == OBJECT_ROLE:

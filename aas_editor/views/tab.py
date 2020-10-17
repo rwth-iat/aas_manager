@@ -164,7 +164,7 @@ class Tab(QWidget):
         self.currItemChanged.emit(self.packItem)
 
     def showDetailInfoItemDoc(self, detailInfoItem: QModelIndex):
-        self.descrLabel.setText(detailInfoItem.data(Qt.ToolTipRole))
+        self.descrLabel.setText(detailInfoItem.data(Qt.WhatsThisRole))
 
     def itemDataChangeFailed(self, msg):
         QMessageBox.critical(self, "Error", msg)

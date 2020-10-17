@@ -219,6 +219,7 @@ def getAttrDoc(attr: str, doc: str) -> str:
             reg = res.regs[1]
             doc = doc[reg[0]: reg[1]]
             doc = re.sub("([(]from .*[)])?", "", doc)
+            doc = f"{attr}: {doc}"
             return doc
     return ""
 
