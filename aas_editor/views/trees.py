@@ -2,17 +2,23 @@ from collections import Iterable
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal, Qt, QItemSelectionModel, QModelIndex
-from PyQt5.QtGui import QMouseEvent, QKeyEvent, QKeySequence, QContextMenuEvent
+from PyQt5.QtGui import QMouseEvent, QKeyEvent, QKeySequence, QClipboard
 from PyQt5.QtWidgets import QTreeView, QMenu, QAbstractItemView, QAction, QDialog, QSizePolicy, \
-    QFrame, QAbstractScrollArea, QShortcut
+    QFrame, QAbstractScrollArea, QApplication
 from aas.model import AssetAdministrationShell, Asset, Submodel, SubmodelElement
 
 from aas_editor.dialogs import AddObjDialog
 from aas_editor.qcomboboxenumdelegate import QComboBoxEnumDelegate
-from aas_editor.models import VALUE_COLUMN, NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE, ATTRIBUTE_COLUMN, \
-    PackTreeViewItem, DetailedInfoItem, DetailedInfoTable, Package
+from aas_editor.models import VALUE_COLUMN, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
+     DetailedInfoTable, Package
 from aas_editor.settings import ATTR_COLUMN_WIDTH
 from aas_editor.util import getAttrTypeHint, issubtype, getDefaultVal
+
+from aas.model.aas import *
+from aas.model.base import *
+from aas.model.concept import *
+from aas.model.provider import *
+from aas.model.submodel import *
 
 
 class TreeView(QTreeView):
@@ -29,6 +35,30 @@ class TreeView(QTreeView):
 
     # noinspection PyArgumentList
     def createActions(self):
+        self.copyAct = QAction("Copy", self,
+                               statusTip="Copy selected item",
+                               shortcut=QKeySequence.Copy,
+                               shortcutContext=Qt.WidgetWithChildrenShortcut,
+                               triggered=self._copyHandler,
+                               enabled=True)
+        self.addAction(self.copyAct)
+
+        self.pasteAct = QAction("Paste", self,
+                                statusTip="Paste from clipboard",
+                                shortcut=QKeySequence.Paste,
+                                shortcutContext=Qt.WidgetWithChildrenShortcut,
+                                triggered=self._pasteHandler,
+                                enabled=True)
+        self.addAction(self.pasteAct)
+
+        self.cutAct = QAction("Cut", self,
+                              statusTip="Cut selected item",
+                              shortcut=QKeySequence.Cut,
+                              shortcutContext=Qt.WidgetWithChildrenShortcut,
+                              triggered=self._pasteHandler,
+                              enabled=True)
+        self.addAction(self.cutAct)
+
         self.addAct = QAction("&Add", self,
                               statusTip="Add item to selected",
                               shortcut=QKeySequence.New,
@@ -80,6 +110,10 @@ class TreeView(QTreeView):
 
     def createMenu(self) -> None:
         self.attrsMenu = QMenu(self)
+        self.attrsMenu.addAction(self.cutAct)
+        self.attrsMenu.addAction(self.copyAct)
+        self.attrsMenu.addAction(self.pasteAct)
+        self.attrsMenu.addSeparator()
         self.attrsMenu.addAction(self.addAct)
         self.attrsMenu.addSeparator()
         self.attrsMenu.addAction(self.delClearAct)
@@ -107,7 +141,7 @@ class TreeView(QTreeView):
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() in (Qt.Key_Return, Qt.Key_Enter):
-        # we captured the Enter key press, now we need to move to the next row
+            # we captured the Enter key press, now we need to move to the next row
             nextRow = self.currentIndex().row() + 1
             if nextRow+1 > self.model().rowCount(self.currentIndex().parent()):
                 # we are all the way down, we can 't go any further
@@ -150,8 +184,31 @@ class TreeView(QTreeView):
         except (AttributeError, IndexError):
             self.model().clearRow(index.row(), index.parent())
 
-    def addItemWithDialog(self, parent: QModelIndex, objType, objName="", objVal=None, windowTitle="", rmDefParams=False):
-        dialog = AddObjDialog(objType, self, rmDefParams=rmDefParams, objName=objName, objVal=objVal, windowTitle=windowTitle)
+    def _copyHandler(self):
+        index = self.currentIndex()
+        clipboard = QApplication.clipboard()
+        clipboard.setText(repr(index.data(OBJECT_ROLE)), QClipboard.Clipboard)
+
+    def _pasteHandler(self):
+        try:
+            clipboard = QApplication.clipboard()
+            text = clipboard.text(QClipboard.Clipboard)
+            objToPaste = eval(text)
+            try:
+                self._addHandler(list(objToPaste))
+            except TypeError:
+                self._editCreateHandler(objToPaste)
+        except (TypeError, SyntaxError) as e:
+            print(f"Data could not be paste: {text}")
+
+    def _cutHandler(self):
+        self._copyHandler()
+        self._delClearHandler()
+
+    def addItemWithDialog(self, parent: QModelIndex, objType, objName="", objVal=None,
+                          windowTitle="", rmDefParams=False):
+        dialog = AddObjDialog(objType, self, rmDefParams=rmDefParams,
+                              objName=objName, objVal=objVal, windowTitle=windowTitle)
         if dialog.exec_() == QDialog.Accepted:
             obj = dialog.getObj2add()
             self.model().addItem(obj, parent)
@@ -181,12 +238,16 @@ class PackTreeView(TreeView):
             PackTreeView.__instance = self
             self._upgradeMenu()
 
+    # noinspection PyUnresolvedReferences
     def _upgradeMenu(self):
         self.addAct.setEnabled(True)
 
-        self.openInCurrTabAct.triggered.connect(lambda: self.openInCurrTabClicked.emit(self.currentIndex()))
-        self.openInNewTabAct.triggered.connect(lambda: self.openInNewTabClicked.emit(self.currentIndex()))
-        self.openInBackgroundAct.triggered.connect(lambda: self.openInBackgroundTabClicked.emit(self.currentIndex()))
+        self.openInCurrTabAct.triggered.connect(
+            lambda: self.openInCurrTabClicked.emit(self.currentIndex()))
+        self.openInNewTabAct.triggered.connect(
+            lambda: self.openInNewTabClicked.emit(self.currentIndex()))
+        self.openInBackgroundAct.triggered.connect(
+            lambda: self.openInBackgroundTabClicked.emit(self.currentIndex()))
 
     def _addHandler(self):
         index = self.currentIndex()
@@ -212,14 +273,12 @@ class AttrsTreeView(TreeView):
 
     # noinspection PyArgumentList
     def _upgradeMenu(self):
-        menuActions = self.attrsMenu.actions()
-
         self.editCreateAct = QAction("E&dit/create in dialog", self,
                                      statusTip="Edit/create selected item in dialog",
                                      shortcut=Qt.CTRL+Qt.Key_E,
                                      shortcutContext=Qt.WidgetWithChildrenShortcut,
                                      triggered=self._editCreateHandler,
-                                     enabled=False)
+                                     enabled=True)
         self.addAction(self.editCreateAct)
 
         self.editAct = QAction("&Edit", self,
@@ -228,25 +287,27 @@ class AttrsTreeView(TreeView):
                                triggered=lambda: self.edit(self.currentIndex()),
                                enabled=False)
 
-        self.attrsMenu.insertActions(menuActions[0], (self.editAct, self.editCreateAct))
+        self.attrsMenu.insertActions(self.addAct, (self.editAct, self.editCreateAct))
 
-        self.openInCurrTabAct.triggered.connect(lambda: self.openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), newTab=False))
-        self.openInNewTabAct.triggered.connect(lambda: self.openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN)))
-        self.openInBackgroundAct.triggered.connect(lambda: self.openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), setCurrent=False))
+        self.openInCurrTabAct.triggered.connect(
+            lambda: self.openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), newTab=False))
+        self.openInNewTabAct.triggered.connect(
+            lambda: self.openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN)))
+        self.openInBackgroundAct.triggered.connect(
+            lambda: self.openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), setCurrent=False))
 
+    # noinspection PyUnresolvedReferences
     def _buildHandlers(self):
         self.setItemDelegate(QComboBoxEnumDelegate())
         self.clicked.connect(self.openRef)
-        self.wheelClicked.connect(lambda refItem: self.openRef(refItem, newTab=True, setCurrent=False))
+        self.wheelClicked.connect(
+            lambda refItem: self.openRef(refItem, newTab=True, setCurrent=False))
 
     def _buildHandlersForNewItem(self):
         self.model().valueChangeFailed.connect(self.parent().itemDataChangeFailed)
         self.selectionModel().currentChanged.connect(self._updateDetailInfoItemMenu)
 
     def _updateDetailInfoItemMenu(self, index: QModelIndex):
-        # update edit/create action
-        self.editCreateAct.setEnabled(True)
-
         # update edit action
         if index.flags() & Qt.ItemIsEditable:
             self.editAct.setEnabled(True)
@@ -274,22 +335,27 @@ class AttrsTreeView(TreeView):
             self.openInBackgroundAct.setEnabled(False)
             self.openInNewTabAct.setEnabled(False)
 
-    def _addHandler(self):
+    def _addHandler(self, objVal=None):
         index = self.currentIndex()
         attribute = index.data(NAME_ROLE)
         attrType = getAttrTypeHint(type(self.model().objByIndex(index).parentObj), attribute)
-        self.addItemWithDialog(index, attrType)
+        if objVal:
+            self.addItemWithDialog(index, attrType, objVal=objVal)
+        else:
+            self.addItemWithDialog(index, attrType)
 
-    def _editCreateHandler(self):
+    def _editCreateHandler(self, objVal=None):
         index = self.currentIndex()
+        objVal = objVal if objVal else index.data(OBJECT_ROLE)
         attribute = index.data(NAME_ROLE)
         attrType = getAttrTypeHint(type(self.model().objByIndex(index).parentObj), attribute)
-        self.replItemWithDialog(index, attrType, objVal=index.data(OBJECT_ROLE))
+        self.replItemWithDialog(index, attrType, objVal=objVal)
 
     def replItemWithDialog(self, index, objType, objVal=None, windowTitle=""):
         objName = index.data(NAME_ROLE)
         windowTitle = windowTitle if windowTitle else f"Edit {objName}"
-        dialog = AddObjDialog(objType, self, rmDefParams=False, objName=objName, objVal=objVal, windowTitle=windowTitle)
+        dialog = AddObjDialog(objType, self, rmDefParams=False,
+                              objName=objName, objVal=objVal, windowTitle=windowTitle)
         if dialog.exec_() == QDialog.Accepted:
             obj = dialog.getObj2add()
             self.model().setData(index, obj, Qt.EditRole)
@@ -299,7 +365,8 @@ class AttrsTreeView(TreeView):
             print("Item editing cancelled")
         dialog.deleteLater()
 
-    def openRef(self, detailInfoItem: QModelIndex, newTab=True, setCurrent=True): # todo reimplement search func findItemByObj
+    # todo reimplement search func findItemByObj
+    def openRef(self, detailInfoItem: QModelIndex, newTab=True, setCurrent=True):
         item = self.model().objByIndex(detailInfoItem)
         if detailInfoItem.column() == VALUE_COLUMN and item.isLink:
             obj = item.obj.resolve(item.package.objStore)
