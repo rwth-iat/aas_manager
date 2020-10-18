@@ -1,9 +1,9 @@
-copy/paste, may be with replObj func
+implement defaultobj for typeoptionbox
+support Namespaceset
 cancel last action
 choose from for references
 add add/create-button to toolbar
 
-update aas package from git
 start working with files
 open/save/save as.. packages
 drag&drop features
@@ -22,6 +22,8 @@ integrate validator
 
 
 Done:
+cut/copy/paste
+update aas package from git
 delete
 finish all add dialogs
 repl dialog with default obj

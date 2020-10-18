@@ -1,9 +1,14 @@
-Wie kriegt man descriptions of class attributes (:ivar)?? (Für ToolTip)
-Probleme mit existierenden Sample AAS they are http://www.admin-shell.io/aas/1/0 instead of http://www.admin-shell.io/aas/2/0
+Needs:
+    For TypeOptionGroupBox: - Abstract classes must be really abstract!
+                            - Some datatypes must be implemented (Time, Duration etc.)!
+    For testing Open/Save: - Probleme mit existierenden Sample AAS they are http://www.admin-shell.io/aas/1/0
+                             instead of http://www.admin-shell.io/aas/2/0
+    For copy/paste: - repr functions must be evaluable! Some current __repr__ funcs are actually __str__
 
-Kann man vielleicht manche Typen nicht als str or None machen, sondern als str=""?
-    Insbesondere immer AdministrativeInformation(revision="", version="") erstellen?
+Suggestions:
+    - Make Submodel iterable which consists of submodel elements.
+        Represeation of Submodel in left TreeView is not real.
+        SubmodelElement should be element of Submodel but it is Element of list submodel_element
 
-abstract classes must be really abstract
-some datatypes must be implemented (Time, Duration etc.)
-_kind in Submodel, warum mit Unterstrich?
+Fragen:
+_kind in Submodel, warum mit Unterstrich vorne?
