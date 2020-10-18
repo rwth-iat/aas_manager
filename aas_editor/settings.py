@@ -29,6 +29,7 @@ LIGHT_THEME_PATH = "themes/light.qss"
 THEMES = {
     "dark": DARK_THEME_PATH,
     "light": LIGHT_THEME_PATH,
+    "standard": ""
 }
 
 PACKAGE_ATTRS = ("shells", "assets", "submodels", "concept_descriptions", "others")

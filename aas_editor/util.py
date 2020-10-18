@@ -262,7 +262,10 @@ def toggleStylesheet(path: str) -> None:
     app = QApplication.instance()
     if app is None:
         raise RuntimeError("No Qt Application found.")
-    file = QFile(path)
-    file.open(QFile.ReadOnly | QFile.Text)
-    stream = QTextStream(file)
-    app.setStyleSheet(stream.readAll())
+    if path:
+        file = QFile(path)
+        file.open(QFile.ReadOnly | QFile.Text)
+        stream = QTextStream(file)
+        app.setStyleSheet(stream.readAll())
+    else:
+        app.setStyleSheet("")

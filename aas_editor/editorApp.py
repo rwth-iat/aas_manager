@@ -16,7 +16,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-        toggleTheme(PREFERED_THEME)
         self.initToolbar()
         self.switch2rightTreeSC = QShortcut(QKeySequence("Ctrl+Right"), self)
         self.switch2leftTreeSC = QShortcut(QKeySequence("Ctrl+Left"), self)
@@ -56,6 +55,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.actionLight.triggered.connect(lambda: toggleTheme("light"))
         self.actionDark.triggered.connect(lambda: toggleTheme("dark"))
+        self.actionDefault.triggered.connect(lambda: toggleTheme("standard"))
 
         self.switch2rightTreeSC.activated.connect(self.setFocus2rightTree)
         self.switch2leftTreeSC.activated.connect(self.packItemsTreeView.setFocus)
