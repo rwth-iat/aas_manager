@@ -1,11 +1,11 @@
 from typing import Any, Iterable, Union
 
 from PyQt5.QtCore import QAbstractItemModel, QVariant, QModelIndex, Qt, pyqtSignal
-from aas.model import DictObjectStore, Submodel, NamespaceSet, SubmodelElement
 
 from aas_editor.models import OBJECT_ROLE, NAME_ROLE, Package, DetailedInfoItem, StandardItem, \
     ATTRIBUTE_COLUMN, VALUE_COLUMN, PackTreeViewItem
 
+from aas.model import DictObjectStore, Submodel, NamespaceSet, SubmodelElement
 
 class StandardTable(QAbstractItemModel):
     valueChangeFailed = pyqtSignal(['QString'])
@@ -15,7 +15,7 @@ class StandardTable(QAbstractItemModel):
         self._rootItem = rootItem if rootItem else DetailedInfoItem(None, "", None)
         self._columns = columns
 
-    def data(self, index, role):
+    def data(self, index: QModelIndex, role: int = ...) -> Any:
         if not index.isValid():
             return QVariant()
         return self.objByIndex(index).data(role)
@@ -51,7 +51,8 @@ class StandardTable(QAbstractItemModel):
         if not index.isValid():
             return Qt.NoItemFlags
 
-        if (index.column() == ATTRIBUTE_COLUMN and not isinstance(index.parent().data(OBJECT_ROLE), dict)) \
+        if (index.column() == ATTRIBUTE_COLUMN
+            and not isinstance(index.parent().data(OBJECT_ROLE), dict)) \
                 or self.hasChildren(index):
             return Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
@@ -76,7 +77,8 @@ class StandardTable(QAbstractItemModel):
 
         yield from recurse(parent)
 
-    def findItemByObj(self, obj): #todo redefine to match()
+    # todo redefine to match()
+    def findItemByObj(self, obj):
         for item in self.iterItems():
             print("Name:", item.data(NAME_ROLE))
             try:
@@ -85,7 +87,8 @@ class StandardTable(QAbstractItemModel):
             except AttributeError:
                 continue
 
-    def addItem(self, obj: Union[Package, SubmodelElement, Iterable], parent: QModelIndex = QModelIndex()):
+    def addItem(self, obj: Union[Package, SubmodelElement, Iterable],
+                parent: QModelIndex = QModelIndex()):
         # obj must be iterable if add to list, dict or set
         parentObj = self.objByIndex(parent).data(OBJECT_ROLE)
         if isinstance(parentObj, DictObjectStore):
@@ -149,10 +152,12 @@ class StandardTable(QAbstractItemModel):
                                       index.child(self.rowCount(index), self.columnCount(index)))
                 return True
             else:
+                # noinspection PyUnresolvedReferences
                 self.valueChangeFailed.emit(
                     f"{self.objByIndex(index).objectName} could not be changed to {value}")
         except (ValueError, AttributeError) as e:
             self.dataChanged.emit(index, index)
+            # noinspection PyUnresolvedReferences
             self.valueChangeFailed.emit(
                 f"Error occurred while setting {self.objByIndex(index).objName}: {e}")
         return False
@@ -168,7 +173,8 @@ class StandardTable(QAbstractItemModel):
         self.endRemoveRows()
         return True
 
-    def clearRows(self, row: int, count: int, parent: QModelIndex = ..., defaultVal="Not given") -> bool:
+    def clearRows(self, row: int, count: int,
+                  parent: QModelIndex = ..., defaultVal="Not given") -> bool:
         """Delete rows if they are children of Iterable else set to Default"""
         parentItem = self.objByIndex(parent)
 
@@ -194,9 +200,10 @@ class StandardTable(QAbstractItemModel):
                     self.valueChangeFailed.emit(
                         f"{child.objectName} could not be deleted or set to default")
         self.endRemoveRows()
-        self.dataChanged.emit(parent, parent.child(self.rowCount(parent), self.columnCount(parent)))
+        self.dataChanged.emit(parent,
+                              parent.child(self.rowCount(parent), self.columnCount(parent)))
         return True
 
     def clearRow(self, row: int, parent: QModelIndex = ..., defaultVal="Not given") -> bool:
         """Delete row if it is child of Iterable else set to Default"""
-        self.clearRows(row, 1, parent, defaultVal)
+        return self.clearRows(row, 1, parent, defaultVal)
