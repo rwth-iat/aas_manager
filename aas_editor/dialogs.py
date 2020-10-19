@@ -68,9 +68,11 @@ def getInputWidget(objType, rmDefParams=True, objName="", attrsToHide: dict = No
         widget = TypeOptionObjGroupBox(objTypes, "", attrsToHide=attrsToHide,
                                        rmDefParams=rmDefParams, objName=objName, parent=parent)
     elif issubtype(objType, AASReference):
-        if objType.__args__:
+        try:
             type_ = objType.__args__[0]
             attrsToHide["type_"] = type_
+        except AttributeError:
+            pass
         widget = ObjGroupBox(objType, "", attrsToHide=attrsToHide, rmDefParams=rmDefParams,
                              objName=objName, parent=parent, objVal=objVal)
     elif issubtype(objType, (bool, str, int, float, Enum, Type)):
@@ -84,7 +86,7 @@ def getInputWidget(objType, rmDefParams=True, objName="", attrsToHide: dict = No
 class AddObjDialog(AddDialog):
     def __init__(self, objType, parent=None, rmDefParams=True,
                  objName="", objVal=None, windowTitle=""):
-        objName = objName if objName else objType.__name__
+        objName = objName if objName else str(objType)
         windowTitle = windowTitle if windowTitle else f"Add {objName}"
         AddDialog.__init__(self, parent, windowTitle)
         self.buttonOk.setEnabled(True)
@@ -309,7 +311,10 @@ class TypeOptionObjGroupBox(GroupBox):
         self.typeComboBox = QComboBox(self)
         for objType in objTypes:
             self.typeComboBox.addItem(objType.__name__, objType)
-        self.typeComboBox.setCurrentIndex(self.typeComboBox.findData(type(objVal)))
+        if objVal:
+            self.typeComboBox.setCurrentIndex(self.typeComboBox.findData(type(objVal)))
+        else:
+            self.typeComboBox.setCurrentIndex(0)
         self.layout().insertWidget(0, self.typeComboBox)
 
         currObjType = self.typeComboBox.currentData()
