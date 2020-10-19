@@ -57,7 +57,11 @@ class StandardTable(QAbstractItemModel):
                 or self.hasChildren(index):
             return Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
-        return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
+        # FIXME check if other types are also editable
+        if isinstance(index.data(OBJECT_ROLE), (bool, int, float, str, bytes, type(None))):
+            return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
+
+        return Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
     def hasChildren(self, parent: QModelIndex = ...) -> bool:
         return True if self.rowCount(parent) else False
