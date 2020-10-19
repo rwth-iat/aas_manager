@@ -1,6 +1,7 @@
 from PyQt5.QtCore import QObject, QVariant
 from aas.model import AASReference
 
+from aas_editor.dialogs import DictItem
 from aas_editor.models import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, VALUE_COLUMN, ATTRIBUTE_COLUMN
 from aas_editor.settings import LINK_TYPES
 from aas_editor.util import getDescription, getAttrDoc, simplifyInfo, getTypeName
@@ -29,13 +30,21 @@ class StandardItem(QObject):
             return self.package
         if role == Qt.DisplayRole:
             if column == ATTRIBUTE_COLUMN:
+                if isinstance(self.obj, DictItem):
+                    return self.obj.key
                 return self.objectName
             if column == VALUE_COLUMN:
+                if isinstance(self.obj, DictItem):
+                    return self.obj.value
                 return simplifyInfo(self.obj, self.objectName)
         if role == Qt.EditRole:
             if column == ATTRIBUTE_COLUMN:
+                if isinstance(self.obj, DictItem):
+                    return self.obj.key
                 return self.objName
             if column == VALUE_COLUMN:
+                if isinstance(self.obj, DictItem):
+                    return self.obj.value
                 return self.obj
         return QVariant()
 
