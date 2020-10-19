@@ -54,13 +54,12 @@ def getInputWidget(objType, rmDefParams=True, objName="", attrsToHide: dict = No
                    parent=None, objVal=None) -> QtWidgets.QWidget:
     print(objType, objType.__str__, objType.__repr__, objType.__class__)
     attrsToHide = attrsToHide if attrsToHide else {}
-    if isMeta(objType):
+    if isMeta(objType) and not issubtype(objType, Iterable):
         objTypes = inheritors(objType)
         widget = TypeOptionObjGroupBox(objTypes, "", attrsToHide=attrsToHide,
                                        rmDefParams=rmDefParams, objName=objName, parent=parent)
-    # TODO if type is iterable make tuple, now it stuck in meta
-    # typing.Iterable):
-    elif issubtype(objType, (list, tuple, set, dict)) and not issubtype(objType, DictItem):
+    elif issubtype(objType, (list, tuple, set, dict, Iterable)) \
+            and not issubtype(objType, (str, bytes, DictItem)):
         widget = IterableGroupBox(objType, "", rmDefParams=rmDefParams,
                                   parent=parent, objVal=objVal)
     elif issubtype(objType, Union):
@@ -220,7 +219,7 @@ class IterableGroupBox(GroupBox):
         elif issubtype(self.iterableType, dict):
             obj = dict(listObj)
         else:
-            raise TypeError("Unknown type", self.iterableType)
+            obj = list(listObj)
         return obj
 
 
