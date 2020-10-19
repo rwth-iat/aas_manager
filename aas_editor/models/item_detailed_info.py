@@ -1,11 +1,9 @@
-from PyQt5.QtCore import Qt, QVariant
 from aas.model import AASReference, NamespaceSet
 
-from aas_editor.models import TYPES_NOT_TO_POPULATE, VALUE_COLUMN, NAME_ROLE, OBJECT_ROLE, \
-    PACKAGE_ROLE, ATTRIBUTE_COLUMN
+from aas_editor.models import TYPES_NOT_TO_POPULATE
 from aas_editor.models.item_standard import StandardItem
 from aas_editor.models.package import Package
-from aas_editor.util import getAttrDoc, simplifyInfo, getAttrs4detailInfo
+from aas_editor.util import getAttrs4detailInfo, getTypeName
 
 
 class DetailedInfoItem(StandardItem):
@@ -27,7 +25,7 @@ class DetailedInfoItem(StandardItem):
                 DetailedInfoItem(sub_item_obj, sub_item_attr, self, package=self.package)
         elif isinstance(self.obj, (set, list, tuple, NamespaceSet)):
             for i, sub_item_obj in enumerate(self.obj):
-                DetailedInfoItem(sub_item_obj, f"{sub_item_obj.__class__.__name__} {i}", self,
+                DetailedInfoItem(sub_item_obj, f"{getTypeName(sub_item_obj.__class__)} {i}", self,
                                  package=self.package)
         else:
             for sub_item_attr in getAttrs4detailInfo(self.obj):
