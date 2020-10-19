@@ -118,7 +118,10 @@ def getReqParams4init(objType: Type, rmDefParams: bool=True,
 
     if attrsToHide:
         for attr in attrsToHide:
-            params.pop(attr)
+            try:
+                params.pop(attr)
+            except KeyError:
+                continue
 
     return params
 
