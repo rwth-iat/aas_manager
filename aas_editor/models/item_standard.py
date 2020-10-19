@@ -39,7 +39,6 @@ class StandardItem(QObject):
                 return self.obj
         return QVariant()
 
-
     def setParent(self, a0: 'QObject') -> None:
         super().setParent(a0)
         try:

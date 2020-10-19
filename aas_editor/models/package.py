@@ -34,7 +34,8 @@ class Package:
     @property
     def others(self):
         for obj in self.objStore:
-            if not isinstance(obj, (AssetAdministrationShell, Asset, Submodel, ConceptDescription)):
+            if not isinstance(obj,
+                              (AssetAdministrationShell, Asset, Submodel, ConceptDescription)):
                 yield obj
 
     def add(self, obj):

@@ -32,7 +32,8 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.toolBar.addAction(self.tabWidget.backAct)
         self.toolBar.addAction(self.tabWidget.forwardAct)
 
-    def iterItems(self, root):
+    @staticmethod
+    def iterItems(root):
         def recurse(parent):
             for row in range(parent.rowCount()):
                 for column in range(parent.columnCount()):
@@ -45,13 +46,19 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             yield from recurse(root)
 
     def buildHandlers(self):
-        self.tabWidget.currItemChanged.connect(self.packItemsTreeView.setCurrentIndex)
+        self.tabWidget.currItemChanged.connect(
+            self.packItemsTreeView.setCurrentIndex)
 
-        self.packItemsTreeView.wheelClicked.connect(self.tabWidget.openItemInBackgroundTab)
-        self.packItemsTreeView.openInBackgroundTabClicked.connect(self.tabWidget.openItemInBackgroundTab)
-        self.packItemsTreeView.openInNewTabClicked.connect(self.tabWidget.openItemInNewTab)
-        self.packItemsTreeView.openInCurrTabClicked.connect(self.tabWidget.openItem)
-        self.packItemsTreeView.selectionModel().currentChanged.connect(self.tabWidget.openItem)
+        self.packItemsTreeView.wheelClicked.connect(
+            self.tabWidget.openItemInBackgroundTab)
+        self.packItemsTreeView.openInBackgroundTabClicked.connect(
+            self.tabWidget.openItemInBackgroundTab)
+        self.packItemsTreeView.openInNewTabClicked.connect(
+            self.tabWidget.openItemInNewTab)
+        self.packItemsTreeView.openInCurrTabClicked.connect(
+            self.tabWidget.openItem)
+        self.packItemsTreeView.selectionModel().currentChanged.connect(
+            self.tabWidget.openItem)
 
         self.actionLight.triggered.connect(lambda: toggleTheme("light"))
         self.actionDark.triggered.connect(lambda: toggleTheme("dark"))
@@ -73,7 +80,5 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
     def addPack(self, name="", objStore=None):
         pack = Package(name=name, objStore=objStore)
         self.packTreeViewModel.addItem(pack)
-
-
 
 # ToDo logs insteads of prints

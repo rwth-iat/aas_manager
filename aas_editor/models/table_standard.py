@@ -7,12 +7,13 @@ from aas_editor.models import OBJECT_ROLE, NAME_ROLE, Package, DetailedInfoItem,
 
 from aas.model import DictObjectStore, Submodel, NamespaceSet, SubmodelElement
 
+
 class StandardTable(QAbstractItemModel):
     valueChangeFailed = pyqtSignal(['QString'])
 
     def __init__(self, columns=("Item",), rootItem: StandardItem = None):
         super(StandardTable, self).__init__()
-        self._rootItem = rootItem if rootItem else DetailedInfoItem(None, "", None)
+        self._rootItem = rootItem if rootItem else DetailedInfoItem(None, "")
         self._columns = columns
 
     def data(self, index: QModelIndex, role: int = ...) -> Any:
@@ -67,7 +68,7 @@ class StandardTable(QAbstractItemModel):
         return index.internalPointer()
 
     def iterItems(self, parent: QModelIndex = QModelIndex()):
-        def recurse(parent):
+        def recurse(parent: QModelIndex):
             for row in range(self.rowCount(parent)):
                 childIndex = self.index(row, 0, parent)
                 yield childIndex
@@ -94,7 +95,8 @@ class StandardTable(QAbstractItemModel):
         if isinstance(parentObj, DictObjectStore):
             parentObj.add(obj)
         elif isinstance(parentObj, Submodel):
-            parentObj.submodel_element.add(obj) # todo change if they make Submodel iterable
+            # TODO change if they make Submodel iterable
+            parentObj.submodel_element.add(obj)
         elif isinstance(parentObj, list):
             parentObj.extend(obj)
         elif isinstance(parentObj, set) or isinstance(parentObj, dict):

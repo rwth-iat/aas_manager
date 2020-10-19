@@ -158,7 +158,7 @@ class Tab(QWidget):
         self.packItem = packItem
         self.pathLine.setText(getTreeItemPath(packItem))
         self.descrLabel.setText("")
-        self.attrsTreeView._newPackItem(packItem)
+        self.attrsTreeView.newPackItem(packItem)
         self.attrsTreeView.selectionModel().currentChanged.connect(self.showDetailInfoItemDoc)
         self.objectNameChanged.emit(self.objectName)
         self.currItemChanged.emit(self.packItem)

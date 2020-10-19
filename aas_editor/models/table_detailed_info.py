@@ -14,7 +14,7 @@ class DetailedInfoTable(StandardTable):
         root = DetailedInfoItem(self.mainObj, packItem.data(NAME_ROLE), package=self.package)
         super(DetailedInfoTable, self).__init__(COLUMNS_IN_DETAILED_INFO, root)
 
-    def data(self, index, role):
+    def data(self, index: QModelIndex, role: int = ...) -> Any:
         if not index.isValid():
             return QVariant()
         if role == Qt.BackgroundRole:

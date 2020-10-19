@@ -145,7 +145,7 @@ class TreeView(QTreeView):
             nextRow = self.currentIndex().row() + 1
             if nextRow+1 > self.model().rowCount(self.currentIndex().parent()):
                 # we are all the way down, we can 't go any further
-                nextRow = nextRow - 1
+                nextRow -= 1
             if self.state() == QAbstractItemView.EditingState:
                 # if we are editing, confirm and move to the row below
                 nextIndex = self.currentIndex().siblingAtRow(nextRow)
@@ -198,7 +198,7 @@ class TreeView(QTreeView):
                 self._addHandler(list(objToPaste))
             except TypeError:
                 self._editCreateHandler(objToPaste)
-        except (TypeError, SyntaxError) as e:
+        except (TypeError, SyntaxError):
             print(f"Data could not be paste: {text}")
 
     def _cutHandler(self):
@@ -301,7 +301,7 @@ class AttrsTreeView(TreeView):
         self.setItemDelegate(QComboBoxEnumDelegate())
         self.clicked.connect(self.openRef)
         self.wheelClicked.connect(
-            lambda refItem: self.openRef(refItem, newTab=True, setCurrent=False))
+            lambda refItem: self.openRef(refItem, setCurrent=False))
 
     def _buildHandlersForNewItem(self):
         self.model().valueChangeFailed.connect(self.parent().itemDataChangeFailed)
@@ -378,7 +378,7 @@ class AttrsTreeView(TreeView):
             else:
                 self.openInCurrTabClicked.emit(linkedPackItem)
 
-    def _newPackItem(self, packItem):
+    def newPackItem(self, packItem):
         self._initTreeView(packItem)
         self._buildHandlersForNewItem()
 

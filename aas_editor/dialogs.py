@@ -50,26 +50,29 @@ def checkIfAccepted(func):
     return wrap
 
 
-def getInputWidget(objType, rmDefParams=True, objName="", attrsToHide: dict = None, parent=None, objVal=None) -> QtWidgets.QWidget:
+def getInputWidget(objType, rmDefParams=True, objName="", attrsToHide: dict = None,
+                   parent=None, objVal=None) -> QtWidgets.QWidget:
     print(objType, objType.__str__, objType.__repr__, objType.__class__)
     attrsToHide = attrsToHide if attrsToHide else {}
     if isMeta(objType):
         objTypes = inheritors(objType)
         widget = TypeOptionObjGroupBox(objTypes, "", attrsToHide=attrsToHide,
-                             rmDefParams=rmDefParams, objName=objName, parent=parent)
+                                       rmDefParams=rmDefParams, objName=objName, parent=parent)
     # TODO if type is iterable make tuple, now it stuck in meta
-    elif issubtype(objType, (list, tuple, set, dict)) and not issubtype(objType, DictItem):# typing.Iterable):
-        widget = IterableGroupBox(objType, "", rmDefParams=rmDefParams, parent=parent, objVal=objVal)
+    # typing.Iterable):
+    elif issubtype(objType, (list, tuple, set, dict)) and not issubtype(objType, DictItem):
+        widget = IterableGroupBox(objType, "", rmDefParams=rmDefParams,
+                                  parent=parent, objVal=objVal)
     elif issubtype(objType, Union):
         objTypes = objType.__args__
         widget = TypeOptionObjGroupBox(objTypes, "", attrsToHide=attrsToHide,
-                             rmDefParams=rmDefParams, objName=objName, parent=parent)
+                                       rmDefParams=rmDefParams, objName=objName, parent=parent)
     elif issubtype(objType, AASReference):
         if objType.__args__:
             type_ = objType.__args__[0]
             attrsToHide["type_"] = type_
-        widget = ObjGroupBox(objType, "", attrsToHide=attrsToHide,
-                             rmDefParams=rmDefParams, objName=objName, parent=parent, objVal=objVal)
+        widget = ObjGroupBox(objType, "", attrsToHide=attrsToHide, rmDefParams=rmDefParams,
+                             objName=objName, parent=parent, objVal=objVal)
     elif issubtype(objType, (bool, str, int, float, Enum, Type)):
         widget = StandardInputWidget(objType, parent=parent, objVal=objVal)
     else:
@@ -79,18 +82,21 @@ def getInputWidget(objType, rmDefParams=True, objName="", attrsToHide: dict = No
 
 
 class AddObjDialog(AddDialog):
-    def __init__(self, objType, parent=None, rmDefParams=True, objName="", objVal=None, windowTitle=""):
+    def __init__(self, objType, parent=None, rmDefParams=True,
+                 objName="", objVal=None, windowTitle=""):
         objName = objName if objName else objType.__name__
         windowTitle = windowTitle if windowTitle else f"Add {objName}"
         AddDialog.__init__(self, parent, windowTitle)
         self.buttonOk.setEnabled(True)
-        self.inputWidget = getInputWidget(objType, rmDefParams=rmDefParams, objName=objName, objVal=objVal)
+        self.inputWidget = getInputWidget(objType, rmDefParams=rmDefParams,
+                                          objName=objName, objVal=objVal)
         self.inputWidget.setObjectName("mainBox")
         self.inputWidget.setStyleSheet("#mainBox{border:0;}")
         self.dialogLayout.insertWidget(0, self.inputWidget)
 
     def getInputWidget(self):
         pass
+
     @checkIfAccepted
     def getObj2add(self):
         return self.inputWidget.getObj2add()
@@ -116,14 +122,16 @@ class ObjGroupBox(GroupBox):
 
         if reqAttrsDict:
             for attr, attrType in reqAttrsDict.items():
-                val = getattr(objVal, attr.rstrip("_"), None) # todo delete when right _ will be deleted in aas models
+                # TODO delete when right _ will be deleted in aas models
+                val = getattr(objVal, attr.rstrip("_"), None)
                 widgetLayout = self._getInputWidgetLayout(attr, attrType, rmDefParams, val)
                 self.layout().addLayout(widgetLayout)
         else:
             widgetLayout = self._getInputWidgetLayout(objName, objType, rmDefParams, objVal)
             self.layout().addLayout(widgetLayout)
 
-    def _getInputWidgetLayout(self, attr:str, attrType, rmDefParams:bool, objVal:Any) -> QtWidgets.QHBoxLayout:
+    def _getInputWidgetLayout(self, attr: str, attrType,
+                              rmDefParams: bool, objVal: Any) -> QtWidgets.QHBoxLayout:
         print(f"Getting widget for attr: {attr} of type: {attrType}")
         layout = QtWidgets.QHBoxLayout()
         label = QLabel(f"{attr}:")
@@ -147,7 +155,8 @@ class ObjGroupBox(GroupBox):
 
 
 class IterableGroupBox(GroupBox):
-    def __init__(self, iterableType, title:str, parent=None, rmDefParams:bool=True, objVal: Iterable = None):
+    def __init__(self, iterableType, title: str, parent=None,
+                 rmDefParams: bool = True, objVal: Iterable = None):
         super().__init__(title, parent)
         self.iterableType = iterableType
         self.argTypes = list(iterableType.__args__)
@@ -183,7 +192,7 @@ class IterableGroupBox(GroupBox):
                                 objName=f"{argType} {len(self.inputWidgets)}",
                                 rmDefParams=rmDefParams, objVal=objVal)
         deleteButton = QPushButton(f"Delete", widget)
-        deleteButton.clicked.connect(lambda :self._delInputWidget(deleteButton.parent()))
+        deleteButton.clicked.connect(lambda: self._delInputWidget(deleteButton.parent()))
         widget.layout().addWidget(deleteButton)
         self.inputWidgets.append(widget)
         self.layout().insertWidget(self.layout().count()-1, widget)
@@ -288,8 +297,10 @@ class ChooseFromDialog(AddDialog):
         return obj
 
 
-class TypeOptionObjGroupBox(GroupBox): # todo reimplement when Datatypes Data, Duration, etc. are ready
-    def __init__(self, objTypes, title, parent=None, attrsToHide: dict = None, rmDefParams=False, objName="", objVal=None):
+# todo reimplement when Datatypes Data, Duration, etc. are ready
+class TypeOptionObjGroupBox(GroupBox):
+    def __init__(self, objTypes, title, parent=None, attrsToHide: dict = None,
+                 rmDefParams=False, objName="", objVal=None):
         super(TypeOptionObjGroupBox, self).__init__(title, parent)
         self.rmDefParams = rmDefParams
         self.attrsToHide = attrsToHide if attrsToHide else {}
@@ -302,14 +313,17 @@ class TypeOptionObjGroupBox(GroupBox): # todo reimplement when Datatypes Data, D
         self.layout().insertWidget(0, self.typeComboBox)
 
         currObjType = self.typeComboBox.currentData()
-        self.widget = getInputWidget(currObjType, rmDefParams, attrsToHide=attrsToHide, parent=self, objVal=objVal)
+        self.widget = getInputWidget(currObjType, rmDefParams, attrsToHide=attrsToHide,
+                                     parent=self, objVal=objVal)
         self.layout().addWidget(self.widget)
 
         # change input widget for new type if type in combobox changed
-        self.typeComboBox.currentIndexChanged.connect(lambda i: self.replGroupBox(self.typeComboBox.itemData(i)))
+        self.typeComboBox.currentIndexChanged.connect(
+            lambda i: self.replGroupBox(self.typeComboBox.itemData(i)))
 
     def replGroupBox(self, objType):
-        newWidget = getInputWidget(objType, self.rmDefParams, attrsToHide=self.attrsToHide, parent=self)
+        newWidget = getInputWidget(objType, self.rmDefParams,
+                                   attrsToHide=self.attrsToHide, parent=self)
         self.layout().replaceWidget(self.widget, newWidget)
         self.widget.close()
         newWidget.showMinimized()

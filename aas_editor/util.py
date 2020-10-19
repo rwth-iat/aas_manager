@@ -93,7 +93,9 @@ def getParams4init(objType: Type):
         raise TypeError(f"no init or new func in objectType: {objType}")
     return params, defaults
 
-def getReqParams4init(objType:Type, rmDefParams:bool=True, attrsToHide: dict = None) -> Dict[str, Type]:
+
+def getReqParams4init(objType: Type, rmDefParams: bool=True,
+                      attrsToHide: dict = None) -> Dict[str, Type]:
     """Return required params for init with their type"""
     params, defaults = getParams4init(objType)
 
@@ -126,6 +128,7 @@ def isOptional(typeHint):
                 return True
     return False
 
+
 def isUnion(typeHint):
     if hasattr(typeHint, "__origin__"):
         if type(typeHint.__origin__) == type(Union):
@@ -135,7 +138,8 @@ def isUnion(typeHint):
     return False
 
 
-def isMeta(typ):# todo reimplement if in pyi40aas abstract classes will be really abstract
+# todo reimplement if in pyi40aas abstract classes will be really abstract
+def isMeta(typ):
     if typ in (SubmodelElement, DataElement, SubmodelElementCollection, Event, Constraint):
         return True
     if inspect.isabstract(typ):
@@ -162,7 +166,8 @@ def issubtype(typ, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:
     except TypeError:
         return issubclass(typ.__origin__, types)
 
-# def issubtype(typ, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:# todo check if gorg is ok in other versions of python
+# todo check if gorg is ok in other versions of python
+# def issubtype(typ, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:
 #     if types == Union:
 #         if hasattr(typ, "__origin__") and typ.__origin__:
 #             return typ.__origin__ == types
