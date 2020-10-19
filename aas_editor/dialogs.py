@@ -126,9 +126,9 @@ class ObjGroupBox(GroupBox):
                 val = getattr(objVal, attr.rstrip("_"), None)
                 widgetLayout = self._getInputWidgetLayout(attr, attrType, rmDefParams, val)
                 self.layout().addLayout(widgetLayout)
-        else:
-            widgetLayout = self._getInputWidgetLayout(objName, objType, rmDefParams, objVal)
-            self.layout().addLayout(widgetLayout)
+        # else: # TODO check if it works ok
+        #     widgetLayout = self._getInputWidgetLayout(objName, objType, rmDefParams, objVal)
+        #     self.layout().addLayout(widgetLayout)
 
     def _getInputWidgetLayout(self, attr: str, attrType,
                               rmDefParams: bool, objVal: Any) -> QtWidgets.QHBoxLayout:
@@ -181,7 +181,7 @@ class IterableGroupBox(GroupBox):
                 argType = self.argTypes[0]
             else:
                 raise TypeError(f"expected 1 argument, got {len(self.argTypes)}", self.argTypes)
-        else:
+        else: #  if parentType = dict
             if len(self.argTypes) == 2:
                 DictItem._field_types["key"] = self.argTypes[0]
                 DictItem._field_types["value"] = self.argTypes[1]
