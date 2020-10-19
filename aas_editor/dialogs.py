@@ -262,7 +262,7 @@ class StandardInputWidget(QtWidgets.QWidget):
             else:
                 types = union.__args__
             for typ in types:
-                widget.addItem(typ.__name__, typ)
+                widget.addItem(getTypeName(typ), typ)
             if objVal:
                 widget.setCurrentIndex(widget.findData(objVal))
         return widget
@@ -308,7 +308,7 @@ class TypeOptionObjGroupBox(GroupBox):
         # init type-choose combobox
         self.typeComboBox = QComboBox(self)
         for objType in objTypes:
-            self.typeComboBox.addItem(objType.__name__, objType)
+            self.typeComboBox.addItem(getTypeName(objType), objType)
         if objVal:
             self.typeComboBox.setCurrentIndex(self.typeComboBox.findData(type(objVal)))
         else:
