@@ -6,7 +6,9 @@ from typing import List, Tuple, Union, Dict, Type
 
 from PyQt5.QtCore import Qt, QFile, QTextStream, QModelIndex
 from PyQt5.QtWidgets import QApplication
-from aas.model import SubmodelElement, DataElement, SubmodelElementCollection, Event, Constraint
+from aas.model import SubmodelElement, DataElement, SubmodelElementCollection, Event, Constraint, \
+    Namespace, Referable, Identifiable, HasSemantics, HasKind, Qualifiable, \
+    DataSpecificationContent
 
 from .settings import ATTR_ORDER, PREFERED_LANGS_ORDER, ATTRS_NOT_IN_DETAILED_INFO, \
     ATTR_INFOS_TO_SIMPLIFY, THEMES
@@ -140,7 +142,19 @@ def isUnion(typeHint):
 
 # todo reimplement if in pyi40aas abstract classes will be really abstract
 def isMeta(typ):
-    if typ in (SubmodelElement, DataElement, SubmodelElementCollection, Event, Constraint):
+    if typ in (
+            SubmodelElement,
+            DataElement,
+            SubmodelElementCollection,
+            Event,
+            Referable,
+            Identifiable,
+            HasSemantics,
+            HasKind,
+            Constraint,
+            Qualifiable,
+            Namespace,
+            DataSpecificationContent):
         return True
     if inspect.isabstract(typ):
         return True
