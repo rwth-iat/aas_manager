@@ -350,9 +350,9 @@ class AttrsTreeView(TreeView):
         attribute = index.data(NAME_ROLE)
         attrType = getAttrTypeHint(type(self.model().objByIndex(index).parentObj), attribute)
         if objVal:
-            self.addItemWithDialog(index, attrType, objVal=objVal)
+            self.addItemWithDialog(index, attrType, objVal=objVal, objName=f"{attribute} element")
         else:
-            self.addItemWithDialog(index, attrType)
+            self.addItemWithDialog(index, attrType, objName=f"{attribute} element")
 
     def _editCreateHandler(self, objVal=None):
         index = self.currentIndex()
