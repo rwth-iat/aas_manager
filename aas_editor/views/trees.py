@@ -240,8 +240,6 @@ class PackTreeView(TreeView):
 
     # noinspection PyUnresolvedReferences
     def _upgradeMenu(self):
-        self.addAct.setEnabled(True)
-
         self.openInCurrTabAct.triggered.connect(
             lambda: self.openInCurrTabClicked.emit(self.currentIndex()))
         self.openInNewTabAct.triggered.connect(
@@ -249,16 +247,28 @@ class PackTreeView(TreeView):
         self.openInBackgroundAct.triggered.connect(
             lambda: self.openInBackgroundTabClicked.emit(self.currentIndex()))
 
+    def setModel(self, model: QtCore.QAbstractItemModel) -> None:
+        super(PackTreeView, self).setModel(model)
+        self.selectionModel().currentChanged.connect(self._updateMenu)
+
+    def _updateMenu(self, index: QModelIndex):
+        # update add action
+        obj = index.data(OBJECT_ROLE)
+        if isinstance(obj, (Iterable, Submodel, Package)) or not index.isValid():
+            self.addAct.setEnabled(True)
+        else:
+            self.addAct.setEnabled(False)
+
     def _addHandler(self):
         index = self.currentIndex()
-        attribute = index.data(NAME_ROLE)
+        name = index.data(NAME_ROLE)
         if isinstance(index.data(OBJECT_ROLE), Package) or not index.isValid():
             self.addItemWithDialog(QModelIndex(), Package)
-        elif attribute == "shells":
+        elif name == "shells":
             self.addItemWithDialog(index, AssetAdministrationShell, rmDefParams=True)
-        elif attribute == "assets":
+        elif name == "assets":
             self.addItemWithDialog(index, Asset, rmDefParams=True)
-        elif attribute == "submodels":
+        elif name == "submodels":
             self.addItemWithDialog(index, Submodel, rmDefParams=True)
         elif isinstance(index.data(OBJECT_ROLE), Submodel):
             self.addItemWithDialog(index, SubmodelElement, rmDefParams=True)
@@ -305,9 +315,9 @@ class AttrsTreeView(TreeView):
 
     def _buildHandlersForNewItem(self):
         self.model().valueChangeFailed.connect(self.parent().itemDataChangeFailed)
-        self.selectionModel().currentChanged.connect(self._updateDetailInfoItemMenu)
+        self.selectionModel().currentChanged.connect(self._updateMenu)
 
-    def _updateDetailInfoItemMenu(self, index: QModelIndex):
+    def _updateMenu(self, index: QModelIndex):
         # update edit action
         if index.flags() & Qt.ItemIsEditable:
             self.editAct.setEnabled(True)
