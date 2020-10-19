@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Any, Iterable, Union
 
 from PyQt5.QtCore import QAbstractItemModel, QVariant, QModelIndex, Qt, pyqtSignal
@@ -58,7 +59,7 @@ class StandardTable(QAbstractItemModel):
             return Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
         # FIXME check if other types are also editable
-        if isinstance(index.data(OBJECT_ROLE), (bool, int, float, str, bytes, type(None))):
+        if isinstance(index.data(OBJECT_ROLE), (Enum, bool, int, float, str, bytes, type(None))):
             return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
         return Qt.ItemIsEnabled | Qt.ItemIsSelectable

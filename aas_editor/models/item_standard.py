@@ -3,7 +3,7 @@ from aas.model import AASReference
 
 from aas_editor.models import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, VALUE_COLUMN, ATTRIBUTE_COLUMN
 from aas_editor.settings import LINK_TYPES
-from aas_editor.util import getDescription, getAttrDoc, simplifyInfo
+from aas_editor.util import getDescription, getAttrDoc, simplifyInfo, getTypeName
 from PyQt5.QtCore import Qt
 
 
@@ -53,7 +53,7 @@ class StandardItem(QObject):
         elif hasattr(self.obj, "id_short") and self.obj.id_short:
             return self.obj.id_short
         else:
-            return self.obj.__class__.__name__
+            return getTypeName(self.obj.__class__)
 
     @property
     def parentObj(self):

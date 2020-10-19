@@ -12,8 +12,7 @@ from aas.model.concept import *
 from aas.model.provider import *
 from aas.model.submodel import *
 
-from aas_editor.util import getReqParams4init, issubtype, inheritors, isMeta
-
+from aas_editor.util import getReqParams4init, issubtype, inheritors, isMeta, getTypeName
 
 DictItem = NamedTuple("DictItem", key=Any, value=Any)
 
@@ -85,7 +84,7 @@ def getInputWidget(objType, rmDefParams=True, objName="", attrsToHide: dict = No
 class AddObjDialog(AddDialog):
     def __init__(self, objType, parent=None, rmDefParams=True,
                  objName="", objVal=None, windowTitle=""):
-        objName = objName if objName else str(objType)
+        objName = objName if objName else getTypeName(objType)
         windowTitle = windowTitle if windowTitle else f"Add {objName}"
         AddDialog.__init__(self, parent, windowTitle)
         self.buttonOk.setEnabled(True)
