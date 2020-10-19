@@ -53,14 +53,24 @@ def simplifyInfo(obj, attrName: str = "") -> str:
     return res
 
 
+def getTypeName(objType):
+    try:
+        return objType.__name__
+    except AttributeError:
+        pass
+
+    try:
+        return objType._name
+    except AttributeError:
+        return str(objType)
+
+
 def getDescription(descriptions: dict) -> str:
     if descriptions:
         for lang in PREFERED_LANGS_ORDER:
             if lang in descriptions:
                 return descriptions.get(lang)
         return tuple(descriptions.values())[0]
-
-
 def getDefaultVal(param: str, objType: Type):
     params, defaults = getParams4init(objType)
     if params and defaults:
