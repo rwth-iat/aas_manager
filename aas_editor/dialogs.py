@@ -53,7 +53,7 @@ def checkIfAccepted(func):
 def getInputWidget(objType, rmDefParams=True, objName="", attrsToHide: dict = None,
                    parent=None, objVal=None) -> QtWidgets.QWidget:
     print(objType, objType.__str__, objType.__repr__, objType.__class__)
-    attrsToHide = attrsToHide if attrsToHide else DEFAULT_ATTRS_TO_HIDE
+    attrsToHide = attrsToHide if attrsToHide else DEFAULT_ATTRS_TO_HIDE.copy()
     if isMeta(objType) and not issubtype(objType, Iterable):
         objTypes = inheritors(objType)
         widget = TypeOptionObjGroupBox(objTypes, "", attrsToHide=attrsToHide,
@@ -117,7 +117,7 @@ class ObjGroupBox(GroupBox):
         super().__init__(title, parent)
 
         self.objType = objType
-        self.attrsToHide = attrsToHide if attrsToHide else DEFAULT_ATTRS_TO_HIDE
+        self.attrsToHide = attrsToHide if attrsToHide else DEFAULT_ATTRS_TO_HIDE.copy()
         self.attrWidgetDict = {}
 
         reqAttrsDict = getReqParams4init(objType, rmDefParams, attrsToHide)
@@ -155,8 +155,11 @@ class ObjGroupBox(GroupBox):
         try:
             obj = self.objType(**attrValueDict)
         except TypeError:
-            for key in self.attrsToHide.keys():
-                attrValueDict.pop(key)
+            for key in DEFAULT_ATTRS_TO_HIDE:
+                try:
+                    attrValueDict.pop(key)
+                except KeyError:
+                    continue
             obj = self.objType(**attrValueDict)
         return obj
 
@@ -310,7 +313,7 @@ class TypeOptionObjGroupBox(GroupBox):
                  rmDefParams=False, objName="", objVal=None):
         super(TypeOptionObjGroupBox, self).__init__(title, parent)
         self.rmDefParams = rmDefParams
-        self.attrsToHide = attrsToHide if attrsToHide else DEFAULT_ATTRS_TO_HIDE
+        self.attrsToHide = attrsToHide if attrsToHide else DEFAULT_ATTRS_TO_HIDE.copy()
 
         # init type-choose combobox
         self.typeComboBox = QComboBox(self)
