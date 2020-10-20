@@ -161,7 +161,7 @@ class IterableGroupBox(GroupBox):
         self.iterableType = iterableType
         self.argTypes = list(iterableType.__args__)
         plusButton = QPushButton(f"+ Element", self)
-        plusButton.clicked.connect(self._addInputWidget)
+        plusButton.clicked.connect(lambda: self._addInputWidget(rmDefParams))
         self.layout().addWidget(plusButton)
         self.inputWidgets = []
         if objVal:
