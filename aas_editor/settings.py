@@ -50,4 +50,4 @@ LINK_TYPES = (
     SubmodelElement,
     AssetAdministrationShell,
     ConceptDescription,
-    ConceptDictionary)
+)
