@@ -1,5 +1,3 @@
-import collections
-
 from aas_editor.models import PACKAGE_ROLE, StandardItem
 from aas_editor.settings import ATTRS_IN_PACKAGE_TREEVIEW
 
