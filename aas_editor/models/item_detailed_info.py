@@ -1,3 +1,5 @@
+from typing import AbstractSet
+
 from aas.model import AASReference, NamespaceSet
 
 from aas_editor.models import TYPES_NOT_TO_POPULATE
@@ -15,19 +17,26 @@ class DetailedInfoItem(StandardItem):
     def populate(self):
         if isinstance(self.obj, TYPES_NOT_TO_POPULATE):
             return
-        elif type(self.obj) is AASReference:
+
+        kwargs = {
+            "parent": self,
+            "package": self.package
+        }
+
+        if type(self.obj) is AASReference:
             obj = self.obj
-            for sub_item_attr in getAttrs4detailInfo(obj):
-                DetailedInfoItem(obj=getattr(obj, sub_item_attr), name=sub_item_attr, parent=self,
-                                 package=self.package)
+            for attr in getAttrs4detailInfo(obj):
+                kwargs["name"] = attr
+                DetailedInfoItem(getattr(obj, attr), **kwargs)
         elif isinstance(self.obj, dict):
-            for sub_item_attr, sub_item_obj in self.obj.items():
-                DetailedInfoItem(sub_item_obj, sub_item_attr, self, package=self.package)
-        elif isinstance(self.obj, (set, list, tuple, NamespaceSet)):
+            for attr, sub_item_obj in self.obj.items():
+                kwargs["name"] = attr
+                DetailedInfoItem(sub_item_obj,**kwargs)
+        elif isinstance(self.obj, (AbstractSet, list, tuple)):
             for i, sub_item_obj in enumerate(self.obj):
-                DetailedInfoItem(sub_item_obj, f"{getTypeName(sub_item_obj.__class__)} {i}", self,
-                                 package=self.package)
+                kwargs["name"] = f"{getTypeName(sub_item_obj.__class__)} {i}"
+                DetailedInfoItem(sub_item_obj, **kwargs)
         else:
-            for sub_item_attr in getAttrs4detailInfo(self.obj):
-                DetailedInfoItem(getattr(self.obj, sub_item_attr), sub_item_attr, self,
-                                 package=self.package)
+            for attr in getAttrs4detailInfo(self.obj):
+                kwargs["name"] = attr
+                DetailedInfoItem(getattr(self.obj, attr), **kwargs)

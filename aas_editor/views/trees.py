@@ -3,18 +3,17 @@ import pickle
 from collections import Iterable
 
 from PyQt5 import QtCore
-from PyQt5.QtCore import pyqtSignal, Qt, QItemSelectionModel, QModelIndex
+from PyQt5.QtCore import pyqtSignal, Qt, QModelIndex
 from PyQt5.QtGui import QMouseEvent, QKeyEvent, QKeySequence, QClipboard
-from PyQt5.QtWidgets import QTreeView, QMenu, QAbstractItemView, QAction, QDialog, QSizePolicy, \
+from PyQt5.QtWidgets import QTreeView, QMenu, QAction, QDialog, QSizePolicy, \
     QFrame, QAbstractScrollArea, QApplication
-from aas.model import AssetAdministrationShell, Asset, Submodel, SubmodelElement
 
 from aas_editor.dialogs import AddObjDialog, DictItem
 from aas_editor.qcomboboxenumdelegate import QComboBoxEnumDelegate
 from aas_editor.models import VALUE_COLUMN, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
      DetailedInfoTable, Package
 from aas_editor.settings import ATTR_COLUMN_WIDTH
-from aas_editor.util import getAttrTypeHint, issubtype, getDefaultVal
+from aas_editor.util import getAttrTypeHint, getDefaultVal
 
 from aas.model.aas import *
 from aas.model.base import *
