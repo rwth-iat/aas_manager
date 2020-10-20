@@ -12,6 +12,7 @@ from aas.model.concept import *
 from aas.model.provider import *
 from aas.model.submodel import *
 
+from aas_editor.settings import DEFAULT_ATTRS_TO_HIDE
 from aas_editor.util import getReqParams4init, issubtype, inheritors, isMeta, getTypeName
 
 DictItem = NamedTuple("DictItem", key=Any, value=Any)
@@ -52,11 +53,12 @@ def checkIfAccepted(func):
 def getInputWidget(objType, rmDefParams=True, objName="", attrsToHide: dict = None,
                    parent=None, objVal=None) -> QtWidgets.QWidget:
     print(objType, objType.__str__, objType.__repr__, objType.__class__)
-    attrsToHide = attrsToHide if attrsToHide else {}
+    attrsToHide = attrsToHide if attrsToHide else DEFAULT_ATTRS_TO_HIDE
     if isMeta(objType) and not issubtype(objType, Iterable):
         objTypes = inheritors(objType)
         widget = TypeOptionObjGroupBox(objTypes, "", attrsToHide=attrsToHide,
-                                       rmDefParams=rmDefParams, objName=objName, parent=parent)
+                                       rmDefParams=rmDefParams, objName=objName,
+                                       parent=parent, objVal=objVal)
     elif issubtype(objType, (list, tuple, set, dict, Iterable)) \
             and not issubtype(objType, (str, bytes, DictItem)):
         widget = IterableGroupBox(objType, "", rmDefParams=rmDefParams,
@@ -115,7 +117,7 @@ class ObjGroupBox(GroupBox):
         super().__init__(title, parent)
 
         self.objType = objType
-        self.attrsToHide = attrsToHide if attrsToHide else {}
+        self.attrsToHide = attrsToHide if attrsToHide else DEFAULT_ATTRS_TO_HIDE
         self.attrWidgetDict = {}
 
         reqAttrsDict = getReqParams4init(objType, rmDefParams, attrsToHide)
@@ -150,7 +152,12 @@ class ObjGroupBox(GroupBox):
             attrValueDict[attr] = widget.getObj2add()
         for attr, value in self.attrsToHide.items():
             attrValueDict[attr] = value
-        obj = self.objType(**attrValueDict)
+        try:
+            obj = self.objType(**attrValueDict)
+        except TypeError:
+            for key in self.attrsToHide.keys():
+                attrValueDict.pop(key)
+            obj = self.objType(**attrValueDict)
         return obj
 
 
@@ -303,7 +310,7 @@ class TypeOptionObjGroupBox(GroupBox):
                  rmDefParams=False, objName="", objVal=None):
         super(TypeOptionObjGroupBox, self).__init__(title, parent)
         self.rmDefParams = rmDefParams
-        self.attrsToHide = attrsToHide if attrsToHide else {}
+        self.attrsToHide = attrsToHide if attrsToHide else DEFAULT_ATTRS_TO_HIDE
 
         # init type-choose combobox
         self.typeComboBox = QComboBox(self)

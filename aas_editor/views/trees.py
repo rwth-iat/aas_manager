@@ -1,3 +1,5 @@
+import codecs
+import pickle
 from collections import Iterable
 
 from PyQt5 import QtCore
@@ -190,19 +192,25 @@ class TreeView(QTreeView):
     def _copyHandler(self):
         index = self.currentIndex()
         clipboard = QApplication.clipboard()
-        clipboard.setText(repr(index.data(OBJECT_ROLE)), QClipboard.Clipboard)
+        pickledObj2copy = codecs.encode(pickle.dumps(index.data(OBJECT_ROLE)), "base64").decode()
+        clipboard.setText(pickledObj2copy, QClipboard.Clipboard)
 
     def _pasteHandler(self):
         try:
             clipboard = QApplication.clipboard()
             text = clipboard.text(QClipboard.Clipboard)
-            objToPaste = eval(text)
+            unpickledObj2paste = pickle.loads(codecs.decode(text.encode(), "base64"))
             try:
-                self._addHandler(list(objToPaste))
-            except TypeError:
-                self._editCreateHandler(objToPaste)
-        except (TypeError, SyntaxError):
-            print(f"Data could not be paste: {text}")
+                # FIXME
+                if self.addAct.isEnabled():
+                    self._addHandler(unpickledObj2paste)
+                else:
+                    raise TypeError()
+            except (TypeError, AttributeError) as e:
+                print(e)
+                self._editCreateHandler(unpickledObj2paste)
+        except (TypeError, SyntaxError) as e:
+            print(f"Data could not be paste: {e}: {text}")
 
     def _cutHandler(self):
         self._copyHandler()
@@ -269,19 +277,29 @@ class PackTreeView(TreeView):
         else:
             self.addAct.setEnabled(False)
 
-    def _addHandler(self):
+    def _addHandler(self, objVal=None):
         index = self.currentIndex()
         name = index.data(NAME_ROLE)
+
+        if objVal:
+            kwargs = {"parent": index,
+                      "rmDefParams": False,
+                      "objVal": objVal}
+        else:
+            kwargs = {"parent": index,
+                      "rmDefParams": True}
+
         if isinstance(index.data(OBJECT_ROLE), Package) or not index.isValid():
-            self.addItemWithDialog(QModelIndex(), Package, rmDefParams=True)
+            kwargs["parent"] = QModelIndex()
+            self.addItemWithDialog(objType=Package, **kwargs)
         elif name == "shells":
-            self.addItemWithDialog(index, AssetAdministrationShell, rmDefParams=True)
+            self.addItemWithDialog(objType=AssetAdministrationShell, **kwargs)
         elif name == "assets":
-            self.addItemWithDialog(index, Asset, rmDefParams=True)
+            self.addItemWithDialog(objType=Asset, **kwargs)
         elif name == "submodels":
-            self.addItemWithDialog(index, Submodel, rmDefParams=True)
+            self.addItemWithDialog(objType=Submodel, **kwargs)
         elif isinstance(index.data(OBJECT_ROLE), Submodel):
-            self.addItemWithDialog(index, SubmodelElement, rmDefParams=True)
+            self.addItemWithDialog(objType=SubmodelElement, **kwargs)
 
 
 class AttrsTreeView(TreeView):

@@ -114,7 +114,8 @@ class StandardTable(QAbstractItemModel):
             self.endInsertRows()
             return True
         else:
-            raise AttributeError("The Object could not be added")
+            raise AttributeError(
+                f"Object couldn't be added: parent obj type is not appendable: {type(parentObj)}")
         self.update(parent)
         return True
 

@@ -51,3 +51,5 @@ LINK_TYPES = (
     AssetAdministrationShell,
     ConceptDescription,
 )
+
+DEFAULT_ATTRS_TO_HIDE = {"parent": None}
