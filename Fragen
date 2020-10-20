@@ -12,3 +12,10 @@ Suggestions:
 
 Fragen:
 _kind in Submodel, warum mit Unterstrich vorne?
+
+
+Bugs:
+    Repr in AASReference wants to get __name__, but type is sometimes ForwardRef
+        which doesnt have __name__ but it has __forward_arg__
+    def __repr__(self) -> str:
+        return "AASReference(type={}, key={})".format(self.type.__name__, self.key)

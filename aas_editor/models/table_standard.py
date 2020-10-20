@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Iterable, Union
+from typing import Any, Iterable, Union, AbstractSet
 
 from PyQt5.QtCore import QAbstractItemModel, QVariant, QModelIndex, Qt, pyqtSignal
 
@@ -95,17 +95,18 @@ class StandardTable(QAbstractItemModel):
 
     def addItem(self, obj: Union[Package, SubmodelElement, Iterable],
                 parent: QModelIndex = QModelIndex()):
-        # obj must be iterable if add to list, dict or set
-        parentObj = self.objByIndex(parent).data(OBJECT_ROLE)
-        if isinstance(parentObj, DictObjectStore):
-            parentObj.add(obj)
-        elif isinstance(parentObj, Submodel):
+        if isinstance(parent.data(OBJECT_ROLE), Submodel):
             # TODO change if they make Submodel iterable
-            parentObj.submodel_element.add(obj)
+            parentObj = self.objByIndex(parent).data(OBJECT_ROLE).submodel_element
+        else:
+            parentObj = self.objByIndex(parent).data(OBJECT_ROLE)
+
+        if isinstance(parentObj, AbstractSet):
+            parentObj.add(obj)
         elif isinstance(parentObj, list):
-            parentObj.extend(obj)
-        elif isinstance(parentObj, set) or isinstance(parentObj, dict):
-            parentObj.update(obj)
+            parentObj.append(obj)
+        elif isinstance(parentObj, dict):
+            parentObj[obj.key] = obj.value
         elif isinstance(obj, Package):
             self.beginInsertRows(parent, self.rowCount(parent), self.rowCount(parent))
             item = PackTreeViewItem(obj, objName=obj.name)
