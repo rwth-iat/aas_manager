@@ -1,5 +1,8 @@
+from enum import Enum
+
 from aas.model import AdministrativeInformation, Identifier, Submodel, AASReference, Asset, \
-    SubmodelElement, AssetAdministrationShell, ConceptDescription, ConceptDictionary
+    SubmodelElement, AssetAdministrationShell, ConceptDescription, ConceptDictionary, \
+    AbstractObjectStore
 
 ATTR_COLUMN_WIDTH = 200
 
@@ -53,3 +56,10 @@ LINK_TYPES = (
 )
 
 DEFAULT_ATTRS_TO_HIDE = {"parent": None}
+PACKAGE_ROLE = 1001
+NAME_ROLE = 1002
+OBJECT_ROLE = 1003
+TYPES_NOT_TO_POPULATE = (AbstractObjectStore, str, int, float, bool, Enum,)  # '+ TYPES_IN_ONE_ROW
+COLUMNS_IN_DETAILED_INFO = ("attribute", "value")
+ATTRIBUTE_COLUMN = 0
+VALUE_COLUMN = 1

@@ -3,8 +3,8 @@ from typing import Any, Iterable, Union, AbstractSet
 
 from PyQt5.QtCore import QAbstractItemModel, QVariant, QModelIndex, Qt, pyqtSignal
 
-from aas_editor.models import OBJECT_ROLE, NAME_ROLE, Package, DetailedInfoItem, StandardItem, \
-    ATTRIBUTE_COLUMN, VALUE_COLUMN, PackTreeViewItem
+from aas_editor.models import Package, DetailedInfoItem, StandardItem, PackTreeViewItem
+from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, VALUE_COLUMN
 
 from aas.model import DictObjectStore, Submodel, NamespaceSet, SubmodelElement
 

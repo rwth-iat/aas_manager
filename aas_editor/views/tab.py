@@ -3,8 +3,8 @@ from PyQt5.QtGui import QIcon, QKeySequence
 from PyQt5.QtWidgets import QWidget, QLineEdit, QLabel, QMessageBox, QGridLayout, QVBoxLayout, \
     QTabWidget, QAction
 
-from aas_editor.models import NAME_ROLE
-from aas_editor.views.trees import AttrsTreeView
+from aas_editor.settings import NAME_ROLE
+from aas_editor.views.treeview_detailed import AttrsTreeView
 from aas_editor.util import getTreeItemPath
 
 

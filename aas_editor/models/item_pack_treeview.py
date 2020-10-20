@@ -1,5 +1,5 @@
-from aas_editor.models import PACKAGE_ROLE, StandardItem
-from aas_editor.settings import ATTRS_IN_PACKAGE_TREEVIEW
+from aas_editor.models import StandardItem
+from aas_editor.settings import ATTRS_IN_PACKAGE_TREEVIEW, PACKAGE_ROLE
 
 
 class PackTreeViewItem(StandardItem):

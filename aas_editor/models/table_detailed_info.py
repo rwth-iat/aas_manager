@@ -1,10 +1,11 @@
-from typing import Any, Iterable
+from typing import Any
 
 from PyQt5.QtCore import pyqtSignal, QModelIndex, QVariant, Qt
 from PyQt5.QtGui import QColor, QFont
 
-from aas_editor.models import Package, COLUMNS_IN_DETAILED_INFO, DetailedInfoItem, StandardTable, \
-    VALUE_COLUMN, ATTRIBUTE_COLUMN, OBJECT_ROLE, NAME_ROLE, PACKAGE_ROLE
+from aas_editor.models import Package, DetailedInfoItem, StandardTable
+from aas_editor.settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, COLUMNS_IN_DETAILED_INFO, \
+    ATTRIBUTE_COLUMN, VALUE_COLUMN
 
 
 class DetailedInfoTable(StandardTable):

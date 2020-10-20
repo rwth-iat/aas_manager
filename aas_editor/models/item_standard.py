@@ -1,8 +1,8 @@
 from PyQt5.QtCore import QObject, QVariant
 from aas.model import AASReference
 
-from aas_editor.models import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, VALUE_COLUMN, ATTRIBUTE_COLUMN
-from aas_editor.settings import LINK_TYPES
+from aas_editor.settings import LINK_TYPES, PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
+    VALUE_COLUMN
 from aas_editor.util import getDescription, getAttrDoc, simplifyInfo, getTypeName
 from PyQt5.QtCore import Qt
 

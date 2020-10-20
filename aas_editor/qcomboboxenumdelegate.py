@@ -10,7 +10,7 @@ from aas.model.base import *
 from aas.model.concept import *
 from aas.model.submodel import *
 
-from .models import NAME_ROLE
+from .settings import NAME_ROLE
 
 STR_ATTRS = [
     "id_short",

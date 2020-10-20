@@ -10,7 +10,8 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from aas_editor.views.trees import TreeView, PackTreeView
+from aas_editor.views.treeview_pack import PackTreeView
+from aas_editor.views.treeview import TreeView
 from aas_editor.views.tab import TabWidget
 
 
