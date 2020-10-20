@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QTreeView, QMenu, QAbstractItemView, QAction, QDialo
     QFrame, QAbstractScrollArea, QApplication
 from aas.model import AssetAdministrationShell, Asset, Submodel, SubmodelElement
 
-from aas_editor.dialogs import AddObjDialog
+from aas_editor.dialogs import AddObjDialog, DictItem
 from aas_editor.qcomboboxenumdelegate import QComboBoxEnumDelegate
 from aas_editor.models import VALUE_COLUMN, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
      DetailedInfoTable, Package
@@ -142,16 +142,16 @@ class TreeView(QTreeView):
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() in (Qt.Key_Return, Qt.Key_Enter):
             # we captured the Enter key press, now we need to move to the next row
-            nextRow = self.currentIndex().row() + 1
-            if nextRow+1 > self.model().rowCount(self.currentIndex().parent()):
-                # we are all the way down, we can 't go any further
-                nextRow -= 1
-            if self.state() == QAbstractItemView.EditingState:
-                # if we are editing, confirm and move to the row below
-                nextIndex = self.currentIndex().siblingAtRow(nextRow)
-                self.setCurrentIndex(nextIndex)
-                self.selectionModel().select(nextIndex, QItemSelectionModel.ClearAndSelect)
-            else:
+            # nextRow = self.currentIndex().row() + 1
+            # if nextRow+1 > self.model().rowCount(self.currentIndex().parent()):
+            #     # we are all the way down, we can 't go any further
+            #     nextRow -= 1
+            # if self.state() == QAbstractItemView.EditingState:
+            #     # if we are editing, confirm and move to the row below
+            #     nextIndex = self.currentIndex().siblingAtRow(nextRow).siblingAtColumn(VALUE_COLUMN)
+            #     self.setCurrentIndex(nextIndex)
+            #     self.selectionModel().select(nextIndex, QItemSelectionModel.ClearAndSelect)
+            # else:
                 # if we're not editing, check if editable and start editing or expand/collapse
                 index2edit = self.currentIndex().siblingAtColumn(VALUE_COLUMN)
                 if index2edit.flags() & Qt.ItemIsEditable:
@@ -211,7 +211,14 @@ class TreeView(QTreeView):
                               objName=objName, objVal=objVal, windowTitle=windowTitle)
         if dialog.exec_() == QDialog.Accepted:
             obj = dialog.getObj2add()
-            self.model().addItem(obj, parent)
+            if isinstance(obj, dict):
+                for key, value in obj.items():
+                    self.model().addItem(DictItem(key, value), parent)
+            elif isinstance(obj, Iterable) and not isinstance(obj, (str, bytes)):
+                for i in obj:
+                    self.model().addItem(i, parent)
+            else:
+                self.model().addItem(obj, parent)
             self.setFocus()
             self.setCurrentIndex(parent)
         else:
@@ -263,7 +270,7 @@ class PackTreeView(TreeView):
         index = self.currentIndex()
         name = index.data(NAME_ROLE)
         if isinstance(index.data(OBJECT_ROLE), Package) or not index.isValid():
-            self.addItemWithDialog(QModelIndex(), Package)
+            self.addItemWithDialog(QModelIndex(), Package, rmDefParams=True)
         elif name == "shells":
             self.addItemWithDialog(index, AssetAdministrationShell, rmDefParams=True)
         elif name == "assets":
@@ -330,7 +337,7 @@ class AttrsTreeView(TreeView):
 
         # update add action
         obj = index.data(OBJECT_ROLE)
-        if isinstance(obj, Iterable):
+        if isinstance(obj, Iterable) and not isinstance(obj, (str, bytes, tuple)):
             self.addAct.setEnabled(True)
         else:
             self.addAct.setEnabled(False)
@@ -358,7 +365,13 @@ class AttrsTreeView(TreeView):
         index = self.currentIndex()
         objVal = objVal if objVal else index.data(OBJECT_ROLE)
         attribute = index.data(NAME_ROLE)
-        attrType = getAttrTypeHint(type(self.model().objByIndex(index).parentObj), attribute)
+        try:
+            attrType = getAttrTypeHint(type(self.model().objByIndex(index).parentObj), attribute)
+        except KeyError as e:
+            if objVal:
+                attrType = type(objVal)
+            else:
+                raise KeyError(e)
         self.replItemWithDialog(index, attrType, objVal=objVal)
 
     def replItemWithDialog(self, index, objType, objVal=None, windowTitle=""):
