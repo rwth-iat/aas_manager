@@ -1,7 +1,5 @@
 from typing import AbstractSet
 
-from aas.model import AASReference, NamespaceSet
-
 from aas_editor.models import TYPES_NOT_TO_POPULATE
 from aas_editor.models.item_standard import StandardItem
 from aas_editor.models.package import Package
