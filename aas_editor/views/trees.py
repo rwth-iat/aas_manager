@@ -155,7 +155,10 @@ class TreeView(QTreeView):
                 # if we're not editing, check if editable and start editing or expand/collapse
                 index2edit = self.currentIndex().siblingAtColumn(VALUE_COLUMN)
                 if index2edit.flags() & Qt.ItemIsEditable:
-                    self.edit(index2edit)
+                    if index2edit.data(OBJECT_ROLE) is None:
+                        self._editCreateHandler()
+                    else:
+                        self.edit(index2edit)
                 else:
                     index2fold = self.currentIndex().siblingAtColumn(0)
                     if self.isExpanded(index2fold):
@@ -357,9 +360,9 @@ class AttrsTreeView(TreeView):
         attribute = index.data(NAME_ROLE)
         attrType = getAttrTypeHint(type(self.model().objByIndex(index).parentObj), attribute)
         if objVal:
-            self.addItemWithDialog(index, attrType, objVal=objVal, objName=f"{attribute} element")
+            self.addItemWithDialog(index, attrType, objVal=objVal, objName=f"{attribute} element", rmDefParams=True)
         else:
-            self.addItemWithDialog(index, attrType, objName=f"{attribute} element")
+            self.addItemWithDialog(index, attrType, objName=f"{attribute} element", rmDefParams=True)
 
     def _editCreateHandler(self, objVal=None):
         index = self.currentIndex()
@@ -372,7 +375,7 @@ class AttrsTreeView(TreeView):
                 attrType = type(objVal)
             else:
                 raise KeyError(e)
-        self.replItemWithDialog(index, attrType, objVal=objVal)
+        self.replItemWithDialog(index, attrType, windowTitle=f"Create {attribute}", objVal=objVal)
 
     def replItemWithDialog(self, index, objType, objVal=None, windowTitle=""):
         objName = index.data(NAME_ROLE)
