@@ -23,20 +23,27 @@ class DetailedInfoItem(StandardItem):
             "package": self.package
         }
 
-        if type(self.obj) is AASReference:
-            obj = self.obj
-            for attr in getAttrs4detailInfo(obj):
-                kwargs["name"] = attr
-                DetailedInfoItem(getattr(obj, attr), **kwargs)
-        elif isinstance(self.obj, dict):
-            for attr, sub_item_obj in self.obj.items():
-                kwargs["name"] = attr
-                DetailedInfoItem(sub_item_obj,**kwargs)
+        if isinstance(self.obj, dict):
+            self._populateDict(self.obj, **kwargs)
         elif isinstance(self.obj, (AbstractSet, list, tuple)):
-            for i, sub_item_obj in enumerate(self.obj):
-                kwargs["name"] = f"{getTypeName(sub_item_obj.__class__)} {i}"
-                DetailedInfoItem(sub_item_obj, **kwargs)
+            self._populateIterable(self.obj, **kwargs)
         else:
-            for attr in getAttrs4detailInfo(self.obj):
-                kwargs["name"] = attr
-                DetailedInfoItem(getattr(self.obj, attr), **kwargs)
+            self._populateUnknown(self.obj, **kwargs)
+
+    @staticmethod
+    def _populateDict(obj, **kwargs):
+        for attr, sub_item_obj in obj.items():
+            kwargs["name"] = attr
+            DetailedInfoItem(sub_item_obj, **kwargs)
+
+    @staticmethod
+    def _populateIterable(obj, **kwargs):
+        for i, sub_item_obj in enumerate(obj):
+            kwargs["name"] = f"{getTypeName(sub_item_obj.__class__)} {i}"
+            DetailedInfoItem(sub_item_obj, **kwargs)
+
+    @staticmethod
+    def _populateUnknown(obj, **kwargs):
+        for attr in getAttrs4detailInfo(obj):
+            kwargs["name"] = attr
+            DetailedInfoItem(getattr(obj, attr), **kwargs)
