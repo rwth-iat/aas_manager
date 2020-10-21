@@ -69,8 +69,9 @@ def getInputWidget(objType, rmDefParams=True, objName="", attrsToHide: dict = No
                                        rmDefParams=rmDefParams, objName=objName, parent=parent)
     elif issubtype(objType, AASReference):
         try:
-            type_ = objType.__args__[0]
-            attrsToHide["type_"] = type_
+            if objType.__args__:
+                type_ = objType.__args__[0]
+                attrsToHide["type_"] = type_
         except AttributeError:
             pass
         widget = ObjGroupBox(objType, "", attrsToHide=attrsToHide, rmDefParams=rmDefParams,
@@ -104,12 +105,20 @@ class AddObjDialog(AddDialog):
         return self.inputWidget.getObj2add()
 
 
+@unique
+class GroupBoxType(Enum):
+    SIMPLE = 0
+    CLOSABLE = 1
+    ADDABLE = 2
+
+
 class GroupBox(QGroupBox):
     """Groupbox which also can be closable groupbox"""
     def __init__(self, title, parent=None):
         super().__init__(title, parent)
         self.setAlignment(Qt.AlignLeft)
         self.setLayout(QtWidgets.QVBoxLayout(self))
+        self.type = GroupBoxType.SIMPLE
 
     def paintEvent(self, a0: QPaintEvent) -> None:
         if not self.isCheckable():
@@ -135,7 +144,11 @@ class GroupBox(QGroupBox):
             paint.fillRect(option.rect, brush)
             paint.restore()
 
-            paint.drawPrimitive(QStyle.PE_IndicatorTabClose, option)
+            if self.isClosable():
+                paint.drawPrimitive(QStyle.PE_IndicatorTabClose, option)
+            elif self.isAddable():
+                paint.drawPrimitive(QStyle.PE_IndicatorSpinPlus, option)
+
             self.setStyleSheet(
                 "GroupBox::indicator:checked:hover,"
                 "GroupBox::indicator:checked:focus,"
@@ -144,12 +157,19 @@ class GroupBox(QGroupBox):
                 "    image: url(close.png);"
                 "}")
 
-
     def setClosable(self, b: bool) -> None:
+        self.type = GroupBoxType.CLOSABLE if b else GroupBoxType.SIMPLE
         self.setCheckable(b)
 
     def isClosable(self) -> bool:
-        return self.isCheckable()
+        return self.isCheckable() and self.type is GroupBoxType.CLOSABLE
+
+    def setAddable(self, b: bool) -> None:
+        self.type = GroupBoxType.ADDABLE if b else GroupBoxType.SIMPLE
+        self.setCheckable(b)
+
+    def isAddable(self) -> bool:
+        return self.isCheckable() and self.type is GroupBoxType.ADDABLE
 
 
 class ObjGroupBox(GroupBox):
