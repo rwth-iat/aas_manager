@@ -80,3 +80,5 @@ class PackTreeView(TreeView):
             self.addItemWithDialog(objType=Submodel, **kwargs)
         elif isinstance(parent.data(OBJECT_ROLE), Submodel):
             self.addItemWithDialog(objType=SubmodelElement, **kwargs)
+        else:
+            raise TypeError("Parent type is not extendable:", type(parent.data(OBJECT_ROLE)))
