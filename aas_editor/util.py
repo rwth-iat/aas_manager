@@ -71,6 +71,8 @@ def getDescription(descriptions: dict) -> str:
             if lang in descriptions:
                 return descriptions.get(lang)
         return tuple(descriptions.values())[0]
+
+
 def getDefaultVal(param: str, objType: Type):
     params, defaults = getParams4init(objType)
     if params and defaults:
@@ -81,6 +83,10 @@ def getDefaultVal(param: str, objType: Type):
             if par == param:
                 defValue = revDefaults[n]
                 return defValue
+            elif par.rstrip('_') == param:  # TODO change if aas changes
+                defValue = revDefaults[n]
+                return defValue
+
     raise AttributeError("No such default parameter found:", param)
 
 
