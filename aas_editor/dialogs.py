@@ -2,9 +2,9 @@ from typing import NamedTuple
 
 from PyQt5.QtCore import Qt
 from PyQt5 import QtWidgets
-from PyQt5.QtGui import QIntValidator, QDoubleValidator
+from PyQt5.QtGui import QIntValidator, QDoubleValidator, QPaintEvent, QPixmap, QBrush
 from PyQt5.QtWidgets import QLineEdit, QLabel, QComboBox, QPushButton, QDialog, QDialogButtonBox, \
-    QGroupBox, QCheckBox, QWidget
+    QGroupBox, QCheckBox, QWidget, QStylePainter, QStyleOptionGroupBox, QStyle
 
 from aas.model.aas import *
 from aas.model.base import *
@@ -105,10 +105,51 @@ class AddObjDialog(AddDialog):
 
 
 class GroupBox(QGroupBox):
+    """Groupbox which also can be closable groupbox"""
     def __init__(self, title, parent=None):
         super().__init__(title, parent)
         self.setAlignment(Qt.AlignLeft)
         self.setLayout(QtWidgets.QVBoxLayout(self))
+
+    def paintEvent(self, a0: QPaintEvent) -> None:
+        if not self.isCheckable():
+            super(GroupBox, self).paintEvent(a0)
+        else:
+            paint = QStylePainter(self)
+            option = QStyleOptionGroupBox()
+            self.initStyleOption(option)
+            #  don't remove the original check box control, as we want to keep
+            #  it as a placeholder
+            option.subControls &= ~QStyle.SC_GroupBoxCheckBox
+            paint.drawComplexControl(QStyle.CC_GroupBox, option)
+
+            #  re-use the style option, it contians enough info to make sure
+            #  the button is correctly checked
+            option.rect = self.style().subControlRect(
+                QStyle.CC_GroupBox, option, QStyle.SC_GroupBoxCheckBox, self)
+
+            paint.save()
+            px = QPixmap(option.rect.width(), option.rect.height())
+            px.fill()
+            brush = QBrush(px)
+            paint.fillRect(option.rect, brush)
+            paint.restore()
+
+            paint.drawPrimitive(QStyle.PE_IndicatorTabClose, option)
+            self.setStyleSheet(
+                "GroupBox::indicator:checked:hover,"
+                "GroupBox::indicator:checked:focus,"
+                "GroupBox::indicator:checked:pressed"
+                "{"
+                "    image: url(close.png);"
+                "}")
+
+
+    def setClosable(self, b: bool) -> None:
+        self.setCheckable(b)
+
+    def isClosable(self) -> bool:
+        return self.isCheckable()
 
 
 class ObjGroupBox(GroupBox):
@@ -201,9 +242,8 @@ class IterableGroupBox(GroupBox):
         widget = getInputWidget(argType,
                                 objName=f"{argType} {len(self.inputWidgets)}",
                                 rmDefParams=rmDefParams, objVal=objVal)
-        deleteButton = QPushButton(f"Delete", widget)
-        deleteButton.clicked.connect(lambda: self._delInputWidget(deleteButton.parent()))
-        widget.layout().addWidget(deleteButton)
+        widget.setClosable(True)
+        widget.toggled.connect(lambda: self._delInputWidget(widget))
         self.inputWidgets.append(widget)
         self.layout().insertWidget(self.layout().count()-1, widget)
 
