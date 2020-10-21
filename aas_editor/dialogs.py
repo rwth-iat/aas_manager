@@ -30,9 +30,10 @@ class AddDialog(QDialog):
         self.buttonBox.rejected.connect(self.reject)
         self.buttonOk = self.buttonBox.button(QDialogButtonBox.Ok)
         self.buttonOk.setDisabled(True)
-        self.dialogLayout = QtWidgets.QVBoxLayout(self)
-        self.dialogLayout.addWidget(self.buttonBox)
-        self.setLayout(self.dialogLayout)
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(2,2,2,2)
+        layout.addWidget(self.buttonBox)
+        self.setLayout(layout)
 
     def getObj2add(self):
         pass
@@ -95,7 +96,7 @@ class AddObjDialog(AddDialog):
                                           objName=objName, objVal=objVal)
         self.inputWidget.setObjectName("mainBox")
         self.inputWidget.setStyleSheet("#mainBox{border:0;}")
-        self.dialogLayout.insertWidget(0, self.inputWidget)
+        self.layout().insertWidget(0, self.inputWidget)
 
     def getInputWidget(self):
         pass
@@ -117,7 +118,10 @@ class GroupBox(QGroupBox):
     def __init__(self, title, parent=None):
         super().__init__(title, parent)
         self.setAlignment(Qt.AlignLeft)
-        self.setLayout(QtWidgets.QVBoxLayout(self))
+        layout = QtWidgets.QVBoxLayout(self)
+        # layout.setSpacing(2)
+        # layout.setContentsMargins(1,2,1,2)
+        self.setLayout(layout)
         self.type = GroupBoxType.SIMPLE
 
     def paintEvent(self, a0: QPaintEvent) -> None:
@@ -298,6 +302,7 @@ class StandardInputWidget(QtWidgets.QWidget):
         self.attrType = attrType
         self.widget = self._initWidget(objVal)
         widgetLayout = QtWidgets.QVBoxLayout(self)
+        widgetLayout.setContentsMargins(1,1,1,1)
         widgetLayout.addWidget(self.widget)
         self.setLayout(widgetLayout)
 
@@ -359,7 +364,7 @@ class ChooseFromDialog(AddDialog):
         self.objComboBox = QComboBox(self)
         for obj in objList:
             self.objComboBox.addItem(str(obj), obj)
-        self.dialogLayout.insertWidget(0, self.objComboBox)
+        self.layout().insertWidget(0, self.objComboBox)
 
     @checkIfAccepted
     def getObj2add(self):

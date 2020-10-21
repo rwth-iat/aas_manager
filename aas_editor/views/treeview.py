@@ -46,7 +46,7 @@ class TreeView(QTreeView):
                               statusTip="Cut selected item",
                               shortcut=QKeySequence.Cut,
                               shortcutContext=Qt.WidgetWithChildrenShortcut,
-                              triggered=self._pasteHandler,
+                              triggered=self._cutHandler,
                               enabled=True)
         self.addAction(self.cutAct)
 
