@@ -54,6 +54,10 @@ def checkIfAccepted(func):
 def getInputWidget(objType, rmDefParams=True, objName="", attrsToHide: dict = None,
                    parent=None, objVal=None) -> QtWidgets.QWidget:
     print(objType, objType.__str__, objType.__repr__, objType.__class__)
+
+    if objVal and issubtype(objVal, objType):
+        raise TypeError("Given object type does not match to real object type:", objType, objVal)
+
     attrsToHide = attrsToHide if attrsToHide else DEFAULT_ATTRS_TO_HIDE.copy()
     if isMeta(objType) and not issubtype(objType, Iterable):
         objTypes = inheritors(objType)
