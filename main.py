@@ -4,6 +4,10 @@ from aas_editor.editorApp import EditorApp
 from PyQt5 import QtWidgets
 from aas.examples.data.example_aas import create_full_example
 
+from aas_editor.settings import PREFERED_THEME
+from aas_editor.util import toggleTheme
+
+
 def main():
     app = QtWidgets.QApplication(sys.argv)
 
@@ -14,6 +18,7 @@ def main():
     # reader.read_into(obj_store, file_store)
 
     window = EditorApp()
+    # toggleTheme(PREFERED_THEME)
     window.importTestPack(obj_store)
     window.show()
 

@@ -170,11 +170,10 @@ class Tab(QWidget):
         QMessageBox.critical(self, "Error", msg)
 
     def _initLayout(self):
-        self.gridLayout = QGridLayout()
-        self.gridLayout.setObjectName("gridLayout")
-        self.gridLayout.addWidget(self.descrLabel, 1, 0, 1, 1)
-        self.gridLayout.addWidget(self.attrsTreeView, 0, 0, 1, 1)
-        self.verticalLayout = QVBoxLayout(self)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.verticalLayout.addWidget(self.pathLine)
-        self.verticalLayout.addLayout(self.gridLayout)
+        layout = QVBoxLayout(self)
+        layout.setObjectName("tabLayout")
+        layout.addWidget(self.pathLine)
+        layout.addWidget(self.attrsTreeView)
+        layout.addWidget(self.descrLabel)
+        layout.setSpacing(2)
+        layout.setContentsMargins(3,2,3,2)
