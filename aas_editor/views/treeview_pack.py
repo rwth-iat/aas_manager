@@ -5,7 +5,7 @@ from PyQt5.QtCore import QModelIndex
 from aas.model import Submodel, AssetAdministrationShell, Asset, SubmodelElement
 
 from aas_editor.models import Package
-from aas_editor.settings import NAME_ROLE, OBJECT_ROLE
+from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ATTRS
 from aas_editor.views.treeview import TreeView
 
 
@@ -44,24 +44,32 @@ class PackTreeView(TreeView):
     def _updateMenu(self, index: QModelIndex):
         # update add action
         obj = index.data(OBJECT_ROLE)
-        if isinstance(obj, (Iterable, Submodel, Package)) or not index.isValid():
-            self.addAct.setEnabled(True)
+        name = index.data(OBJECT_ROLE)
+
+        self.addAct.setEnabled(True)
+        if isinstance(obj, Package) or not index.isValid():
+            self.addAct.setText("Add package")
+        elif name in PACKAGE_ATTRS:
+            self.addAct.setText(f"Add {name.rstrip('s')}")
+        elif isinstance(obj, Submodel):
+            self.addAct.setText(f"Add submodel element")
         else:
+            self.addAct.setText(f"Add")
             self.addAct.setEnabled(False)
 
-    def _addHandler(self, objVal=None):
-        index = self.currentIndex()
-        name = index.data(NAME_ROLE)
+    def _addHandler(self, objVal=None, parent: QModelIndex = None):
+        parent = parent if parent else self.currentIndex()
+        name = parent.data(NAME_ROLE)
 
         if objVal:
-            kwargs = {"parent": index,
+            kwargs = {"parent": parent,
                       "rmDefParams": False,
                       "objVal": objVal}
         else:
-            kwargs = {"parent": index,
+            kwargs = {"parent": parent,
                       "rmDefParams": True}
 
-        if isinstance(index.data(OBJECT_ROLE), Package) or not index.isValid():
+        if isinstance(parent.data(OBJECT_ROLE), Package) or not parent.isValid():
             kwargs["parent"] = QModelIndex()
             self.addItemWithDialog(objType=Package, **kwargs)
         elif name == "shells":
@@ -70,5 +78,5 @@ class PackTreeView(TreeView):
             self.addItemWithDialog(objType=Asset, **kwargs)
         elif name == "submodels":
             self.addItemWithDialog(objType=Submodel, **kwargs)
-        elif isinstance(index.data(OBJECT_ROLE), Submodel):
+        elif isinstance(parent.data(OBJECT_ROLE), Submodel):
             self.addItemWithDialog(objType=SubmodelElement, **kwargs)
