@@ -6,7 +6,7 @@ from PyQt5.QtCore import QAbstractItemModel, QVariant, QModelIndex, Qt, pyqtSign
 from aas_editor.models import Package, DetailedInfoItem, StandardItem, PackTreeViewItem
 from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, VALUE_COLUMN
 
-from aas.model import DictObjectStore, Submodel, NamespaceSet, SubmodelElement
+from aas.model import Submodel, SubmodelElement
 
 
 class StandardTable(QAbstractItemModel):
@@ -186,21 +186,19 @@ class StandardTable(QAbstractItemModel):
                   parent: QModelIndex = ..., defaultVal="Not given") -> bool:
         """Delete rows if they are children of Iterable else set to Default"""
         parentItem = self.objByIndex(parent)
+        parentObj = parentItem.obj
 
         self.beginRemoveRows(parent, row, row+count-1)
         for n in range(row+count-1, row-1, -1):
             child = parentItem.children()[n]
-            if isinstance(parentItem.obj, list):
+            if isinstance(parentObj, list):
                 parentItem.obj.pop[n]
                 child.setParent(None)
-            elif isinstance(parentItem.obj, set):
-                parentItem.obj.remove(child.obj)
+            elif isinstance(parentObj, dict):
+                parentObj.pop(child.objName)
                 child.setParent(None)
-            elif isinstance(parentItem.obj, dict):
-                parentItem.obj.pop(child.objName)
-                child.setParent(None)
-            elif isinstance(parentItem.obj, (DictObjectStore, NamespaceSet)):
-                parentItem.obj.discard(child.obj)
+            elif isinstance(parentObj, AbstractSet):
+                parentObj.discard(child.obj)
                 child.setParent(None)
             else:
                 if not defaultVal == "Not given":
