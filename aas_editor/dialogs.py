@@ -13,7 +13,7 @@ from aas.model.provider import *
 from aas.model.submodel import *
 
 from aas_editor.settings import DEFAULT_ATTRS_TO_HIDE
-from aas_editor.util import getReqParams4init, issubtype, inheritors, isMeta, getTypeName
+from aas_editor.util import getReqParams4init, issubtype, inheritors, isMeta, getTypeName, isoftype
 
 DictItem = NamedTuple("DictItem", key=Any, value=Any)
 
@@ -55,7 +55,7 @@ def getInputWidget(objType, rmDefParams=True, objName="", attrsToHide: dict = No
                    parent=None, objVal=None) -> QtWidgets.QWidget:
     print(objType, objType.__str__, objType.__repr__, objType.__class__)
 
-    if objVal and issubtype(objVal, objType):
+    if objVal and not isoftype(objVal, objType):
         raise TypeError("Given object type does not match to real object type:", objType, objVal)
 
     attrsToHide = attrsToHide if attrsToHide else DEFAULT_ATTRS_TO_HIDE.copy()
@@ -99,7 +99,7 @@ class AddObjDialog(AddDialog):
         self.inputWidget = getInputWidget(objType, rmDefParams=rmDefParams,
                                           objName=objName, objVal=objVal)
         self.inputWidget.setObjectName("mainBox")
-        self.inputWidget.setStyleSheet("#mainBox{border:0;}")
+        self.inputWidget.setStyleSheet("#mainBox{border:0;}") #FIXME
         self.layout().insertWidget(0, self.inputWidget)
 
     def getInputWidget(self):
@@ -123,8 +123,6 @@ class GroupBox(QGroupBox):
         super().__init__(title, parent)
         self.setAlignment(Qt.AlignLeft)
         layout = QtWidgets.QVBoxLayout(self)
-        # layout.setSpacing(2)
-        # layout.setContentsMargins(1,2,1,2)
         self.setLayout(layout)
         self.type = GroupBoxType.SIMPLE
 
@@ -216,6 +214,7 @@ class ObjGroupBox(GroupBox):
         return layout
 
     def getObj2add(self):
+        """Return resulting obj due to user input data"""
         attrValueDict = {}
         for attr, widget in self.attrWidgetDict.items():
             attrValueDict[attr] = widget.getObj2add()
@@ -284,6 +283,7 @@ class IterableGroupBox(GroupBox):
         self.window().adjustSize()
 
     def getObj2add(self):
+        """Return resulting obj due to user input data"""
         listObj = []
         for widget in self.inputWidgets:
             listObj.append(widget.getObj2add())
@@ -347,6 +347,7 @@ class StandardInputWidget(QtWidgets.QWidget):
         return widget
 
     def getObj2add(self):
+        """Return resulting obj due to user input data"""
         if issubtype(self.attrType, bool):
             obj = self.widget.isChecked()
         elif issubtype(self.attrType, str):
@@ -360,6 +361,51 @@ class StandardInputWidget(QtWidgets.QWidget):
         return obj
 
 
+class TypeOptionObjGroupBox(GroupBox):
+    def __init__(self, objTypes, title, parent=None, attrsToHide: dict = None,
+                 rmDefParams=False, objName="", objVal=None):
+        super(TypeOptionObjGroupBox, self).__init__(title, parent)
+        self.rmDefParams = rmDefParams
+        self.attrsToHide = attrsToHide if attrsToHide else DEFAULT_ATTRS_TO_HIDE.copy()
+
+        self._initTypeComboBox(objTypes, objVal)
+        currObjType = self.typeComboBox.currentData()
+
+        self.widget = getInputWidget(currObjType, rmDefParams, attrsToHide=attrsToHide,
+                                     parent=self, objVal=objVal)
+        self.layout().addWidget(self.widget)
+
+        # change input widget for new type if type in combobox changed
+        self.typeComboBox.currentIndexChanged.connect(
+            lambda i: self._replGroupBox(self.typeComboBox.itemData(i)))
+
+    def _initTypeComboBox(self, typesToChoose, objVal):
+        """Init func for ComboBox where desired Type of input data will be chosen"""
+        self.typeComboBox = QComboBox(self)
+        for typ in typesToChoose:
+            self.typeComboBox.addItem(getTypeName(typ), typ)
+        if objVal:
+            self.typeComboBox.setCurrentIndex(self.typeComboBox.findData(type(objVal)))
+        else:
+            self.typeComboBox.setCurrentIndex(0)
+        self.layout().insertWidget(0, self.typeComboBox)
+
+    def _replGroupBox(self, chosenType):
+        """Changes input GroupBox due to chosenType structure"""
+        newWidget = getInputWidget(chosenType, self.rmDefParams,
+                                   attrsToHide=self.attrsToHide, parent=self)
+        self.layout().replaceWidget(self.widget, newWidget)
+        self.widget.close()
+        newWidget.showMinimized()
+        self.widget = newWidget
+        self.window().adjustSize()
+
+    def getObj2add(self):
+        """Return resulting obj due to user input data"""
+        return self.widget.getObj2add()
+
+
+# todo reimplement when Datatypes Data, Duration, etc. are ready
 class ChooseFromDialog(AddDialog):
     def __init__(self, objList, title, parent=None):
         super(ChooseFromDialog, self).__init__(parent, title)
@@ -374,43 +420,3 @@ class ChooseFromDialog(AddDialog):
     def getObj2add(self):
         obj = self.objComboBox.currentData()
         return obj
-
-
-# todo reimplement when Datatypes Data, Duration, etc. are ready
-class TypeOptionObjGroupBox(GroupBox):
-    def __init__(self, objTypes, title, parent=None, attrsToHide: dict = None,
-                 rmDefParams=False, objName="", objVal=None):
-        super(TypeOptionObjGroupBox, self).__init__(title, parent)
-        self.rmDefParams = rmDefParams
-        self.attrsToHide = attrsToHide if attrsToHide else DEFAULT_ATTRS_TO_HIDE.copy()
-
-        # init type-choose combobox
-        self.typeComboBox = QComboBox(self)
-        for objType in objTypes:
-            self.typeComboBox.addItem(getTypeName(objType), objType)
-        if objVal:
-            self.typeComboBox.setCurrentIndex(self.typeComboBox.findData(type(objVal)))
-        else:
-            self.typeComboBox.setCurrentIndex(0)
-        self.layout().insertWidget(0, self.typeComboBox)
-
-        currObjType = self.typeComboBox.currentData()
-        self.widget = getInputWidget(currObjType, rmDefParams, attrsToHide=attrsToHide,
-                                     parent=self, objVal=objVal)
-        self.layout().addWidget(self.widget)
-
-        # change input widget for new type if type in combobox changed
-        self.typeComboBox.currentIndexChanged.connect(
-            lambda i: self.replGroupBox(self.typeComboBox.itemData(i)))
-
-    def replGroupBox(self, objType):
-        newWidget = getInputWidget(objType, self.rmDefParams,
-                                   attrsToHide=self.attrsToHide, parent=self)
-        self.layout().replaceWidget(self.widget, newWidget)
-        self.widget.close()
-        newWidget.showMinimized()
-        self.widget = newWidget
-        self.window().adjustSize()
-
-    def getObj2add(self):
-        return self.widget.getObj2add()
