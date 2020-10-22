@@ -141,7 +141,7 @@ class StandardTable(QAbstractItemModel):
             if isinstance(index.parent().data(OBJECT_ROLE), list):
                 item.parentObj[index.row()] = value
                 item.obj = index.parent().data(OBJECT_ROLE)[index.row()]
-            elif isinstance(index.parent().data(OBJECT_ROLE), set):
+            elif isinstance(index.parent().data(OBJECT_ROLE), AbstractSet):
                 item.parentObj.remove(item.obj)
                 item.parentObj.add(value)
                 item.obj = value
@@ -180,6 +180,8 @@ class StandardTable(QAbstractItemModel):
             child.setParent(None)
             # child.deleteLater()
         self.endRemoveRows()
+        self.dataChanged.emit(parent,
+                              parent.child(self.rowCount(parent), self.columnCount(parent)))
         return True
 
     def clearRows(self, row: int, count: int,
@@ -188,27 +190,29 @@ class StandardTable(QAbstractItemModel):
         parentItem = self.objByIndex(parent)
         parentObj = parentItem.obj
 
-        self.beginRemoveRows(parent, row, row+count-1)
+        # if parentObj is Submodel and the parentObj is not rootItem
+        # set submodel_element as parentObj
+        if isinstance(parentObj, Submodel) and parent.isValid():
+            parentObj = parentItem.obj.submodel_element
+
         for n in range(row+count-1, row-1, -1):
             child = parentItem.children()[n]
             if isinstance(parentObj, list):
                 parentItem.obj.pop[n]
-                child.setParent(None)
             elif isinstance(parentObj, dict):
                 parentObj.pop(child.objName)
-                child.setParent(None)
             elif isinstance(parentObj, AbstractSet):
                 parentObj.discard(child.obj)
-                child.setParent(None)
             else:
                 if not defaultVal == "Not given":
                     self.setData(self.index(n, 0, parent), defaultVal, Qt.EditRole)
+                    return True
                 else:
                     self.valueChangeFailed.emit(
                         f"{child.objectName} could not be deleted or set to default")
-        self.endRemoveRows()
-        self.dataChanged.emit(parent,
-                              parent.child(self.rowCount(parent), self.columnCount(parent)))
+                    return False
+
+        self.removeRows(row, count, parent)
         return True
 
     def clearRow(self, row: int, parent: QModelIndex = ..., defaultVal="Not given") -> bool:
