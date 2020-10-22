@@ -56,8 +56,8 @@ def simplifyInfo(obj, attrName: str = "") -> str:
 def getTypeName(objType):
     try:
         return objType.__name__
-    except AttributeError:
-        pass
+    except AttributeError as e:
+        print(e)
 
     try:
         return objType._name
@@ -183,7 +183,7 @@ def isMeta(typ):
 def issubtype(typ, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:
     try:
         if isUnion(typ):
-            return any(isUnion(typ) for typ in types)
+            return any(isUnion(tp) for tp in types)
     except TypeError:
         return isUnion(types)
 
@@ -198,6 +198,18 @@ def issubtype(typ, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:
         return issubclass(typ, types)
     except TypeError:
         return issubclass(typ.__origin__, types)
+
+
+def isoftype(obj, types) -> bool:
+    if isUnion(types) and hasattr(types, "__args__") and types.__args__:
+        args = types.__args__
+        return isinstance(obj, args)
+
+    if getTypeName(types) == "Type" and hasattr(types, "__args__") and types.__args__:
+        args = types.__args__ if not isUnion(types.__args__[0]) else types.__args__[0].__args__
+        return obj in args
+
+    return isinstance(obj, types)
 
 # todo check if gorg is ok in other versions of python
 # def issubtype(typ, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:
