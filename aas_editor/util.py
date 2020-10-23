@@ -182,34 +182,87 @@ def isMeta(typ):
 
 def issubtype(typ, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:
     try:
-        if isUnion(typ):
-            return any(isUnion(tp) for tp in types)
-    except TypeError:
-        return isUnion(types)
-
-    if isUnion(types):
-        return isUnion(typ)
-
-    if isOptional(typ):
-        typ1, typ2 = typ.__args__
-        typ = typ1 if typ2 is type(None) else typ2
+        if issubclass(types, Enum):
+            return _issubtype(typ, types)
+    except TypeError as e:
+        print(e)
 
     try:
-        return issubclass(typ, types)
+        for tp in types:
+            if issubtype(typ, tp):
+                return True
+        return False
     except TypeError:
-        return issubclass(typ.__origin__, types)
+        return _issubtype(typ, types)
+
+
+def _issubtype(typ1, typ2: type) -> bool:
+    if isOptional(typ1):
+        typ1, typ2 = typ1.__args__
+        typ1 = typ1 if typ2 is type(None) else typ2
+
+    if isUnion(typ1):
+        if isUnion(typ2):
+            return True
+        else:
+            return False
+    if isUnion(typ2):
+        if hasattr(typ2, "__args__") and typ2.__args__:
+            typ2 = typ2.__args__
+            return issubtype(typ1, typ2)
+        else:
+            return isUnion(typ1)
+
+    if getTypeName(typ2) == "Type" and hasattr(typ2, "__args__") and typ2.__args__:
+        args = typ2.__args__ if not isUnion(typ2.__args__[0]) else typ2.__args__[0].__args__
+        return issubtype(typ1, args)
+
+    if hasattr(typ1, "__args__") and typ1.__args__:
+        typ1 = typ1.__origin__
+    if hasattr(typ2, "__args__") and typ2.__args__:
+        typ2 = typ2.__origin__
+
+    try:
+        return issubclass(typ1, typ2)
+    except TypeError:
+        return issubclass(typ1.__origin__, typ2)
 
 
 def isoftype(obj, types) -> bool:
-    if isUnion(types) and hasattr(types, "__args__") and types.__args__:
-        args = types.__args__
-        return isinstance(obj, args)
+    try:
+        if issubclass(types, Enum):
+            return _isoftype(obj, types)
+    except TypeError as e:
+        print(e)
 
-    if getTypeName(types) == "Type" and hasattr(types, "__args__") and types.__args__:
-        args = types.__args__ if not isUnion(types.__args__[0]) else types.__args__[0].__args__
-        return obj in args
+    try:
+        for tp in types:
+            if _isoftype(obj, tp):
+                return True
+        return False
+    except TypeError as e:
+        print(e)
+        return _isoftype(obj, types)
 
-    return isinstance(obj, types)
+
+def _isoftype(obj, typ) -> bool:
+    if isUnion(typ) and hasattr(typ, "__args__") and typ.__args__:
+        types = typ.__args__
+        return isoftype(obj, types)
+
+    if getTypeName(typ) == "Type" and hasattr(typ, "__args__") and typ.__args__:
+        args = typ.__args__ if not isUnion(typ.__args__[0]) else typ.__args__[0].__args__
+        return isoftype(obj, args)
+
+    #  TypeVar
+    if hasattr(typ, "__bound__"):
+        typ = typ.__bound__
+        return issubtype(obj, typ)
+
+    if hasattr(typ, "__args__") and typ.__args__:
+        typ = typ.__origin__
+
+    return isinstance(obj, typ)
 
 # todo check if gorg is ok in other versions of python
 # def issubtype(typ, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:
