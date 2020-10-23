@@ -44,7 +44,7 @@ class PackTreeView(TreeView):
     def _updateMenu(self, index: QModelIndex):
         # update add action
         obj = index.data(OBJECT_ROLE)
-        name = index.data(OBJECT_ROLE)
+        name = index.data(NAME_ROLE)
 
         self.addAct.setEnabled(True)
         if isinstance(obj, Package) or not index.isValid():
