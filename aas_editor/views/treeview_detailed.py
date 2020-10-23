@@ -90,9 +90,9 @@ class AttrsTreeView(TreeView):
         attribute = index.data(NAME_ROLE)
         attrType = getAttrTypeHint(type(self.model().objByIndex(index).parentObj), attribute)
         if objVal:
-            self.addItemWithDialog(index, attrType, objVal=objVal, objName=f"{attribute} element", rmDefParams=True)
+            self.addItemWithDialog(index, attrType, objVal=objVal, title=f"Add {attribute} element", rmDefParams=True)
         else:
-            self.addItemWithDialog(index, attrType, objName=f"{attribute} element", rmDefParams=True)
+            self.addItemWithDialog(index, attrType, title=f"Add {attribute} element", rmDefParams=True)
 
     def _editCreateHandler(self, objVal=None):
         index = self.currentIndex()
@@ -105,13 +105,11 @@ class AttrsTreeView(TreeView):
                 attrType = type(objVal)
             else:
                 raise KeyError(e)
-        self.replItemWithDialog(index, attrType, windowTitle=f"Create {attribute}", objVal=objVal)
+        self.replItemWithDialog(index, attrType, title=f"Create {attribute}", objVal=objVal)
 
-    def replItemWithDialog(self, index, objType, objVal=None, windowTitle=""):
-        objName = index.data(NAME_ROLE)
-        windowTitle = windowTitle if windowTitle else f"Edit {objName}"
-        dialog = AddObjDialog(objType, self, rmDefParams=False,
-                              objName=objName, objVal=objVal, windowTitle=windowTitle)
+    def replItemWithDialog(self, index, objType, objVal=None, title=""):
+        title = title if title else f"Edit {index.data(NAME_ROLE)}"
+        dialog = AddObjDialog(objType, self, rmDefParams=False, objVal=objVal, title=title)
         if dialog.exec_() == QDialog.Accepted:
             obj = dialog.getObj2add()
             self.model().setData(index, obj, Qt.EditRole)

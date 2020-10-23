@@ -18,7 +18,7 @@ def main():
     # reader.read_into(obj_store, file_store)
 
     window = EditorApp()
-    # toggleTheme(PREFERED_THEME)
+    toggleTheme(PREFERED_THEME)
     window.importTestPack(obj_store)
     window.show()
 

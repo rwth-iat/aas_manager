@@ -191,24 +191,30 @@ class TreeView(QTreeView):
             unpickledObj2paste = pickle.loads(codecs.decode(text.encode(), "base64"))
             try:
                 # FIXME
-                if self.addAct.isEnabled():
-                    self._addHandler(unpickledObj2paste)
-                else:
-                    raise TypeError()
+                try:
+                    self._addHandler(objVal=unpickledObj2paste)
+                except TypeError as e:
+                    print(e)
+                    self._addHandler(objVal=unpickledObj2paste,
+                                     parent=self.currentIndex().parent())
+
             except (TypeError, AttributeError) as e:
                 print(e)
-                self._editCreateHandler(unpickledObj2paste)
-        except (TypeError, SyntaxError) as e:
+                if hasattr(self, "_editCreateHandler"):
+                    self._editCreateHandler(unpickledObj2paste)
+                else:
+                    raise e
+        except ValueError:#(TypeError, SyntaxError) as e:
             print(f"Data could not be paste: {e}: {text}")
 
     def _cutHandler(self):
         self._copyHandler()
         self._delClearHandler()
 
-    def addItemWithDialog(self, parent: QModelIndex, objType, objName="", objVal=None,
-                          windowTitle="", rmDefParams=False):
+    def addItemWithDialog(self, parent: QModelIndex, objType, objVal=None,
+                          title="", rmDefParams=False):
         dialog = AddObjDialog(objType, self, rmDefParams=rmDefParams,
-                              objName=objName, objVal=objVal, windowTitle=windowTitle)
+                              objVal=objVal, title=title)
         if dialog.exec_() == QDialog.Accepted:
             obj = dialog.getObj2add()
             if isinstance(obj, dict):
