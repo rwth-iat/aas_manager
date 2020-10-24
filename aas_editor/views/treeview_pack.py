@@ -30,6 +30,10 @@ class PackTreeView(TreeView):
 
     # noinspection PyUnresolvedReferences
     def _upgradeMenu(self):
+        self.openInCurrTabAct.setEnabled(True)
+        self.openInNewTabAct.setEnabled(True)
+        self.openInBackgroundAct.setEnabled(True)
+
         self.openInCurrTabAct.triggered.connect(
             lambda: self.openInCurrTabClicked.emit(self.currentIndex()))
         self.openInNewTabAct.triggered.connect(
