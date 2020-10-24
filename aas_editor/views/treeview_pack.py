@@ -10,23 +10,10 @@ from aas_editor.views.treeview import TreeView
 
 
 class PackTreeView(TreeView):
-    """Singleton class"""
-    __instance = None
-
-    @staticmethod
-    def instance() -> 'PackTreeView':
-        """Instance access method"""
-        if PackTreeView.__instance is None:
-            PackTreeView()
-        return PackTreeView.__instance
-
     def __init__(self, parent=None):
-        if PackTreeView.__instance is not None:
-            raise Exception("This class is a singleton!")
-        else:
-            super(PackTreeView, self).__init__(parent)
-            PackTreeView.__instance = self
-            self._upgradeMenu()
+        super(PackTreeView, self).__init__(parent)
+        PackTreeView.__instance = self
+        self._upgradeMenu()
 
     # noinspection PyUnresolvedReferences
     def _upgradeMenu(self):

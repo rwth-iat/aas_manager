@@ -19,7 +19,8 @@ class AttrsTreeView(TreeView):
         super(AttrsTreeView, self).__init__(parent)
         self._upgradeMenu()
         self._buildHandlers()
-        self.packTreeView: PackTreeView = PackTreeView.instance()
+        # window must have attribute packTreeView
+        self.packTreeView: PackTreeView = parent.window().packTreeView
 
     # noinspection PyArgumentList
     def _upgradeMenu(self):
