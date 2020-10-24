@@ -21,8 +21,8 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.switch2leftTreeSC = QShortcut(QKeySequence("Ctrl+Left"), self)
 
         self.packTreeViewModel = StandardTable()
-        self.packItemsTreeView.setHeaderHidden(True)
-        self.packItemsTreeView.setModel(self.packTreeViewModel)
+        self.packTreeView.setHeaderHidden(True)
+        self.packTreeView.setModel(self.packTreeViewModel)
 
         self.tabWidget.addTab(Tab(parent=self.tabWidget), "Welcome")
 
@@ -47,17 +47,17 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
     def buildHandlers(self):
         self.tabWidget.currItemChanged.connect(
-            self.packItemsTreeView.setCurrentIndex)
+            self.packTreeView.setCurrentIndex)
 
-        self.packItemsTreeView.wheelClicked.connect(
+        self.packTreeView.wheelClicked.connect(
             self.tabWidget.openItemInBackgroundTab)
-        self.packItemsTreeView.openInBackgroundTabClicked.connect(
+        self.packTreeView.openInBackgroundTabClicked.connect(
             self.tabWidget.openItemInBackgroundTab)
-        self.packItemsTreeView.openInNewTabClicked.connect(
+        self.packTreeView.openInNewTabClicked.connect(
             self.tabWidget.openItemInNewTab)
-        self.packItemsTreeView.openInCurrTabClicked.connect(
+        self.packTreeView.openInCurrTabClicked.connect(
             self.tabWidget.openItem)
-        self.packItemsTreeView.selectionModel().currentChanged.connect(
+        self.packTreeView.selectionModel().currentChanged.connect(
             self.tabWidget.openItem)
 
         self.actionLight.triggered.connect(lambda: toggleTheme("light"))
@@ -65,7 +65,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.actionDefault.triggered.connect(lambda: toggleTheme("standard"))
 
         self.switch2rightTreeSC.activated.connect(self.setFocus2rightTree)
-        self.switch2leftTreeSC.activated.connect(self.packItemsTreeView.setFocus)
+        self.switch2leftTreeSC.activated.connect(self.packTreeView.setFocus)
 
     def setFocus2rightTree(self):
         tab: 'Tab' = self.tabWidget.currentWidget()
