@@ -91,13 +91,16 @@ class TreeView(QTreeView):
                                     triggered=self.expandAll)
 
         self.openInCurrTabAct = QAction("Open in current ta&b", self,
-                                        statusTip="Open selected item in current tab")
+                                        statusTip="Open selected item in current tab",
+                                        enabled=False)
 
         self.openInNewTabAct = QAction("Open in new &tab", self,
-                                       statusTip="Open selected item in new tab")
+                                       statusTip="Open selected item in new tab",
+                                       enabled=False)
 
         self.openInBackgroundAct = QAction("Open in &background tab", self,
-                                           statusTip="Open selected item in background tab")
+                                           statusTip="Open selected item in background tab",
+                                           enabled=False)
 
     def createMenu(self) -> None:
         self.attrsMenu = QMenu(self)
