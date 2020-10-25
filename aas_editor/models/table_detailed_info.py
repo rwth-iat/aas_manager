@@ -16,8 +16,6 @@ class DetailedInfoTable(StandardTable):
         super(DetailedInfoTable, self).__init__(COLUMNS_IN_DETAILED_INFO, root)
 
     def data(self, index: QModelIndex, role: int = ...) -> Any:
-        if not index.isValid():
-            return QVariant()
         if role == Qt.BackgroundRole:
             return self._getBgColor(index)
         if role == Qt.ForegroundRole:
