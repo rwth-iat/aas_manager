@@ -110,6 +110,12 @@ def getParams4init(objType: Type):
         defaults = g.defaults
     else:
         raise TypeError(f"no init or new func in objectType: {objType}")
+
+    try:
+        params.pop('return')
+    except KeyError:
+        pass
+
     return params, defaults
 
 
@@ -121,11 +127,6 @@ def getReqParams4init(objType: Type, rmDefParams: bool=True,
     if rmDefParams and defaults:
         for i in range(len(defaults)):
             params.popitem()
-
-    try:
-        params.pop('return')
-    except KeyError:
-        pass
 
     for param in params:
         if isOptional(params[param]):
