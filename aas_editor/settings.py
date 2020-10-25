@@ -63,3 +63,5 @@ TYPES_NOT_TO_POPULATE = (AbstractObjectStore, str, int, float, bool, Enum,)  # '
 COLUMNS_IN_DETAILED_INFO = ("attribute", "value")
 ATTRIBUTE_COLUMN = 0
 VALUE_COLUMN = 1
+
+NOT_GIVEN = "NotGivenValueAASEditor"

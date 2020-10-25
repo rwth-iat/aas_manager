@@ -4,7 +4,7 @@ from typing import Any, Iterable, Union, AbstractSet
 from PyQt5.QtCore import QAbstractItemModel, QVariant, QModelIndex, Qt, pyqtSignal
 
 from aas_editor.models import Package, DetailedInfoItem, StandardItem, PackTreeViewItem
-from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, VALUE_COLUMN
+from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, VALUE_COLUMN, NOT_GIVEN
 
 from aas.model import Submodel, SubmodelElement
 
@@ -185,7 +185,7 @@ class StandardTable(QAbstractItemModel):
         return True
 
     def clearRows(self, row: int, count: int,
-                  parent: QModelIndex = ..., defaultVal="Not given") -> bool:
+                  parent: QModelIndex = ..., defaultVal=NOT_GIVEN) -> bool:
         """Delete rows if they are children of Iterable else set to Default"""
         parentItem = self.objByIndex(parent)
         parentObj = parentItem.obj
@@ -204,7 +204,7 @@ class StandardTable(QAbstractItemModel):
             elif isinstance(parentObj, AbstractSet):
                 parentObj.discard(child.obj)
             else:
-                if not defaultVal == "Not given":
+                if not defaultVal == NOT_GIVEN:
                     self.setData(self.index(n, 0, parent), defaultVal, Qt.EditRole)
                     return True
                 else:
