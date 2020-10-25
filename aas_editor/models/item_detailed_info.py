@@ -2,7 +2,7 @@ from typing import AbstractSet
 
 from aas_editor.models import StandardItem, Package
 from aas_editor.settings import TYPES_NOT_TO_POPULATE
-from aas_editor.util import getAttrs4detailInfo, getTypeName
+from aas_editor.util import getAttrs4detailInfo, getTypeName, isIterable
 
 
 class DetailedInfoItem(StandardItem):
@@ -22,7 +22,7 @@ class DetailedInfoItem(StandardItem):
 
         if isinstance(self.obj, dict):
             self._populateDict(self.obj, **kwargs)
-        elif isinstance(self.obj, (AbstractSet, list, tuple)):
+        elif isIterable(self.obj):
             self._populateIterable(self.obj, **kwargs)
         else:
             self._populateUnknown(self.obj, **kwargs)
