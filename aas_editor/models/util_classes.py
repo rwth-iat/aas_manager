@@ -1,3 +1,5 @@
+from typing import NamedTuple, Any
+
 from aas.model import DictObjectStore, AssetAdministrationShell, Asset, Submodel, \
     ConceptDescription
 
@@ -56,3 +58,6 @@ class Package:
     @property
     def numOfConceptDescriptions(self):
         return len(tuple(self.concept_descriptions))
+
+
+DictItem = NamedTuple("DictItem", key=Any, value=Any)

@@ -1,21 +1,18 @@
-from typing import NamedTuple
-
 from PyQt5.QtCore import Qt
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIntValidator, QDoubleValidator, QPaintEvent, QPixmap, QBrush
 from PyQt5.QtWidgets import QLineEdit, QLabel, QComboBox, QPushButton, QDialog, QDialogButtonBox, \
     QGroupBox, QCheckBox, QWidget, QStylePainter, QStyleOptionGroupBox, QStyle
 
-from aas.model.aas import *
 from aas.model.base import *
 from aas.model.concept import *
 from aas.model.provider import *
 from aas.model.submodel import *
 
+from aas_editor.models import DictItem
 from aas_editor.settings import DEFAULT_ATTRS_TO_HIDE
-from aas_editor.util import getReqParams4init, issubtype, inheritors, isMeta, getTypeName, isoftype
-
-DictItem = NamedTuple("DictItem", key=Any, value=Any)
+from aas_editor.util import issubtype, inheritors, isMeta, getTypeName, \
+    isoftype, isIterableType, getReqParams4init
 
 
 class AddDialog(QDialog):
@@ -59,13 +56,12 @@ def getInputWidget(objType, rmDefParams=True, title="", attrsToHide: dict = None
         raise TypeError("Given object type does not match to real object type:", objType, objVal)
 
     attrsToHide = attrsToHide if attrsToHide else DEFAULT_ATTRS_TO_HIDE.copy()
-    if isMeta(objType) and not issubtype(objType, Iterable):
+    if isMeta(objType) and not isIterableType(objType):
         objTypes = inheritors(objType)
         widget = TypeOptionObjGroupBox(objTypes, attrsToHide=attrsToHide,
                                        rmDefParams=rmDefParams, title=title,
                                        parent=parent, objVal=objVal)
-    elif issubtype(objType, (list, tuple, set, dict, Iterable)) \
-            and not issubtype(objType, (str, bytes, DictItem)):
+    elif isIterableType(objType):
         widget = IterableGroupBox(objType, rmDefParams=rmDefParams, parent=parent, objVal=objVal)
     elif issubtype(objType, Union):
         objTypes = objType.__args__

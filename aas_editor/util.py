@@ -2,7 +2,7 @@ import inspect
 import re
 from abc import ABCMeta
 from enum import Enum
-from typing import List, Tuple, Union, Dict, Type
+from typing import List, Tuple, Union, Dict, Type, Iterable
 
 from PyQt5.QtCore import Qt, QFile, QTextStream, QModelIndex
 from PyQt5.QtWidgets import QApplication
@@ -10,6 +10,7 @@ from aas.model import SubmodelElement, DataElement, SubmodelElementCollection, E
     Namespace, Referable, Identifiable, HasSemantics, HasKind, Qualifiable, \
     DataSpecificationContent
 
+from .models import DictItem
 from .settings import ATTR_ORDER, PREFERED_LANGS_ORDER, ATTRS_NOT_IN_DETAILED_INFO, \
     ATTR_INFOS_TO_SIMPLIFY, THEMES
 
@@ -179,7 +180,6 @@ def isMeta(typ):
         return True
     return False
 
-
 def issubtype(typ, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:
     try:
         if issubclass(types, Enum):
@@ -298,6 +298,11 @@ def _isoftype(obj, typ) -> bool:
 #         return issubclass(typ._gorg, types)
 #     return issubclass(typ, types)
 
+def isIterableType(objType):
+    return issubtype(objType, Iterable) and not issubtype(objType, (str, bytes, DictItem))
+
+def isIterable(obj):
+    return isIterableType(type(obj))
 
 def getAttrTypeHint(objType, attr):
     params = getReqParams4init(objType, rmDefParams=False)
