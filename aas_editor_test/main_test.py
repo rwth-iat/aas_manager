@@ -9,67 +9,92 @@ from aas.examples.data.example_aas import create_full_example
 from aas.model import AASReference, Reference, Submodel, IdentifierType, Referable
 
 from aas_editor.editorApp import EditorApp
-from aas_editor.settings import PREFERED_THEME, NAME_ROLE
+from aas_editor.settings import PREFERED_THEME, NAME_ROLE, VALUE_COLUMN
 from aas_editor.util import toggleTheme
 from aas_editor.views.tab import Tab
 from aas_editor.views.treeview_pack import PackTreeView
 
-app = QApplication(sys.argv)
 
-
-class TestUtilFuncs(TestCase):
-    def test_main(self):
-        def test1():
-            packTreeView.show()
-            packTreeView.expandAll()
-            window.show()
-
-            tab1: Tab = window.tabWidget.widget(0)
-            attrsTreeView = tab1.attrsTreeView
-
-            for pack_index in packTreeView.model().iterItems():
-                window.show()
-                packTreeView.setCurrentIndex(pack_index)
-                # for attr_index in tab1.attrsTreeView.model().iterItems():
-                #     window.show()
-                #     attrsTreeView.setCurrentIndex(attr_index)
-                #     print("   ", attr_index.data(NAME_ROLE))
-                #     sleep(0.5)
-                # print(pack_index.data(NAME_ROLE))
-
-        def test2():
-            try:
-                tab1: Tab = window.tabWidget.widget(0)
-                attrsTreeView = tab1.attrsTreeView
-                attrsTreeView.expandAll()
-                try:
-                    attrsGenerator = attrGenList[0]
-                    attr_index = next(attrsGenerator)
-                    attrsTreeView.setCurrentIndex(attr_index)
-                    print(attr_index.data(NAME_ROLE))
-                except (StopIteration, TypeError):
-                    pack_index = next(itemsGenerator)
-                    packTreeView.setCurrentIndex(pack_index)
-                    attrGenList[0] = attrsTreeView.model().iterItems()
-            except StopIteration:
-                print("Test is completed")
-
+class TestUi(TestCase):
+    def setUp(self) -> None:
+        self.app = QApplication(sys.argv)
 
         obj_store = create_full_example()
 
-        window = EditorApp()
+        self.window = EditorApp()
         toggleTheme(PREFERED_THEME)
-        window.importTestPack(obj_store)
-        window.show()
+        self.window.importTestPack(obj_store)
+        self.window.show()
 
-        packTreeView: PackTreeView = window.packItemsTreeView
-        packTreeView.expandAll()
-        itemsGenerator = packTreeView.model().iterItems()
-        attrGenList = [None]
+        self.packTreeView: PackTreeView = self.window.packTreeView
+        self.packTreeView.expandAll()
+        self.tab1: Tab = self.window.tabWidget.widget(0)
+        self.attrsTreeView = self.tab1.attrsTreeView
+
+        self.itemsGenerator = self.packTreeView.model().iterItems()
+        self.attrsGenerator = None
 
         # QTimer.singleShot(1000, test1)
-        timer = QTimer()
-        timer.setInterval(500)
-        timer.timeout.connect(test2)
-        timer.start()
-        app.exec_()
+        self.timer = QTimer()
+        self.timer.setInterval(0)
+
+    def testViews(self):
+        self.timer.timeout.connect(self._testViews)
+        self.timer.start()
+        self.app.exec()
+        self.assertEqual(self.app.exec(), 0)
+
+    def _testViews(self):
+        try:
+            try:
+                self._nextItemInRightTree()
+            except (StopIteration, TypeError):
+                self._nextItemInLeftTree()
+        except StopIteration:
+            self.app.exit(0)
+            print("Test is completed")
+
+    def test_links(self):
+        self.timer.timeout.connect(self._testLinks)
+        self.timer.start()
+        self.assertEqual(self.app.exec(), 0)
+
+    def _testLinks(self):
+        currIndex = self.attrsTreeView.currentIndex()
+        print(currIndex.data(NAME_ROLE))
+        self.assertTrue(self.window.tabWidget.count() <= 2)
+        try:
+            try:
+                if self.window.tabWidget.currentIndex() == 1:
+                    # Tab of link item is opened
+                    self.assertTrue(self.packTreeView.currentIndex().isValid())
+                    self.assertNotEqual(self.currIterPackIndex.data(NAME_ROLE),
+                                        self.packTreeView.currentIndex().data(NAME_ROLE))
+                    self.window.tabWidget.removeTab(1)
+                    return
+                elif self.attrsTreeView.openInNewTabAct.isEnabled():
+                    self.currIterPackIndex = self.packTreeView.currentIndex()
+                    # Open link item in new tab
+                    self.attrsTreeView.openInNewTabAct.trigger()
+                    self._nextItemInRightTree()
+                    return
+                else:
+                    self._nextItemInRightTree()
+                    return
+            except StopIteration as e:
+                print(e)
+                self._nextItemInLeftTree()
+        except StopIteration:
+            self.app.exit(0)
+            print("Test is completed")
+
+    def _nextItemInLeftTree(self):
+        pack_index = next(self.itemsGenerator)
+        self.packTreeView.setCurrentIndex(pack_index)
+        self.attrsGenerator = self.attrsTreeView.model().iterItems()
+
+    def _nextItemInRightTree(self):
+        if not self.attrsGenerator:
+            raise StopIteration("Generator is empty")
+        attrIndex = next(self.attrsGenerator)
+        self.attrsTreeView.setCurrentIndex(attrIndex)
