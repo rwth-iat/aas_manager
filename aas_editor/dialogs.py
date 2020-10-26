@@ -11,8 +11,8 @@ from aas.model.submodel import *
 
 from aas_editor.models import DictItem
 from aas_editor.settings import DEFAULT_ATTRS_TO_HIDE
-from aas_editor.util import issubtype, inheritors, isMeta, getTypeName, \
-    isoftype, isIterableType, getReqParams4init
+from aas_editor.util import issubtype, inheritors, isMeta, getTypeName, isoftype, isIterableType, \
+    getReqParams4init, getParams4init
 
 
 class AddDialog(QDialog):
@@ -90,7 +90,29 @@ class AddObjDialog(AddDialog):
         title = title if title else f"Add {getTypeName(objType)}"
         AddDialog.__init__(self, parent, title=title)
         self.buttonOk.setEnabled(True)
-        self.inputWidget = getInputWidget(objType, rmDefParams=rmDefParams, objVal=objVal)
+        # if obj is given and rmDefParams = True, save all init params of obj in attrsToHide
+        # and show user only required params to set
+        if objVal and rmDefParams:
+            attrsToHide = {}
+
+            params, defaults = getParams4init(objType)
+            for key in params.keys():
+                try:
+                    attrsToHide[key] = getattr(objVal, key.rstrip("_"))  # TODO fix if aas changes
+                except AttributeError:
+                    attrsToHide[key] = getattr(objVal, key)
+
+            reqParams = getReqParams4init(objType, rmDefParams=True)
+            for key in reqParams.keys():
+                try:
+                    attrsToHide.pop(key.rstrip("_"))  # TODO fix if aas changes
+                except KeyError:
+                    attrsToHide.pop(key)
+
+            self.inputWidget = getInputWidget(objType, rmDefParams=rmDefParams,
+                                              attrsToHide=attrsToHide, objVal=objVal)
+        else:
+            self.inputWidget = getInputWidget(objType, rmDefParams=rmDefParams, objVal=objVal)
         self.inputWidget.setObjectName("mainBox")
         self.inputWidget.setStyleSheet("#mainBox{border:0;}") #FIXME
         self.layout().insertWidget(0, self.inputWidget)
