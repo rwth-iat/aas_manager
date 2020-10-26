@@ -178,6 +178,10 @@ class TreeView(QTreeView):
         self.treeObjClipboard.append(index.data(OBJECT_ROLE))
         clipboard = QApplication.clipboard()
         clipboard.setText(index.data(Qt.DisplayRole), QClipboard.Clipboard)
+        if self._isPasteOk(index):
+            self.pasteAct.setEnabled(True)
+        else:
+            self.pasteAct.setEnabled(False)
 
     def _pasteHandler(self):
         obj2paste = self.treeObjClipboard[0]

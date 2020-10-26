@@ -216,6 +216,8 @@ def _issubtype(typ1, typ2: type) -> bool:
 
     if getTypeName(typ2) == "Type" and hasattr(typ2, "__args__") and typ2.__args__:
         args = typ2.__args__ if not isUnion(typ2.__args__[0]) else typ2.__args__[0].__args__
+        if str(args[0]) == "+CT_co":  # type2 is just Type without args TODO fix later
+            return getTypeName(typ1) == "Type"
         return issubtype(typ1, args)
 
     if hasattr(typ1, "__args__") and typ1.__args__:
