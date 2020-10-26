@@ -12,7 +12,7 @@ from aas.model import SubmodelElement, DataElement, SubmodelElementCollection, E
 
 from .models import DictItem
 from .settings import ATTR_ORDER, PREFERED_LANGS_ORDER, ATTRS_NOT_IN_DETAILED_INFO, \
-    ATTR_INFOS_TO_SIMPLIFY, THEMES
+    ATTR_INFOS_TO_SIMPLIFY, THEMES, NAME_ROLE, OBJECT_ROLE
 
 
 def nameIsSpecial(method_name):
@@ -299,8 +299,10 @@ def _isoftype(obj, typ) -> bool:
 #         return issubclass(typ._gorg, types)
 #     return issubclass(typ, types)
 
+
 def isIterableType(objType):
     return issubtype(objType, Iterable) and not issubtype(objType, (str, bytes, bytearray,DictItem))
+
 
 def isIterable(obj):
     return isIterableType(type(obj))
@@ -326,6 +328,33 @@ def getAttrTypeHint(objType, attr):
         pass
 
     return typeHint
+
+
+def getTypeHint(index: QModelIndex):
+    attr = index.data(NAME_ROLE)
+    parentObj = index.internalPointer().parentObj
+    parentAttr = index.parent().data(NAME_ROLE)
+    grandParentObj = index.parent().internalPointer().parentObj
+
+    if index.parent().isValid() and isIterableType(type(parentObj)):
+        try:
+            parentAttrType = getAttrTypeHint(type(grandParentObj), parentAttr)
+            if issubtype(parentAttrType, dict):
+                DictItem._field_types["key"] = parentAttrType.__args__[0]
+                DictItem._field_types["value"] = parentAttrType.__args__[1]
+                attrType = DictItem
+            else:
+                attrType = parentAttrType.__args__
+        except KeyError:
+            print("Typehint could not be gotten")
+            attrType = type(index.data(OBJECT_ROLE))
+    else:
+        try:
+            attrType = getAttrTypeHint(type(parentObj), attr)
+        except KeyError:
+            print("Typehint could not be gotten")
+            attrType = type(index.data(OBJECT_ROLE))
+    return attrType
 
 
 def getAttrDoc(attr: str, doc: str) -> str:
