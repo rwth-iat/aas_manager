@@ -179,22 +179,6 @@ class TreeView(QTreeView):
         clipboard = QApplication.clipboard()
         clipboard.setText(index.data(Qt.DisplayRole), QClipboard.Clipboard)
 
-    def _isPasteOk(self, index: QModelIndex) -> bool:
-        if not self.treeObjClipboard:
-            return False
-        else:
-            obj2paste = self.treeObjClipboard[0]
-
-        attrType = getTypeHint(index)
-        attrName = index.data(NAME_ROLE)
-
-        try:
-            if isoftype(obj2paste, attrType) or obj2paste == getDefaultVal(attrName, attrType):
-                return True
-            return False
-        except AttributeError:
-            return False
-
     def _pasteHandler(self):
         obj2paste = self.treeObjClipboard[0]
         index = self.currentIndex()

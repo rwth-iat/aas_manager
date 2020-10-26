@@ -104,6 +104,22 @@ class AttrsTreeView(TreeView):
             self.openInBackgroundAct.setEnabled(False)
             self.openInNewTabAct.setEnabled(False)
 
+    def _isPasteOk(self, index: QModelIndex) -> bool:
+        if not self.treeObjClipboard:
+            return False
+        else:
+            obj2paste = self.treeObjClipboard[0]
+
+        attrType = getTypeHint(index)
+        attrName = index.data(NAME_ROLE)
+
+        try:
+            if isoftype(obj2paste, attrType) or obj2paste == getDefaultVal(attrName, attrType):
+                return True
+            return False
+        except AttributeError:
+            return False
+
     def _addHandler(self, objVal=None):
         index = self.currentIndex()
         attribute = index.data(NAME_ROLE)

@@ -4,8 +4,9 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import QModelIndex
 from aas.model import Submodel, AssetAdministrationShell, Asset, SubmodelElement
 
-from aas_editor.models import Package
+from aas_editor.models import Package, ConceptDescription
 from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ATTRS
+from aas_editor.util import isoftype
 from aas_editor.views.treeview import TreeView
 
 
@@ -54,6 +55,32 @@ class PackTreeView(TreeView):
             self.addAct.setText(f"Add")
             self.addAct.setEnabled(False)
 
+    def _isPasteOk(self, index: QModelIndex) -> bool:
+        if not self.treeObjClipboard:
+            return False
+        else:
+            obj2paste = self.treeObjClipboard[0]
+
+        attrName = index.data(NAME_ROLE)
+        currObj = index.data(OBJECT_ROLE)
+
+        if isinstance(obj2paste, AssetAdministrationShell):
+            if isinstance(currObj, AssetAdministrationShell) or attrName == "shells":
+                return True
+        elif isinstance(obj2paste, Asset):
+            if isinstance(currObj, Asset) or attrName == "assets":
+                return True
+        elif isinstance(obj2paste, Submodel):
+            if isinstance(currObj, Submodel) or attrName == "submodels":
+                return True
+        elif isinstance(obj2paste, SubmodelElement):
+            if isinstance(currObj, SubmodelElement):
+                return True
+        elif isinstance(obj2paste, ConceptDescription):
+            if isinstance(currObj, ConceptDescription) or attrName == "concept_descriptions":
+                return True
+        return False
+
     def _addHandler(self, objVal=None, parent: QModelIndex = None):
         parent = parent if parent else self.currentIndex()
         name = parent.data(NAME_ROLE)
@@ -75,6 +102,8 @@ class PackTreeView(TreeView):
             self.addItemWithDialog(objType=Asset, **kwargs)
         elif name == "submodels":
             self.addItemWithDialog(objType=Submodel, **kwargs)
+        elif name == "concept_descriptions":
+            self.addItemWithDialog(objType=ConceptDescription, **kwargs)
         elif isinstance(parent.data(OBJECT_ROLE), Submodel):
             self.addItemWithDialog(objType=SubmodelElement, **kwargs)
         else:

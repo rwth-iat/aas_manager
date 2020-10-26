@@ -334,9 +334,9 @@ def getTypeHint(index: QModelIndex):
     attr = index.data(NAME_ROLE)
     parentObj = index.internalPointer().parentObj
     parentAttr = index.parent().data(NAME_ROLE)
-    grandParentObj = index.parent().internalPointer().parentObj
 
     if index.parent().isValid() and isIterableType(type(parentObj)):
+        grandParentObj = index.parent().internalPointer().parentObj
         try:
             parentAttrType = getAttrTypeHint(type(grandParentObj), parentAttr)
             if issubtype(parentAttrType, dict):
