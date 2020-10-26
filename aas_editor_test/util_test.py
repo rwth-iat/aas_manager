@@ -15,6 +15,7 @@ class TestUtilFuncs(TestCase):
         self.assertTrue(issubtype(AASReference, AASReference[str]))
         self.assertTrue(issubtype(list, List[int]))
         self.assertTrue(issubtype(list, Optional[List[int]]))
+        self.assertTrue(issubtype(Type, Type))
         self.assertTrue(issubtype(str, Type[str]))
         self.assertTrue(issubtype(str, Type[Union[int, float, str]]))
         self.assertTrue(issubtype(float, Union[int, float, str]))
@@ -30,6 +31,7 @@ class TestUtilFuncs(TestCase):
         self.assertFalse(issubtype(Submodel, AASReference[str]))
         self.assertFalse(issubtype(Submodel, Union[int, float, str]))
         self.assertFalse(issubtype(str, Union))
+        self.assertTrue(issubtype(str, Type))
 
         self.assertFalse(issubtype(int, (float, str)))
 
