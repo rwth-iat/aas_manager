@@ -54,7 +54,7 @@ class TestUi(TestCase):
             self.app.exit(0)
             print("Test is completed")
 
-    def test_links(self):
+    def testLinks(self):
         self.timer.timeout.connect(self._testLinks)
         self.timer.start()
         self.assertEqual(self.app.exec(), 0)
