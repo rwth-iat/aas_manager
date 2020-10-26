@@ -300,17 +300,32 @@ def _isoftype(obj, typ) -> bool:
 #     return issubclass(typ, types)
 
 def isIterableType(objType):
-    return issubtype(objType, Iterable) and not issubtype(objType, (str, bytes, DictItem))
+    return issubtype(objType, Iterable) and not issubtype(objType, (str, bytes, bytearray,DictItem))
 
 def isIterable(obj):
     return isIterableType(type(obj))
 
+
 def getAttrTypeHint(objType, attr):
     params = getReqParams4init(objType, rmDefParams=False)
     try:
-        return params[attr]
+        typeHint = params[attr]
     except KeyError:
-        return params[f"{attr}_"]
+        typeHint = params[f"{attr}_"]  # TODO fix if aas changes
+
+    try:
+        if typeHint.__args__:
+            args = list(typeHint.__args__)
+            if ... in args:
+                args.remove(...)
+                typeHint.__args__ = args
+            if Ellipsis in args:
+                args.remove(Ellipsis)
+                typeHint.__args__ = args
+    except AttributeError:
+        pass
+
+    return typeHint
 
 
 def getAttrDoc(attr: str, doc: str) -> str:
