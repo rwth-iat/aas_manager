@@ -39,10 +39,7 @@ class TestUi(TestCase):
         self.timer.setInterval(0)
 
     def testViews(self):
-        self.timer.timeout.connect(self._testViews)
-        self.timer.start()
-        self.app.exec()
-        self.assertEqual(self.app.exec(), 0)
+        self._startTest(self._testViews)
 
     def _testViews(self):
         try:
@@ -56,9 +53,7 @@ class TestUi(TestCase):
             print("Test is completed")
 
     def testLinks(self):
-        self.timer.timeout.connect(self._testLinks)
-        self.timer.start()
-        self.assertEqual(self.app.exec(), 0)
+        self._startTest(self._testLinks)
 
     def _testLinks(self):
         currIndex = self.attrsTreeView.currentIndex()
@@ -89,6 +84,35 @@ class TestUi(TestCase):
             self.app.exit(0)
             sleep(1)
             print("Test is completed")
+
+    def testEditCreate(self):
+        self._startTest(self._testEditCreate)
+
+    def _testEditCreate(self):
+        currIndex = self.attrsTreeView.currentIndex()
+        print(currIndex.data(NAME_ROLE))
+        try:
+            try:
+                if self.attrsTreeView.editCreateAct.isEnabled():
+                    # Edit current item if possible
+                    self.attrsTreeView.editCreateAct.trigger()
+                    self._nextItemInRightTree()
+                    return
+                else:
+                    self._nextItemInRightTree()
+                    return
+            except StopIteration as e:
+                print(e)
+                self._nextItemInLeftTree()
+        except StopIteration:
+            self.app.exit(0)
+            sleep(1)
+            print("Test is completed")
+
+    def _startTest(self, testFunc):
+        self.timer.timeout.connect(testFunc)
+        self.timer.start()
+        self.assertEqual(self.app.exec(), 0)
 
     def _nextItemInLeftTree(self):
         pack_index = next(self.itemsGenerator)
