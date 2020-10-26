@@ -5,11 +5,12 @@ from PyQt5.QtCore import Qt, QModelIndex
 from PyQt5.QtWidgets import QAction, QDialog, QSizePolicy, QFrame, QAbstractScrollArea
 
 from aas_editor.dialogs import AddObjDialog
-from aas_editor.models import DetailedInfoTable
+from aas_editor.models import DetailedInfoTable, DictItem
 from aas_editor.qcomboboxenumdelegate import QComboBoxEnumDelegate
 from aas_editor.settings import ATTR_COLUMN_WIDTH, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
-    VALUE_COLUMN
-from aas_editor.util import getAttrTypeHint
+    VALUE_COLUMN, NOT_GIVEN
+from aas_editor.util import getAttrTypeHint, getReqParams4init, isoftype, getDefaultVal, \
+    isIterableType, isIterable, issubtype, getTypeHint
 from aas_editor.views.treeview import TreeView
 from aas_editor.views.treeview_pack import PackTreeView
 
@@ -19,8 +20,30 @@ class AttrsTreeView(TreeView):
         super(AttrsTreeView, self).__init__(parent)
         self._upgradeMenu()
         self._buildHandlers()
-        # window must have attribute packTreeView
+        # window must have packTreeView
         self.packTreeView: PackTreeView = parent.window().packTreeView
+
+    # noinspection PyUnresolvedReferences
+    def newPackItem(self, packItem):
+        self._initTreeView(packItem)
+        self.model().valueChangeFailed.connect(self.parent().itemDataChangeFailed)
+        self.selectionModel().currentChanged.connect(self._updateMenu)
+
+    def _initTreeView(self, packItem):
+        self.setExpandsOnDoubleClick(False)
+        self.setBaseSize(QtCore.QSize(429, 555))
+        self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
+        self.setObjectName("attrsTreeView")
+        self.setModel(DetailedInfoTable(packItem))
+        self.setColumnWidth(ATTRIBUTE_COLUMN, ATTR_COLUMN_WIDTH)
+        self.setItemDelegate(QComboBoxEnumDelegate())
+
+    def _buildHandlers(self):
+        self.setItemDelegate(QComboBoxEnumDelegate())
+        self.clicked.connect(self._openRef)
+        self.wheelClicked.connect(
+            lambda refItem: self._openRef(refItem, setCurrent=False))
 
     # noinspection PyArgumentList
     def _upgradeMenu(self):
@@ -41,22 +64,11 @@ class AttrsTreeView(TreeView):
         self.attrsMenu.insertActions(self.addAct, (self.editAct, self.editCreateAct))
 
         self.openInCurrTabAct.triggered.connect(
-            lambda: self.openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), newTab=False))
+            lambda: self._openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), newTab=False))
         self.openInNewTabAct.triggered.connect(
-            lambda: self.openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN)))
+            lambda: self._openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN)))
         self.openInBackgroundAct.triggered.connect(
-            lambda: self.openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), setCurrent=False))
-
-    # noinspection PyUnresolvedReferences
-    def _buildHandlers(self):
-        self.setItemDelegate(QComboBoxEnumDelegate())
-        self.clicked.connect(self.openRef)
-        self.wheelClicked.connect(
-            lambda refItem: self.openRef(refItem, setCurrent=False))
-
-    def _buildHandlersForNewItem(self):
-        self.model().valueChangeFailed.connect(self.parent().itemDataChangeFailed)
-        self.selectionModel().currentChanged.connect(self._updateMenu)
+            lambda: self._openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), setCurrent=False))
 
     def _updateMenu(self, index: QModelIndex):
         # update edit action
@@ -76,6 +88,12 @@ class AttrsTreeView(TreeView):
         else:
             self.addAct.setEnabled(False)
 
+        # update paste action
+        if self._isPasteOk(index):
+            self.pasteAct.setEnabled(True)
+        else:
+            self.pasteAct.setEnabled(False)
+
         # update open actions
         if self.model().objByIndex(index).isLink:
             self.openInCurrTabAct.setEnabled(True)
@@ -94,6 +112,7 @@ class AttrsTreeView(TreeView):
             self.addItemWithDialog(index, attrType, objVal=objVal, title=f"Add {attribute} element", rmDefParams=True)
         else:
             self.addItemWithDialog(index, attrType, title=f"Add {attribute} element", rmDefParams=True)
+    # todo reimplement search func findItemByObj
 
     def _editCreateHandler(self, objVal=None):
         index = self.currentIndex()
@@ -108,20 +127,7 @@ class AttrsTreeView(TreeView):
                 raise KeyError(e)
         self.replItemWithDialog(index, attrType, title=f"Create {attribute}", objVal=objVal)
 
-    def replItemWithDialog(self, index, objType, objVal=None, title=""):
-        title = title if title else f"Edit {index.data(NAME_ROLE)}"
-        dialog = AddObjDialog(objType, self, rmDefParams=False, objVal=objVal, title=title)
-        if dialog.exec_() == QDialog.Accepted:
-            obj = dialog.getObj2add()
-            self.model().setData(index, obj, Qt.EditRole)
-            self.setFocus()
-            self.setCurrentIndex(index)
-        else:
-            print("Item editing cancelled")
-        dialog.deleteLater()
-
-    # todo reimplement search func findItemByObj
-    def openRef(self, detailInfoItem: QModelIndex, newTab=True, setCurrent=True):
+    def _openRef(self, detailInfoItem: QModelIndex, newTab=True, setCurrent=True):
         item = self.model().objByIndex(detailInfoItem)
         if detailInfoItem.column() == VALUE_COLUMN and item.isLink:
             obj = item.obj.resolve(item.package.objStore)
@@ -132,28 +138,3 @@ class AttrsTreeView(TreeView):
                 self.openInBackgroundTabClicked.emit(linkedPackItem)
             else:
                 self.openInCurrTabClicked.emit(linkedPackItem)
-
-    def newPackItem(self, packItem):
-        self._initTreeView(packItem)
-        self._buildHandlersForNewItem()
-
-    def _initTreeView(self, packItem):
-        self.setExpandsOnDoubleClick(False)
-        self.setEnabled(True)
-        sizePolicy = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.sizePolicy().hasHeightForWidth())
-        self.setSizePolicy(sizePolicy)
-        self.setMinimumSize(QtCore.QSize(429, 0))
-        self.setBaseSize(QtCore.QSize(429, 555))
-        self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.setFrameShape(QFrame.StyledPanel)
-        self.setFrameShadow(QFrame.Sunken)
-        self.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
-        self.setObjectName("attrsTreeView")
-
-        attrsModel = DetailedInfoTable(packItem)
-        self.setModel(attrsModel)
-        self.setColumnWidth(ATTRIBUTE_COLUMN, ATTR_COLUMN_WIDTH)
-        self.setItemDelegate(QComboBoxEnumDelegate())

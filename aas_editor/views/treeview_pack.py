@@ -37,6 +37,12 @@ class PackTreeView(TreeView):
         obj = index.data(OBJECT_ROLE)
         name = index.data(NAME_ROLE)
 
+        # update paste action
+        if self._isPasteOk(index):
+            self.pasteAct.setEnabled(True)
+        else:
+            self.pasteAct.setEnabled(False)
+
         self.addAct.setEnabled(True)
         if isinstance(obj, Package) or not index.isValid():
             self.addAct.setText("Add package")
