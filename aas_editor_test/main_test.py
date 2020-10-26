@@ -52,6 +52,7 @@ class TestUi(TestCase):
                 self._nextItemInLeftTree()
         except StopIteration:
             self.app.exit(0)
+            sleep(1)
             print("Test is completed")
 
     def testLinks(self):
@@ -86,6 +87,7 @@ class TestUi(TestCase):
                 self._nextItemInLeftTree()
         except StopIteration:
             self.app.exit(0)
+            sleep(1)
             print("Test is completed")
 
     def _nextItemInLeftTree(self):
