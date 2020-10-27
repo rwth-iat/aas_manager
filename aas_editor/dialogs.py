@@ -1,6 +1,7 @@
 from PyQt5.QtCore import Qt
 from PyQt5 import QtWidgets
-from PyQt5.QtGui import QIntValidator, QDoubleValidator, QPaintEvent, QPixmap, QBrush
+from PyQt5.QtGui import QIntValidator, QDoubleValidator, QPaintEvent, QPixmap, QBrush, QColor, \
+    QPalette
 from PyQt5.QtWidgets import QLineEdit, QLabel, QComboBox, QPushButton, QDialog, QDialogButtonBox, \
     QGroupBox, QCheckBox, QWidget, QStylePainter, QStyleOptionGroupBox, QStyle
 
@@ -167,9 +168,14 @@ class GroupBox(QGroupBox):
             option.rect = self.style().subControlRect(
                 QStyle.CC_GroupBox, option, QStyle.SC_GroupBoxCheckBox, self)
 
+            option.rect.moveLeft(option.rect.left() - 1)
+            option.rect.setWidth(option.rect.width() + 2)
+            option.rect.moveTop(option.rect.top() - 1)
+            option.rect.setHeight(option.rect.height() + 2)
+
             paint.save()
             px = QPixmap(option.rect.width(), option.rect.height())
-            px.fill()
+            px.fill(self.palette().color(self.backgroundRole()))
             brush = QBrush(px)
             paint.fillRect(option.rect, brush)
             paint.restore()
@@ -184,7 +190,7 @@ class GroupBox(QGroupBox):
                 "GroupBox::indicator:checked:focus,"
                 "GroupBox::indicator:checked:pressed"
                 "{"
-                "    image: url(close.png);"
+                "    color: red;"
                 "}")
 
     def setClosable(self, b: bool) -> None:
