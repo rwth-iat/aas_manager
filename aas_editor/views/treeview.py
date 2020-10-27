@@ -1,7 +1,3 @@
-import codecs
-import pickle
-from typing import Iterable
-
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal, Qt, QModelIndex
 from PyQt5.QtGui import QKeySequence, QMouseEvent, QKeyEvent, QClipboard
@@ -10,7 +6,7 @@ from PyQt5.QtWidgets import QTreeView, QAction, QMenu, QApplication, QDialog
 from aas_editor.dialogs import AddObjDialog
 from aas_editor.models import DictItem
 from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, VALUE_COLUMN
-from aas_editor.util import getDefaultVal, isIterable, getReqParams4init, isoftype, getTypeHint
+from aas_editor.util import getDefaultVal, isIterable, getReqParams4init, delAASParents
 
 
 class TreeView(QTreeView):
@@ -174,8 +170,10 @@ class TreeView(QTreeView):
 
     def _copyHandler(self):
         index = self.currentIndex()
+        obj2copy = index.data(OBJECT_ROLE)
+        delAASParents(obj2copy)  # TODO check if there is a better solution to del aas parents
         self.treeObjClipboard.clear()
-        self.treeObjClipboard.append(index.data(OBJECT_ROLE))
+        self.treeObjClipboard.append(obj2copy)
         clipboard = QApplication.clipboard()
         clipboard.setText(index.data(Qt.DisplayRole), QClipboard.Clipboard)
         if self._isPasteOk(index):

@@ -144,6 +144,27 @@ def getReqParams4init(objType: Type, rmDefParams: bool=True,
     return params
 
 
+def delAASParents(aasObj):
+    params, defaults = getParams4init(type(aasObj))
+
+    if hasattr(aasObj, "parent"):
+       aasObj.parent = None
+
+    for param in params.keys():
+        if hasattr(aasObj, param.rstrip("_")):
+            attr = getattr(aasObj, param.rstrip("_"))
+        elif hasattr(aasObj, param):
+            attr = getattr(aasObj, param)
+        else:
+            continue
+
+        if hasattr(attr, "parent"):
+            attr.parent = None
+        if isIterable(attr):
+            for item in attr:
+                if hasattr(item, "parent"):
+                    item.parent = None
+
 def isOptional(typeHint):
     if isUnion(typeHint):
         if type(None) in typeHint.__args__:
