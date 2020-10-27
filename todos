@@ -1,5 +1,7 @@
+paste/isPasteOk/pasteHandler
+DictItem in data in model
+
 implement defaultobj for typeoptionbox
-support Namespaceset
 cancel last action
 choose from for references
 add add/create-button to toolbar
@@ -7,8 +9,6 @@ add add/create-button to toolbar
 start working with files
 open/save/save as.. packages
 drag&drop features
-
-find out statusbar handling
 
 search funcs
     search everyhere
@@ -20,9 +20,9 @@ settings
 open recent
 integrate validator
 
-
 Done:
-cut/copy/paste
+support Namespaceset
+cut/copy
 update aas package from git
 delete
 finish all add dialogs
