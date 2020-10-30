@@ -42,6 +42,25 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                                       triggered=self.openPack,
                                       enabled=True)
 
+        self.actionSave = QAction("Save", self,
+                                      statusTip="Save current file",
+                                      triggered=self.openPack,
+                                      enabled=False)
+
+        self.actionSaveAs = QAction("Save As...", self,
+                                      triggered=self.openPack,
+                                      enabled=False)
+
+        self.actionSaveAll = QAction("&Save All", self,
+                                      shortcut=SC_SAVE_ALL,
+                                      statusTip="Save all files",
+                                      triggered=self.openPack,
+                                      enabled=False)
+
+        self.exitAct = QAction("E&xit", self,
+                               statusTip="Exit the application",
+                               triggered=self.close)
+
         self.switch2rightTreeSC = QShortcut(SC_FOCUS2RIGTH_TREE, self,
                                             activated=self.setFocus2rightTree)
         self.switch2leftTreeSC = QShortcut(SC_FOCUS2LEFT_TREE, self,
@@ -68,25 +87,29 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.menuFile = QMenu("&File", self.menubar)
         self.menuFile.addAction(self.actionOpenPack)
+        self.menuFile.addAction(self.actionSave)
+        self.menuFile.addAction(self.actionSaveAs)
+        self.menuFile.addAction(self.actionSaveAll)
+        self.menuFile.addAction(self.exitAct)
 
         self.menuView = QMenu("&View", self.menubar)
-        self.menuChoose_theme = QMenu("Choose theme", self.menuView)
+        self.menuChoose_theme = QMenu("Choose Theme", self.menuView)
         self.menuChoose_theme.addAction(self.actionLight)
         self.menuChoose_theme.addAction(self.actionDark)
         self.menuChoose_theme.addAction(self.actionDefault)
         self.menuView.addAction(self.menuChoose_theme.menuAction())
 
         self.menuNavigate = QMenu("&Navigate", self.menubar)
-        self.menuNavigate.addAction(self.tabWidget.backAct)
-        self.menuNavigate.addAction(self.tabWidget.forwardAct)
+        self.menuNavigate.addAction(self.tabWidget.actionBack)
+        self.menuNavigate.addAction(self.tabWidget.actionForward)
 
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
         self.menubar.addAction(self.menuNavigate.menuAction())
 
     def initToolbar(self):
-        self.toolBar.addAction(self.tabWidget.backAct)
-        self.toolBar.addAction(self.tabWidget.forwardAct)
+        self.toolBar.addAction(self.tabWidget.actionBack)
+        self.toolBar.addAction(self.tabWidget.actionForward)
 
     @staticmethod
     def iterItems(root):
@@ -142,5 +165,14 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                     QMessageBox.critical(self, "Error", f"Package {file} is already opened")
                 else:
                     self.packTreeViewModel.addItem(pack)
+
+    def savePack(self, pack: Package):
+        file = pack.file
+        if file:
+            try:
+                pack.write()
+            except (TypeError, ValueError) as e:
+                QMessageBox.critical(self, "Error",
+                                     f"Package {file} couldn't be saved: {e}")
 
 # ToDo logs insteads of prints

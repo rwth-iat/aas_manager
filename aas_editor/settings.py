@@ -5,6 +5,8 @@ from aas.model import AdministrativeInformation, Identifier, Submodel, AASRefere
     SubmodelElement, AssetAdministrationShell, ConceptDescription, ConceptDictionary, \
     AbstractObjectStore
 
+AAS_CREATOR = "PyI40AAS Testing Framework"
+
 ATTR_COLUMN_WIDTH = 200
 
 PREFERED_LANGS_ORDER = ("en-us", "en", "de")
@@ -84,6 +86,7 @@ SC_COLLAPSE_RECURS = QKeySequence(Qt.CTRL + Qt.ALT + Qt.Key_Minus)
 SC_COLLAPSE_ALL = QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_Minus)
 
 SC_OPEN = QKeySequence(Qt.CTRL + Qt.Key_O)
+SC_SAVE_ALL = QKeySequence(Qt.CTRL + Qt.Key_S)
 SC_BACK = QKeySequence.Back
 SC_FORWARD = QKeySequence.Forward
 

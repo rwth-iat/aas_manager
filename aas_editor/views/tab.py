@@ -19,19 +19,19 @@ class TabWidget(QTabWidget):
 
     # noinspection PyArgumentList
     def initActions(self):
-        self.backAct = QAction(QIcon.fromTheme("go-previous"), "Back", self,
-                               statusTip=f"Go back one item",
-                               toolTip=f"Go back one item",
-                               shortcut=SC_BACK,
-                               triggered=lambda: self.currentWidget().openPrevItem(),
-                               enabled=False)
-
-        self.forwardAct = QAction(QIcon.fromTheme("go-next"), "Forward", self,
-                                  statusTip=f"Go forward one item",
-                                  toolTip=f"Go forward one item",
-                                  shortcut=SC_FORWARD,
-                                  triggered=lambda: self.currentWidget().openNextItem(),
+        self.actionBack = QAction(QIcon.fromTheme("go-previous"), "Back", self,
+                                  statusTip=f"Go back one item",
+                                  toolTip=f"Go back one item",
+                                  shortcut=SC_BACK,
+                                  triggered=lambda: self.currentWidget().openPrevItem(),
                                   enabled=False)
+
+        self.actionForward = QAction(QIcon.fromTheme("go-next"), "Forward", self,
+                                     statusTip=f"Go forward one item",
+                                     toolTip=f"Go forward one item",
+                                     shortcut=SC_FORWARD,
+                                     triggered=lambda: self.currentWidget().openNextItem(),
+                                     enabled=False)
 
     def buildHandlers(self):
         self.tabCloseRequested.connect(self.removeTab)
@@ -60,8 +60,8 @@ class TabWidget(QTabWidget):
     def _updateActions(self):
         tab: Tab = self.currentWidget()
         if tab:
-            self.forwardAct.setEnabled(True) if tab.nextItems else self.forwardAct.setDisabled(True)
-            self.backAct.setEnabled(True) if tab.prevItems else self.backAct.setDisabled(True)
+            self.actionForward.setEnabled(True) if tab.nextItems else self.actionForward.setDisabled(True)
+            self.actionBack.setEnabled(True) if tab.prevItems else self.actionBack.setDisabled(True)
 
     def openItem(self, packItem: QModelIndex = QModelIndex()) -> int:
         if not self.count():

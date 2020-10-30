@@ -1,11 +1,15 @@
+from datetime import datetime
 from os import PathLike
 from typing import NamedTuple, Any, Union, IO
 
+import pyecma376_2
 from aas.adapter import aasx
 from aas.adapter.aasx import DictSupplementaryFileContainer
 from aas.model import DictObjectStore, AssetAdministrationShell, Asset, Submodel, \
     ConceptDescription
 from pathlib import Path
+
+from aas_editor.settings import AAS_CREATOR
 
 
 class Package:
@@ -24,6 +28,23 @@ class Package:
             reader.read_into(self.objStore, self.fileStore)
         else:
             raise TypeError("File type is not supportable:", self.file.suffix)
+
+    def write(self, file=None):
+        if file is None:
+            file = self.file
+            fileType = self.file.suffix.lower().strip()
+            if fileType == ".xml":
+                aasx.write_aas_xml_file(file.as_posix(), self.objStore)
+            elif fileType == ".json":
+                aasx.write_aas_json_file(file.as_posix(), self.objStore)
+            elif fileType == ".aasx":
+                with aasx.AASXWriter(file.as_posix()) as writer:
+                    writer.write_aas(self.objStore, self.fileStore) #FIXME
+                    # Create OPC/AASX core properties
+                    cp = pyecma376_2.OPCCoreProperties()
+                    cp.created = datetime.now()
+                    cp.creator = AAS_CREATOR
+                    writer.write_core_properties(cp)
 
     @property
     def name(self):
