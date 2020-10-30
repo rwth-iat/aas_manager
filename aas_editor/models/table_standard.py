@@ -4,7 +4,8 @@ from typing import Any, Iterable, Union, AbstractSet
 from PyQt5.QtCore import QAbstractItemModel, QVariant, QModelIndex, Qt, pyqtSignal
 
 from aas_editor.models import Package, DetailedInfoItem, StandardItem, PackTreeViewItem
-from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, VALUE_COLUMN, NOT_GIVEN
+from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, VALUE_COLUMN, NOT_GIVEN, \
+    PACKAGE_ROLE
 
 from aas.model import Submodel, SubmodelElement
 
@@ -22,7 +23,7 @@ class StandardTable(QAbstractItemModel):
             return QVariant()
         return self.objByIndex(index).data(role)
 
-    def index(self, row: int, column: int, parent: QModelIndex = QModelIndex()) -> QModelIndex:
+    def index(self, row: int, column: int = 0, parent: QModelIndex = QModelIndex()) -> QModelIndex:
         if not self.hasIndex(row, column, parent):
             return QModelIndex()
         parentObj = self.objByIndex(parent)
@@ -37,10 +38,10 @@ class StandardTable(QAbstractItemModel):
         row = grandParentObj.children().index(parentObj)
         return self.createIndex(row, 0, parentObj)
 
-    def rowCount(self, parent: QModelIndex = ...) -> int:
+    def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
         return len(self.objByIndex(parent).children())
 
-    def columnCount(self, parent: QModelIndex = ...) -> int:
+    def columnCount(self, parent: QModelIndex = QModelIndex()) -> int:
         return len(self._columns)
 
     def headerData(self, section: int, orientation: Qt.Orientation, role: int = ...) -> Any:
@@ -80,7 +81,6 @@ class StandardTable(QAbstractItemModel):
                 child = self.objByIndex(childIndex)
                 if child.children():
                     yield from recurse(childIndex)
-
         yield from recurse(parent)
 
     # todo redefine to match()

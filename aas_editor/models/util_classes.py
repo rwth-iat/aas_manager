@@ -1,13 +1,37 @@
-from typing import NamedTuple, Any
+from os import PathLike
+from typing import NamedTuple, Any, Union, IO
 
+from aas.adapter import aasx
+from aas.adapter.aasx import DictSupplementaryFileContainer
 from aas.model import DictObjectStore, AssetAdministrationShell, Asset, Submodel, \
     ConceptDescription
+from pathlib import Path
 
 
 class Package:
-    def __init__(self, name: str, objStore: DictObjectStore = None):
-        self.name = name
-        self.objStore = objStore if objStore else DictObjectStore()
+    def __init__(self, file: str):
+        self.file = Path(file)
+        self.objStore = DictObjectStore()
+        self.fileStore = DictSupplementaryFileContainer()
+        fileType = self.file.suffix.lower().strip()
+        if fileType == ".xml":
+            self.objStore = aasx.read_aas_xml_file(self.file.as_posix())
+        elif fileType == ".json":
+            with open(file, "r") as f:  # TODO change if aas changes
+                self.objStore = aasx.read_aas_json_file(f)
+        elif fileType == ".aasx":
+            reader = aasx.AASXReader(self.file.as_posix())
+            reader.read_into(self.objStore, self.fileStore)
+        else:
+            raise TypeError("File type is not supportable:", self.file.suffix)
+
+    @property
+    def name(self):
+        return self.file.name
+
+    @name.setter
+    def name(self, name):
+        self.file = self.file.parent.joinpath(name)
 
     @property
     def shells(self):
@@ -39,6 +63,11 @@ class Package:
             if not isinstance(obj,
                               (AssetAdministrationShell, Asset, Submodel, ConceptDescription)):
                 yield obj
+
+    @property
+    def files(self):
+        for file in self.fileStore:
+            yield file
 
     def add(self, obj):
         self.objStore.add(obj)

@@ -13,6 +13,17 @@ class StandardItem(QObject):
         self.obj = obj
         self.objName = name
 
+    @property
+    def obj(self):
+        try:
+            return getattr(self.parentObj, self.objName)
+        except (TypeError, AttributeError):
+            return self._obj
+
+    @obj.setter
+    def obj(self, obj):
+        self._obj = obj
+
     def data(self, role, column=ATTRIBUTE_COLUMN):
         if role == Qt.WhatsThisRole:
             return getAttrDoc(self.objName, self.parentObj.__init__.__doc__)
@@ -41,10 +52,11 @@ class StandardItem(QObject):
 
     def setParent(self, a0: 'QObject') -> None:
         super().setParent(a0)
-        try:
-            self.package = a0.data(PACKAGE_ROLE)
-        except AttributeError:
-            pass
+        if a0.data(PACKAGE_ROLE):
+            try:
+                self.package = a0.data(PACKAGE_ROLE)
+            except AttributeError:
+                pass
 
     @property
     def objectName(self):

@@ -1,9 +1,9 @@
 Needs:
     For TypeOptionGroupBox: - Abstract classes must be really abstract!
                             - Some datatypes must be implemented (Time, Duration etc.)!
-    For testing Open/Save: - Probleme mit existierenden Sample AAS they are http://www.admin-shell.io/aas/1/0
-                             instead of http://www.admin-shell.io/aas/2/0
-    For copy/paste: - repr functions must be evaluable! Some current __repr__ funcs are actually __str__
+    For testing Open/Save: - read_aas_json_file() doesn't work for str files
+                              with open(file, "r") as f:
+                                self.objStore = aasx.read_aas_json_file(f)
 
 Suggestions:
     - Make Submodel iterable which consists of submodel elements.
