@@ -17,11 +17,15 @@ class Package:
         self.file = Path(file).absolute()
         self.objStore = DictObjectStore()
         self.fileStore = DictSupplementaryFileContainer()
+        self._read()
+        self._changed = False
+
+    def _read(self):
         fileType = self.file.suffix.lower().strip()
         if fileType == ".xml":
             self.objStore = aasx.read_aas_xml_file(self.file.as_posix())
         elif fileType == ".json":
-            with open(file, "r") as f:  # TODO change if aas changes
+            with open(self.file, "r") as f:  # TODO change if aas changes
                 self.objStore = aasx.read_aas_json_file(f)
         elif fileType == ".aasx":
             reader = aasx.AASXReader(self.file.as_posix())

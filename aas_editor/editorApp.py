@@ -43,19 +43,19 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                                       enabled=True)
 
         self.actionSave = QAction("Save", self,
-                                      statusTip="Save current file",
-                                      triggered=self.openPack,
-                                      enabled=False)
+                                  statusTip="Save current file",
+                                  triggered=lambda: self.savePack(),
+                                  enabled=True)
 
         self.actionSaveAs = QAction("Save As...", self,
-                                      triggered=self.openPack,
-                                      enabled=False)
+                                    triggered=lambda: self.savePackAs(),
+                                    enabled=True)
 
         self.actionSaveAll = QAction("&Save All", self,
-                                      shortcut=SC_SAVE_ALL,
-                                      statusTip="Save all files",
-                                      triggered=self.openPack,
-                                      enabled=False)
+                                     shortcut=SC_SAVE_ALL,
+                                     statusTip="Save all files",
+                                     triggered=self.saveAll,
+                                     enabled=True)
 
         self.exitAct = QAction("E&xit", self,
                                statusTip="Exit the application",
@@ -146,14 +146,13 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.tabWidget.currentWidget().attrsTreeView.setFocus()
 
     def openPack(self):
-        packFile = QFileDialog.getOpenFileName(self, "Open AAS file",
-                                               filter="AAS files (*.aasx *.xml *.json);;"
-                                                      "AASX (*.aasx);; "
-                                                      "XML (*.xml);;"
-                                                      "JSON (*.json);; All files (*.*)",
-                                               options=QFileDialog.DontResolveSymlinks |
-                                                       QFileDialog.DontUseNativeDialog)
-        file = packFile[0]
+        file = QFileDialog.getOpenFileName(self, "Open AAS file",
+                                           filter="AAS files (*.aasx *.xml *.json);;"
+                                                  "AASX (*.aasx);; "
+                                                  "XML (*.xml);;"
+                                                  "JSON (*.json);; All files (*.*)",
+                                           options=QFileDialog.DontResolveSymlinks |
+                                                   QFileDialog.DontUseNativeDialog)[0]
         if file:
             try:
                 pack = Package(file)
@@ -166,13 +165,38 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                 else:
                     self.packTreeViewModel.addItem(pack)
 
-    def savePack(self, pack: Package):
-        file = pack.file
-        if file:
-            try:
-                pack.write()
-            except (TypeError, ValueError) as e:
-                QMessageBox.critical(self, "Error",
-                                     f"Package {file} couldn't be saved: {e}")
+    def savePack(self, pack: Package = None, file: str = None):
+        pack = self.packTreeView.currentIndex().data(PACKAGE_ROLE) if pack is None else pack
+        try:
+            file = pack.file if file is None else file
+            if file:
+                pack.write(file)
+                pack.file = file
+            else:
+                raise ValueError("file name is not correct:", file)
+        except (TypeError, ValueError) as e:
+            QMessageBox.critical(self, "Error", f"Package couldn't be saved: {file}: {e}")
+        except AttributeError as e:
+            QMessageBox.critical(self, "Error", f"No chosen package to save: {e}")
+
+    def savePackAs(self, pack: Package = None):
+        pack = self.packTreeView.currentIndex().data(PACKAGE_ROLE) if pack is None else pack
+        try:
+            file = QFileDialog.getSaveFileName(self, 'Save AAS File', pack.file.as_posix(),
+                                               filter="AAS files (*.aasx *.xml *.json);;"
+                                                      "AASX (*.aasx);; "
+                                                      "XML (*.xml);;"
+                                                      "JSON (*.json);; All files (*.*)",
+                                               options=QFileDialog.DontResolveSymlinks |
+                                                       QFileDialog.DontUseNativeDialog
+                                               )[0]
+        except AttributeError as e:
+            QMessageBox.critical(self, "Error", f"No chosen package to save: {e}")
+        else:
+            self.savePack(pack, file)
+
+    def saveAll(self):
+        for pack in self.packTreeViewModel.openedPacks():
+            self.savePack(pack)
 
 # ToDo logs insteads of prints

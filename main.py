@@ -13,13 +13,9 @@ def main():
     app = QtWidgets.QApplication(sys.argv)
 
     obj_store = create_full_example()
-    # obj_store = DictObjectStore()
-    # file_store = DictSupplementaryFileContainer()
-    # reader = aasx.AASXReader("/Sample_AAS/07_PhoenixContact.aasx")
-    # reader.read_into(obj_store, file_store)
 
     window = EditorApp()
-    window.packTreeViewModel.addItem(Package("aas_files/TestPackage.aasx"))
+    # window.packTreeViewModel.addItem(Package("aas_files/TestPackage.aasx"))
     toggleTheme(PREFERED_THEME)
     # window.importTestPack(obj_store)
     window.show()
