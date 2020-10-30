@@ -10,7 +10,7 @@ from pathlib import Path
 
 class Package:
     def __init__(self, file: str):
-        self.file = Path(file)
+        self.file = Path(file).absolute()
         self.objStore = DictObjectStore()
         self.fileStore = DictSupplementaryFileContainer()
         fileType = self.file.suffix.lower().strip()

@@ -8,10 +8,6 @@ class PacksTable(StandardTable):
         for i in range(self.rowCount()):
             item = self.index(row=i)
             pack: Package = item.data(PACKAGE_ROLE)
-            print("NAMEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE")
-            print(item.data(NAME_ROLE))
-            f=item.internalPointer()
-            print(item.internalPointer().data(PACKAGE_ROLE))
             try:
                 files.add(pack.file)
             except AttributeError:

@@ -3,7 +3,7 @@ from PyQt5.QtGui import QIcon, QKeySequence
 from PyQt5.QtWidgets import QWidget, QLineEdit, QLabel, QMessageBox, QGridLayout, QVBoxLayout, \
     QTabWidget, QAction
 
-from aas_editor.settings import NAME_ROLE
+from aas_editor.settings import NAME_ROLE, SC_BACK, SC_FORWARD
 from aas_editor.views.treeview_detailed import AttrsTreeView
 from aas_editor.util import getTreeItemPath
 
@@ -14,30 +14,29 @@ class TabWidget(QTabWidget):
 
     def __init__(self, parent: QWidget = None):
         super(TabWidget, self).__init__(parent)
-        self.nextTabAct = QAction("Next tab", self)
-        self.backAct = QAction(QIcon.fromTheme("go-previous"), "Back", self)
-        self.forwardAct = QAction(QIcon.fromTheme("go-next"), "Forward", self)
-        self._setupActions()
+        self.initActions()
         self.buildHandlers()
 
-    def _setupActions(self):
-        self.backAct.setDisabled(True)
-        self.backAct.setShortcut(QKeySequence.Back)
-        self.backAct.setToolTip(f"Go back ({self.backAct.shortcut().toString()})")
+    # noinspection PyArgumentList
+    def initActions(self):
+        self.backAct = QAction(QIcon.fromTheme("go-previous"), "Back", self,
+                               statusTip=f"Go back one item",
+                               toolTip=f"Go back one item",
+                               shortcut=SC_BACK,
+                               triggered=lambda: self.currentWidget().openPrevItem(),
+                               enabled=False)
 
-        self.forwardAct.setDisabled(True)
-        self.forwardAct.setShortcut(QKeySequence.Forward)
-        self.forwardAct.setToolTip(f"Go forward ({self.backAct.shortcut().toString()})")
-
-        self.nextTabAct.setShortcut(QKeySequence.NextChild)
+        self.forwardAct = QAction(QIcon.fromTheme("go-next"), "Forward", self,
+                                  statusTip=f"Go forward one item",
+                                  toolTip=f"Go forward one item",
+                                  shortcut=SC_FORWARD,
+                                  triggered=lambda: self.currentWidget().openNextItem(),
+                                  enabled=False)
 
     def buildHandlers(self):
         self.tabCloseRequested.connect(self.removeTab)
         self.currentChanged.connect(self._currentTabChanged)
         self.currItemChanged.connect(self._updateActions)
-        self.backAct.triggered.connect(lambda: self.currentWidget().openPrevItem())
-        self.forwardAct.triggered.connect(lambda: self.currentWidget().openNextItem())
-        self.nextTabAct.triggered.connect(self._switch2nextTab)
 
     def tabInserted(self, index):
         super(TabWidget, self).tabInserted(index)
@@ -57,14 +56,6 @@ class TabWidget(QTabWidget):
             self.currItemChanged.emit(self.widget(index).packItem)
         else:
             self.currItemChanged.emit(QModelIndex())
-
-    def _switch2nextTab(self):
-        nextIndex = self.currentIndex() + 1
-        nextIndexPossible = (self.count() <= nextIndex)
-        if nextIndexPossible:
-            self.setCurrentIndex(nextIndex)
-        else:
-            self.setCurrentIndex(0)
 
     def _updateActions(self):
         tab: Tab = self.currentWidget()

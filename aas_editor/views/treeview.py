@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QTreeView, QAction, QMenu, QApplication, QDialog
 
 from aas_editor.dialogs import AddObjDialog
 from aas_editor.models import DictItem
-from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, VALUE_COLUMN
+from aas_editor.settings import *
 from aas_editor.util import getDefaultVal, isIterable, getReqParams4init, delAASParents
 
 
@@ -27,7 +27,7 @@ class TreeView(QTreeView):
     def createActions(self):
         self.copyAct = QAction("Copy", self,
                                statusTip="Copy selected item",
-                               shortcut=QKeySequence.Copy,
+                               shortcut=SC_COPY,
                                shortcutContext=Qt.WidgetWithChildrenShortcut,
                                triggered=self._copyHandler,
                                enabled=True)
@@ -35,7 +35,7 @@ class TreeView(QTreeView):
 
         self.pasteAct = QAction("Paste", self,
                                 statusTip="Paste from clipboard",
-                                shortcut=QKeySequence.Paste,
+                                shortcut=SC_PASTE,
                                 shortcutContext=Qt.WidgetWithChildrenShortcut,
                                 triggered=self._pasteHandler,
                                 enabled=True)
@@ -43,7 +43,7 @@ class TreeView(QTreeView):
 
         self.cutAct = QAction("Cut", self,
                               statusTip="Cut selected item",
-                              shortcut=QKeySequence.Cut,
+                              shortcut=SC_CUT,
                               shortcutContext=Qt.WidgetWithChildrenShortcut,
                               triggered=self._cutHandler,
                               enabled=True)
@@ -51,7 +51,7 @@ class TreeView(QTreeView):
 
         self.addAct = QAction("&Add", self,
                               statusTip="Add item to selected",
-                              shortcut=QKeySequence.New,
+                              shortcut=SC_NEW,
                               shortcutContext=Qt.WidgetWithChildrenShortcut,
                               triggered=self._addHandler,
                               enabled=False)
@@ -59,7 +59,7 @@ class TreeView(QTreeView):
 
         self.delClearAct = QAction("Delete/clear", self,
                                    statusTip="Delete/clear selected item",
-                                   shortcut=QKeySequence.Delete,
+                                   shortcut=SC_DELETE,
                                    shortcutContext=Qt.WidgetWithChildrenShortcut,
                                    triggered=self._delClearHandler,
                                    enabled=True)
@@ -67,27 +67,45 @@ class TreeView(QTreeView):
 
         self.collapseAct = QAction("Collapse", self,
                                    statusTip="Collapse selected item",
+                                   shortcut=SC_COLLAPSE,
+                                   shortcutContext=Qt.WidgetWithChildrenShortcut,
                                    triggered=lambda: self.collapse(self.currentIndex()))
+        self.addAction(self.collapseAct)
 
         self.collapseRecAct = QAction("Collapse recursively", self,
+                                      shortcut=SC_COLLAPSE_RECURS,
+                                      shortcutContext=Qt.WidgetWithChildrenShortcut,
                                       statusTip="Collapse recursively selected item",
                                       triggered=lambda: self.collapse(self.currentIndex()))
+        self.addAction(self.collapseRecAct)
 
         self.collapseAllAct = QAction("Collapse all", self,
+                                      shortcut=SC_COLLAPSE_ALL,
+                                      shortcutContext=Qt.WidgetWithChildrenShortcut,
                                       statusTip="Collapse all items",
                                       triggered=self.collapseAll)
+        self.addAction(self.collapseAllAct)
 
         self.expandAct = QAction("Expand", self,
                                  statusTip="Expand selected item",
+                                 shortcut=SC_EXPAND,
+                                 shortcutContext=Qt.WidgetWithChildrenShortcut,
                                  triggered=lambda: self.expand(self.currentIndex()))
+        self.addAction(self.expandAct)
 
         self.expandRecAct = QAction("Expand recursively", self,
+                                    shortcut=SC_EXPAND_RECURS,
+                                    shortcutContext=Qt.WidgetWithChildrenShortcut,
                                     statusTip="Expand recursively selected item",
                                     triggered=lambda: self.expandRecursively(self.currentIndex()))
+        self.addAction(self.expandRecAct)
 
         self.expandAllAct = QAction("Expand all", self,
+                                    shortcut=SC_EXPAND_ALL,
+                                    shortcutContext=Qt.WidgetWithChildrenShortcut,
                                     statusTip="Expand all items",
                                     triggered=self.expandAll)
+        self.addAction(self.expandAllAct)
 
         self.openInCurrTabAct = QAction("Open in current ta&b", self,
                                         statusTip="Open selected item in current tab",

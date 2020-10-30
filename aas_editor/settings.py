@@ -1,5 +1,6 @@
 from enum import Enum
-
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QKeySequence
 from aas.model import AdministrativeInformation, Identifier, Submodel, AASReference, Asset, \
     SubmodelElement, AssetAdministrationShell, ConceptDescription, ConceptDictionary, \
     AbstractObjectStore
@@ -65,3 +66,26 @@ ATTRIBUTE_COLUMN = 0
 VALUE_COLUMN = 1
 
 NOT_GIVEN = "NotGivenValueAASEditor"
+
+
+
+# Shortcuts
+SC_COPY = QKeySequence.Copy
+SC_CUT = QKeySequence.Cut
+SC_PASTE = QKeySequence.Paste
+SC_DELETE = QKeySequence.Delete
+SC_NEW = QKeySequence.New
+
+SC_EXPAND = QKeySequence(Qt.CTRL + Qt.Key_Plus)
+SC_EXPAND_RECURS = QKeySequence(Qt.CTRL + Qt.ALT + Qt.Key_Plus)
+SC_EXPAND_ALL = QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_Plus)
+SC_COLLAPSE = QKeySequence(Qt.CTRL + Qt.Key_Minus)
+SC_COLLAPSE_RECURS = QKeySequence(Qt.CTRL + Qt.ALT + Qt.Key_Minus)
+SC_COLLAPSE_ALL = QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_Minus)
+
+SC_OPEN = QKeySequence(Qt.CTRL + Qt.Key_O)
+SC_BACK = QKeySequence.Back
+SC_FORWARD = QKeySequence.Forward
+
+SC_FOCUS2RIGTH_TREE = QKeySequence(Qt.CTRL + Qt.RightArrow)
+SC_FOCUS2LEFT_TREE = QKeySequence(Qt.CTRL + Qt.LeftArrow)

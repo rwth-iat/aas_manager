@@ -19,7 +19,7 @@ def main():
     # reader.read_into(obj_store, file_store)
 
     window = EditorApp()
-    window.packTreeViewModel.addItem(Package("/home/tehnar/Desktop/AAS_files/TestPackage.aasx"))
+    window.packTreeViewModel.addItem(Package("aas_files/TestPackage.aasx"))
     toggleTheme(PREFERED_THEME)
     # window.importTestPack(obj_store)
     window.show()
