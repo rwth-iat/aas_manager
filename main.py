@@ -15,7 +15,7 @@ def main():
     obj_store = create_full_example()
 
     window = EditorApp()
-    # window.packTreeViewModel.addItem(Package("aas_files/TestPackage.aasx"))
+    # window.packTreeModel.addItem(Package("aas_files/TestPackage.aasx"))
     toggleTheme(PREFERED_THEME)
     # window.importTestPack(obj_store)
     window.show()

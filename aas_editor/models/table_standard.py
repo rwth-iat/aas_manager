@@ -73,7 +73,7 @@ class StandardTable(QAbstractItemModel):
             return self._rootItem
         return index.internalPointer()
 
-    def iterItems(self, parent: QModelIndex = QModelIndex()):
+    def iterItems(self, parent: QModelIndex = QModelIndex()) -> QModelIndex:
         def recurse(parent: QModelIndex):
             for row in range(self.rowCount(parent)):
                 childIndex = self.index(row, 0, parent)
@@ -84,14 +84,17 @@ class StandardTable(QAbstractItemModel):
         yield from recurse(parent)
 
     # todo redefine to match()
-    def findItemByObj(self, obj):
+    def findItemByObj(self, obj) -> QModelIndex:
         for item in self.iterItems():
             print("Name:", item.data(NAME_ROLE))
             try:
+                if item.data(OBJECT_ROLE) is obj:
+                    return item
                 if item.data(OBJECT_ROLE) == obj:
                     return item
             except AttributeError:
                 continue
+        return QModelIndex()
 
     def addItem(self, obj: Union[Package, SubmodelElement, Iterable],
                 parent: QModelIndex = QModelIndex()):
@@ -109,7 +112,7 @@ class StandardTable(QAbstractItemModel):
             parentObj[obj.key] = obj.value
         elif isinstance(obj, Package):
             self.beginInsertRows(parent, self.rowCount(parent), self.rowCount(parent))
-            item = PackTreeViewItem(obj, objName=obj.name)
+            item = PackTreeViewItem(obj)
             item.setParent(self.objByIndex(QModelIndex()))
             self.endInsertRows()
             return True

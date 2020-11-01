@@ -52,11 +52,13 @@ class StandardItem(QObject):
 
     def setParent(self, a0: 'QObject') -> None:
         super().setParent(a0)
+        if a0 is None:
+            return
         if a0.data(PACKAGE_ROLE):
             try:
                 self.package = a0.data(PACKAGE_ROLE)
             except AttributeError:
-                pass
+                return
 
     @property
     def objectName(self):
@@ -64,6 +66,8 @@ class StandardItem(QObject):
             return self.objName
         elif hasattr(self.obj, "id_short") and self.obj.id_short:
             return self.obj.id_short
+        elif hasattr(self.obj, "name") and self.obj.name:
+            return self.obj.name
         else:
             return getTypeName(self.obj.__class__)
 

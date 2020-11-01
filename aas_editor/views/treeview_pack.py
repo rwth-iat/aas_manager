@@ -1,11 +1,15 @@
+from pathlib import Path
 from typing import Iterable
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import QModelIndex
+from PyQt5.QtGui import QIcon, QDropEvent
+from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog
 from aas.model import Submodel, AssetAdministrationShell, Asset, SubmodelElement
 
 from aas_editor.models import Package, ConceptDescription
-from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ATTRS
+from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ATTRS, SC_SAVE_ALL, SC_OPEN, \
+    PACKAGE_ROLE
 from aas_editor.util import isoftype
 from aas_editor.views.treeview import TreeView
 
@@ -14,10 +18,54 @@ class PackTreeView(TreeView):
     def __init__(self, parent=None):
         super(PackTreeView, self).__init__(parent)
         PackTreeView.__instance = self
+        self._upgradeActions()
         self._upgradeMenu()
+        self.setAcceptDrops(True)
+
+    # noinspection PyArgumentList
+    def _upgradeActions(self):
+        self.actionOpenPack = QAction(QIcon.fromTheme("document-open"), "&Open AAS file", self,
+                                      shortcut=SC_OPEN,
+                                      statusTip="Open AASX package",
+                                      triggered=self.openPack,
+                                      enabled=True)
+
+        self.actionSave = QAction(QIcon.fromTheme("document-save"), "Save", self,
+                                  statusTip="Save current file",
+                                  triggered=lambda: self.savePack(),
+                                  enabled=False)
+
+        self.actionSaveAs = QAction(QIcon.fromTheme("document-save-as"), "Save As...", self,
+                                    statusTip="Save current file as..",
+                                    triggered=lambda: self.savePackAs(),
+                                    enabled=False)
+
+        self.actionSaveAll = QAction("&Save All", self,
+                                     shortcut=SC_SAVE_ALL,
+                                     statusTip="Save all files",
+                                     triggered=self.saveAll,
+                                     enabled=True)
+
+        self.actionClose = QAction("Close AAS file", self,
+                                   statusTip="Close current file",
+                                   triggered=self.closeFile,
+                                   enabled=False)
+
+        self.actionCloseAll = QAction("Close all", self,
+                                      statusTip="Close all files",
+                                      triggered=self.closeAllFiles,
+                                      enabled=False)
 
     # noinspection PyUnresolvedReferences
     def _upgradeMenu(self):
+        self.attrsMenu.addSeparator()
+        self.attrsMenu.addAction(self.actionOpenPack)
+        self.attrsMenu.addAction(self.actionSave)
+        self.attrsMenu.addAction(self.actionSaveAs)
+        self.attrsMenu.addAction(self.actionSaveAll)
+        self.attrsMenu.addAction(self.actionClose)
+        self.attrsMenu.addAction(self.actionCloseAll)
+
         self.openInCurrTabAct.setEnabled(True)
         self.openInNewTabAct.setEnabled(True)
         self.openInBackgroundAct.setEnabled(True)
@@ -34,15 +82,19 @@ class PackTreeView(TreeView):
         self.selectionModel().currentChanged.connect(self._updateMenu)
 
     def _updateMenu(self, index: QModelIndex):
+        # update save and close actions
+        self.actionSave.setEnabled(self._isSaveOk())
+        self.actionSaveAs.setEnabled(self._isSaveOk())
+        self.actionSaveAll.setEnabled(self._isSaveAllOk())
+        self.actionClose.setEnabled(self._isCloseOk())
+        self.actionCloseAll.setEnabled(self._isCloseAllOk())
+
         # update add action
         obj = index.data(OBJECT_ROLE)
         name = index.data(NAME_ROLE)
 
         # update paste action
-        if self._isPasteOk(index):
-            self.pasteAct.setEnabled(True)
-        else:
-            self.pasteAct.setEnabled(False)
+        self.pasteAct.setEnabled(self._isPasteOk(index))
 
         self.addAct.setEnabled(True)
         if isinstance(obj, Package) or not index.isValid():
@@ -81,6 +133,20 @@ class PackTreeView(TreeView):
                 return True
         return False
 
+    def _isSaveOk(self):
+        pack = self.currentIndex().data(PACKAGE_ROLE)
+        return True if pack else False
+
+    def _isCloseOk(self):
+        pack = self.currentIndex().data(PACKAGE_ROLE)
+        return True if pack else False
+
+    def _isSaveAllOk(self):
+        return True if self.model().openedPacks() else False
+
+    def _isCloseAllOk(self):
+        return True if self.model().openedPacks() else False
+
     def _addHandler(self, objVal=None, parent: QModelIndex = None):
         parent = parent if parent else self.currentIndex()
         name = parent.data(NAME_ROLE)
@@ -108,3 +174,102 @@ class PackTreeView(TreeView):
             self.addItemWithDialog(objType=SubmodelElement, **kwargs)
         else:
             raise TypeError("Parent type is not extendable:", type(parent.data(OBJECT_ROLE)))
+
+    def openPack(self):
+        file = QFileDialog.getOpenFileName(self, "Open AAS file",
+                                           filter="AAS files (*.aasx *.xml *.json);;"
+                                                  "AASX (*.aasx);; "
+                                                  "XML (*.xml);;"
+                                                  "JSON (*.json);; All files (*.*)",
+                                           options=QFileDialog.DontResolveSymlinks |
+                                                   QFileDialog.DontUseNativeDialog)[0]
+        if file:
+            try:
+                pack = Package(file)
+            except (TypeError, ValueError) as e:
+                QMessageBox.critical(self, "Error",
+                                     f"Package {file} couldn't be opened: {e}")
+            else:
+                if Path(file).absolute() in self.model().openedFiles():
+                    QMessageBox.critical(self, "Error", f"Package {file} is already opened")
+                else:
+                    self.model().addItem(pack)
+
+    def savePack(self, pack: Package = None, file: str = None):
+        pack = self.currentIndex().data(PACKAGE_ROLE) if pack is None else pack
+        try:
+            file = pack.file if file is None else file
+            if file:
+                pack.write(file)
+            else:
+                raise ValueError("file name is not correct:", file)
+        except (TypeError, ValueError) as e:
+            QMessageBox.critical(self, "Error", f"Package couldn't be saved: {file}: {e}")
+        except AttributeError as e:
+            QMessageBox.critical(self, "Error", f"No chosen package to save: {e}")
+
+    def savePackAs(self, pack: Package = None):
+        pack = self.currentIndex().data(PACKAGE_ROLE) if pack is None else pack
+        try:
+            file = QFileDialog.getSaveFileName(self, 'Save AAS File', pack.file.as_posix(),
+                                               filter="AAS files (*.aasx *.xml *.json);;"
+                                                      "AASX (*.aasx);; "
+                                                      "XML (*.xml);;"
+                                                      "JSON (*.json);; All files (*.*)",
+                                               options=QFileDialog.DontResolveSymlinks |
+                                                       QFileDialog.DontUseNativeDialog
+                                               )[0]
+        except AttributeError as e:
+            QMessageBox.critical(self, "Error", f"No chosen package to save: {e}")
+        else:
+            self.savePack(pack, file)
+
+    def saveAll(self):
+        for pack in self.model().openedPacks():
+            self.savePack(pack)
+
+    def closeFile(self):
+        pack = self.currentIndex().data(PACKAGE_ROLE)
+        packItem = self.model().findItemByObj(pack)
+        if packItem.isValid():
+            try:
+                dialog = QMessageBox(QMessageBox.NoIcon, f"Close {pack}",
+                                     f"Do you want to save your changes in {pack} before closing?",
+                                     standardButtons=QMessageBox.Save |
+                                                     QMessageBox.Cancel |
+                                                     QMessageBox.Discard)
+                dialog.setDefaultButton=QMessageBox.Save
+                dialog.button(QMessageBox.Save).setText("&Save&Close")
+                res = dialog.exec()
+                if res == QMessageBox.Save:
+                    self.savePack()
+                    self.model().removeRow(packItem.row(), packItem.parent())
+                elif res == QMessageBox.Discard:
+                    self.model().removeRow(packItem.row(), packItem.parent())
+
+            except AttributeError as e:
+                QMessageBox.critical(self, "Error", f"No chosen package to close: {e}")
+        else:
+            QMessageBox.critical(self, "Not found error",
+                                 f"The file to close is not found: {pack}")
+
+    def closeAllFiles(self):
+        dialog = QMessageBox(QMessageBox.NoIcon, f"Close all AAS files",
+                             f"Do you want to save your changes before closing? ",
+                             standardButtons=QMessageBox.Save |
+                                             QMessageBox.Cancel |
+                                             QMessageBox.Discard)
+        dialog.setDefaultButton=QMessageBox.Save
+        dialog.button(QMessageBox.Save).setText("&Save&Close All")
+        res = dialog.exec()
+        if res == QMessageBox.Save:
+            for pack in self.model().openedPacks():
+                self.savePack(pack)
+                packItem = self.model().findItemByObj(pack)
+                self.model().removeRow(packItem.row(), packItem.parent())
+        elif res == QMessageBox.Discard:
+            for pack in self.model().openedPacks():
+                packItem = self.model().findItemByObj(pack)
+                self.model().removeRow(packItem.row(), packItem.parent())
+
+

@@ -1,7 +1,7 @@
 from PyQt5 import QtCore
-from PyQt5.QtCore import pyqtSignal, Qt, QModelIndex
+from PyQt5.QtCore import pyqtSignal, Qt, QModelIndex, QEvent
 from PyQt5.QtGui import QKeySequence, QMouseEvent, QKeyEvent, QClipboard
-from PyQt5.QtWidgets import QTreeView, QAction, QMenu, QApplication, QDialog
+from PyQt5.QtWidgets import QTreeView, QAction, QMenu, QApplication, QDialog, QAbstractItemView
 
 from aas_editor.dialogs import AddObjDialog
 from aas_editor.models import DictItem
@@ -19,12 +19,12 @@ class TreeView(QTreeView):
 
     def __init__(self, parent=None):
         super(TreeView, self).__init__(parent)
-        self.createActions()
-        self.createMenu()
+        self.initActions()
+        self.initMenu()
         self.customContextMenuRequested.connect(self.openMenu)
 
     # noinspection PyArgumentList
-    def createActions(self):
+    def initActions(self):
         self.copyAct = QAction("Copy", self,
                                statusTip="Copy selected item",
                                shortcut=SC_COPY,
@@ -119,7 +119,7 @@ class TreeView(QTreeView):
                                            statusTip="Open selected item in background tab",
                                            enabled=False)
 
-    def createMenu(self) -> None:
+    def initMenu(self) -> None:
         self.attrsMenu = QMenu(self)
         self.attrsMenu.addAction(self.cutAct)
         self.attrsMenu.addAction(self.copyAct)
@@ -150,23 +150,37 @@ class TreeView(QTreeView):
         else:
             super(TreeView, self).mousePressEvent(e)
 
+    def mouseDoubleClickEvent(self, e: QMouseEvent) -> None:
+        if e.button() == Qt.LeftButton:
+            self.handleEnterEvent()
+        else:
+            super(TreeView, self).mouseDoubleClickEvent(e)
+
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() in (Qt.Key_Return, Qt.Key_Enter):
-            index2edit = self.currentIndex().siblingAtColumn(VALUE_COLUMN)
-            if index2edit.flags() & Qt.ItemIsEditable:
-                if index2edit.data(OBJECT_ROLE) is None:
-                    self._editCreateHandler()
-                else:
-                    self.edit(index2edit)
+            if self.state() == QAbstractItemView.EditingState:
+                # if we are editing, inform base
+                super(TreeView, self).keyPressEvent(event)
             else:
-                index2fold = self.currentIndex().siblingAtColumn(0)
-                if self.isExpanded(index2fold):
-                    self.collapse(index2fold)
-                else:
-                    self.expand(index2fold)
+                self.handleEnterEvent()
         else:
             # any other key was pressed, inform base
             super(TreeView, self).keyPressEvent(event)
+
+    def handleEnterEvent(self):
+        index2edit = self.currentIndex().siblingAtColumn(VALUE_COLUMN)
+        # if we're not editing, check if editable and start editing or expand/collapse
+        if index2edit.flags() & Qt.ItemIsEditable:
+            if not index2edit.data(OBJECT_ROLE):
+                self._editCreateHandler()
+            else:
+                self.edit(index2edit)
+        else:
+            index2fold = self.currentIndex().siblingAtColumn(0)
+            if self.isExpanded(index2fold):
+                self.collapse(index2fold)
+            else:
+                self.expand(index2fold)
 
     def collapse(self, index: QtCore.QModelIndex) -> None:
         newIndex = index.siblingAtColumn(0)

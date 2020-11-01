@@ -26,9 +26,9 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.initMenu()
         self.initToolbar()
 
-        self.packTreeViewModel = PacksTable()
+        self.packTreeModel = PacksTable()
         self.packTreeView.setHeaderHidden(True)
-        self.packTreeView.setModel(self.packTreeViewModel)
+        self.packTreeView.setModel(self.packTreeModel)
 
         self.tabWidget.addTab(Tab(parent=self.tabWidget), "Welcome")
 
@@ -36,27 +36,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
     # noinspection PyArgumentList
     def initActions(self):
-        self.actionOpenPack = QAction("&Open...", self,
-                                      shortcut=SC_OPEN,
-                                      statusTip="Open AASX package",
-                                      triggered=self.openPack,
-                                      enabled=True)
-
-        self.actionSave = QAction("Save", self,
-                                  statusTip="Save current file",
-                                  triggered=lambda: self.savePack(),
-                                  enabled=True)
-
-        self.actionSaveAs = QAction("Save As...", self,
-                                    triggered=lambda: self.savePackAs(),
-                                    enabled=True)
-
-        self.actionSaveAll = QAction("&Save All", self,
-                                     shortcut=SC_SAVE_ALL,
-                                     statusTip="Save all files",
-                                     triggered=self.saveAll,
-                                     enabled=True)
-
         self.exitAct = QAction("E&xit", self,
                                statusTip="Exit the application",
                                triggered=self.close)
@@ -86,10 +65,12 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.setMenuBar(self.menubar)
 
         self.menuFile = QMenu("&File", self.menubar)
-        self.menuFile.addAction(self.actionOpenPack)
-        self.menuFile.addAction(self.actionSave)
-        self.menuFile.addAction(self.actionSaveAs)
-        self.menuFile.addAction(self.actionSaveAll)
+        self.menuFile.addAction(self.packTreeView.actionOpenPack)
+        self.menuFile.addAction(self.packTreeView.actionSave)
+        self.menuFile.addAction(self.packTreeView.actionSaveAs)
+        self.menuFile.addAction(self.packTreeView.actionSaveAll)
+        self.menuFile.addAction(self.packTreeView.actionClose)
+        self.menuFile.addAction(self.packTreeView.actionCloseAll)
         self.menuFile.addAction(self.exitAct)
 
         self.menuView = QMenu("&View", self.menubar)
@@ -108,6 +89,9 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menubar.addAction(self.menuNavigate.menuAction())
 
     def initToolbar(self):
+        self.toolBar.addAction(self.packTreeView.actionSave)
+        self.toolBar.addAction(self.packTreeView.actionOpenPack)
+        self.toolBar.addSeparator()
         self.toolBar.addAction(self.tabWidget.actionBack)
         self.toolBar.addAction(self.tabWidget.actionForward)
 
@@ -144,59 +128,5 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             firstItem = tab.attrsTreeView.model().index(0, 0, QModelIndex())
             tab.attrsTreeView.setCurrentIndex(firstItem)
         self.tabWidget.currentWidget().attrsTreeView.setFocus()
-
-    def openPack(self):
-        file = QFileDialog.getOpenFileName(self, "Open AAS file",
-                                           filter="AAS files (*.aasx *.xml *.json);;"
-                                                  "AASX (*.aasx);; "
-                                                  "XML (*.xml);;"
-                                                  "JSON (*.json);; All files (*.*)",
-                                           options=QFileDialog.DontResolveSymlinks |
-                                                   QFileDialog.DontUseNativeDialog)[0]
-        if file:
-            try:
-                pack = Package(file)
-            except (TypeError, ValueError) as e:
-                QMessageBox.critical(self, "Error",
-                                     f"Package {file} couldn't be opened: {e}")
-            else:
-                if Path(file).absolute() in self.packTreeViewModel.openedFiles():
-                    QMessageBox.critical(self, "Error", f"Package {file} is already opened")
-                else:
-                    self.packTreeViewModel.addItem(pack)
-
-    def savePack(self, pack: Package = None, file: str = None):
-        pack = self.packTreeView.currentIndex().data(PACKAGE_ROLE) if pack is None else pack
-        try:
-            file = pack.file if file is None else file
-            if file:
-                pack.write(file)
-                pack.file = file
-            else:
-                raise ValueError("file name is not correct:", file)
-        except (TypeError, ValueError) as e:
-            QMessageBox.critical(self, "Error", f"Package couldn't be saved: {file}: {e}")
-        except AttributeError as e:
-            QMessageBox.critical(self, "Error", f"No chosen package to save: {e}")
-
-    def savePackAs(self, pack: Package = None):
-        pack = self.packTreeView.currentIndex().data(PACKAGE_ROLE) if pack is None else pack
-        try:
-            file = QFileDialog.getSaveFileName(self, 'Save AAS File', pack.file.as_posix(),
-                                               filter="AAS files (*.aasx *.xml *.json);;"
-                                                      "AASX (*.aasx);; "
-                                                      "XML (*.xml);;"
-                                                      "JSON (*.json);; All files (*.*)",
-                                               options=QFileDialog.DontResolveSymlinks |
-                                                       QFileDialog.DontUseNativeDialog
-                                               )[0]
-        except AttributeError as e:
-            QMessageBox.critical(self, "Error", f"No chosen package to save: {e}")
-        else:
-            self.savePack(pack, file)
-
-    def saveAll(self):
-        for pack in self.packTreeViewModel.openedPacks():
-            self.savePack(pack)
 
 # ToDo logs insteads of prints

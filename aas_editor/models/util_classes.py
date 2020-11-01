@@ -14,11 +14,22 @@ from aas_editor.settings import AAS_CREATOR
 
 class Package:
     def __init__(self, file: str):
-        self.file = Path(file).absolute()
+        self.file = file
         self.objStore = DictObjectStore()
         self.fileStore = DictSupplementaryFileContainer()
         self._read()
         self._changed = False
+
+    @property
+    def file(self):
+        return self._file
+
+    @file.setter
+    def file(self, file):
+        self._file = Path(file).absolute()
+
+    def __repr__(self):
+        return self.file.as_posix()
 
     def _read(self):
         fileType = self.file.suffix.lower().strip()
@@ -34,21 +45,22 @@ class Package:
             raise TypeError("File type is not supportable:", self.file.suffix)
 
     def write(self, file=None):
-        if file is None:
-            file = self.file
-            fileType = self.file.suffix.lower().strip()
-            if fileType == ".xml":
-                aasx.write_aas_xml_file(file.as_posix(), self.objStore)
-            elif fileType == ".json":
-                aasx.write_aas_json_file(file.as_posix(), self.objStore)
-            elif fileType == ".aasx":
-                with aasx.AASXWriter(file.as_posix()) as writer:
-                    writer.write_aas(self.objStore, self.fileStore) #FIXME
-                    # Create OPC/AASX core properties
-                    cp = pyecma376_2.OPCCoreProperties()
-                    cp.created = datetime.now()
-                    cp.creator = AAS_CREATOR
-                    writer.write_core_properties(cp)
+        if file:
+            self.file = file
+
+        fileType = self.file.suffix.lower().strip()
+        if fileType == ".xml":
+            aasx.write_aas_xml_file(self.file.as_posix(), self.objStore)
+        elif fileType == ".json":
+            aasx.write_aas_json_file(self.file.as_posix(), self.objStore)
+        elif fileType == ".aasx":
+            with aasx.AASXWriter(self.file.as_posix()) as writer:
+                writer.write_aas(self.objStore, self.fileStore) #FIXME
+                # Create OPC/AASX core properties
+                cp = pyecma376_2.OPCCoreProperties()
+                cp.created = datetime.now()
+                cp.creator = AAS_CREATOR
+                writer.write_core_properties(cp)
 
     @property
     def name(self):
