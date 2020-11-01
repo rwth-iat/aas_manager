@@ -56,7 +56,8 @@ class StandardTable(QAbstractItemModel):
             return Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
         # FIXME check if other types are also editable
-        if isinstance(index.data(OBJECT_ROLE), (Enum, bool, int, float, str, bytes, type(None))):
+        if isinstance(index.data(OBJECT_ROLE),
+                      (Enum, bool, int, float, str, bytes, type(None), dict, list, AbstractSet)):
             return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
         return Qt.ItemIsEnabled | Qt.ItemIsSelectable
