@@ -1,4 +1,4 @@
-from PyQt5.QtCore import pyqtSignal, QModelIndex, Qt
+from PyQt5.QtCore import pyqtSignal, QModelIndex, Qt, QPersistentModelIndex
 from PyQt5.QtGui import QIcon, QKeySequence
 from PyQt5.QtWidgets import QWidget, QLineEdit, QLabel, QMessageBox, QGridLayout, QVBoxLayout, \
     QTabWidget, QAction
@@ -47,13 +47,14 @@ class TabWidget(QTabWidget):
         tab.attrsTreeView.openInNewTabClicked.connect(self.openItemInNewTab)
         tab.attrsTreeView.openInBackgroundTabClicked.connect(self.openItemInBackgroundTab)
 
-    def _handleCurrTabItemChanged(self, tab, packItem):
+    def _handleCurrTabItemChanged(self, tab: 'Tab', packItem: QModelIndex):
         if tab == self.currentWidget():
             self.currItemChanged.emit(packItem)
 
-    def _currentTabChanged(self, index):
+    def _currentTabChanged(self, index: int):
         if index >= 0:
-            self.currItemChanged.emit(self.widget(index).packItem)
+            packItem = QModelIndex(self.widget(index).packItem)
+            self.currItemChanged.emit(packItem)
         else:
             self.currItemChanged.emit(QModelIndex())
 
@@ -115,7 +116,7 @@ class Tab(QWidget):
 
         self.attrsTreeView = AttrsTreeView(self)
 
-        self.packItem: QModelIndex = QModelIndex()
+        self.packItem = QPersistentModelIndex(QModelIndex())
         self.prevItems = []
         self.nextItems = []
         self.openItem(packItem)
@@ -126,8 +127,8 @@ class Tab(QWidget):
     def objectName(self) -> str:
         return self.packItem.data(NAME_ROLE)
 
-    def openItem(self, packItem):
-        if not packItem == self.packItem:
+    def openItem(self, packItem: QModelIndex):
+        if not packItem == QModelIndex(self.packItem):
             self.nextItems.clear()
             if self.packItem.isValid():
                 self.prevItems.append(self.packItem)
@@ -137,22 +138,22 @@ class Tab(QWidget):
         if self.prevItems:
             prevItem = self.prevItems.pop()
             self.nextItems.append(self.packItem)
-            self._openItem(prevItem)
+            self._openItem(QModelIndex(prevItem))
 
     def openNextItem(self):
         if self.nextItems:
             nextItem = self.nextItems.pop()
             self.prevItems.append(self.packItem)
-            self._openItem(nextItem)
+            self._openItem(QModelIndex(nextItem))
 
-    def _openItem(self, packItem):
-        self.packItem = packItem
+    def _openItem(self, packItem: QModelIndex):
+        self.packItem = QPersistentModelIndex(packItem)
         self.pathLine.setText(getTreeItemPath(packItem))
         self.descrLabel.setText("")
         self.attrsTreeView.newPackItem(packItem)
         self.attrsTreeView.selectionModel().currentChanged.connect(self.showDetailInfoItemDoc)
         self.objectNameChanged.emit(self.objectName)
-        self.currItemChanged.emit(self.packItem)
+        self.currItemChanged.emit(QModelIndex(self.packItem))
 
     def showDetailInfoItemDoc(self, detailInfoItem: QModelIndex):
         self.descrLabel.setText(detailInfoItem.data(Qt.WhatsThisRole))
