@@ -1,15 +1,16 @@
 from typing import Any
 
-from PyQt5.QtCore import pyqtSignal, QModelIndex, QVariant, Qt
+from PyQt5.QtCore import pyqtSignal, QModelIndex, QVariant, Qt, QPersistentModelIndex
 from PyQt5.QtGui import QColor, QFont
 
 from aas_editor.models import Package, DetailedInfoItem, StandardTable
 from aas_editor.settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, COLUMNS_IN_DETAILED_INFO, \
-    ATTRIBUTE_COLUMN, VALUE_COLUMN
+    ATTRIBUTE_COLUMN, VALUE_COLUMN, PACK_ITEM_ROLE
 
 
 class DetailedInfoTable(StandardTable):
     def __init__(self, packItem: QModelIndex):
+        self.packItem = QPersistentModelIndex(packItem)
         self.mainObj = packItem.data(OBJECT_ROLE)
         self.package = packItem.data(PACKAGE_ROLE)
         root = DetailedInfoItem(self.mainObj, packItem.data(NAME_ROLE), package=self.package)
@@ -22,6 +23,8 @@ class DetailedInfoTable(StandardTable):
             return self._getFgColor(index)
         if role == Qt.FontRole:
             return self._getFont(index)
+        if role == PACK_ITEM_ROLE:
+            return QModelIndex(self.packItem)
         item = self.objByIndex(index)
         return item.data(role, index.column())
 

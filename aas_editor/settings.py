@@ -62,6 +62,7 @@ DEFAULT_ATTRS_TO_HIDE = {"parent": None}
 PACKAGE_ROLE = 1001
 NAME_ROLE = 1002
 OBJECT_ROLE = 1003
+PACK_ITEM_ROLE = 1004
 TYPES_NOT_TO_POPULATE = (AbstractObjectStore, str, int, float, bool, Enum,)  # '+ TYPES_IN_ONE_ROW
 COLUMNS_IN_DETAILED_INFO = ("attribute", "value")
 ATTRIBUTE_COLUMN = 0
