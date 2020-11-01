@@ -12,8 +12,6 @@ from aas_editor.util import toggleTheme
 def main():
     app = QtWidgets.QApplication(sys.argv)
 
-    obj_store = create_full_example()
-
     window = EditorApp()
     # window.packTreeModel.addItem(Package("aas_files/TestPackage.aasx"))
     toggleTheme(PREFERED_THEME)

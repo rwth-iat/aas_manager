@@ -25,7 +25,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.initActions()
         self.initMenu()
         self.initToolbar()
-        self.setAcceptDrops(True)
 
         self.packTreeModel = PacksTable()
         self.packTreeView.setHeaderHidden(True)

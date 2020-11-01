@@ -3,7 +3,7 @@ from typing import Iterable
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import QModelIndex
-from PyQt5.QtGui import QIcon, QDropEvent
+from PyQt5.QtGui import QIcon, QDropEvent, QDragEnterEvent
 from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog
 from aas.model import Submodel, AssetAdministrationShell, Asset, SubmodelElement
 
@@ -292,23 +292,15 @@ class PackTreeView(TreeView):
                 packItem = self.model().findItemByObj(pack)
                 self.model().removeRow(packItem.row(), packItem.parent())
 
-    def dragEnterEvent(self, event):
+    def dragEnterEvent(self, event: QDragEnterEvent):
         if event.mimeData().hasUrls:
             event.accept()
-        else:
-            event.ignore()
 
     def dragMoveEvent(self, event):
         if event.mimeData().hasUrls:
             event.accept()
-        else:
-            event.ignore()
 
     def dropEvent(self, e: QDropEvent) -> None:
-        if e.mimeData().hasUrls:
-            e.accept()
-            for url in e.mimeData().urls():
-                file = str(url.toLocalFile())
-                self.openPack(file)
-        else:
-            e.ignore()
+        for url in e.mimeData().urls():
+            file = str(url.toLocalFile())
+            self.openPack(file)
