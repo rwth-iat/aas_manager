@@ -1,4 +1,6 @@
+in addItem() don't use update() instead use insertRow()
 Add typehint to model item
+Red color if value doesn't fit to TypeHint
 Add properties isNew, isEdited to mark new or edited items (green, blue)
 Replace comboboxes with boxes that allow typing
 

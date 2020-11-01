@@ -8,10 +8,12 @@ from PyQt5.QtCore import Qt
 
 
 class StandardItem(QObject):
-    def __init__(self, obj, name=None, parent=None):
+    def __init__(self, obj, name=None, parent=None, new=True):
         super().__init__(parent)
         self.obj = obj
         self.objName = name
+        self.new = new
+        self.changed = False
 
     @property
     def obj(self):

@@ -6,8 +6,8 @@ from aas_editor.util import getAttrs4detailInfo, getTypeName, isIterable
 
 
 class DetailedInfoItem(StandardItem):
-    def __init__(self, obj, name, parent=None, package: Package = None):
-        super().__init__(obj, name, parent)
+    def __init__(self, obj, name, parent=None, package: Package = None, new=True):
+        super().__init__(obj, name, parent, new=new)
         self.package = package
         self.populate()
 
@@ -17,7 +17,8 @@ class DetailedInfoItem(StandardItem):
 
         kwargs = {
             "parent": self,
-            "package": self.package
+            "package": self.package,
+            "new": self.new,
         }
 
         if isinstance(self.obj, dict):

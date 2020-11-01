@@ -13,7 +13,8 @@ class DetailedInfoTable(StandardTable):
         self.packItem = QPersistentModelIndex(packItem)
         self.mainObj = packItem.data(OBJECT_ROLE)
         self.package = packItem.data(PACKAGE_ROLE)
-        root = DetailedInfoItem(self.mainObj, packItem.data(NAME_ROLE), package=self.package)
+        root = DetailedInfoItem(self.mainObj, packItem.data(NAME_ROLE),
+                                package=self.package, new=False)
         super(DetailedInfoTable, self).__init__(COLUMNS_IN_DETAILED_INFO, root)
 
     def data(self, index: QModelIndex, role: int = ...) -> Any:
@@ -47,6 +48,15 @@ class DetailedInfoTable(StandardTable):
         if index.column() == VALUE_COLUMN:
             if self.objByIndex(index).isLink:
                 return QColor(26, 13, 171)
+        elif index.column() == ATTRIBUTE_COLUMN:
+            if self.objByIndex(index).new:
+                color = QColor("green")
+                return color
+            elif self.objByIndex(index).changed:
+                color = QColor(26, 13, 171)  # blue
+                return color
+            return QVariant()
+
         return QVariant()
 
     def _getFont(self, index: QModelIndex):

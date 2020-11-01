@@ -1,11 +1,11 @@
 from enum import Enum
 from typing import Any, Iterable, Union, AbstractSet
 
-from PyQt5.QtCore import QAbstractItemModel, QVariant, QModelIndex, Qt, pyqtSignal
+from PyQt5.QtCore import QAbstractItemModel, QVariant, QModelIndex, Qt, pyqtSignal, QItemSelection
 
 from aas_editor.models import Package, DetailedInfoItem, StandardItem, PackTreeViewItem
 from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, VALUE_COLUMN, NOT_GIVEN, \
-    PACKAGE_ROLE
+    PACKAGE_ROLE, PACK_ITEM_ROLE, PACKAGE_ATTRS
 
 from aas.model import Submodel, SubmodelElement
 
@@ -15,13 +15,9 @@ class StandardTable(QAbstractItemModel):
 
     def __init__(self, columns=("Item",), rootItem: StandardItem = None):
         super(StandardTable, self).__init__()
-        self._rootItem = rootItem if rootItem else DetailedInfoItem(None, "")
+        self._rootItem = rootItem if rootItem else DetailedInfoItem(None, "") # FIXME
         self._columns = columns
-
-    def data(self, index: QModelIndex, role: int = ...) -> Any:
-        if not index.isValid():
-            return QVariant()
-        return self.objByIndex(index).data(role)
+        self.dataChanged.connect(self.setChanged)
 
     def index(self, row: int, column: int = 0, parent: QModelIndex = QModelIndex()) -> QModelIndex:
         if not self.hasIndex(row, column, parent):
@@ -96,7 +92,7 @@ class StandardTable(QAbstractItemModel):
                 continue
         return QModelIndex()
 
-    def addItem(self, obj: Union[Package, SubmodelElement, Iterable],
+    def addItem(self, obj: Union[Package, SubmodelElement, Iterable],  # FIXME don't use update() instead use insertRow() and return index
                 parent: QModelIndex = QModelIndex()):
         if isinstance(parent.data(OBJECT_ROLE), Submodel):
             # TODO change if they make Submodel iterable
@@ -110,9 +106,11 @@ class StandardTable(QAbstractItemModel):
             parentObj.append(obj)
         elif isinstance(parentObj, dict):
             parentObj[obj.key] = obj.value
+        elif parent.data(NAME_ROLE) in PACKAGE_ATTRS:
+            parent.data(PACKAGE_ROLE).add(obj)
         elif isinstance(obj, Package):
             self.beginInsertRows(parent, self.rowCount(parent), self.rowCount(parent))
-            item = PackTreeViewItem(obj)
+            item = PackTreeViewItem(obj, new=False)
             item.setParent(self.objByIndex(QModelIndex()))
             self.endInsertRows()
             return True
@@ -158,21 +156,31 @@ class StandardTable(QAbstractItemModel):
             else:
                 setattr(item.parentObj, item.objName, value)
                 item.obj = getattr(item.parentObj, item.objName)
-            if item.obj == value:
-                item.populate()
-                self.dataChanged.emit(index,
-                                      index.child(self.rowCount(index), self.columnCount(index)))
-                return True
-            else:
-                # noinspection PyUnresolvedReferences
-                self.valueChangeFailed.emit(
-                    f"{self.objByIndex(index).objectName} could not be changed to {value}")
+            self.setChanged(index)
+            item.populate()
+            self.dataChanged.emit(index,
+                                  index.child(self.rowCount(index), self.columnCount(index)))
+            return True
         except (ValueError, AttributeError) as e:
             self.dataChanged.emit(index, index)
             # noinspection PyUnresolvedReferences
             self.valueChangeFailed.emit(
                 f"Error occurred while setting {self.objByIndex(index).objName}: {e}")
         return False
+
+    def setChanged(self, topLeft: QModelIndex, bottomRight: QModelIndex = None):
+        """Set the item and all parents as changed"""
+        bottomRight = topLeft if bottomRight is None else bottomRight
+        if topLeft.isValid() and bottomRight.isValid():
+            selection = QItemSelection(topLeft, bottomRight)
+            for index in selection.indexes():
+                self.objByIndex(index).changed = True
+                if index.parent().isValid():
+                    self.setChanged(index.parent())
+                else:
+                    packItem: QModelIndex = index.data(PACK_ITEM_ROLE)
+                    if packItem and packItem.isValid():
+                        packItem.model().dataChanged.emit(packItem, packItem)
 
     def removeRows(self, row: int, count: int, parent: QModelIndex = ...) -> bool:
         parentItem = self.objByIndex(parent)
@@ -183,8 +191,7 @@ class StandardTable(QAbstractItemModel):
             child.setParent(None)
             # child.deleteLater()
         self.endRemoveRows()
-        self.dataChanged.emit(parent,
-                              parent.child(self.rowCount(parent), self.columnCount(parent)))
+        self.dataChanged.emit(parent, parent)
         return True
 
     def clearRows(self, row: int, count: int,
@@ -202,10 +209,16 @@ class StandardTable(QAbstractItemModel):
             child = parentItem.children()[n]
             if isinstance(parentObj, list):
                 parentItem.obj.pop[n]
+                self.removeRows(row, count, parent)
+                return True
             elif isinstance(parentObj, dict):
                 parentObj.pop(child.objName)
+                self.removeRows(row, count, parent)
+                return True
             elif isinstance(parentObj, AbstractSet):
                 parentObj.discard(child.obj)
+                self.removeRows(row, count, parent)
+                return True
             else:
                 if not defaultVal == NOT_GIVEN:
                     self.setData(self.index(n, 0, parent), defaultVal, Qt.EditRole)
@@ -214,9 +227,6 @@ class StandardTable(QAbstractItemModel):
                     self.valueChangeFailed.emit(
                         f"{child.objectName} could not be deleted or set to default")
                     return False
-
-        self.removeRows(row, count, parent)
-        return True
 
     def clearRow(self, row: int, parent: QModelIndex = ..., defaultVal="Not given") -> bool:
         """Delete row if it is child of Iterable else set to Default"""
