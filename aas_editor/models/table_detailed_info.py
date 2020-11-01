@@ -53,7 +53,7 @@ class DetailedInfoTable(StandardTable):
                 color = QColor("green")
                 return color
             elif self.objByIndex(index).changed:
-                color = QColor(26, 13, 171)  # blue
+                color = QColor(83, 148, 236, 255)  # blue
                 return color
             return QVariant()
 
