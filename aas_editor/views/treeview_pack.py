@@ -242,7 +242,18 @@ class PackTreeView(TreeView):
         except AttributeError as e:
             QMessageBox.critical(self, "Error", f"No chosen package to save: {e}")
         else:
-            self.savePack(pack, file)
+            if Path(file).exists():
+                dialog = QMessageBox(QMessageBox.NoIcon, f"File already exists",
+                                     f"A file with the same name already exists. "
+                                     f"Do you want to replace it?",
+                                     standardButtons=QMessageBox.Save | QMessageBox.Cancel)
+                dialog.setDefaultButton=QMessageBox.Save
+                dialog.button(QMessageBox.Save).setText("&Replace")
+                res = dialog.exec()
+                if res == QMessageBox.Save:
+                    self.savePack(pack, file)
+            else:
+                self.savePack(pack, file)
 
     def saveAllWithDialog(self):
         for pack in self.model().openedPacks():
