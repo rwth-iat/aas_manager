@@ -10,8 +10,6 @@ cancel last action
 choose from for references
 add add/create-button to toolbar
 
-start working with files
-open/save/save as.. packages
 drag&drop features
 
 search funcs
@@ -25,6 +23,8 @@ open recent
 integrate validator
 
 Done:
+start working with files
+open/save/save as.. packages
 support Namespaceset
 cut/copy
 update aas package from git

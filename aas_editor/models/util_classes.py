@@ -13,11 +13,12 @@ from aas_editor.settings import AAS_CREATOR
 
 
 class Package:
-    def __init__(self, file: str):
-        self.file = file
+    def __init__(self, file: str = ""):
         self.objStore = DictObjectStore()
         self.fileStore = DictSupplementaryFileContainer()
-        self._read()
+        self.file = file
+        if file:
+            self._read()
         self._changed = False
 
     @property
@@ -42,7 +43,7 @@ class Package:
             reader = aasx.AASXReader(self.file.as_posix())
             reader.read_into(self.objStore, self.fileStore)
         else:
-            raise TypeError("File type is not supportable:", self.file.suffix)
+            raise TypeError("Wrong file type:", self.file.suffix)
 
     def write(self, file=None):
         if file:
@@ -61,6 +62,8 @@ class Package:
                 cp.created = datetime.now()
                 cp.creator = AAS_CREATOR
                 writer.write_core_properties(cp)
+        else:
+            raise TypeError("Wrong file type:", self.file.suffix)
 
     @property
     def name(self):

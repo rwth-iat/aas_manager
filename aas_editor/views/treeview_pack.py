@@ -24,47 +24,53 @@ class PackTreeView(TreeView):
 
     # noinspection PyArgumentList
     def _upgradeActions(self):
-        self.actionOpenPack = QAction(QIcon.fromTheme("document-open"), "&Open AAS file", self,
-                                      shortcut=SC_OPEN,
-                                      statusTip="Open AASX package",
-                                      triggered=self.openPack,
-                                      enabled=True)
+        self.newPackAct = QAction("&New AAS file", self,
+                                  shortcut=SC_OPEN,
+                                  statusTip="Create new AAS file",
+                                  triggered=self.newPackWithDialog,
+                                  enabled=True)
 
-        self.actionSave = QAction(QIcon.fromTheme("document-save"), "Save", self,
-                                  statusTip="Save current file",
-                                  triggered=lambda: self.savePack(),
-                                  enabled=False)
+        self.openPackAct = QAction(QIcon.fromTheme("document-open"), "&Open AAS file", self,
+                                   shortcut=SC_OPEN,
+                                   statusTip="Open AAS file",
+                                   triggered=self.openPackWithDialog,
+                                   enabled=True)
 
-        self.actionSaveAs = QAction(QIcon.fromTheme("document-save-as"), "Save As...", self,
-                                    statusTip="Save current file as..",
-                                    triggered=lambda: self.savePackAs(),
-                                    enabled=False)
+        self.saveAct = QAction(QIcon.fromTheme("document-save"), "Save", self,
+                               statusTip="Save current file",
+                               triggered=lambda: self.savePack(),
+                               enabled=False)
 
-        self.actionSaveAll = QAction("&Save All", self,
-                                     shortcut=SC_SAVE_ALL,
-                                     statusTip="Save all files",
-                                     triggered=self.saveAll,
-                                     enabled=True)
+        self.saveAsAct = QAction(QIcon.fromTheme("document-save-as"), "Save As...", self,
+                                 statusTip="Save current file as..",
+                                 triggered=lambda: self.savePackAsWithDialog(),
+                                 enabled=False)
 
-        self.actionClose = QAction("Close AAS file", self,
-                                   statusTip="Close current file",
-                                   triggered=self.closeFile,
+        self.saveAllAct = QAction("&Save All", self,
+                                  shortcut=SC_SAVE_ALL,
+                                  statusTip="Save all files",
+                                  triggered=self.saveAllWithDialog,
+                                  enabled=True)
+
+        self.closeAct = QAction("Close AAS file", self,
+                                statusTip="Close current file",
+                                triggered=self.closeFileWithDialog,
+                                enabled=False)
+
+        self.closeAllAct = QAction("Close all", self,
+                                   statusTip="Close all files",
+                                   triggered=self.closeAllFilesWithDialog,
                                    enabled=False)
-
-        self.actionCloseAll = QAction("Close all", self,
-                                      statusTip="Close all files",
-                                      triggered=self.closeAllFiles,
-                                      enabled=False)
 
     # noinspection PyUnresolvedReferences
     def _upgradeMenu(self):
         self.attrsMenu.addSeparator()
-        self.attrsMenu.addAction(self.actionOpenPack)
-        self.attrsMenu.addAction(self.actionSave)
-        self.attrsMenu.addAction(self.actionSaveAs)
-        self.attrsMenu.addAction(self.actionSaveAll)
-        self.attrsMenu.addAction(self.actionClose)
-        self.attrsMenu.addAction(self.actionCloseAll)
+        self.attrsMenu.addAction(self.openPackAct)
+        self.attrsMenu.addAction(self.saveAct)
+        self.attrsMenu.addAction(self.saveAsAct)
+        self.attrsMenu.addAction(self.saveAllAct)
+        self.attrsMenu.addAction(self.closeAct)
+        self.attrsMenu.addAction(self.closeAllAct)
 
         self.openInCurrTabAct.setEnabled(True)
         self.openInNewTabAct.setEnabled(True)
@@ -83,11 +89,11 @@ class PackTreeView(TreeView):
 
     def _updateMenu(self, index: QModelIndex):
         # update save and close actions
-        self.actionSave.setEnabled(self._isSaveOk())
-        self.actionSaveAs.setEnabled(self._isSaveOk())
-        self.actionSaveAll.setEnabled(self._isSaveAllOk())
-        self.actionClose.setEnabled(self._isCloseOk())
-        self.actionCloseAll.setEnabled(self._isCloseAllOk())
+        self.saveAct.setEnabled(self._isSaveOk())
+        self.saveAsAct.setEnabled(self._isSaveOk())
+        self.saveAllAct.setEnabled(self._isSaveAllOk())
+        self.closeAct.setEnabled(self._isCloseOk())
+        self.closeAllAct.setEnabled(self._isCloseAllOk())
 
         # update add action
         obj = index.data(OBJECT_ROLE)
@@ -160,8 +166,7 @@ class PackTreeView(TreeView):
                       "rmDefParams": True}
 
         if isinstance(parent.data(OBJECT_ROLE), Package) or not parent.isValid():
-            kwargs["parent"] = QModelIndex()
-            self.addItemWithDialog(objType=Package, **kwargs)
+            self.newPackWithDialog()
         elif name == "shells":
             self.addItemWithDialog(objType=AssetAdministrationShell, **kwargs)
         elif name == "assets":
@@ -175,7 +180,24 @@ class PackTreeView(TreeView):
         else:
             raise TypeError("Parent type is not extendable:", type(parent.data(OBJECT_ROLE)))
 
-    def openPack(self):
+    def newPackWithDialog(self):
+        try:
+            file = QFileDialog.getSaveFileName(self, 'Create new AAS File',
+                                               filter="AAS files (*.aasx *.xml *.json);;"
+                                                      "AASX (*.aasx);; "
+                                                      "XML (*.xml);;"
+                                                      "JSON (*.json);; All files (*.*)",
+                                               options=QFileDialog.DontResolveSymlinks |
+                                                       QFileDialog.DontUseNativeDialog
+                                               )[0]
+        except AttributeError as e:
+            QMessageBox.critical(self, "Error", f"File name must contain min. 1 symbol")
+        else:
+            pack = Package()
+            self.savePack(pack, file)
+            self.model().addItem(pack, parent=QModelIndex())
+
+    def openPackWithDialog(self):
         file = QFileDialog.getOpenFileName(self, "Open AAS file",
                                            filter="AAS files (*.aasx *.xml *.json);;"
                                                   "AASX (*.aasx);; "
@@ -184,31 +206,29 @@ class PackTreeView(TreeView):
                                            options=QFileDialog.DontResolveSymlinks |
                                                    QFileDialog.DontUseNativeDialog)[0]
         if file:
-            try:
-                pack = Package(file)
-            except (TypeError, ValueError) as e:
-                QMessageBox.critical(self, "Error",
-                                     f"Package {file} couldn't be opened: {e}")
+            self.openPack(file)
+
+    def openPack(self, file: str):
+        try:
+            pack = Package(file)
+        except (TypeError, ValueError) as e:
+            QMessageBox.critical(self, "Error", f"Package {file} couldn't be opened: {e}")
+        else:
+            if Path(file).absolute() in self.model().openedFiles():
+                QMessageBox.critical(self, "Error", f"Package {file} is already opened")
             else:
-                if Path(file).absolute() in self.model().openedFiles():
-                    QMessageBox.critical(self, "Error", f"Package {file} is already opened")
-                else:
-                    self.model().addItem(pack)
+                self.model().addItem(pack)
 
     def savePack(self, pack: Package = None, file: str = None):
         pack = self.currentIndex().data(PACKAGE_ROLE) if pack is None else pack
         try:
-            file = pack.file if file is None else file
-            if file:
-                pack.write(file)
-            else:
-                raise ValueError("file name is not correct:", file)
+            pack.write(file)
         except (TypeError, ValueError) as e:
             QMessageBox.critical(self, "Error", f"Package couldn't be saved: {file}: {e}")
         except AttributeError as e:
             QMessageBox.critical(self, "Error", f"No chosen package to save: {e}")
 
-    def savePackAs(self, pack: Package = None):
+    def savePackAsWithDialog(self, pack: Package = None):
         pack = self.currentIndex().data(PACKAGE_ROLE) if pack is None else pack
         try:
             file = QFileDialog.getSaveFileName(self, 'Save AAS File', pack.file.as_posix(),
@@ -224,11 +244,11 @@ class PackTreeView(TreeView):
         else:
             self.savePack(pack, file)
 
-    def saveAll(self):
+    def saveAllWithDialog(self):
         for pack in self.model().openedPacks():
             self.savePack(pack)
 
-    def closeFile(self):
+    def closeFileWithDialog(self):
         pack = self.currentIndex().data(PACKAGE_ROLE)
         packItem = self.model().findItemByObj(pack)
         if packItem.isValid():
@@ -253,7 +273,7 @@ class PackTreeView(TreeView):
             QMessageBox.critical(self, "Not found error",
                                  f"The file to close is not found: {pack}")
 
-    def closeAllFiles(self):
+    def closeAllFilesWithDialog(self):
         dialog = QMessageBox(QMessageBox.NoIcon, f"Close all AAS files",
                              f"Do you want to save your changes before closing? ",
                              standardButtons=QMessageBox.Save |
@@ -272,4 +292,23 @@ class PackTreeView(TreeView):
                 packItem = self.model().findItemByObj(pack)
                 self.model().removeRow(packItem.row(), packItem.parent())
 
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls:
+            event.accept()
+        else:
+            event.ignore()
 
+    def dragMoveEvent(self, event):
+        if event.mimeData().hasUrls:
+            event.accept()
+        else:
+            event.ignore()
+
+    def dropEvent(self, e: QDropEvent) -> None:
+        if e.mimeData().hasUrls:
+            e.accept()
+            for url in e.mimeData().urls():
+                file = str(url.toLocalFile())
+                self.openPack(file)
+        else:
+            e.ignore()

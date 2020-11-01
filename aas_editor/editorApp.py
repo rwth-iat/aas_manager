@@ -25,6 +25,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.initActions()
         self.initMenu()
         self.initToolbar()
+        self.setAcceptDrops(True)
 
         self.packTreeModel = PacksTable()
         self.packTreeView.setHeaderHidden(True)
@@ -45,18 +46,18 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.switch2leftTreeSC = QShortcut(SC_FOCUS2LEFT_TREE, self,
                                            activated=self.packTreeView.setFocus)
         # Theme actions
-        self.actionLight = QAction("Light", self,
-                                   statusTip="Choose light theme",
-                                   triggered=lambda: toggleTheme("light"),
-                                   enabled=True)
-        self.actionDark = QAction("Dark", self,
-                                  statusTip="Choose dark theme",
-                                  triggered=lambda: toggleTheme("dark"),
-                                  enabled=True)
-        self.actionDefault = QAction("Standard", self,
-                                     statusTip="Choose standard theme",
-                                     triggered=lambda: toggleTheme("standard"),
+        self.lightThemeAct = QAction("Light", self,
+                                     statusTip="Choose light theme",
+                                     triggered=lambda: toggleTheme("light"),
                                      enabled=True)
+        self.darkThemeAct = QAction("Dark", self,
+                                    statusTip="Choose dark theme",
+                                    triggered=lambda: toggleTheme("dark"),
+                                    enabled=True)
+        self.defaultThemeAct = QAction("Standard", self,
+                                       statusTip="Choose standard theme",
+                                       triggered=lambda: toggleTheme("standard"),
+                                       enabled=True)
 
     def initMenu(self):
         self.menubar = QMenuBar(self)
@@ -65,35 +66,41 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.setMenuBar(self.menubar)
 
         self.menuFile = QMenu("&File", self.menubar)
-        self.menuFile.addAction(self.packTreeView.actionOpenPack)
-        self.menuFile.addAction(self.packTreeView.actionSave)
-        self.menuFile.addAction(self.packTreeView.actionSaveAs)
-        self.menuFile.addAction(self.packTreeView.actionSaveAll)
-        self.menuFile.addAction(self.packTreeView.actionClose)
-        self.menuFile.addAction(self.packTreeView.actionCloseAll)
+        self.menuFile.addAction(self.packTreeView.newPackAct)
+        self.menuFile.addAction(self.packTreeView.openPackAct)
+        self.menuFile.addAction(self.packTreeView.saveAct)
+        self.menuFile.addAction(self.packTreeView.saveAsAct)
+        self.menuFile.addAction(self.packTreeView.saveAllAct)
+        self.menuFile.addAction(self.packTreeView.closeAct)
+        self.menuFile.addAction(self.packTreeView.closeAllAct)
         self.menuFile.addAction(self.exitAct)
 
         self.menuView = QMenu("&View", self.menubar)
         self.menuChoose_theme = QMenu("Choose Theme", self.menuView)
-        self.menuChoose_theme.addAction(self.actionLight)
-        self.menuChoose_theme.addAction(self.actionDark)
-        self.menuChoose_theme.addAction(self.actionDefault)
+        self.menuChoose_theme.addAction(self.lightThemeAct)
+        self.menuChoose_theme.addAction(self.darkThemeAct)
+        self.menuChoose_theme.addAction(self.defaultThemeAct)
         self.menuView.addAction(self.menuChoose_theme.menuAction())
 
         self.menuNavigate = QMenu("&Navigate", self.menubar)
-        self.menuNavigate.addAction(self.tabWidget.actionBack)
-        self.menuNavigate.addAction(self.tabWidget.actionForward)
+        self.menuNavigate.addAction(self.tabWidget.backAct)
+        self.menuNavigate.addAction(self.tabWidget.forwardAct)
+        self.menuNavigate.addAction(self.packTreeView.openInNewTabAct)
+        self.menuNavigate.addAction(self.packTreeView.openInCurrTabAct)
+        self.menuNavigate.addAction(self.packTreeView.openInBackgroundAct)
 
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
         self.menubar.addAction(self.menuNavigate.menuAction())
 
     def initToolbar(self):
-        self.toolBar.addAction(self.packTreeView.actionSave)
-        self.toolBar.addAction(self.packTreeView.actionOpenPack)
+        self.toolBar.addAction(self.packTreeView.saveAct)
+        self.toolBar.addAction(self.packTreeView.openPackAct)
         self.toolBar.addSeparator()
-        self.toolBar.addAction(self.tabWidget.actionBack)
-        self.toolBar.addAction(self.tabWidget.actionForward)
+        self.toolBar.addAction(self.tabWidget.backAct)
+        self.toolBar.addAction(self.tabWidget.forwardAct)
+        self.toolBar.addSeparator()
+        self.toolBar.addAction(self.packTreeView.addAct)
 
     @staticmethod
     def iterItems(root):

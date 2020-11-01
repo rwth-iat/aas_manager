@@ -1,6 +1,6 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal, Qt, QModelIndex, QEvent
-from PyQt5.QtGui import QKeySequence, QMouseEvent, QKeyEvent, QClipboard
+from PyQt5.QtGui import QKeySequence, QMouseEvent, QKeyEvent, QClipboard, QIcon
 from PyQt5.QtWidgets import QTreeView, QAction, QMenu, QApplication, QDialog, QAbstractItemView
 
 from aas_editor.dialogs import AddObjDialog
@@ -49,7 +49,7 @@ class TreeView(QTreeView):
                               enabled=True)
         self.addAction(self.cutAct)
 
-        self.addAct = QAction("&Add", self,
+        self.addAct = QAction(QIcon.fromTheme("list-add"), "&Add", self,
                               statusTip="Add item to selected",
                               shortcut=SC_NEW,
                               shortcutContext=Qt.WidgetWithChildrenShortcut,
