@@ -349,25 +349,27 @@ class StandardInputWidget(QtWidgets.QWidget):
             widget = QLineEdit(self)
             widget.setValidator(QDoubleValidator())
             widget.setText(objVal) if objVal is not None else ""
-        elif issubtype(self.attrType, Enum):
+        elif issubtype(self.attrType, (Enum, Type)):
             widget = QComboBox(self)
-            items = [member for member in self.attrType]
-            for typ in items:
-                widget.addItem(typ.name, typ)
-            if objVal:
-                widget.setCurrentIndex(widget.findData(objVal))
-        elif issubtype(self.attrType, Type):
-            widget = QComboBox(self)
-            union = self.attrType.__args__[0]
-            if type(union) == TypeVar:
-                baseType = union.__bound__
-                types = inheritors(baseType)
-            else:
-                types = union.__args__
+            if issubtype(self.attrType, Enum):
+                # add enum types to types
+                types = [member for member in self.attrType]
+            else:  # Type
+                union = self.attrType.__args__[0]
+                if type(union) == TypeVar:
+                    # add Type inheritors to types
+                    baseType = union.__bound__
+                    types = inheritors(baseType)
+                else:
+                    # add Union Type attrs to types
+                    types = union.__args__
+
             for typ in types:
                 widget.addItem(getTypeName(typ), typ)
+            widget.model().sort(0, Qt.AscendingOrder)
             if objVal:
                 widget.setCurrentIndex(widget.findData(objVal))
+
         return widget
 
     def getObj2add(self):
@@ -405,6 +407,7 @@ class TypeOptionObjGroupBox(GroupBox):
         self.typeComboBox = QComboBox(self)
         for typ in self.objType:
             self.typeComboBox.addItem(getTypeName(typ), typ)
+            self.typeComboBox.model().sort(0, Qt.AscendingOrder)
         if self.objVal:
             self.typeComboBox.setCurrentIndex(self.typeComboBox.findData(type(self.objVal)))
         else:
@@ -425,19 +428,4 @@ class TypeOptionObjGroupBox(GroupBox):
         """Return resulting obj due to user input data"""
         return self.widget.getObj2add()
 
-
 # todo reimplement when Datatypes Data, Duration, etc. are ready
-class ChooseFromDialog(AddDialog):
-    def __init__(self, objList, title, parent=None):
-        super(ChooseFromDialog, self).__init__(parent, title)
-        self.buttonOk.setEnabled(True)
-
-        self.objComboBox = QComboBox(self)
-        for obj in objList:
-            self.objComboBox.addItem(str(obj), obj)
-        self.layout().insertWidget(0, self.objComboBox)
-
-    @checkIfAccepted
-    def getObj2add(self):
-        obj = self.objComboBox.currentData()
-        return obj

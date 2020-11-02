@@ -56,6 +56,11 @@ def simplifyInfo(obj, attrName: str = "") -> str:
 
 def getTypeName(objType):
     try:
+        return objType.name
+    except AttributeError as e:
+        print(e)
+
+    try:
         return objType.__name__
     except AttributeError as e:
         print(e)
