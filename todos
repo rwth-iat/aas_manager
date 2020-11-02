@@ -1,4 +1,4 @@
-open in curr tab and other (update(true) if currIndex.isValid())
+change font size with ctrl+scroll
 
 Add properties isNew, isEdited to mark new or edited items (green, blue)
 finish changed and new properties
@@ -39,6 +39,8 @@ settings
 integrate validator
 
 Done:
+open in curr tab and other (update(true) if currIndex.isValid())
+open recent unclosed files
 open recent
 add add/create-button to toolbar
 start working with files

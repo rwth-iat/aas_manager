@@ -60,7 +60,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
     def initMenu(self):
         self.menubar = QMenuBar(self)
-        self.menubar.setGeometry(QRect(0, 0, 1194, 22))
+        self.menubar.setFixedHeight(22)
         self.menubar.setObjectName("menubar")
         self.setMenuBar(self.menubar)
 

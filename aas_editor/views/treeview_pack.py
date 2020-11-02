@@ -83,10 +83,6 @@ class PackTreeView(TreeView):
         self.attrsMenu.addAction(self.closeAct)
         self.attrsMenu.addAction(self.closeAllAct)
 
-        self.openInCurrTabAct.setEnabled(True)
-        self.openInNewTabAct.setEnabled(True)
-        self.openInBackgroundAct.setEnabled(True)
-
         self.openInCurrTabAct.triggered.connect(
             lambda: self.openInCurrTabClicked.emit(self.currentIndex()))
         self.openInNewTabAct.triggered.connect(
@@ -99,6 +95,11 @@ class PackTreeView(TreeView):
         self.selectionModel().currentChanged.connect(self._updateMenu)
 
     def _updateMenu(self, index: QModelIndex):
+        if index.isValid():
+            self.openInCurrTabAct.setEnabled(True)
+            self.openInNewTabAct.setEnabled(True)
+            self.openInBackgroundAct.setEnabled(True)
+
         # update save and close actions
         self.saveAct.setEnabled(self._isSaveOk())
         self.saveAsAct.setEnabled(self._isSaveOk())
