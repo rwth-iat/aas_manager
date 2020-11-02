@@ -1,16 +1,14 @@
 from pathlib import Path
-from typing import Iterable
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import QModelIndex, QSettings
-from PyQt5.QtGui import QIcon, QDropEvent, QDragEnterEvent
+from PyQt5.QtGui import QDropEvent, QDragEnterEvent
 from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog
 from aas.model import Submodel, AssetAdministrationShell, Asset, SubmodelElement
 
 from aas_editor.models import Package, ConceptDescription
 from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ATTRS, SC_SAVE_ALL, SC_OPEN, \
     PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, APPLICATION_NAME
-from aas_editor.util import isoftype
 from aas_editor.views.treeview import TreeView
 import qtawesome as qta
 
@@ -26,6 +24,9 @@ class PackTreeView(TreeView):
 
     # noinspection PyArgumentList
     def _upgradeActions(self):
+        self.addAct.setText("Add package")
+        self.addAct.setEnabled(True)
+
         self.newPackAct = QAction(qta.icon("mdi.plus-circle"), "&New AAS file", self,
                                   statusTip="Create new AAS file",
                                   triggered=self.newPackWithDialog,
@@ -191,18 +192,15 @@ class PackTreeView(TreeView):
             raise TypeError("Parent type is not extendable:", type(parent.data(OBJECT_ROLE)))
 
     def newPackWithDialog(self):
-        try:
-            file = QFileDialog.getSaveFileName(self, 'Create new AAS File',
-                                               filter="AAS files (*.aasx *.xml *.json);;"
-                                                      "AASX (*.aasx);; "
-                                                      "XML (*.xml);;"
-                                                      "JSON (*.json);; All files (*.*)",
-                                               options=QFileDialog.DontResolveSymlinks |
-                                                       QFileDialog.DontUseNativeDialog
-                                               )[0]
-        except AttributeError as e:
-            QMessageBox.critical(self, "Error", f"File name must contain min. 1 symbol")
-        else:
+        file = QFileDialog.getSaveFileName(self, 'Create new AAS File',
+                                           filter="AAS files (*.aasx *.xml *.json);;"
+                                                  "AASX (*.aasx);; "
+                                                  "XML (*.xml);;"
+                                                  "JSON (*.json);; All files (*.*)",
+                                           options=QFileDialog.DontResolveSymlinks |
+                                                   QFileDialog.DontUseNativeDialog
+                                           )[0]
+        if file:
             pack = Package()
             self.savePack(pack, file)
             self.model().addItem(pack, parent=QModelIndex())
@@ -275,10 +273,9 @@ class PackTreeView(TreeView):
                 res = dialog.exec()
                 if res == QMessageBox.Save:
                     self.savePack()
-                    self.model().removeRow(packItem.row(), packItem.parent())
+                    self.closeFile(packItem)
                 elif res == QMessageBox.Discard:
-                    self.model().removeRow(packItem.row(), packItem.parent())
-
+                    self.closeFile(packItem)
             except AttributeError as e:
                 QMessageBox.critical(self, "Error", f"No chosen package to close: {e}")
         else:
@@ -298,11 +295,14 @@ class PackTreeView(TreeView):
             for pack in self.model().openedPacks():
                 self.savePack(pack)
                 packItem = self.model().findItemByObj(pack)
-                self.model().removeRow(packItem.row(), packItem.parent())
+                self.closeFile(packItem)
         elif res == QMessageBox.Discard:
             for pack in self.model().openedPacks():
                 packItem = self.model().findItemByObj(pack)
-                self.model().removeRow(packItem.row(), packItem.parent())
+                self.closeFile(packItem)
+
+    def closeFile(self, packItem: QModelIndex):
+        self.model().removeRow(packItem.row(), packItem.parent())
 
     def openRecentSlot(self):
         action = self.sender()
