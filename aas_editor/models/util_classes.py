@@ -106,8 +106,9 @@ class Package:
 
     @property
     def files(self):
-        for file in self.fileStore:
-            yield file
+        # for file in self.fileStore:
+        #     yield file
+        return "implement iterator in FileContainerDict"
 
     def add(self, obj):
         self.objStore.add(obj)
