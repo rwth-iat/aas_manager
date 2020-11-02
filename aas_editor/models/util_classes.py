@@ -45,9 +45,9 @@ class Package:
         else:
             raise TypeError("Wrong file type:", self.file.suffix)
 
-    def write(self, file=None):
+    def write(self, file: str = None):
         if file:
-            self.file = file
+            self.file: Path = file
 
         fileType = self.file.suffix.lower().strip()
         if fileType == ".xml":

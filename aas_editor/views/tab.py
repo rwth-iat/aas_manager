@@ -23,7 +23,7 @@ class TabWidget(QTabWidget):
         self.setTabsClosable(True)
         self.setMovable(True)
         self.setStyleSheet("QTabBar::tab { height: 25px; width: 200px}")
-        self.tabWidget.setCurrentIndex(-1)
+        self.setCurrentIndex(-1)
 
     # noinspection PyArgumentList
     def initActions(self):

@@ -55,8 +55,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         for theme in THEMES:
             themeAct = QAction(theme, self,
                                statusTip=f"Choose {theme} theme",
-                               triggered=self.toggleThemeSlot,
-                               enabled=True)
+                               triggered=self.toggleThemeSlot)
             self.themeActs.append(themeAct)
 
     def initMenu(self):
@@ -68,6 +67,13 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menuFile = QMenu("&File", self.menubar)
         self.menuFile.addAction(self.packTreeView.newPackAct)
         self.menuFile.addAction(self.packTreeView.openPackAct)
+
+        self.menuFile.addSeparator()
+        for recentFileAct in self.packTreeView.recentFileActs:
+            self.menuFile.addAction(recentFileAct)
+        self.packTreeView.recentFilesSeparator = self.menuFile.addSeparator()
+        self.packTreeView.updateRecentFileActs()
+
         self.menuFile.addAction(self.packTreeView.saveAct)
         self.menuFile.addAction(self.packTreeView.saveAsAct)
         self.menuFile.addAction(self.packTreeView.saveAllAct)
@@ -145,19 +151,23 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             toggleStylesheet(THEMES[theme])
             self.currTheme = theme
 
+    def closeEvent(self, a0: QCloseEvent) -> None:
+        self.writeSettings()
+        super(EditorApp, self).closeEvent(a0)
+
     def readSettings(self):
         settings = QSettings(ACPLT, APPLICATION_NAME)
-        size = settings.value('size', QSize(1194, 624))
-        self.resize(size)
         theme = settings.value('theme', DEFAULT_THEME)
         self.toggleTheme(theme)
-        packTreeViewSize = settings.value('packTreeViewSize', QSize(256, 493))
-        self.packTreeView.resize(packTreeViewSize)
+        splitterSize = settings.value('leftZoneSize', QSize(250, 624))
+        self.layoutWidget.resize(splitterSize)
+        size = settings.value('size', QSize(1194, 624))
+        self.resize(size)
 
     def writeSettings(self):
         settings = QSettings(ACPLT, APPLICATION_NAME)
         settings.setValue('size', self.size())
         settings.setValue('theme', self.currTheme)
-        settings.setValue('packTreeViewSize', self.packTreeView.size())
+        settings.setValue('leftZoneSize', self.layoutWidget.size())
 
 # ToDo logs insteads of prints

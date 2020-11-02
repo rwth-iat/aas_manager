@@ -2,14 +2,14 @@ from pathlib import Path
 from typing import Iterable
 
 from PyQt5 import QtCore
-from PyQt5.QtCore import QModelIndex
+from PyQt5.QtCore import QModelIndex, QSettings
 from PyQt5.QtGui import QIcon, QDropEvent, QDragEnterEvent
 from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog
 from aas.model import Submodel, AssetAdministrationShell, Asset, SubmodelElement
 
 from aas_editor.models import Package, ConceptDescription
 from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ATTRS, SC_SAVE_ALL, SC_OPEN, \
-    PACKAGE_ROLE
+    PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, APPLICATION_NAME
 from aas_editor.util import isoftype
 from aas_editor.views.treeview import TreeView
 import qtawesome as qta
@@ -19,6 +19,7 @@ class PackTreeView(TreeView):
     def __init__(self, parent=None):
         super(PackTreeView, self).__init__(parent)
         PackTreeView.__instance = self
+        self.recentFilesSeparator = None
         self._upgradeActions()
         self._upgradeMenu()
         self.setAcceptDrops(True)
@@ -26,7 +27,6 @@ class PackTreeView(TreeView):
     # noinspection PyArgumentList
     def _upgradeActions(self):
         self.newPackAct = QAction(qta.icon("mdi.plus-circle"), "&New AAS file", self,
-                                  shortcut=SC_OPEN,
                                   statusTip="Create new AAS file",
                                   triggered=self.newPackWithDialog,
                                   enabled=True)
@@ -36,6 +36,15 @@ class PackTreeView(TreeView):
                                    statusTip="Open AAS file",
                                    triggered=self.openPackWithDialog,
                                    enabled=True)
+
+        # Recent files actions
+        self.recentFileActs = []
+        for i in range(MAX_RECENT_FILES):
+            recentFileAct = QAction("", self,
+                                    statusTip=f"Open recent file",
+                                    triggered=self.openRecentSlot,
+                                    visible=False)
+            self.recentFileActs.append(recentFileAct)
 
         self.saveAct = QAction(qta.icon("mdi.content-save"), "Save", self,
                                statusTip="Save current file",
@@ -212,6 +221,7 @@ class PackTreeView(TreeView):
     def openPack(self, file: str):
         try:
             pack = Package(file)
+            self.updateRecentFiles(pack.file.absolute().as_posix())
         except (TypeError, ValueError) as e:
             QMessageBox.critical(self, "Error", f"Package {file} couldn't be opened: {e}")
         else:
@@ -224,6 +234,7 @@ class PackTreeView(TreeView):
         pack = self.currentIndex().data(PACKAGE_ROLE) if pack is None else pack
         try:
             pack.write(file)
+            self.updateRecentFiles(pack.file.absolute().as_posix())
         except (TypeError, ValueError) as e:
             QMessageBox.critical(self, "Error", f"Package couldn't be saved: {file}: {e}")
         except AttributeError as e:
@@ -292,6 +303,40 @@ class PackTreeView(TreeView):
             for pack in self.model().openedPacks():
                 packItem = self.model().findItemByObj(pack)
                 self.model().removeRow(packItem.row(), packItem.parent())
+
+    def openRecentSlot(self):
+        action = self.sender()
+        if action:
+            self.openPack(action.data())
+
+    def updateRecentFiles(self, file: str):
+        settings = QSettings(ACPLT, APPLICATION_NAME)
+        files = settings.value('recentFiles', [])
+        try:
+            files.remove(file)
+        except ValueError:
+            pass
+        files.insert(0, file)
+        del files[MAX_RECENT_FILES:]
+        settings.setValue('recentFiles', files)
+
+    def updateRecentFileActs(self):
+        settings = QSettings(ACPLT, APPLICATION_NAME)
+        files = settings.value('recentFiles', [])
+        files = files[:MAX_RECENT_FILES]
+
+        for i, file in enumerate(files):
+            if len(file) < 30:
+                self.recentFileActs[i].setText(file)
+            else:
+                self.recentFileActs[i].setText(f"..{file[len(file)-30:]}")
+            self.recentFileActs[i].setData(file)
+            self.recentFileActs[i].setVisible(True)
+
+        for i in range(len(files), MAX_RECENT_FILES):
+            self.recentFileActs[i].setVisible(False)
+
+        self.recentFilesSeparator.setVisible(bool(files))
 
     def dragEnterEvent(self, event: QDragEnterEvent):
         if event.mimeData().hasUrls:
