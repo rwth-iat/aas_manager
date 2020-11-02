@@ -13,7 +13,7 @@ class TreeView(QTreeView):
     wheelClicked = pyqtSignal(['QModelIndex'])
     openInCurrTabClicked = pyqtSignal(['QModelIndex'])
     openInNewTabClicked = pyqtSignal(['QModelIndex'])
-    openInBackgroundTabClicked = pyqtSignal(['QModelIndex'])
+    openInBgTabClicked = pyqtSignal(['QModelIndex'])
 
     treeObjClipboard = []
 

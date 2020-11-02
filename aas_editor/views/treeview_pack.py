@@ -92,7 +92,7 @@ class PackTreeView(TreeView):
         self.openInNewTabAct.triggered.connect(
             lambda: self.openInNewTabClicked.emit(self.currentIndex()))
         self.openInBackgroundAct.triggered.connect(
-            lambda: self.openInBackgroundTabClicked.emit(self.currentIndex()))
+            lambda: self.openInBgTabClicked.emit(self.currentIndex()))
 
     def setModel(self, model: QtCore.QAbstractItemModel) -> None:
         super(PackTreeView, self).setModel(model)

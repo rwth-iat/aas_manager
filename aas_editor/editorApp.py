@@ -124,8 +124,8 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.tabWidget.currItemChanged.connect(self.packTreeView.setCurrentIndex)
 
         self.packTreeView.selectionModel().currentChanged.connect(self.tabWidget.openItem)
-        self.packTreeView.wheelClicked.connect(self.tabWidget.openItemInBackgroundTab)
-        self.packTreeView.openInBackgroundTabClicked.connect(self.tabWidget.openItemInBackgroundTab)
+        self.packTreeView.wheelClicked.connect(self.tabWidget.openItemInBgTab)
+        self.packTreeView.openInBgTabClicked.connect(self.tabWidget.openItemInBgTab)
         self.packTreeView.openInNewTabClicked.connect(self.tabWidget.openItemInNewTab)
         self.packTreeView.openInCurrTabClicked.connect(self.tabWidget.openItem)
 

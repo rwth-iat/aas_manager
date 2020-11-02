@@ -151,6 +151,6 @@ class AttrsTreeView(TreeView):
             if newTab and setCurrent:
                 self.openInNewTabClicked.emit(linkedPackItem)
             elif newTab and not setCurrent:
-                self.openInBackgroundTabClicked.emit(linkedPackItem)
+                self.openInBgTabClicked.emit(linkedPackItem)
             else:
                 self.openInCurrTabClicked.emit(linkedPackItem)

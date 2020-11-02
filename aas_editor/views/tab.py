@@ -53,7 +53,7 @@ class TabWidget(QTabWidget):
         tab.currItemChanged.connect(lambda packItem: self._handleCurrTabItemChanged(tab, packItem))
         tab.attrsTreeView.openInCurrTabClicked.connect(self.openItem)
         tab.attrsTreeView.openInNewTabClicked.connect(self.openItemInNewTab)
-        tab.attrsTreeView.openInBackgroundTabClicked.connect(self.openItemInBackgroundTab)
+        tab.attrsTreeView.openInBgTabClicked.connect(self.openItemInBgTab)
 
     def _handleCurrTabItemChanged(self, tab: 'Tab', packItem: QModelIndex):
         if tab == self.currentWidget():
@@ -89,7 +89,7 @@ class TabWidget(QTabWidget):
         self.currItemChanged.emit(packItem)
         return tabIndex
 
-    def openItemInBackgroundTab(self, packItem: QModelIndex) -> int:
+    def openItemInBgTab(self, packItem: QModelIndex) -> int:
         tab = Tab(packItem, parent=self)
         tabIndex = self.insertTab(self.currentIndex()+1, tab, tab.objectName)
         return tabIndex
