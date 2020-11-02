@@ -59,7 +59,7 @@ class PackTreeView(TreeView):
         self.saveAllAct = QAction(qta.icon("mdi.content-save-all"), "&Save All", self,
                                   shortcut=SC_SAVE_ALL,
                                   statusTip="Save all files",
-                                  triggered=self.saveAllWithDialog,
+                                  triggered=self.saveAll,
                                   enabled=True)
 
         self.closeAct = QAction("Close AAS file", self,
@@ -256,7 +256,7 @@ class PackTreeView(TreeView):
         else:
             self.savePack(pack, file)
 
-    def saveAllWithDialog(self):
+    def saveAll(self):
         for pack in self.model().openedPacks():
             self.savePack(pack)
 

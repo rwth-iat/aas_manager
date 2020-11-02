@@ -152,8 +152,24 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             self.currTheme = theme
 
     def closeEvent(self, a0: QCloseEvent) -> None:
-        self.writeSettings()
-        super(EditorApp, self).closeEvent(a0)
+        if not self.packTreeView.model().openedFiles():
+            self.writeSettings()
+            a0.accept()
+        else:
+            reply = QMessageBox.question(self, 'Window Close',
+                                         'Do you want to save files before closing the window?',
+                                         QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel,
+                                         QMessageBox.No)
+
+            if reply == QMessageBox.Yes:
+                self.packTreeView.saveAll()
+                self.writeSettings()
+                a0.accept()
+            elif reply == QMessageBox.No:
+                self.writeSettings()
+                a0.accept()
+            else:
+                a0.ignore()
 
     def readSettings(self):
         settings = QSettings(ACPLT, APPLICATION_NAME)
