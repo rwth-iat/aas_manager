@@ -12,6 +12,7 @@ from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ATTRS, SC_SAVE_A
     PACKAGE_ROLE
 from aas_editor.util import isoftype
 from aas_editor.views.treeview import TreeView
+import qtawesome as qta
 
 
 class PackTreeView(TreeView):
@@ -24,29 +25,29 @@ class PackTreeView(TreeView):
 
     # noinspection PyArgumentList
     def _upgradeActions(self):
-        self.newPackAct = QAction("&New AAS file", self,
+        self.newPackAct = QAction(qta.icon("mdi.plus-circle"), "&New AAS file", self,
                                   shortcut=SC_OPEN,
                                   statusTip="Create new AAS file",
                                   triggered=self.newPackWithDialog,
                                   enabled=True)
 
-        self.openPackAct = QAction(QIcon.fromTheme("document-open"), "&Open AAS file", self,
+        self.openPackAct = QAction(qta.icon("mdi.folder-open"), "&Open AAS file", self,
                                    shortcut=SC_OPEN,
                                    statusTip="Open AAS file",
                                    triggered=self.openPackWithDialog,
                                    enabled=True)
 
-        self.saveAct = QAction(QIcon.fromTheme("document-save"), "Save", self,
+        self.saveAct = QAction(qta.icon("mdi.content-save"), "Save", self,
                                statusTip="Save current file",
                                triggered=lambda: self.savePack(),
                                enabled=False)
 
-        self.saveAsAct = QAction(QIcon.fromTheme("document-save-as"), "Save As...", self,
+        self.saveAsAct = QAction("Save As...", self,
                                  statusTip="Save current file as..",
                                  triggered=lambda: self.savePackAsWithDialog(),
                                  enabled=False)
 
-        self.saveAllAct = QAction("&Save All", self,
+        self.saveAllAct = QAction(qta.icon("mdi.content-save-all"), "&Save All", self,
                                   shortcut=SC_SAVE_ALL,
                                   statusTip="Save all files",
                                   triggered=self.saveAllWithDialog,

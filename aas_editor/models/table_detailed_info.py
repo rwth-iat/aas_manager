@@ -5,7 +5,7 @@ from PyQt5.QtGui import QColor, QFont
 
 from aas_editor.models import Package, DetailedInfoItem, StandardTable
 from aas_editor.settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, COLUMNS_IN_DETAILED_INFO, \
-    ATTRIBUTE_COLUMN, VALUE_COLUMN, PACK_ITEM_ROLE
+    ATTRIBUTE_COLUMN, VALUE_COLUMN, PACK_ITEM_ROLE, LIGHT_BLUE, LINK_BLUE, CHANGED_BLUE, NEW_GREEN
 
 
 class DetailedInfoTable(StandardTable):
@@ -30,7 +30,7 @@ class DetailedInfoTable(StandardTable):
         return item.data(role, index.column())
 
     def _getBgColor(self, index: QModelIndex):
-        color = QColor(132, 185, 225)
+        color = LIGHT_BLUE
         if index.parent().isValid():
             if index.row() == 0:
                 color.setAlpha(260 - index.parent().data(Qt.BackgroundRole).alpha())
@@ -47,13 +47,13 @@ class DetailedInfoTable(StandardTable):
     def _getFgColor(self, index: QModelIndex):
         if index.column() == VALUE_COLUMN:
             if self.objByIndex(index).isLink:
-                return QColor(26, 13, 171)
+                return LINK_BLUE
         elif index.column() == ATTRIBUTE_COLUMN:
             if self.objByIndex(index).new:
-                color = QColor("green")
+                color = NEW_GREEN
                 return color
             elif self.objByIndex(index).changed:
-                color = QColor(83, 148, 236, 255)  # blue
+                color = CHANGED_BLUE
                 return color
             return QVariant()
 

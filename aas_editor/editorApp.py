@@ -17,6 +17,9 @@ from .views.tab import Tab
 from .settings import *
 from .util import toggleTheme
 
+import qtawesome as qta
+qta.set_defaults(**ICON_DEFAULTS)
+
 
 class EditorApp(QMainWindow, design.Ui_MainWindow):
     def __init__(self):
@@ -36,7 +39,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
     # noinspection PyArgumentList
     def initActions(self):
-        self.exitAct = QAction("E&xit", self,
+        self.exitAct = QAction(qta.icon("mdi.exit-to-app"), "E&xit", self,
                                statusTip="Exit the application",
                                triggered=self.close)
 

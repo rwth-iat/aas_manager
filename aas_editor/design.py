@@ -13,7 +13,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from aas_editor.views.treeview_pack import PackTreeView
 from aas_editor.views.treeview import TreeView
 from aas_editor.views.tab import TabWidget
-
+from PyQt5.QtCore import Qt
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -77,11 +77,6 @@ class Ui_MainWindow(object):
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
         self.tabWidget = TabWidget(self.layoutWidget1)
-        self.tabWidget.setElideMode(QtCore.Qt.ElideNone)
-        self.tabWidget.setUsesScrollButtons(True)
-        self.tabWidget.setDocumentMode(False)
-        self.tabWidget.setTabsClosable(True)
-        self.tabWidget.setMovable(True)
         self.tabWidget.setObjectName("tabWidget")
         self.verticalLayout_2.addWidget(self.tabWidget)
         self.gridLayout.addWidget(self.splitter, 1, 0, 1, 1)

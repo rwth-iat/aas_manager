@@ -7,6 +7,7 @@ from aas_editor.settings import NAME_ROLE, SC_BACK, SC_FORWARD
 from aas_editor.views.treeview_detailed import AttrsTreeView
 from aas_editor.util import getTreeItemPath
 
+import qtawesome as qta
 
 class TabWidget(QTabWidget):
     # signal for changing current item in packet treeview
@@ -14,19 +15,24 @@ class TabWidget(QTabWidget):
 
     def __init__(self, parent: QWidget = None):
         super(TabWidget, self).__init__(parent)
+        self.setElideMode(Qt.ElideRight)
+        self.setUsesScrollButtons(True)
+        self.setTabsClosable(True)
+        self.setMovable(True)
+        self.setStyleSheet("QTabBar::tab { height: 25px; width: 200px}")
         self.initActions()
         self.buildHandlers()
 
     # noinspection PyArgumentList
     def initActions(self):
-        self.backAct = QAction(QIcon.fromTheme("go-previous"), "Back", self,
+        self.backAct = QAction(qta.icon("fa5s.arrow-circle-left"), "Back", self,
                                statusTip=f"Go back one item",
                                toolTip=f"Go back one item",
                                shortcut=SC_BACK,
                                triggered=lambda: self.currentWidget().openPrevItem(),
                                enabled=False)
 
-        self.forwardAct = QAction(QIcon.fromTheme("go-next"), "Forward", self,
+        self.forwardAct = QAction(qta.icon("fa5s.arrow-circle-right"), "Forward", self,
                                   statusTip=f"Go forward one item",
                                   toolTip=f"Go forward one item",
                                   shortcut=SC_FORWARD,

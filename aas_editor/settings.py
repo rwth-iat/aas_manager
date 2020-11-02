@@ -1,6 +1,6 @@
 from enum import Enum
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QKeySequence
+from PyQt5.QtGui import QKeySequence, QColor
 from aas.model import AdministrativeInformation, Identifier, Submodel, AASReference, Asset, \
     SubmodelElement, AssetAdministrationShell, ConceptDescription, ConceptDictionary, \
     AbstractObjectStore
@@ -31,6 +31,17 @@ PREFERED_THEME = "dark"
 
 DARK_THEME_PATH = "themes/dark.qss"
 LIGHT_THEME_PATH = "themes/light.qss"
+
+LIGHT_BLUE = QColor(132, 185, 255)
+LINK_BLUE = QColor(26, 13, 171)
+CHANGED_BLUE = QColor(83, 148, 236, 255)
+NEW_GREEN = QColor("green")
+
+ICON_DEFAULTS = {
+    'color': QColor(LIGHT_BLUE.red(), LIGHT_BLUE.green(), LIGHT_BLUE.blue(), 225),
+    'color_active': QColor(LIGHT_BLUE.red(), LIGHT_BLUE.green(), LIGHT_BLUE.blue(), 255),
+    'color_disabled': QColor(LIGHT_BLUE.red(), LIGHT_BLUE.green(), LIGHT_BLUE.blue(), 50),
+}
 
 THEMES = {
     "dark": DARK_THEME_PATH,

@@ -7,7 +7,7 @@ from aas_editor.dialogs import AddObjDialog
 from aas_editor.models import DictItem
 from aas_editor.settings import *
 from aas_editor.util import getDefaultVal, isIterable, getReqParams4init, delAASParents
-
+import qtawesome as qta
 
 class TreeView(QTreeView):
     wheelClicked = pyqtSignal(['QModelIndex'])
@@ -25,7 +25,7 @@ class TreeView(QTreeView):
 
     # noinspection PyArgumentList
     def initActions(self):
-        self.copyAct = QAction("Copy", self,
+        self.copyAct = QAction(qta.icon("mdi.content-copy"), "Copy", self,
                                statusTip="Copy selected item",
                                shortcut=SC_COPY,
                                shortcutContext=Qt.WidgetWithChildrenShortcut,
@@ -33,7 +33,7 @@ class TreeView(QTreeView):
                                enabled=True)
         self.addAction(self.copyAct)
 
-        self.pasteAct = QAction("Paste", self,
+        self.pasteAct = QAction(qta.icon("mdi.content-paste"), "Paste", self,
                                 statusTip="Paste from clipboard",
                                 shortcut=SC_PASTE,
                                 shortcutContext=Qt.WidgetWithChildrenShortcut,
@@ -41,7 +41,7 @@ class TreeView(QTreeView):
                                 enabled=True)
         self.addAction(self.pasteAct)
 
-        self.cutAct = QAction("Cut", self,
+        self.cutAct = QAction(qta.icon("mdi.content-cut"), "Cut", self,
                               statusTip="Cut selected item",
                               shortcut=SC_CUT,
                               shortcutContext=Qt.WidgetWithChildrenShortcut,
@@ -49,7 +49,7 @@ class TreeView(QTreeView):
                               enabled=True)
         self.addAction(self.cutAct)
 
-        self.addAct = QAction(QIcon.fromTheme("list-add"), "&Add", self,
+        self.addAct = QAction(qta.icon("mdi.plus-circle"), "&Add", self,
                               statusTip="Add item to selected",
                               shortcut=SC_NEW,
                               shortcutContext=Qt.WidgetWithChildrenShortcut,
@@ -57,7 +57,7 @@ class TreeView(QTreeView):
                               enabled=False)
         self.addAction(self.addAct)
 
-        self.delClearAct = QAction("Delete/clear", self,
+        self.delClearAct = QAction(qta.icon("mdi.delete"), "Delete/clear", self,
                                    statusTip="Delete/clear selected item",
                                    shortcut=SC_DELETE,
                                    shortcutContext=Qt.WidgetWithChildrenShortcut,
