@@ -94,7 +94,7 @@ class TabWidget(QTabWidget):
         tabIndex = self.insertTab(self.currentIndex()+1, tab, tab.objectName)
         return tabIndex
 
-    def setCurrentTab(self, tabName):
+    def setCurrentTab(self, tabName: str):
         for index in range(self.count()):
             if self.tabText(index) == tabName:
                 tab = self.widget(index)
@@ -102,11 +102,17 @@ class TabWidget(QTabWidget):
                 return True
         return False
 
-    def removeTab(self, index):
+    def removeTab(self, index: int):
         widget = self.widget(index)
         if widget is not None:
             widget.deleteLater()
         super(TabWidget, self).removeTab(index)
+
+    def removePackTab(self, packItem: QModelIndex):
+        for tabIndex in range(self.count()-1, -1, -1):
+            tab: Tab = self.widget(tabIndex)
+            if QModelIndex(tab.packItem).siblingAtColumn(0) == packItem.siblingAtColumn(0):
+                self.removeTab(tabIndex)
 
 
 class Tab(QWidget):

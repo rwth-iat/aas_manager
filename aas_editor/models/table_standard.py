@@ -192,7 +192,8 @@ class StandardTable(QAbstractItemModel):
             child.setParent(None)
             # child.deleteLater()
         self.endRemoveRows()
-        self.dataChanged.emit(parent, parent)
+        # self.dataChanged.emit(parent, parent)
+        # self.rowsRemoved.emit(parent, row, row-1+count)
         return True
 
     def clearRows(self, row: int, count: int,
@@ -229,6 +230,6 @@ class StandardTable(QAbstractItemModel):
                         f"{child.objectName} could not be deleted or set to default")
                     return False
 
-    def clearRow(self, row: int, parent: QModelIndex = ..., defaultVal="Not given") -> bool:
+    def clearRow(self, row: int, parent: QModelIndex = ..., defaultVal=NOT_GIVEN) -> bool:
         """Delete row if it is child of Iterable else set to Default"""
         return self.clearRows(row, 1, parent, defaultVal)

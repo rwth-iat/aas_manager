@@ -121,18 +121,20 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             yield from recurse(root)
 
     def buildHandlers(self):
-        self.tabWidget.currItemChanged.connect(
-            self.packTreeView.setCurrentIndex)
-        self.packTreeView.selectionModel().currentChanged.connect(
-            self.tabWidget.openItem)
-        self.packTreeView.wheelClicked.connect(
-            self.tabWidget.openItemInBackgroundTab)
-        self.packTreeView.openInBackgroundTabClicked.connect(
-            self.tabWidget.openItemInBackgroundTab)
-        self.packTreeView.openInNewTabClicked.connect(
-            self.tabWidget.openItemInNewTab)
-        self.packTreeView.openInCurrTabClicked.connect(
-            self.tabWidget.openItem)
+        self.tabWidget.currItemChanged.connect(self.packTreeView.setCurrentIndex)
+
+        self.packTreeView.selectionModel().currentChanged.connect(self.tabWidget.openItem)
+        self.packTreeView.wheelClicked.connect(self.tabWidget.openItemInBackgroundTab)
+        self.packTreeView.openInBackgroundTabClicked.connect(self.tabWidget.openItemInBackgroundTab)
+        self.packTreeView.openInNewTabClicked.connect(self.tabWidget.openItemInNewTab)
+        self.packTreeView.openInCurrTabClicked.connect(self.tabWidget.openItem)
+
+        self.packTreeModel.rowsRemoved.connect(self.tabWidget.removePackTab)
+
+    def removeTabsOfClosedRows(self, parent: QModelIndex, first: int, last: int):
+        for row in range(first, last):
+            packItem = self.packTreeModel.index(row, 0, parent)
+            self.tabWidget.removePackTab(packItem)
 
     def setFocus2rightTree(self):
         tab: 'Tab' = self.tabWidget.currentWidget()
