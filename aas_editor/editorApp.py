@@ -152,7 +152,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             self.currTheme = theme
 
     def closeEvent(self, a0: QCloseEvent) -> None:
-        if not self.packTreeView.model().openedFiles():
+        if not self.packTreeModel.openedFiles():
             self.writeSettings()
             a0.accept()
         else:
@@ -175,15 +175,19 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         settings = QSettings(ACPLT, APPLICATION_NAME)
         theme = settings.value('theme', DEFAULT_THEME)
         self.toggleTheme(theme)
-        splitterSize = settings.value('leftZoneSize', QSize(250, 624))
-        self.layoutWidget.resize(splitterSize)
         size = settings.value('size', QSize(1194, 624))
         self.resize(size)
+        splitterSize = settings.value('leftZoneSize', QSize(250, 624))
+        self.layoutWidget.resize(splitterSize)
+        openedAasFiles = settings.value('openedAasFiles', set())
+        for file in openedAasFiles:
+            self.packTreeView.openPack(file)
 
     def writeSettings(self):
         settings = QSettings(ACPLT, APPLICATION_NAME)
-        settings.setValue('size', self.size())
         settings.setValue('theme', self.currTheme)
+        settings.setValue('size', self.size())
         settings.setValue('leftZoneSize', self.layoutWidget.size())
+        settings.setValue('openedAasFiles', self.packTreeModel.openedFiles())
 
 # ToDo logs insteads of prints
