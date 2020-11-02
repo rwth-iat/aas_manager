@@ -10,15 +10,15 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+from aas_editor.settings import APPLICATION_NAME
 from aas_editor.views.treeview_pack import PackTreeView
-from aas_editor.views.treeview import TreeView
 from aas_editor.views.tab import TabWidget
-from PyQt5.QtCore import Qt
+
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1194, 624)
+        # MainWindow.resize(1194, 624)
         MainWindow.setAutoFillBackground(True)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
@@ -61,8 +61,8 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.packTreeView.sizePolicy().hasHeightForWidth())
         self.packTreeView.setSizePolicy(sizePolicy)
-        self.packTreeView.setSizeIncrement(QtCore.QSize(256, 493))
-        self.packTreeView.setBaseSize(QtCore.QSize(256, 493))
+        # self.packTreeView.setSizeIncrement(QtCore.QSize(256, 493))
+        # self.packTreeView.setBaseSize(QtCore.QSize(256, 493))
         self.packTreeView.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.packTreeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.packTreeView.setFrameShape(QtWidgets.QFrame.StyledPanel)
@@ -90,17 +90,15 @@ class Ui_MainWindow(object):
         self.toolBar.setObjectName("toolBar")
         MainWindow.addToolBar(QtCore.Qt.TopToolBarArea, self.toolBar)
 
-
         self.splitter.setStretchFactor(0,1)
         self.splitter.setStretchFactor(1,3)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(-1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "AAS Editor"))
+        MainWindow.setWindowTitle(_translate("MainWindow", APPLICATION_NAME))
         self.lineEdit.setPlaceholderText(_translate("MainWindow", "Search"))
         self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar"))
 

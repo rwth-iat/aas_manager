@@ -421,11 +421,6 @@ def getTreeItemPath(treeItem: QModelIndex) -> str:
     return path
 
 
-def toggleTheme(theme: str) -> None:
-    if theme in THEMES:
-        toggleStylesheet(THEMES[theme])
-
-
 def toggleStylesheet(path: str) -> None:
     """
     Toggle the stylesheet to use the desired path in the Qt resource

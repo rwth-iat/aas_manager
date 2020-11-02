@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from PyQt5.QtCore import QModelIndex, QRect, QStandardPaths
+from PyQt5.QtCore import QModelIndex, QRect, QStandardPaths, QSettings, QPoint, QSize
 from aas.adapter import aasx
 from aas.adapter.aasx import DictSupplementaryFileContainer
 
@@ -15,7 +15,7 @@ from .models.table_packs import PacksTable
 
 from .views.tab import Tab
 from .settings import *
-from .util import toggleTheme
+from .util import toggleStylesheet
 
 import qtawesome as qta
 qta.set_defaults(**ICON_DEFAULTS)
@@ -29,6 +29,8 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.initMenu()
         self.initToolbar()
 
+        self.currTheme = DEFAULT_THEME
+
         self.packTreeModel = PacksTable()
         self.packTreeView.setHeaderHidden(True)
         self.packTreeView.setModel(self.packTreeModel)
@@ -36,6 +38,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.tabWidget.addTab(Tab(parent=self.tabWidget), "Welcome")
 
         self.buildHandlers()
+        self.readSettings()
 
     # noinspection PyArgumentList
     def initActions(self):
@@ -48,18 +51,13 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.switch2leftTreeSC = QShortcut(SC_FOCUS2LEFT_TREE, self,
                                            activated=self.packTreeView.setFocus)
         # Theme actions
-        self.lightThemeAct = QAction("Light", self,
-                                     statusTip="Choose light theme",
-                                     triggered=lambda: toggleTheme("light"),
-                                     enabled=True)
-        self.darkThemeAct = QAction("Dark", self,
-                                    statusTip="Choose dark theme",
-                                    triggered=lambda: toggleTheme("dark"),
-                                    enabled=True)
-        self.defaultThemeAct = QAction("Standard", self,
-                                       statusTip="Choose standard theme",
-                                       triggered=lambda: toggleTheme("standard"),
-                                       enabled=True)
+        self.themeActs = []
+        for theme in THEMES:
+            themeAct = QAction(theme, self,
+                               statusTip=f"Choose {theme} theme",
+                               triggered=self.toggleThemeSlot,
+                               enabled=True)
+            self.themeActs.append(themeAct)
 
     def initMenu(self):
         self.menubar = QMenuBar(self)
@@ -79,9 +77,8 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.menuView = QMenu("&View", self.menubar)
         self.menuChoose_theme = QMenu("Choose Theme", self.menuView)
-        self.menuChoose_theme.addAction(self.lightThemeAct)
-        self.menuChoose_theme.addAction(self.darkThemeAct)
-        self.menuChoose_theme.addAction(self.defaultThemeAct)
+        for themeAct in self.themeActs:
+            self.menuChoose_theme.addAction(themeAct)
         self.menuView.addAction(self.menuChoose_theme.menuAction())
 
         self.menuNavigate = QMenu("&Navigate", self.menubar)
@@ -137,5 +134,30 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             firstItem = tab.attrsTreeView.model().index(0, 0, QModelIndex())
             tab.attrsTreeView.setCurrentIndex(firstItem)
         self.tabWidget.currentWidget().attrsTreeView.setFocus()
+
+    def toggleThemeSlot(self):
+        action = self.sender()
+        if action:
+            self.toggleTheme(action.text())
+
+    def toggleTheme(self, theme: str) -> None:
+        if theme in THEMES:
+            toggleStylesheet(THEMES[theme])
+            self.currTheme = theme
+
+    def readSettings(self):
+        settings = QSettings(ACPLT, APPLICATION_NAME)
+        size = settings.value('size', QSize(1194, 624))
+        self.resize(size)
+        theme = settings.value('theme', DEFAULT_THEME)
+        self.toggleTheme(theme)
+        packTreeViewSize = settings.value('packTreeViewSize', QSize(256, 493))
+        self.packTreeView.resize(packTreeViewSize)
+
+    def writeSettings(self):
+        settings = QSettings(ACPLT, APPLICATION_NAME)
+        settings.setValue('size', self.size())
+        settings.setValue('theme', self.currTheme)
+        settings.setValue('packTreeViewSize', self.packTreeView.size())
 
 # ToDo logs insteads of prints

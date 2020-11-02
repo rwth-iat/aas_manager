@@ -9,8 +9,7 @@ from aas.examples.data.example_aas import create_full_example
 from aas.model import AASReference, Reference, Submodel, IdentifierType, Referable
 
 from aas_editor.editorApp import EditorApp
-from aas_editor.settings import PREFERED_THEME, NAME_ROLE, VALUE_COLUMN
-from aas_editor.util import toggleTheme
+from aas_editor.settings import DEFAULT_THEME, NAME_ROLE, VALUE_COLUMN
 from aas_editor.views.tab import Tab
 from aas_editor.views.treeview_pack import PackTreeView
 
@@ -22,7 +21,6 @@ class TestUi(TestCase):
         obj_store = create_full_example()
 
         self.window = EditorApp()
-        toggleTheme(PREFERED_THEME)
         self.window.importTestPack(obj_store)
         self.window.show()
 

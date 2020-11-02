@@ -15,13 +15,15 @@ class TabWidget(QTabWidget):
 
     def __init__(self, parent: QWidget = None):
         super(TabWidget, self).__init__(parent)
+        self.initActions()
+        self.buildHandlers()
+
         self.setElideMode(Qt.ElideRight)
         self.setUsesScrollButtons(True)
         self.setTabsClosable(True)
         self.setMovable(True)
         self.setStyleSheet("QTabBar::tab { height: 25px; width: 200px}")
-        self.initActions()
-        self.buildHandlers()
+        self.tabWidget.setCurrentIndex(-1)
 
     # noinspection PyArgumentList
     def initActions(self):

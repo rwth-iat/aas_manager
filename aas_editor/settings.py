@@ -9,6 +9,9 @@ AAS_CREATOR = "PyI40AAS Testing Framework"
 
 ATTR_COLUMN_WIDTH = 200
 
+APPLICATION_NAME = "AAS Editor"
+ACPLT = "ACPLT"
+
 PREFERED_LANGS_ORDER = ("en-us", "en", "de")
 
 ATTR_ORDER = (
@@ -27,7 +30,7 @@ ATTR_ORDER = (
     "identification",
 )
 
-PREFERED_THEME = "dark"
+DEFAULT_THEME = "dark"
 
 DARK_THEME_PATH = "themes/dark.qss"
 LIGHT_THEME_PATH = "themes/light.qss"
