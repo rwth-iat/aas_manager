@@ -1,14 +1,17 @@
 from typing import Any
 
-from PyQt5.QtCore import pyqtSignal, QModelIndex, QVariant, Qt, QPersistentModelIndex
+from PyQt5.QtCore import pyqtSignal, QModelIndex, QVariant, Qt, QPersistentModelIndex, QSize
 from PyQt5.QtGui import QColor, QFont
 
 from aas_editor.models import Package, DetailedInfoItem, StandardTable
 from aas_editor.settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, COLUMNS_IN_DETAILED_INFO, \
-    ATTRIBUTE_COLUMN, VALUE_COLUMN, PACK_ITEM_ROLE, LIGHT_BLUE, LINK_BLUE, CHANGED_BLUE, NEW_GREEN
+    ATTRIBUTE_COLUMN, VALUE_COLUMN, PACK_ITEM_ROLE, LIGHT_BLUE, LINK_BLUE, CHANGED_BLUE, NEW_GREEN, \
+    DEFAULT_FONT
 
 
 class DetailedInfoTable(StandardTable):
+    defaultFont = QFont(DEFAULT_FONT)
+
     def __init__(self, packItem: QModelIndex):
         self.packItem = QPersistentModelIndex(packItem)
         self.mainObj = packItem.data(OBJECT_ROLE)
@@ -18,6 +21,8 @@ class DetailedInfoTable(StandardTable):
         super(DetailedInfoTable, self).__init__(COLUMNS_IN_DETAILED_INFO, root)
 
     def data(self, index: QModelIndex, role: int = ...) -> Any:
+        if role == Qt.SizeHintRole:
+            return super(DetailedInfoTable, self).data(index, role)
         if role == Qt.BackgroundRole:
             return self._getBgColor(index)
         if role == Qt.ForegroundRole:
@@ -56,18 +61,15 @@ class DetailedInfoTable(StandardTable):
                 color = CHANGED_BLUE
                 return color
             return QVariant()
-
         return QVariant()
 
     def _getFont(self, index: QModelIndex):
-        font = QFont()
+        font = QFont(self.defaultFont)
         if index.column() == ATTRIBUTE_COLUMN:
             if not isinstance(index.parent().data(OBJECT_ROLE), dict):
                 font.setBold(True)
-            return font
-        if index.column() == VALUE_COLUMN:
+        elif index.column() == VALUE_COLUMN:
             if self.objByIndex(index).isLink:
                 font.setUnderline(True)
-            return font
-        return QVariant()
 
+        return font

@@ -1,6 +1,6 @@
 from enum import Enum
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QKeySequence, QColor
+from PyQt5.QtGui import QKeySequence, QColor, QFont
 from aas.model import AdministrativeInformation, Identifier, Submodel, AASReference, Asset, \
     SubmodelElement, AssetAdministrationShell, ConceptDescription, ConceptDictionary, \
     AbstractObjectStore
@@ -8,6 +8,11 @@ from aas.model import AdministrativeInformation, Identifier, Submodel, AASRefere
 AAS_CREATOR = "PyI40AAS Testing Framework"
 
 ATTR_COLUMN_WIDTH = 200
+
+MAX_FONT_SIZE = 60
+MIN_FONT_SIZE = 6
+DEFAULT_FONT = QFont()
+DEFAULT_FONT.setPointSize(12)
 
 APPLICATION_NAME = "AAS Editor"
 ACPLT = "ACPLT"
@@ -95,10 +100,11 @@ SC_PASTE = QKeySequence.Paste
 SC_DELETE = QKeySequence.Delete
 SC_NEW = QKeySequence.New
 
-SC_EXPAND = QKeySequence(Qt.CTRL + Qt.Key_Plus)
+SC_ZOOM_IN = QKeySequence(Qt.CTRL + Qt.Key_Plus)
+SC_ZOOM_OUT = QKeySequence(Qt.CTRL + Qt.Key_Minus)
+
 SC_EXPAND_RECURS = QKeySequence(Qt.CTRL + Qt.ALT + Qt.Key_Plus)
 SC_EXPAND_ALL = QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_Plus)
-SC_COLLAPSE = QKeySequence(Qt.CTRL + Qt.Key_Minus)
 SC_COLLAPSE_RECURS = QKeySequence(Qt.CTRL + Qt.ALT + Qt.Key_Minus)
 SC_COLLAPSE_ALL = QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_Minus)
 

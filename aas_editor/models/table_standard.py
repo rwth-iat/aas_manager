@@ -1,17 +1,20 @@
 from enum import Enum
 from typing import Any, Iterable, Union, AbstractSet
 
-from PyQt5.QtCore import QAbstractItemModel, QVariant, QModelIndex, Qt, pyqtSignal, QItemSelection
+from PyQt5.QtCore import QAbstractItemModel, QVariant, QModelIndex, Qt, pyqtSignal, QItemSelection, \
+    QSize
+from PyQt5.QtGui import QFont
 
 from aas_editor.models import Package, DetailedInfoItem, StandardItem, PackTreeViewItem
 from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, VALUE_COLUMN, NOT_GIVEN, \
-    PACKAGE_ROLE, PACK_ITEM_ROLE, PACKAGE_ATTRS
+    PACKAGE_ROLE, PACK_ITEM_ROLE, PACKAGE_ATTRS, DEFAULT_FONT
 
 from aas.model import Submodel, SubmodelElement
 
 
 class StandardTable(QAbstractItemModel):
     valueChangeFailed = pyqtSignal(['QString'])
+    defaultFont = QFont(DEFAULT_FONT)
 
     def __init__(self, columns=("Item",), rootItem: StandardItem = None):
         super(StandardTable, self).__init__()
@@ -132,42 +135,59 @@ class StandardTable(QAbstractItemModel):
         self.dataChanged.emit(index, index.child(self.rowCount(index), self.columnCount(index)))
         return True
 
-    def setData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
-        if not index.isValid() or not role == Qt.EditRole:
-            return QVariant()
-        try:
-            if self.hasChildren(index):
-                self.removeRows(0, self.rowCount(index), index)
-            value = None if str(value) == "None" else value
+    def data(self, index: QModelIndex, role: int = ...) -> Any:
+        if role == Qt.FontRole:
+            return QFont(self.defaultFont)
+        elif role == Qt.SizeHintRole:
+            fontSize = self.defaultFont.pointSize()
+            return QSize(-1, fontSize*1.7)
+        else:
             item = self.objByIndex(index)
-            if isinstance(index.parent().data(OBJECT_ROLE), list):
-                item.parentObj[index.row()] = value
-                item.obj = index.parent().data(OBJECT_ROLE)[index.row()]
-            elif isinstance(index.parent().data(OBJECT_ROLE), AbstractSet):
-                item.parentObj.remove(item.obj)
-                item.parentObj.add(value)
-                item.obj = value
-            elif isinstance(index.parent().data(OBJECT_ROLE), dict):
-                if index.column() == VALUE_COLUMN:
-                    item.parentObj[item.objName] = value
-                    item.obj = item.parentObj[item.objName]
-                elif index.column() == ATTRIBUTE_COLUMN:
-                    item.parentObj[value] = item.parentObj.pop(item.objName)
-                    item.objName = value
-            else:
-                setattr(item.parentObj, item.objName, value)
-                item.obj = getattr(item.parentObj, item.objName)
-            self.setChanged(index)
-            item.populate()
-            self.dataChanged.emit(index,
-                                  index.child(self.rowCount(index), self.columnCount(index)))
-            return True
-        except (ValueError, AttributeError) as e:
-            self.dataChanged.emit(index, index)
-            # noinspection PyUnresolvedReferences
-            self.valueChangeFailed.emit(
-                f"Error occurred while setting {self.objByIndex(index).objName}: {e}")
-        return False
+            return item.data(role, index.column())
+
+    def setData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
+        if not index.isValid() and not role == Qt.FontRole:
+            return QVariant()
+        elif role == Qt.FontRole:
+            if isinstance(value, QFont):
+                font = QFont(value)
+                self.defaultFont.setPointSize(font.pointSize())
+                self.dataChanged.emit(self.index(0), self.index(self.rowCount()),
+                                      (Qt.FontRole, Qt.SizeHintRole))
+        elif role == Qt.EditRole:
+            try:
+                if self.hasChildren(index):
+                    self.removeRows(0, self.rowCount(index), index)
+                value = None if str(value) == "None" else value
+                item = self.objByIndex(index)
+                if isinstance(index.parent().data(OBJECT_ROLE), list):
+                    item.parentObj[index.row()] = value
+                    item.obj = index.parent().data(OBJECT_ROLE)[index.row()]
+                elif isinstance(index.parent().data(OBJECT_ROLE), AbstractSet):
+                    item.parentObj.remove(item.obj)
+                    item.parentObj.add(value)
+                    item.obj = value
+                elif isinstance(index.parent().data(OBJECT_ROLE), dict):
+                    if index.column() == VALUE_COLUMN:
+                        item.parentObj[item.objName] = value
+                        item.obj = item.parentObj[item.objName]
+                    elif index.column() == ATTRIBUTE_COLUMN:
+                        item.parentObj[value] = item.parentObj.pop(item.objName)
+                        item.objName = value
+                else:
+                    setattr(item.parentObj, item.objName, value)
+                    item.obj = getattr(item.parentObj, item.objName)
+                self.setChanged(index)
+                item.populate()
+                self.dataChanged.emit(index,
+                                      index.child(self.rowCount(index), self.columnCount(index)))
+                return True
+            except (ValueError, AttributeError) as e:
+                self.dataChanged.emit(index, index)
+                # noinspection PyUnresolvedReferences
+                self.valueChangeFailed.emit(
+                    f"Error occurred while setting {self.objByIndex(index).objName}: {e}")
+            return False
 
     def setChanged(self, topLeft: QModelIndex, bottomRight: QModelIndex = None):
         """Set the item and all parents as changed"""

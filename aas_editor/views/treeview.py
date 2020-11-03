@@ -1,6 +1,6 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal, Qt, QModelIndex, QEvent
-from PyQt5.QtGui import QKeySequence, QMouseEvent, QKeyEvent, QClipboard, QIcon
+from PyQt5.QtGui import QKeySequence, QMouseEvent, QKeyEvent, QClipboard, QIcon, QFont, QWheelEvent
 from PyQt5.QtWidgets import QTreeView, QAction, QMenu, QApplication, QDialog, QAbstractItemView
 
 from aas_editor.dialogs import AddObjDialog
@@ -22,6 +22,7 @@ class TreeView(QTreeView):
         self.initActions()
         self.initMenu()
         self.customContextMenuRequested.connect(self.openMenu)
+        self.setUniformRowHeights(True)
 
     # noinspection PyArgumentList
     def initActions(self):
@@ -67,7 +68,6 @@ class TreeView(QTreeView):
 
         self.collapseAct = QAction("Collapse", self,
                                    statusTip="Collapse selected item",
-                                   shortcut=SC_COLLAPSE,
                                    shortcutContext=Qt.WidgetWithChildrenShortcut,
                                    triggered=lambda: self.collapse(self.currentIndex()))
         self.addAction(self.collapseAct)
@@ -88,7 +88,6 @@ class TreeView(QTreeView):
 
         self.expandAct = QAction("Expand", self,
                                  statusTip="Expand selected item",
-                                 shortcut=SC_EXPAND,
                                  shortcutContext=Qt.WidgetWithChildrenShortcut,
                                  triggered=lambda: self.expand(self.currentIndex()))
         self.addAction(self.expandAct)
@@ -119,6 +118,32 @@ class TreeView(QTreeView):
                                            statusTip="Open selected item in background tab",
                                            enabled=False)
 
+        self.zoomInAct = QAction("Zoom in", self,
+                                 shortcut=SC_ZOOM_IN,
+                                 shortcutContext=Qt.WidgetShortcut,
+                                 statusTip="Zoom text in",
+                                 triggered=self.zoomIn)
+        self.addAction(self.zoomInAct)
+
+        self.zoomOutAct = QAction("Zoom out", self,
+                                  shortcut=SC_ZOOM_OUT,
+                                  shortcutContext=Qt.WidgetShortcut,
+                                  statusTip="Zoom text out",
+                                  triggered=self.zoomOut)
+        self.addAction(self.zoomOutAct)
+
+    def zoomIn(self):
+        font = QFont(self.model().data(QModelIndex(), Qt.FontRole))
+        fontSize = min(font.pointSize() + 2, MAX_FONT_SIZE)
+        font.setPointSize(fontSize)
+        self.model().setData(QModelIndex(), font, Qt.FontRole)
+
+    def zoomOut(self):
+        font = QFont(self.model().data(QModelIndex(), Qt.FontRole))
+        fontSize = max(font.pointSize() - 2, MIN_FONT_SIZE)
+        font.setPointSize(fontSize)
+        self.model().setData(QModelIndex(), font, Qt.FontRole)
+
     def initMenu(self) -> None:
         self.attrsMenu = QMenu(self)
         self.attrsMenu.addAction(self.cutAct)
@@ -128,6 +153,9 @@ class TreeView(QTreeView):
         self.attrsMenu.addAction(self.addAct)
         self.attrsMenu.addSeparator()
         self.attrsMenu.addAction(self.delClearAct)
+        self.attrsMenu.addSeparator()
+        self.attrsMenu.addAction(self.zoomInAct)
+        self.attrsMenu.addAction(self.zoomOutAct)
         self.attrsMenu.addSeparator()
         foldingMenu = self.attrsMenu.addMenu("Folding")
         foldingMenu.addAction(self.collapseAct)
@@ -166,6 +194,15 @@ class TreeView(QTreeView):
         else:
             # any other key was pressed, inform base
             super(TreeView, self).keyPressEvent(event)
+
+    def wheelEvent(self, a0: QWheelEvent) -> None:
+        if a0.modifiers() & Qt.ControlModifier:
+            if a0.angleDelta().y() > 0:
+                self.zoomIn()
+            elif a0.angleDelta().y() < 0:
+                self.zoomOut()
+        else:
+            super(TreeView, self).wheelEvent(a0)
 
     def handleEnterEvent(self):
         index2edit = self.currentIndex().siblingAtColumn(VALUE_COLUMN)

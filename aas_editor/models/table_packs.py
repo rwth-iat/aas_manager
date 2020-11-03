@@ -1,12 +1,15 @@
 from typing import Any
 
 from PyQt5.QtCore import QModelIndex, QVariant, Qt
+from PyQt5.QtGui import QFont
 
 from aas_editor.models import Package, StandardTable, QColor
-from aas_editor.settings import PACKAGE_ROLE, NAME_ROLE
+from aas_editor.settings import PACKAGE_ROLE, NAME_ROLE, DEFAULT_FONT
 
 
 class PacksTable(StandardTable):
+    defaultFont = QFont(DEFAULT_FONT)
+
     def openedPacks(self):
         packs = set()
         for i in range(self.rowCount()):
@@ -25,8 +28,8 @@ class PacksTable(StandardTable):
     def data(self, index: QModelIndex, role: int = ...) -> Any:
         if role == Qt.ForegroundRole:
             return self._getFgColor(index)
-        item = self.objByIndex(index)
-        return item.data(role, index.column())
+        else:
+            return super(PacksTable, self).data(index, role)
 
     def _getFgColor(self, index: QModelIndex):
         if self.objByIndex(index).new:
