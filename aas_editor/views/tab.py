@@ -41,6 +41,22 @@ class TabWidget(QTabWidget):
                                   triggered=lambda: self.currentWidget().openNextItem(),
                                   enabled=False)
 
+        self.zoomInAct = QAction(qta.icon("mdi.magnify-minus"), "Zoom in", self,
+                                 statusTip="Zoom in detailed info",
+                                 triggered=self.zoomIn)
+
+        self.zoomOutAct = QAction(qta.icon("mdi.magnify-minus"), "Zoom out", self,
+                                  statusTip="Zoom out detailed info",
+                                  triggered=self.zoomOut)
+
+    def zoomIn(self):
+        if isinstance(self.currentWidget(), Tab):
+            self.currentWidget().attrsTreeView.zoomIn()
+
+    def zoomOut(self):
+        if isinstance(self.currentWidget(), Tab):
+            self.currentWidget().attrsTreeView.zoomOut()
+
     def buildHandlers(self):
         self.tabCloseRequested.connect(self.removeTab)
         self.currentChanged.connect(self._currentTabChanged)

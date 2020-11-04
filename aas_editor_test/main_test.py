@@ -21,7 +21,8 @@ class TestUi(TestCase):
         obj_store = create_full_example()
 
         self.window = EditorApp()
-        self.window.importTestPack(obj_store)
+        from aas_editor.models import Package
+        self.window.packTreeModel.addItem(Package("aas_files/TestPackage.aasx"))
         self.window.show()
 
         self.packTreeView: PackTreeView = self.window.packTreeView
@@ -94,6 +95,8 @@ class TestUi(TestCase):
                 if self.attrsTreeView.editCreateAct.isEnabled():
                     # Edit current item if possible
                     self.attrsTreeView.editCreateAct.trigger()
+                    if self.app.activeWindow():
+                        self.app.activeWindow().close()
                     self._nextItemInRightTree()
                     return
                 else:

@@ -132,16 +132,17 @@ class AttrsTreeView(TreeView):
 
     def _editCreateHandler(self, objVal=None):
         index = self.currentIndex()
-        objVal = objVal if objVal else index.data(OBJECT_ROLE)
-        attribute = index.data(NAME_ROLE)
-        try:
-            attrType = getAttrTypeHint(type(self.model().objByIndex(index).parentObj), attribute)
-        except KeyError as e:
-            if objVal:
-                attrType = type(objVal)
-            else:
-                raise KeyError(e)
-        self.replItemWithDialog(index, attrType, title=f"Create {attribute}", objVal=objVal)
+        if index.isValid():
+            objVal = objVal if objVal else index.data(OBJECT_ROLE)
+            attribute = index.data(NAME_ROLE)
+            try:
+                attrType = getAttrTypeHint(type(self.model().objByIndex(index).parentObj), attribute)
+            except KeyError as e:
+                if objVal:
+                    attrType = type(objVal)
+                else:
+                    raise KeyError(e)
+            self.replItemWithDialog(index, attrType, title=f"Create {attribute}", objVal=objVal)
 
     def _openRef(self, detailInfoItem: QModelIndex, newTab=True, setCurrent=True):
         item = self.model().objByIndex(detailInfoItem)

@@ -13,7 +13,7 @@ from aas_editor.settings import AAS_CREATOR
 
 
 class Package:
-    def __init__(self, file: str = ""):
+    def __init__(self, file: Union[str, Path] = ""):
         self.objStore = DictObjectStore()
         self.fileStore = DictSupplementaryFileContainer()
         self.file = file

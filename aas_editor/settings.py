@@ -1,4 +1,6 @@
 from enum import Enum
+from pathlib import Path
+
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QKeySequence, QColor, QFont
 from aas.model import AdministrativeInformation, Identifier, Submodel, AASReference, Asset, \
@@ -68,6 +70,7 @@ ATTRS_NOT_IN_DETAILED_INFO = ("gi_code",
                               "parent",
                               "security", #TODO delete when implemented in aas
                               "submodel_element") + PACKAGE_ATTRS
+TYPES_NOT_TO_POPULATE = (AbstractObjectStore, str, int, float, bool, Enum, Path)  # '+ TYPES_IN_ONE_ROW
 ATTRS_IN_PACKAGE_TREEVIEW = PACKAGE_ATTRS
 ATTR_INFOS_TO_SIMPLIFY = (AdministrativeInformation, Identifier,)
 LINK_TYPES = (
@@ -84,7 +87,6 @@ PACKAGE_ROLE = 1001
 NAME_ROLE = 1002
 OBJECT_ROLE = 1003
 PACK_ITEM_ROLE = 1004
-TYPES_NOT_TO_POPULATE = (AbstractObjectStore, str, int, float, bool, Enum,)  # '+ TYPES_IN_ONE_ROW
 COLUMNS_IN_DETAILED_INFO = ("attribute", "value")
 ATTRIBUTE_COLUMN = 0
 VALUE_COLUMN = 1

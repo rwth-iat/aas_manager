@@ -1,5 +1,3 @@
-change font size with ctrl+scroll
-
 Add properties isNew, isEdited to mark new or edited items (green, blue)
 finish changed and new properties
 Refactor open/save/close for handling pack as QModelIndex not Package
@@ -39,6 +37,10 @@ settings
 integrate validator
 
 Done:
+Add to settings fontSize
+Add to view menu zoomIn/zoomOut
+Add to view menu toolbar (visible/unvisible)
+change font size with ctrl+scroll
 open in curr tab and other (update(true) if currIndex.isValid())
 open recent unclosed files
 open recent

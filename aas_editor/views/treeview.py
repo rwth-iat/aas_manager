@@ -118,29 +118,36 @@ class TreeView(QTreeView):
                                            statusTip="Open selected item in background tab",
                                            enabled=False)
 
-        self.zoomInAct = QAction("Zoom in", self,
+        self.zoomInAct = QAction(qta.icon("mdi.magnify-plus"), "Zoom in", self,
                                  shortcut=SC_ZOOM_IN,
                                  shortcutContext=Qt.WidgetShortcut,
-                                 statusTip="Zoom text in",
+                                 statusTip="Zoom in",
                                  triggered=self.zoomIn)
         self.addAction(self.zoomInAct)
 
-        self.zoomOutAct = QAction("Zoom out", self,
+        self.zoomOutAct = QAction(qta.icon("mdi.magnify-minus"), "Zoom out", self,
                                   shortcut=SC_ZOOM_OUT,
                                   shortcutContext=Qt.WidgetShortcut,
-                                  statusTip="Zoom text out",
+                                  statusTip="Zoom out",
                                   triggered=self.zoomOut)
         self.addAction(self.zoomOutAct)
 
     def zoomIn(self):
-        font = QFont(self.model().data(QModelIndex(), Qt.FontRole))
-        fontSize = min(font.pointSize() + 2, MAX_FONT_SIZE)
-        font.setPointSize(fontSize)
-        self.model().setData(QModelIndex(), font, Qt.FontRole)
+        self.zoom(delta=+2)
 
     def zoomOut(self):
+        self.zoom(delta=-2)
+
+    def zoom(self, abs: int = DEFAULT_FONT.pointSize(), delta: int = 0):
         font = QFont(self.model().data(QModelIndex(), Qt.FontRole))
-        fontSize = max(font.pointSize() - 2, MIN_FONT_SIZE)
+        if delta > 0:
+            fontSize = min(font.pointSize() + 2, MAX_FONT_SIZE)
+        elif delta < 0:
+            fontSize = max(font.pointSize() - 2, MIN_FONT_SIZE)
+        elif MIN_FONT_SIZE < abs < MAX_FONT_SIZE:
+            fontSize = abs
+        else:
+            return
         font.setPointSize(fontSize)
         self.model().setData(QModelIndex(), font, Qt.FontRole)
 

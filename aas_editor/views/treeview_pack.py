@@ -220,9 +220,11 @@ class PackTreeView(TreeView):
     def openPack(self, file: str):
         try:
             pack = Package(file)
-            self.updateRecentFiles(pack.file.absolute().as_posix())
-        except (TypeError, ValueError) as e:
+            absFile = pack.file.absolute().as_posix()
+            self.updateRecentFiles(absFile)
+        except (OSError, TypeError, ValueError) as e:
             QMessageBox.critical(self, "Error", f"Package {file} couldn't be opened: {e}")
+            self.removeFromRecentFiles(absFile)
         else:
             if Path(file).absolute() in self.model().openedFiles():
                 QMessageBox.critical(self, "Error", f"Package {file} is already opened")
@@ -311,14 +313,20 @@ class PackTreeView(TreeView):
             self.openPack(action.data())
 
     def updateRecentFiles(self, file: str):
+        self.removeFromRecentFiles(file)
+        settings = QSettings(ACPLT, APPLICATION_NAME)
+        files = settings.value('recentFiles', [])
+        files.insert(0, file)
+        del files[MAX_RECENT_FILES:]
+        settings.setValue('recentFiles', files)
+
+    def removeFromRecentFiles(self, file: str):
         settings = QSettings(ACPLT, APPLICATION_NAME)
         files = settings.value('recentFiles', [])
         try:
             files.remove(file)
         except ValueError:
             pass
-        files.insert(0, file)
-        del files[MAX_RECENT_FILES:]
         settings.setValue('recentFiles', files)
 
     def updateRecentFileActs(self):

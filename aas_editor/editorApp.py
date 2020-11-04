@@ -10,7 +10,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt
 
-from .models import Package, StandardTable, DictObjectStore
+from .models import Package, StandardTable, DictObjectStore, DetailedInfoTable
 from .models.table_packs import PacksTable
 
 from .views.tab import Tab
@@ -18,6 +18,9 @@ from .settings import *
 from .util import toggleStylesheet
 
 import qtawesome as qta
+
+from .views.treeview_detailed import AttrsTreeView
+
 qta.set_defaults(**ICON_DEFAULTS)
 
 
@@ -25,10 +28,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-        self.initActions()
-        self.initMenu()
-        self.initToolbar()
-
         self.currTheme = DEFAULT_THEME
 
         self.packTreeModel = PacksTable()
@@ -37,6 +36,9 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.tabWidget.addTab(Tab(parent=self.tabWidget), "Welcome")
 
+        self.initActions()
+        self.initMenu()
+        self.initToolbar()
         self.buildHandlers()
         self.readSettings()
 
@@ -77,6 +79,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menuFile.addAction(self.packTreeView.saveAct)
         self.menuFile.addAction(self.packTreeView.saveAsAct)
         self.menuFile.addAction(self.packTreeView.saveAllAct)
+        self.menuFile.addSeparator()
         self.menuFile.addAction(self.packTreeView.closeAct)
         self.menuFile.addAction(self.packTreeView.closeAllAct)
         self.menuFile.addAction(self.exitAct)
@@ -86,10 +89,20 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         for themeAct in self.themeActs:
             self.menuChoose_theme.addAction(themeAct)
         self.menuView.addAction(self.menuChoose_theme.menuAction())
+        self.menuAppearance = QMenu("Appearance", self.menuView)
+        self.menuAppearance.addAction(self.toolBar.toggleViewAction())
+        self.menuView.addAction(self.menuAppearance.menuAction())
+        self.menuView.addSection("AAS file view")
+        self.menuView.addAction(self.packTreeView.zoomInAct)
+        self.menuView.addAction(self.packTreeView.zoomOutAct)
+        self.menuView.addSection("Detailed view")
+        self.menuView.addAction(self.tabWidget.zoomInAct)
+        self.menuView.addAction(self.tabWidget.zoomOutAct)
 
         self.menuNavigate = QMenu("&Navigate", self.menubar)
         self.menuNavigate.addAction(self.tabWidget.backAct)
         self.menuNavigate.addAction(self.tabWidget.forwardAct)
+        self.menuNavigate.addSeparator()
         self.menuNavigate.addAction(self.packTreeView.openInNewTabAct)
         self.menuNavigate.addAction(self.packTreeView.openInCurrTabAct)
         self.menuNavigate.addAction(self.packTreeView.openInBackgroundAct)
@@ -175,15 +188,30 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
     def readSettings(self):
         settings = QSettings(ACPLT, APPLICATION_NAME)
+
         theme = settings.value('theme', DEFAULT_THEME)
         self.toggleTheme(theme)
+
         size = settings.value('size', QSize(1194, 624))
         self.resize(size)
+
         splitterSize = settings.value('leftZoneSize', QSize(250, 624))
         self.layoutWidget.resize(splitterSize)
+
+        fontSizeFilesView = settings.value('fontSizeFilesView',
+                                           PacksTable.defaultFont.pointSize())
+        PacksTable.defaultFont.setPointSize(int(fontSizeFilesView))
+
+        fontSizeDetailedView = settings.value('fontSizeDetailedView',
+                                              DetailedInfoTable.defaultFont.pointSize())
+        DetailedInfoTable.defaultFont.setPointSize(int(fontSizeDetailedView))
+
         openedAasFiles = settings.value('openedAasFiles', set())
         for file in openedAasFiles:
-            self.packTreeView.openPack(file)
+            try:
+                self.packTreeView.openPack(file)
+            except OSError:
+                pass
 
     def writeSettings(self):
         settings = QSettings(ACPLT, APPLICATION_NAME)
@@ -191,5 +219,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         settings.setValue('size', self.size())
         settings.setValue('leftZoneSize', self.layoutWidget.size())
         settings.setValue('openedAasFiles', self.packTreeModel.openedFiles())
+        settings.setValue('fontSizeFilesView', PacksTable.defaultFont.pointSize())
+        settings.setValue('fontSizeDetailedView', DetailedInfoTable.defaultFont.pointSize())
 
 # ToDo logs insteads of prints
