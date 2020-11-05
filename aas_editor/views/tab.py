@@ -2,7 +2,7 @@ from PyQt5.QtCore import pyqtSignal, QModelIndex, Qt, QPersistentModelIndex, QPo
 from PyQt5.QtGui import QIcon, QKeySequence, QPixmap, QRegion, QDrag, QCursor, QMouseEvent, \
     QDragEnterEvent, QDragLeaveEvent, QDropEvent
 from PyQt5.QtWidgets import QWidget, QLineEdit, QLabel, QMessageBox, QGridLayout, QVBoxLayout, \
-    QTabWidget, QAction
+    QTabWidget, QAction, QToolBar, QHBoxLayout, QFrame
 
 from aas_editor.settings import NAME_ROLE, SC_BACK, SC_FORWARD
 from aas_editor.views.treeview_detailed import AttrsTreeView
@@ -31,20 +31,6 @@ class TabWidget(QTabWidget):
 
     # noinspection PyArgumentList
     def initActions(self):
-        self.backAct = QAction(qta.icon("fa5s.arrow-circle-left"), "Back", self,
-                               statusTip=f"Go back one item",
-                               toolTip=f"Go back one item",
-                               shortcut=SC_BACK,
-                               triggered=lambda: self.currentWidget().openPrevItem(),
-                               enabled=False)
-
-        self.forwardAct = QAction(qta.icon("fa5s.arrow-circle-right"), "Forward", self,
-                                  statusTip=f"Go forward one item",
-                                  toolTip=f"Go forward one item",
-                                  shortcut=SC_FORWARD,
-                                  triggered=lambda: self.currentWidget().openNextItem(),
-                                  enabled=False)
-
         self.zoomInAct = QAction(qta.icon("mdi.magnify-minus"), "Zoom in", self,
                                  statusTip="Zoom in detailed info",
                                  triggered=self.zoomIn)
@@ -64,7 +50,6 @@ class TabWidget(QTabWidget):
     def buildHandlers(self):
         self.tabCloseRequested.connect(self.removeTab)
         self.currentChanged.connect(self._currentTabChanged)
-        self.currItemChanged.connect(self._updateActions)
 
     def tabInserted(self, index):
         super(TabWidget, self).tabInserted(index)
@@ -85,12 +70,6 @@ class TabWidget(QTabWidget):
             self.currItemChanged.emit(packItem)
         else:
             self.currItemChanged.emit(QModelIndex())
-
-    def _updateActions(self):
-        tab: Tab = self.currentWidget()
-        if tab:
-            self.forwardAct.setEnabled(True) if tab.nextItems else self.forwardAct.setDisabled(True)
-            self.backAct.setEnabled(True) if tab.prevItems else self.backAct.setDisabled(True)
 
     def openItem(self, packItem: QModelIndex = QModelIndex()) -> int:
         if not self.count():
@@ -186,6 +165,12 @@ class Tab(QWidget):
 
     def __init__(self, packItem=QModelIndex(), parent: TabWidget = None):
         super(Tab, self).__init__(parent)
+        self.initActions()
+
+        self.toolBar = QToolBar(self)
+        self.toolBar.setMaximumHeight(30)
+        self.toolBar.addAction(self.backAct)
+        self.toolBar.addAction(self.forwardAct)
 
         self.pathLine: QLineEdit = QLineEdit(self)
         self.pathLine.setReadOnly(True)
@@ -195,6 +180,7 @@ class Tab(QWidget):
         self.descrLabel.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
         self.attrsTreeView = AttrsTreeView(self)
+        self.attrsTreeView.setFrameShape(QFrame.NoFrame)
 
         self.packItem = QPersistentModelIndex(QModelIndex())
         self.prevItems = []
@@ -202,6 +188,22 @@ class Tab(QWidget):
         self.openItem(packItem)
 
         self._initLayout()
+
+    # noinspection PyArgumentList
+    def initActions(self):
+        self.backAct = QAction(qta.icon("fa5s.arrow-circle-left"), "Back", self,
+                               statusTip=f"Go back one item",
+                               toolTip=f"Go back one item",
+                               shortcut=SC_BACK,
+                               triggered=self.openPrevItem,
+                               enabled=False)
+
+        self.forwardAct = QAction(qta.icon("fa5s.arrow-circle-right"), "Forward", self,
+                                  statusTip=f"Go forward one item",
+                                  toolTip=f"Go forward one item",
+                                  shortcut=SC_FORWARD,
+                                  triggered=self.openNextItem,
+                                  enabled=False)
 
     @property
     def objectName(self) -> str:
@@ -235,6 +237,10 @@ class Tab(QWidget):
         self.objectNameChanged.emit(self.objectName)
         self.currItemChanged.emit(QModelIndex(self.packItem))
 
+        self.forwardAct.setEnabled(True) if self.nextItems else self.forwardAct.setDisabled(True)
+        self.backAct.setEnabled(True) if self.prevItems else self.backAct.setDisabled(True)
+
+
     def showDetailInfoItemDoc(self, detailInfoItem: QModelIndex):
         self.descrLabel.setText(detailInfoItem.data(Qt.WhatsThisRole))
 
@@ -244,8 +250,13 @@ class Tab(QWidget):
     def _initLayout(self):
         layout = QVBoxLayout(self)
         layout.setObjectName("tabLayout")
-        layout.addWidget(self.pathLine)
+        pathWidget = QWidget(self)
+        pathLayout = QHBoxLayout(pathWidget)
+        pathLayout.setContentsMargins(0, 0, 0, 0)
+        pathLayout.addWidget(self.toolBar)
+        pathLayout.addWidget(self.pathLine)
+        layout.addWidget(pathWidget)
         layout.addWidget(self.attrsTreeView)
         layout.addWidget(self.descrLabel)
         layout.setSpacing(2)
-        layout.setContentsMargins(3,2,3,2)
+        layout.setContentsMargins(0,2,0,2)

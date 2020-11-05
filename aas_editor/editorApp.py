@@ -100,8 +100,8 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menuView.addAction(self.tabWidget.zoomOutAct)
 
         self.menuNavigate = QMenu("&Navigate", self.menubar)
-        self.menuNavigate.addAction(self.tabWidget.backAct)
-        self.menuNavigate.addAction(self.tabWidget.forwardAct)
+        # self.menuNavigate.addAction(self.tabWidget.backAct)
+        # self.menuNavigate.addAction(self.tabWidget.forwardAct)
         self.menuNavigate.addSeparator()
         self.menuNavigate.addAction(self.packTreeView.openInNewTabAct)
         self.menuNavigate.addAction(self.packTreeView.openInCurrTabAct)
@@ -114,9 +114,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
     def initToolbar(self):
         self.toolBar.addAction(self.packTreeView.saveAct)
         self.toolBar.addAction(self.packTreeView.openPackAct)
-        self.toolBar.addSeparator()
-        self.toolBar.addAction(self.tabWidget.backAct)
-        self.toolBar.addAction(self.tabWidget.forwardAct)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.packTreeView.addAct)
 
