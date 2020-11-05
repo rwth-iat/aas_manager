@@ -48,7 +48,6 @@ class Ui_MainWindow(object):
         self.packTreeView = PackTreeView(self.leftLayoutWidget)
         self.packTreeView.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.packTreeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.packTreeView.setFrameShape(QtWidgets.QFrame.NoFrame)
         self.packTreeView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
         self.packTreeView.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
         self.packTreeView.setObjectName("packTreeView")
@@ -66,7 +65,7 @@ class Ui_MainWindow(object):
         self.splitterTabWidgets.setOrientation(QtCore.Qt.Horizontal)
         self.rightVerticalLayout.addWidget(self.splitterTabWidgets)
 
-        self.tabWidget = TabWidget(self.splitterTabWidgets)
+        self.tabWidget = TabWidget(self.splitterTabWidgets, unclosable=True)
         self.tabWidget.setObjectName("tabWidget")
         self.gridLayout.addWidget(self.splitter, 1, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)

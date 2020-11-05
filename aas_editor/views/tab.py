@@ -107,11 +107,13 @@ class TabBar(QTabBar):
                                        statusTip="Close all tabs to the left",
                                        triggered=self.closeAllLeft)
 
-        self.splitHorizontallyAct = QAction("Split horizontally", self,
+        self.splitHorizontallyAct = QAction(qta.icon("mdi.arrow-split-vertical"),
+                                            "Split horizontally", self,
                                             statusTip="Split editor area into 2 tab groups",
                                             triggered=self.splitHorizontally)
 
-        self.splitVerticallyAct = QAction("Split vertically", self,
+        self.splitVerticallyAct = QAction(qta.icon("mdi.arrow-split-horizontal"),
+                                          "Split vertically", self,
                                           statusTip="Split editor area into 2 tab groups",
                                           triggered=self.splitVertically)
 
@@ -170,8 +172,10 @@ class TabWidget(QTabWidget):
     # signal for changing current item in packet treeview
     currItemChanged = pyqtSignal(['QModelIndex'])
 
-    def __init__(self, parent: QWidget = None):
+    def __init__(self, parent: QWidget = None, unclosable=False):
         super(TabWidget, self).__init__(parent)
+        self.unclosable = unclosable
+
         self.initActions()
         self.buildHandlers()
 
@@ -258,6 +262,8 @@ class TabWidget(QTabWidget):
         if widget is not None:
             widget.deleteLater()
         super(TabWidget, self).removeTab(index)
+        if not self.unclosable and not self.count():
+            self.deleteLater()
 
     def removePackTab(self, packItem: QModelIndex):
         for tabIndex in range(self.count()-1, -1, -1):
@@ -265,52 +271,6 @@ class TabWidget(QTabWidget):
             if QModelIndex(tab.packItem).siblingAtColumn(0) == packItem.siblingAtColumn(0):
                 self.removeTab(tabIndex)
 
-    # def mouseMoveEvent(self, a0: QMouseEvent) -> None:
-    #     if a0.buttons() != Qt.RightButton:
-    #         return
-    #
-    #     globalPos = self.mapToGlobal(a0.pos())
-    #     tabBar = self.tabBar()
-    #     posInTab = tabBar.mapFromGlobal(globalPos)
-    #
-    #     self.indexTabToDrag = tabBar.tabAt(a0.pos())
-    #     tabRect = tabBar.tabRect(self.indexTabToDrag)
-    #     pixmap = QPixmap(tabRect.size())
-    #     tabBar.render(pixmap, QPoint(), QRegion(tabRect))
-    #
-    #     mimeData = QMimeData()
-    #     drag = QDrag(tabBar)
-    #     drag.setMimeData(mimeData)
-    #     drag.setPixmap(pixmap)
-    #     cursor = QCursor(Qt.OpenHandCursor)
-    #     drag.setHotSpot(cursor.pos())
-    #     drag.setHotSpot(a0.pos() - posInTab)
-    #     drag.setDragCursor(cursor.pixmap(), Qt.MoveAction)
-    #     dropAction = drag.exec(Qt.MoveAction)
-    #
-    # def dragEnterEvent(self, a0: QDragEnterEvent) -> None:
-    #     a0.accept()
-    #     if a0.source().parentWidget() != self:
-    #         return
-    #     self.parent().tabIndexToDrag = self.indexOf(self.widget(self.indexTabToDrag))
-    #
-    # def dragLeaveEvent(self, a0: QDragLeaveEvent) -> None:
-    #     a0.accept()
-    #
-    # def dropEvent(self, a0: QDropEvent) -> None:
-    #     if a0.source().parentWidget() == self:
-    #         return
-    #
-    #     a0.setDropAction(Qt.MoveAction)
-    #     a0.accept()
-    #
-    #     tabs = self.count()
-    #
-    #     tab = a0.source().parentWidget().widget(self.parent().tabIndexToDrag)
-    #     if tabs == 0:
-    #         self.addTab(tab, tab.objectName)
-    #     else:
-    #         self.insertTab(tabs+1, tab, tab.objectName)
 
 class Tab(QWidget):
     currItemChanged = pyqtSignal(['QModelIndex'])
