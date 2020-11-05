@@ -1,5 +1,6 @@
-from PyQt5.QtCore import pyqtSignal, QModelIndex, Qt, QPersistentModelIndex
-from PyQt5.QtGui import QIcon, QKeySequence
+from PyQt5.QtCore import pyqtSignal, QModelIndex, Qt, QPersistentModelIndex, QPoint, QMimeData
+from PyQt5.QtGui import QIcon, QKeySequence, QPixmap, QRegion, QDrag, QCursor, QMouseEvent, \
+    QDragEnterEvent, QDragLeaveEvent, QDropEvent
 from PyQt5.QtWidgets import QWidget, QLineEdit, QLabel, QMessageBox, QGridLayout, QVBoxLayout, \
     QTabWidget, QAction
 
@@ -22,6 +23,9 @@ class TabWidget(QTabWidget):
         self.setUsesScrollButtons(True)
         self.setTabsClosable(True)
         self.setMovable(True)
+        self.setAcceptDrops(True)
+        self.tabBar().setMouseTracking(True)
+        self.indexTabToDrag = None
         self.setStyleSheet("QTabBar::tab { height: 25px; width: 200px}")
         self.setCurrentIndex(-1)
 
@@ -130,6 +134,52 @@ class TabWidget(QTabWidget):
             if QModelIndex(tab.packItem).siblingAtColumn(0) == packItem.siblingAtColumn(0):
                 self.removeTab(tabIndex)
 
+    def mouseMoveEvent(self, a0: QMouseEvent) -> None:
+        if a0.buttons() != Qt.RightButton:
+            return
+
+        globalPos = self.mapToGlobal(a0.pos())
+        tabBar = self.tabBar()
+        posInTab = tabBar.mapFromGlobal(globalPos)
+
+        self.indexTabToDrag = tabBar.tabAt(a0.pos())
+        tabRect = tabBar.tabRect(self.indexTabToDrag)
+        pixmap = QPixmap(tabRect.size())
+        tabBar.render(pixmap, QPoint(), QRegion(tabRect))
+
+        mimeData = QMimeData()
+        drag = QDrag(tabBar)
+        drag.setMimeData(mimeData)
+        drag.setPixmap(pixmap)
+        cursor = QCursor(Qt.OpenHandCursor)
+        drag.setHotSpot(cursor.pos())
+        drag.setHotSpot(a0.pos() - posInTab)
+        drag.setDragCursor(cursor.pixmap(), Qt.MoveAction)
+        dropAction = drag.exec(Qt.MoveAction)
+
+    def dragEnterEvent(self, a0: QDragEnterEvent) -> None:
+        a0.accept()
+        if a0.source().parentWidget() != self:
+            return
+        self.parent().tabIndexToDrag = self.indexOf(self.widget(self.indexTabToDrag))
+
+    def dragLeaveEvent(self, a0: QDragLeaveEvent) -> None:
+        a0.accept()
+
+    def dropEvent(self, a0: QDropEvent) -> None:
+        if a0.source().parentWidget() == self:
+            return
+
+        a0.setDropAction(Qt.MoveAction)
+        a0.accept()
+
+        tabs = self.count()
+
+        tab = a0.source().parentWidget().widget(self.parent().tabIndexToDrag)
+        if tabs == 0:
+            self.addTab(tab, tab.objectName)
+        else:
+            self.insertTab(tabs+1, tab, tab.objectName)
 
 class Tab(QWidget):
     currItemChanged = pyqtSignal(['QModelIndex'])
