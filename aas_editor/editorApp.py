@@ -192,11 +192,13 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         theme = settings.value('theme', DEFAULT_THEME)
         self.toggleTheme(theme)
 
-        size = settings.value('size', QSize(1194, 624))
+        size = settings.value('size', DEFAULT_MAINWINDOW_SIZE)
         self.resize(size)
 
-        splitterSize = settings.value('leftZoneSize', QSize(250, 624))
-        self.layoutWidget.resize(splitterSize)
+        splitterLeftSize = settings.value('leftZoneSize', QSize(300, 624))
+        splitterRightSize = settings.value('rightZoneSize', QSize(300, 624))
+        self.leftLayoutWidget.resize(splitterLeftSize)
+        self.rightLayoutWidget.resize(splitterRightSize)
 
         fontSizeFilesView = settings.value('fontSizeFilesView',
                                            PacksTable.defaultFont.pointSize())
@@ -217,7 +219,8 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         settings = QSettings(ACPLT, APPLICATION_NAME)
         settings.setValue('theme', self.currTheme)
         settings.setValue('size', self.size())
-        settings.setValue('leftZoneSize', self.layoutWidget.size())
+        settings.setValue('leftZoneSize', self.leftLayoutWidget.size())
+        settings.setValue('rightZoneSize', self.rightLayoutWidget.size())
         settings.setValue('openedAasFiles', self.packTreeModel.openedFiles())
         settings.setValue('fontSizeFilesView', PacksTable.defaultFont.pointSize())
         settings.setValue('fontSizeDetailedView', DetailedInfoTable.defaultFont.pointSize())

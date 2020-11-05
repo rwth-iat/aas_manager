@@ -1,7 +1,7 @@
 from enum import Enum
 from pathlib import Path
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QKeySequence, QColor, QFont
 from aas.model import AdministrativeInformation, Identifier, Submodel, AASReference, Asset, \
     SubmodelElement, AssetAdministrationShell, ConceptDescription, ConceptDictionary, \
@@ -11,10 +11,22 @@ AAS_CREATOR = "PyI40AAS Testing Framework"
 
 ATTR_COLUMN_WIDTH = 200
 
+DEFAULT_MAINWINDOW_SIZE = QSize(1194, 624)
 MAX_FONT_SIZE = 60
 MIN_FONT_SIZE = 6
 DEFAULT_FONT = QFont()
 DEFAULT_FONT.setPointSize(12)
+
+# Themes
+DEFAULT_THEME = "dark"
+DARK_THEME_PATH = "themes/dark.qss"
+LIGHT_THEME_PATH = "themes/light.qss"
+THEMES = {
+    "dark": DARK_THEME_PATH,
+    "light": LIGHT_THEME_PATH,
+    "standard": ""
+}
+
 
 APPLICATION_NAME = "AAS Editor"
 ACPLT = "ACPLT"
@@ -39,11 +51,6 @@ ATTR_ORDER = (
     "identification",
 )
 
-DEFAULT_THEME = "dark"
-
-DARK_THEME_PATH = "themes/dark.qss"
-LIGHT_THEME_PATH = "themes/light.qss"
-
 LIGHT_BLUE = QColor(132, 185, 255)
 LINK_BLUE = QColor(26, 13, 171)
 CHANGED_BLUE = QColor(83, 148, 236, 255)
@@ -53,12 +60,6 @@ ICON_DEFAULTS = {
     'color': QColor(LIGHT_BLUE.red(), LIGHT_BLUE.green(), LIGHT_BLUE.blue(), 225),
     'color_active': QColor(LIGHT_BLUE.red(), LIGHT_BLUE.green(), LIGHT_BLUE.blue(), 255),
     'color_disabled': QColor(LIGHT_BLUE.red(), LIGHT_BLUE.green(), LIGHT_BLUE.blue(), 50),
-}
-
-THEMES = {
-    "dark": DARK_THEME_PATH,
-    "light": LIGHT_THEME_PATH,
-    "standard": ""
 }
 
 PACKAGE_ATTRS = ("shells", "assets", "submodels", "concept_descriptions", "others")
@@ -92,8 +93,6 @@ ATTRIBUTE_COLUMN = 0
 VALUE_COLUMN = 1
 
 NOT_GIVEN = "NotGivenValueAASEditor"
-
-
 
 # Shortcuts
 SC_COPY = QKeySequence.Copy
