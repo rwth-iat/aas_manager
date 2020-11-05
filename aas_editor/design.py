@@ -67,7 +67,6 @@ class Ui_MainWindow(object):
         self.rightVerticalLayout.addWidget(self.splitterTabWidgets)
 
         self.tabWidget = TabWidget(self.splitterTabWidgets)
-        self.tabWidget1 = TabWidget(self.splitterTabWidgets)
         self.tabWidget.setObjectName("tabWidget")
         self.gridLayout.addWidget(self.splitter, 1, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)

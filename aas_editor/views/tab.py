@@ -2,13 +2,107 @@ from PyQt5.QtCore import pyqtSignal, QModelIndex, Qt, QPersistentModelIndex, QPo
 from PyQt5.QtGui import QIcon, QKeySequence, QPixmap, QRegion, QDrag, QCursor, QMouseEvent, \
     QDragEnterEvent, QDragLeaveEvent, QDropEvent
 from PyQt5.QtWidgets import QWidget, QLineEdit, QLabel, QMessageBox, QGridLayout, QVBoxLayout, \
-    QTabWidget, QAction, QToolBar, QHBoxLayout, QFrame
+    QTabWidget, QAction, QToolBar, QHBoxLayout, QFrame, QTabBar, QMenu, QSplitter
 
 from aas_editor.settings import NAME_ROLE, SC_BACK, SC_FORWARD
 from aas_editor.views.treeview_detailed import AttrsTreeView
 from aas_editor.util import getTreeItemPath
 
 import qtawesome as qta
+
+
+class TabBar(QTabBar):
+    def __init__(self):
+        super(TabBar, self).__init__()
+        self.indexTab = None
+
+        self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.setMouseTracking(True)
+        self.initActions()
+        self.initMenu()
+        self.customContextMenuRequested.connect(self.openMenu)
+
+    def mousePressEvent(self, a0: QMouseEvent) -> None:
+        if a0.button() == Qt.RightButton:
+            self.indexTab = self.tabAt(a0.pos())
+        super(TabBar, self).mousePressEvent(a0)
+
+    # noinspection PyArgumentList
+    def initActions(self):
+        self.closeAct = QAction("Close", self,
+                                statusTip="Close selected tab",
+                                triggered=lambda: self.tabCloseRequested.emit(self.indexTab))
+
+        self.closeOthersAct = QAction("Close others", self,
+                                   statusTip="Close all tabs except selected",
+                                   triggered=self.closeOthers)
+
+        self.closeAllRightAct = QAction("Close all to the right", self,
+                                        statusTip="Close all tabs to the right",
+                                        triggered=self.closeAllRight)
+
+        self.closeAllLeftAct = QAction("Close all to the left", self,
+                                       statusTip="Close all tabs to the left",
+                                       triggered=self.closeAllLeft)
+
+        self.splitHorizontallyAct = QAction("Split horizontally", self,
+                                            statusTip="Split editor area into 2 tab groups",
+                                            triggered=self.splitHorizontally)
+
+        self.splitVerticallyAct = QAction("Split vertically", self,
+                                          statusTip="Split editor area into 2 tab groups",
+                                          triggered=self.splitVertically)
+
+    def closeOthers(self):
+        for i in range(self.count()-1, -1, -1):
+            if i != self.indexTab:
+                self.tabCloseRequested.emit(i)
+
+    def closeAllRight(self):
+        for i in range(self.count()-1, self.indexTab-1, -1):
+            if i != self.indexTab:
+                self.tabCloseRequested.emit(i)
+
+    def closeAllLeft(self):
+        for i in range(self.indexTab-1, -1, -1):
+            if i != self.indexTab:
+                self.tabCloseRequested.emit(i)
+
+    def splitHorizontally(self):
+        self.addTabWidget(orientation=Qt.Horizontal)
+
+    def splitVertically(self):
+        self.addTabWidget(orientation=Qt.Vertical)
+
+    def addTabWidget(self, orientation=Qt.Horizontal):
+        tabWidget: TabWidget = self.parentWidget()
+        if not isinstance(tabWidget, QTabWidget):
+            raise TypeError("Parent widget of Tabbar must be of type QTabWidget",
+                            type(tabWidget))
+
+        splitter: QSplitter = tabWidget.parentWidget()
+        splitter.setOrientation(orientation)
+        if not isinstance(splitter, QSplitter):
+            raise TypeError("Parent widget of TabWidget must be of tyep QSplitter",
+                            type(splitter))
+
+        tab: Tab = tabWidget.widget(self.indexTab)
+        packItem = QModelIndex(tab.packItem)
+        newTabWidget = TabWidget(splitter)
+        newTabWidget.openItem(packItem)
+
+    def initMenu(self) -> None:
+        self.menu = QMenu(self)
+        self.menu.addAction(self.closeAct)
+        self.menu.addAction(self.closeOthersAct)
+        self.menu.addAction(self.closeAllRightAct)
+        self.menu.addAction(self.closeAllLeftAct)
+        self.menu.addSeparator()
+        self.menu.addAction(self.splitHorizontallyAct)
+        self.menu.addAction(self.splitVerticallyAct)
+
+    def openMenu(self, point):
+        self.menu.exec_(self.mapToGlobal(point))
 
 class TabWidget(QTabWidget):
     # signal for changing current item in packet treeview
@@ -19,12 +113,12 @@ class TabWidget(QTabWidget):
         self.initActions()
         self.buildHandlers()
 
+        self.setTabBar(TabBar())
         self.setElideMode(Qt.ElideRight)
         self.setUsesScrollButtons(True)
         self.setTabsClosable(True)
         self.setMovable(True)
         self.setAcceptDrops(True)
-        self.tabBar().setMouseTracking(True)
         self.indexTabToDrag = None
         self.setStyleSheet("QTabBar::tab { height: 25px; width: 200px}")
         self.setCurrentIndex(-1)
