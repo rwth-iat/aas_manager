@@ -12,15 +12,77 @@ import qtawesome as qta
 
 
 class TabBar(QTabBar):
+    TABINDEX = []
+
     def __init__(self):
         super(TabBar, self).__init__()
         self.indexTab = None
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.setElideMode(Qt.ElideRight)
+        self.setUsesScrollButtons(True)
+        self.setTabsClosable(True)
         self.setMouseTracking(True)
+        self.setMovable(True)
+        self.setAcceptDrops(True)
         self.initActions()
         self.initMenu()
         self.customContextMenuRequested.connect(self.openMenu)
+
+    def mouseMoveEvent(self, a0: QMouseEvent) -> None:
+        if (a0.buttons() == Qt.LeftButton) and abs(a0.pos().y()) > 30:
+            print(a0.localPos(), "loCpos"*10)
+            print(a0.pos(), "pos"*10)
+            globalPos = self.mapToGlobal(a0.pos())
+            posInTab = self.mapFromGlobal(globalPos)
+
+            self.indexTabToDrag = self.tabAt(a0.pos())
+            print(self.indexTabToDrag, "start"*20)
+            self.TABINDEX.clear()
+            self.TABINDEX.append(self.indexTabToDrag)
+
+            tabRect = self.tabRect(self.indexTabToDrag)
+            pixmap = QPixmap(tabRect.size())
+            self.render(pixmap, QPoint(), QRegion(tabRect))
+
+            mimeData = QMimeData()
+            drag = QDrag(self)
+            drag.setMimeData(mimeData)
+            drag.setPixmap(pixmap)
+            cursor = QCursor(Qt.OpenHandCursor)
+            drag.setHotSpot(cursor.pos())
+            drag.setHotSpot(a0.pos() - posInTab)
+            drag.setDragCursor(cursor.pixmap(), Qt.MoveAction)
+            dropAction = drag.exec(Qt.MoveAction)
+        else:
+            super(TabBar, self).mouseMoveEvent(a0)
+
+    def dragEnterEvent(self, a0: QDragEnterEvent) -> None:
+        a0.accept()
+
+    def dragLeaveEvent(self, a0: QDragLeaveEvent) -> None:
+        a0.accept()
+
+    def dropEvent(self, a0: QDropEvent) -> None:
+        if a0.source() == self or not isinstance(a0.source(), TabBar) or not self.TABINDEX:
+            return
+
+        a0.setDropAction(Qt.MoveAction)
+        a0.accept()
+
+        indexToInsert = self.TABINDEX.pop()
+        insertAfter = self.tabAt(a0.pos())
+
+        try:
+            tab = a0.source().parentWidget().widget(indexToInsert)
+            packItem = QModelIndex(tab.packItem)
+            self.indexTabToDrag = self.tabAt(a0.pos())
+            index=self.parentWidget().openItemInNewTab(packItem)
+            a0.source().tabCloseRequested.emit(indexToInsert)
+            if insertAfter and insertAfter >= 0:
+                self.moveTab(index, insertAfter+1)
+        except AttributeError as e:
+            print("Error occured while drop Event:", e)
 
     def mousePressEvent(self, a0: QMouseEvent) -> None:
         if a0.button() == Qt.RightButton:
@@ -114,10 +176,6 @@ class TabWidget(QTabWidget):
         self.buildHandlers()
 
         self.setTabBar(TabBar())
-        self.setElideMode(Qt.ElideRight)
-        self.setUsesScrollButtons(True)
-        self.setTabsClosable(True)
-        self.setMovable(True)
         self.setAcceptDrops(True)
         self.indexTabToDrag = None
         self.setStyleSheet("QTabBar::tab { height: 25px; width: 200px}")
@@ -207,52 +265,52 @@ class TabWidget(QTabWidget):
             if QModelIndex(tab.packItem).siblingAtColumn(0) == packItem.siblingAtColumn(0):
                 self.removeTab(tabIndex)
 
-    def mouseMoveEvent(self, a0: QMouseEvent) -> None:
-        if a0.buttons() != Qt.RightButton:
-            return
-
-        globalPos = self.mapToGlobal(a0.pos())
-        tabBar = self.tabBar()
-        posInTab = tabBar.mapFromGlobal(globalPos)
-
-        self.indexTabToDrag = tabBar.tabAt(a0.pos())
-        tabRect = tabBar.tabRect(self.indexTabToDrag)
-        pixmap = QPixmap(tabRect.size())
-        tabBar.render(pixmap, QPoint(), QRegion(tabRect))
-
-        mimeData = QMimeData()
-        drag = QDrag(tabBar)
-        drag.setMimeData(mimeData)
-        drag.setPixmap(pixmap)
-        cursor = QCursor(Qt.OpenHandCursor)
-        drag.setHotSpot(cursor.pos())
-        drag.setHotSpot(a0.pos() - posInTab)
-        drag.setDragCursor(cursor.pixmap(), Qt.MoveAction)
-        dropAction = drag.exec(Qt.MoveAction)
-
-    def dragEnterEvent(self, a0: QDragEnterEvent) -> None:
-        a0.accept()
-        if a0.source().parentWidget() != self:
-            return
-        self.parent().tabIndexToDrag = self.indexOf(self.widget(self.indexTabToDrag))
-
-    def dragLeaveEvent(self, a0: QDragLeaveEvent) -> None:
-        a0.accept()
-
-    def dropEvent(self, a0: QDropEvent) -> None:
-        if a0.source().parentWidget() == self:
-            return
-
-        a0.setDropAction(Qt.MoveAction)
-        a0.accept()
-
-        tabs = self.count()
-
-        tab = a0.source().parentWidget().widget(self.parent().tabIndexToDrag)
-        if tabs == 0:
-            self.addTab(tab, tab.objectName)
-        else:
-            self.insertTab(tabs+1, tab, tab.objectName)
+    # def mouseMoveEvent(self, a0: QMouseEvent) -> None:
+    #     if a0.buttons() != Qt.RightButton:
+    #         return
+    #
+    #     globalPos = self.mapToGlobal(a0.pos())
+    #     tabBar = self.tabBar()
+    #     posInTab = tabBar.mapFromGlobal(globalPos)
+    #
+    #     self.indexTabToDrag = tabBar.tabAt(a0.pos())
+    #     tabRect = tabBar.tabRect(self.indexTabToDrag)
+    #     pixmap = QPixmap(tabRect.size())
+    #     tabBar.render(pixmap, QPoint(), QRegion(tabRect))
+    #
+    #     mimeData = QMimeData()
+    #     drag = QDrag(tabBar)
+    #     drag.setMimeData(mimeData)
+    #     drag.setPixmap(pixmap)
+    #     cursor = QCursor(Qt.OpenHandCursor)
+    #     drag.setHotSpot(cursor.pos())
+    #     drag.setHotSpot(a0.pos() - posInTab)
+    #     drag.setDragCursor(cursor.pixmap(), Qt.MoveAction)
+    #     dropAction = drag.exec(Qt.MoveAction)
+    #
+    # def dragEnterEvent(self, a0: QDragEnterEvent) -> None:
+    #     a0.accept()
+    #     if a0.source().parentWidget() != self:
+    #         return
+    #     self.parent().tabIndexToDrag = self.indexOf(self.widget(self.indexTabToDrag))
+    #
+    # def dragLeaveEvent(self, a0: QDragLeaveEvent) -> None:
+    #     a0.accept()
+    #
+    # def dropEvent(self, a0: QDropEvent) -> None:
+    #     if a0.source().parentWidget() == self:
+    #         return
+    #
+    #     a0.setDropAction(Qt.MoveAction)
+    #     a0.accept()
+    #
+    #     tabs = self.count()
+    #
+    #     tab = a0.source().parentWidget().widget(self.parent().tabIndexToDrag)
+    #     if tabs == 0:
+    #         self.addTab(tab, tab.objectName)
+    #     else:
+    #         self.insertTab(tabs+1, tab, tab.objectName)
 
 class Tab(QWidget):
     currItemChanged = pyqtSignal(['QModelIndex'])
