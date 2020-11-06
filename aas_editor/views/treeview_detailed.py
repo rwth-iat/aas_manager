@@ -8,7 +8,7 @@ from aas_editor.dialogs import AddObjDialog
 from aas_editor.models import DetailedInfoTable, DictItem
 from aas_editor.qcomboboxenumdelegate import QComboBoxEnumDelegate
 from aas_editor.settings import ATTR_COLUMN_WIDTH, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
-    VALUE_COLUMN, NOT_GIVEN
+    VALUE_COLUMN, NOT_GIVEN, LINKED_ITEM_ROLE, IS_LINK_ROLE
 from aas_editor.util import getAttrTypeHint, getReqParams4init, isoftype, getDefaultVal, \
     isIterableType, isIterable, issubtype, getTypeHint
 from aas_editor.views.treeview import TreeView
@@ -20,8 +20,6 @@ class AttrsTreeView(TreeView):
         super(AttrsTreeView, self).__init__(parent)
         self._upgradeMenu()
         self._buildHandlers()
-        # window must have packTreeView
-        self.packTreeView: PackTreeView = parent.window().packTreeView
 
     # noinspection PyUnresolvedReferences
     def newPackItem(self, packItem):
@@ -145,10 +143,8 @@ class AttrsTreeView(TreeView):
             self.replItemWithDialog(index, attrType, title=f"Create {attribute}", objVal=objVal)
 
     def _openRef(self, detailInfoItem: QModelIndex, newTab=True, setCurrent=True):
-        item = self.model().objByIndex(detailInfoItem)
-        if detailInfoItem.column() == VALUE_COLUMN and item.isLink:
-            obj = item.obj.resolve(item.package.objStore)
-            linkedPackItem = self.packTreeView.model().findItemByObj(obj)
+        if detailInfoItem.column() == VALUE_COLUMN and detailInfoItem.data(IS_LINK_ROLE):
+            linkedPackItem = self.model().data(detailInfoItem, LINKED_ITEM_ROLE)
             if newTab and setCurrent:
                 self.openInNewTabClicked.emit(linkedPackItem)
             elif newTab and not setCurrent:

@@ -54,6 +54,11 @@ class TabBar(QTabBar):
             drag.setHotSpot(a0.pos() - posInTab)
             drag.setDragCursor(cursor.pixmap(), Qt.MoveAction)
             dropAction = drag.exec(Qt.MoveAction)
+            # If the drag completed outside of the tab bar, detach the tab and move
+            # the content to the current cursor position
+            if dropAction == Qt.IgnoreAction:
+                a0.accept()
+                self.detachTab(self.indexTabToDrag, self.cursor().pos())
         else:
             super(TabBar, self).mouseMoveEvent(a0)
 
@@ -82,6 +87,21 @@ class TabBar(QTabBar):
             if insertAfter and insertAfter >= 0:
                 self.moveTab(index, insertAfter+1)
         TabBar.indexTabToDrag = -1
+
+    def detachTab(self, index, point):
+        # Get the tab content
+        tab = self.parentWidget().widget(index)
+        packItem = QModelIndex(tab.packItem)
+
+        # Create a new detached tab window
+        detachedTab = TabWidget(self.window().parent())
+        detachedTab.setWindowModality(Qt.NonModal)
+        detachedTab.setWindowTitle("Tabs")
+        detachedTab.move(point)
+        detachedTab.show()
+        detachedTab.openItemInNewTab(packItem)
+
+        self.tabCloseRequested.emit(index)
 
     # noinspection PyArgumentList
     def initActions(self):

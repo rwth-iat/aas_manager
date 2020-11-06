@@ -1,8 +1,8 @@
-from PyQt5.QtCore import QObject, QVariant
+from PyQt5.QtCore import QObject, QVariant, QModelIndex
 from aas.model import AASReference
 
 from aas_editor.settings import LINK_TYPES, PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
-    VALUE_COLUMN
+    VALUE_COLUMN, IS_LINK_ROLE
 from aas_editor.util import getDescription, getAttrDoc, simplifyInfo, getTypeName
 from PyQt5.QtCore import Qt
 
@@ -20,7 +20,8 @@ class StandardItem(QObject):
         try:
             return getattr(self.parentObj, self.objName)
         except (TypeError, AttributeError):
-            return self._obj
+            pass
+        return self._obj
 
     @obj.setter
     def obj(self, obj):
@@ -40,6 +41,8 @@ class StandardItem(QObject):
             return self.obj
         if role == PACKAGE_ROLE:
             return self.package
+        if role == IS_LINK_ROLE:
+            return self.isLink
         if role == Qt.DisplayRole:
             if column == ATTRIBUTE_COLUMN:
                 return self.objectName
@@ -81,7 +84,7 @@ class StandardItem(QObject):
             return None
 
     @property
-    def isLink(self):
+    def isLink(self) -> bool:
         if self.package and isinstance(self.obj, AASReference):
             try:
                 self.obj.resolve(self.package.objStore)
@@ -89,8 +92,6 @@ class StandardItem(QObject):
             except (AttributeError, KeyError, NotImplementedError, TypeError) as e:
                 print(e)
                 return False
-        # elif isinstance(self.obj, LINK_TYPES):
-        #     return True
         return False
 
     def row(self):

@@ -36,6 +36,7 @@ MAX_RECENT_FILES = 4
 PREFERED_LANGS_ORDER = ("en-us", "en", "de")
 
 ATTR_ORDER = (
+    "numOfShells",
     "id_short",
     "category",
     "value",
@@ -63,7 +64,10 @@ ICON_DEFAULTS = {
 }
 
 PACKAGE_ATTRS = ("shells", "assets", "submodels", "concept_descriptions", "others")
-ATTRS_NOT_IN_DETAILED_INFO = ("gi_code",
+ATTRS_NOT_IN_DETAILED_INFO = ("objStore",
+                              "files",
+                              "fileStore",
+                              "gi_code",
                               "gi_frame",
                               "gi_running",
                               "gi_yieldfrom",
@@ -88,6 +92,8 @@ PACKAGE_ROLE = 1001
 NAME_ROLE = 1002
 OBJECT_ROLE = 1003
 PACK_ITEM_ROLE = 1004
+LINKED_ITEM_ROLE = 1005
+IS_LINK_ROLE = 1006
 COLUMNS_IN_DETAILED_INFO = ("attribute", "value")
 ATTRIBUTE_COLUMN = 0
 VALUE_COLUMN = 1

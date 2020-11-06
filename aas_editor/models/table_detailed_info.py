@@ -6,7 +6,7 @@ from PyQt5.QtGui import QColor, QFont
 from aas_editor.models import Package, DetailedInfoItem, StandardTable
 from aas_editor.settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, COLUMNS_IN_DETAILED_INFO, \
     ATTRIBUTE_COLUMN, VALUE_COLUMN, PACK_ITEM_ROLE, LIGHT_BLUE, LINK_BLUE, CHANGED_BLUE, NEW_GREEN, \
-    DEFAULT_FONT
+    DEFAULT_FONT, LINKED_ITEM_ROLE
 
 
 class DetailedInfoTable(StandardTable):
@@ -29,6 +29,8 @@ class DetailedInfoTable(StandardTable):
             return self._getFont(index)
         if role == PACK_ITEM_ROLE:
             return QModelIndex(self.packItem)
+        if role == LINKED_ITEM_ROLE:
+            return self.getLinkedItem(index)
         else:
             return super(DetailedInfoTable, self).data(index, role)
 
@@ -71,3 +73,15 @@ class DetailedInfoTable(StandardTable):
                 font.setUnderline(True)
 
         return font
+
+    def getLinkedItem(self, index: QModelIndex) -> QModelIndex:
+        if not self.objByIndex(index).isLink:
+            return QModelIndex()
+        try:
+            reference = self.data(index, OBJECT_ROLE)
+            objStore = self.data(index, PACKAGE_ROLE).objStore
+            obj = reference.resolve(objStore)
+            linkedPackItem = self.data(index, PACK_ITEM_ROLE).model().findItemByObj(obj)
+            return linkedPackItem
+        except AttributeError:
+            return QModelIndex()
