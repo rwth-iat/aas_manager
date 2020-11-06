@@ -21,8 +21,6 @@ class DetailedInfoTable(StandardTable):
         super(DetailedInfoTable, self).__init__(COLUMNS_IN_DETAILED_INFO, root)
 
     def data(self, index: QModelIndex, role: int = ...) -> Any:
-        if role == Qt.SizeHintRole:
-            return super(DetailedInfoTable, self).data(index, role)
         if role == Qt.BackgroundRole:
             return self._getBgColor(index)
         if role == Qt.ForegroundRole:
@@ -31,8 +29,8 @@ class DetailedInfoTable(StandardTable):
             return self._getFont(index)
         if role == PACK_ITEM_ROLE:
             return QModelIndex(self.packItem)
-        item = self.objByIndex(index)
-        return item.data(role, index.column())
+        else:
+            return super(DetailedInfoTable, self).data(index, role)
 
     def _getBgColor(self, index: QModelIndex):
         color = LIGHT_BLUE

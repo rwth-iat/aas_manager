@@ -141,6 +141,8 @@ class StandardTable(QAbstractItemModel):
         elif role == Qt.SizeHintRole:
             fontSize = self.defaultFont.pointSize()
             return QSize(-1, fontSize*1.7)
+        elif role == Qt.TextAlignmentRole:
+            return Qt.AlignLeft | Qt.AlignBottom
         else:
             item = self.objByIndex(index)
             return item.data(role, index.column())

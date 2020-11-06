@@ -12,11 +12,11 @@ import qtawesome as qta
 
 
 class TabBar(QTabBar):
-    TABINDEX = []
+    indexTabToDrag = -1
 
     def __init__(self):
         super(TabBar, self).__init__()
-        self.indexTab = None
+        self.menuIndexTab = None
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.setElideMode(Qt.ElideRight)
@@ -29,17 +29,17 @@ class TabBar(QTabBar):
         self.initMenu()
         self.customContextMenuRequested.connect(self.openMenu)
 
+    def mousePressEvent(self, a0: QMouseEvent) -> None:
+        if a0.button() == Qt.RightButton:
+            self.menuIndexTab = self.tabAt(a0.pos())
+        super(TabBar, self).mousePressEvent(a0)
+
     def mouseMoveEvent(self, a0: QMouseEvent) -> None:
         if (a0.buttons() == Qt.LeftButton) and abs(a0.pos().y()) > 30:
-            print(a0.localPos(), "loCpos"*10)
-            print(a0.pos(), "pos"*10)
             globalPos = self.mapToGlobal(a0.pos())
             posInTab = self.mapFromGlobal(globalPos)
 
-            self.indexTabToDrag = self.tabAt(a0.pos())
-            print(self.indexTabToDrag, "start"*20)
-            self.TABINDEX.clear()
-            self.TABINDEX.append(self.indexTabToDrag)
+            TabBar.indexTabToDrag = self.currentIndex()
 
             tabRect = self.tabRect(self.indexTabToDrag)
             pixmap = QPixmap(tabRect.size())
@@ -64,36 +64,30 @@ class TabBar(QTabBar):
         a0.accept()
 
     def dropEvent(self, a0: QDropEvent) -> None:
-        if a0.source() == self or not isinstance(a0.source(), TabBar) or not self.TABINDEX:
+        if a0.source() == self or not isinstance(a0.source(), TabBar) or self.indexTabToDrag < 0:
             return
 
         a0.setDropAction(Qt.MoveAction)
         a0.accept()
 
-        indexToInsert = self.TABINDEX.pop()
         insertAfter = self.tabAt(a0.pos())
-
         try:
-            tab = a0.source().parentWidget().widget(indexToInsert)
+            tab = a0.source().parentWidget().widget(self.indexTabToDrag)
             packItem = QModelIndex(tab.packItem)
-            self.indexTabToDrag = self.tabAt(a0.pos())
             index=self.parentWidget().openItemInNewTab(packItem)
-            a0.source().tabCloseRequested.emit(indexToInsert)
-            if insertAfter and insertAfter >= 0:
-                self.moveTab(index, insertAfter+1)
+            a0.source().tabCloseRequested.emit(self.indexTabToDrag)
         except AttributeError as e:
             print("Error occured while drop Event:", e)
-
-    def mousePressEvent(self, a0: QMouseEvent) -> None:
-        if a0.button() == Qt.RightButton:
-            self.indexTab = self.tabAt(a0.pos())
-        super(TabBar, self).mousePressEvent(a0)
+        else:
+            if insertAfter and insertAfter >= 0:
+                self.moveTab(index, insertAfter+1)
+        TabBar.indexTabToDrag = -1
 
     # noinspection PyArgumentList
     def initActions(self):
         self.closeAct = QAction("Close", self,
                                 statusTip="Close selected tab",
-                                triggered=lambda: self.tabCloseRequested.emit(self.indexTab))
+                                triggered=lambda: self.tabCloseRequested.emit(self.menuIndexTab))
 
         self.closeOthersAct = QAction("Close others", self,
                                    statusTip="Close all tabs except selected",
@@ -119,17 +113,17 @@ class TabBar(QTabBar):
 
     def closeOthers(self):
         for i in range(self.count()-1, -1, -1):
-            if i != self.indexTab:
+            if i != self.menuIndexTab:
                 self.tabCloseRequested.emit(i)
 
     def closeAllRight(self):
-        for i in range(self.count()-1, self.indexTab-1, -1):
-            if i != self.indexTab:
+        for i in range(self.count()-1, self.menuIndexTab - 1, -1):
+            if i != self.menuIndexTab:
                 self.tabCloseRequested.emit(i)
 
     def closeAllLeft(self):
-        for i in range(self.indexTab-1, -1, -1):
-            if i != self.indexTab:
+        for i in range(self.menuIndexTab - 1, -1, -1):
+            if i != self.menuIndexTab:
                 self.tabCloseRequested.emit(i)
 
     def splitHorizontally(self):
@@ -150,7 +144,7 @@ class TabBar(QTabBar):
             raise TypeError("Parent widget of TabWidget must be of tyep QSplitter",
                             type(splitter))
 
-        tab: Tab = tabWidget.widget(self.indexTab)
+        tab: Tab = tabWidget.widget(self.menuIndexTab)
         packItem = QModelIndex(tab.packItem)
         newTabWidget = TabWidget(splitter)
         newTabWidget.openItem(packItem)
@@ -181,7 +175,6 @@ class TabWidget(QTabWidget):
 
         self.setTabBar(TabBar())
         self.setAcceptDrops(True)
-        self.indexTabToDrag = None
         self.setStyleSheet("QTabBar::tab { height: 25px; width: 200px}")
         self.setCurrentIndex(-1)
 
