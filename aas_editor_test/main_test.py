@@ -84,8 +84,8 @@ class TestUi(TestCase):
             sleep(1)
             print("Test is completed")
 
-    def testEditCreate(self):
-        self._startTest(self._testEditCreate)
+    # def testEditCreate(self):
+    #     self._startTest(self._testEditCreate)
 
     def _testEditCreate(self):
         currIndex = self.attrsTreeView.currentIndex()
