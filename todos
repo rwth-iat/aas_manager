@@ -22,9 +22,6 @@ find usages func
     handle if id_short or identification will be changed
 
 Speed view tab
-Split tab vertically/horizontally
-New window
-Drag&drop for tabs
 
 Active address
 
@@ -33,10 +30,13 @@ Autocomplete (id_shorts)
 Repository with scratch packages to copy from
 Search
 
-settings
 integrate validator
 
 Done:
+settings
+New window
+Drag&drop for tabs
+Split tab vertically/horizontally
 Add to settings fontSize
 Add to view menu zoomIn/zoomOut
 Add to view menu toolbar (visible/unvisible)
