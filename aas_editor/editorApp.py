@@ -138,6 +138,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.packTreeView.openInBgTabClicked.connect(self.tabWidget.openItemInBgTab)
         self.packTreeView.openInNewTabClicked.connect(self.tabWidget.openItemInNewTab)
         self.packTreeView.openInCurrTabClicked.connect(self.tabWidget.openItem)
+        self.packTreeView.openInNewWindowClicked.connect(self.tabWidget.openItemInNewWindow)
 
         self.packTreeModel.rowsRemoved.connect(self.tabWidget.removePackTab)
 
