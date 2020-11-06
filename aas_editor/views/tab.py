@@ -1,6 +1,7 @@
-from PyQt5.QtCore import pyqtSignal, QModelIndex, Qt, QPersistentModelIndex, QPoint, QMimeData
+from PyQt5.QtCore import pyqtSignal, QModelIndex, Qt, QPersistentModelIndex, QPoint, QMimeData, \
+    QSize
 from PyQt5.QtGui import QIcon, QKeySequence, QPixmap, QRegion, QDrag, QCursor, QMouseEvent, \
-    QDragEnterEvent, QDragLeaveEvent, QDropEvent
+    QDragEnterEvent, QDragLeaveEvent, QDropEvent, QCloseEvent
 from PyQt5.QtWidgets import QWidget, QLineEdit, QLabel, QMessageBox, QGridLayout, QVBoxLayout, \
     QTabWidget, QAction, QToolBar, QHBoxLayout, QFrame, QTabBar, QMenu, QSplitter
 
@@ -69,7 +70,8 @@ class TabBar(QTabBar):
         a0.accept()
 
     def dropEvent(self, a0: QDropEvent) -> None:
-        if a0.source() == self or not isinstance(a0.source(), TabBar) or self.indexTabToDrag < 0:
+        if a0.source() == self or self.indexTabToDrag < 0 or not isinstance(a0.source(), TabBar):
+            a0.accept()
             return
 
         a0.setDropAction(Qt.MoveAction)
@@ -94,12 +96,8 @@ class TabBar(QTabBar):
         packItem = QModelIndex(tab.packItem)
 
         # Create a new detached tab window
-        detachedTab = TabWidget(self.window().parent())
-        detachedTab.setWindowModality(Qt.NonModal)
-        detachedTab.setWindowTitle("Tabs")
+        detachedTab = TabWidget.openItemInNewWindow(packItem)
         detachedTab.move(point)
-        detachedTab.show()
-        detachedTab.openItemInNewTab(packItem)
 
         self.tabCloseRequested.emit(index)
 
@@ -185,6 +183,7 @@ class TabBar(QTabBar):
 class TabWidget(QTabWidget):
     # signal for changing current item in packet treeview
     currItemChanged = pyqtSignal(['QModelIndex'])
+    openedTabWidgets = []
 
     def __init__(self, parent: QWidget = None, unclosable=False):
         super(TabWidget, self).__init__(parent)
@@ -197,6 +196,12 @@ class TabWidget(QTabWidget):
         self.setAcceptDrops(True)
         self.setStyleSheet("QTabBar::tab { height: 25px; width: 200px}")
         self.setCurrentIndex(-1)
+        self.resize(QSize(800, 500))
+        TabWidget.openedTabWidgets.append(self)
+
+    def closeEvent(self, a0: QCloseEvent) -> None:
+        TabWidget.openedTabWidgets.remove(self)
+        super(TabWidget, self).closeEvent(a0)
 
     # noinspection PyArgumentList
     def initActions(self):
@@ -246,6 +251,15 @@ class TabWidget(QTabWidget):
         else:
             self.currentWidget().openItem(packItem)
             return self.currentIndex()
+
+    @staticmethod
+    def openItemInNewWindow(packItem: QModelIndex) -> int:
+        tabWindow = TabWidget()
+        tabWindow.openItemInNewTab(packItem)
+        tabWindow.setWindowModality(Qt.NonModal)
+        tabWindow.setWindowTitle("Tabs")
+        tabWindow.show()
+        return tabWindow
 
     def openItemInNewTab(self, packItem: QModelIndex, afterCurrent: bool = True) -> int:
         tab = Tab(packItem, parent=self)
