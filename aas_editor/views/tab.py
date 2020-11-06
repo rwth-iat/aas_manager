@@ -76,10 +76,12 @@ class TabBar(QTabBar):
             packItem = QModelIndex(tab.packItem)
             index=self.parentWidget().openItemInNewTab(packItem)
             a0.source().tabCloseRequested.emit(self.indexTabToDrag)
-            if insertAfter and insertAfter >= 0:
-                self.moveTab(index, insertAfter+1)
         except AttributeError as e:
             print("Error occured while drop Event:", e)
+        else:
+            if insertAfter and insertAfter >= 0:
+                self.moveTab(index, insertAfter+1)
+        TabBar.indexTabToDrag = -1
 
     # noinspection PyArgumentList
     def initActions(self):
