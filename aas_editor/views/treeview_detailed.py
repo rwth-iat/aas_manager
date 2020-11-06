@@ -12,7 +12,6 @@ from aas_editor.settings import ATTR_COLUMN_WIDTH, NAME_ROLE, OBJECT_ROLE, ATTRI
 from aas_editor.util import getAttrTypeHint, getReqParams4init, isoftype, getDefaultVal, \
     isIterableType, isIterable, issubtype, getTypeHint
 from aas_editor.views.treeview import TreeView
-from aas_editor.views.treeview_pack import PackTreeView
 
 
 class AttrsTreeView(TreeView):
@@ -67,6 +66,8 @@ class AttrsTreeView(TreeView):
             lambda: self._openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN)))
         self.openInBackgroundAct.triggered.connect(
             lambda: self._openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), setCurrent=False))
+        self.openInNewWindowAct.triggered.connect(
+            lambda: self._openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), newWindow=True))
 
     def _updateMenu(self, index: QModelIndex):
         # update edit action
@@ -97,10 +98,22 @@ class AttrsTreeView(TreeView):
             self.openInCurrTabAct.setEnabled(True)
             self.openInBackgroundAct.setEnabled(True)
             self.openInNewTabAct.setEnabled(True)
+            self.openInNewWindowAct.setEnabled(True)
+
+            self.openInCurrTabAct.setVisible(True)
+            self.openInBackgroundAct.setVisible(True)
+            self.openInNewTabAct.setVisible(True)
+            self.openInNewWindowAct.setVisible(True)
         else:
             self.openInCurrTabAct.setEnabled(False)
             self.openInBackgroundAct.setEnabled(False)
             self.openInNewTabAct.setEnabled(False)
+            self.openInNewWindowAct.setEnabled(False)
+
+            self.openInCurrTabAct.setVisible(False)
+            self.openInBackgroundAct.setVisible(False)
+            self.openInNewTabAct.setVisible(False)
+            self.openInNewWindowAct.setVisible(False)
 
     def _isPasteOk(self, index: QModelIndex) -> bool:
         if not self.treeObjClipboard:
@@ -142,10 +155,12 @@ class AttrsTreeView(TreeView):
                     raise KeyError(e)
             self.replItemWithDialog(index, attrType, title=f"Create {attribute}", objVal=objVal)
 
-    def _openRef(self, detailInfoItem: QModelIndex, newTab=True, setCurrent=True):
+    def _openRef(self, detailInfoItem: QModelIndex, newTab=True, setCurrent=True, newWindow=False):
         if detailInfoItem.column() == VALUE_COLUMN and detailInfoItem.data(IS_LINK_ROLE):
             linkedPackItem = self.model().data(detailInfoItem, LINKED_ITEM_ROLE)
-            if newTab and setCurrent:
+            if newWindow:
+                self.openInNewWindowClicked.emit(linkedPackItem)
+            elif newTab and setCurrent:
                 self.openInNewTabClicked.emit(linkedPackItem)
             elif newTab and not setCurrent:
                 self.openInBgTabClicked.emit(linkedPackItem)

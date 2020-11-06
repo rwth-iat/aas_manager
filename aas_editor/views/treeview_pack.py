@@ -89,6 +89,8 @@ class PackTreeView(TreeView):
             lambda: self.openInNewTabClicked.emit(self.currentIndex()))
         self.openInBackgroundAct.triggered.connect(
             lambda: self.openInBgTabClicked.emit(self.currentIndex()))
+        self.openInNewWindowAct.triggered.connect(
+            lambda: self.openInNewWindowClicked.emit(self.currentIndex()))
 
     def setModel(self, model: QtCore.QAbstractItemModel) -> None:
         super(PackTreeView, self).setModel(model)
@@ -99,6 +101,7 @@ class PackTreeView(TreeView):
             self.openInCurrTabAct.setEnabled(True)
             self.openInNewTabAct.setEnabled(True)
             self.openInBackgroundAct.setEnabled(True)
+            self.openInNewWindowAct.setEnabled(True)
 
         # update save and close actions
         self.saveAct.setEnabled(self._isSaveOk())

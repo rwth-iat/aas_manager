@@ -233,6 +233,7 @@ class TabWidget(QTabWidget):
         tab.attrsTreeView.openInCurrTabClicked.connect(self.openItem)
         tab.attrsTreeView.openInNewTabClicked.connect(self.openItemInNewTab)
         tab.attrsTreeView.openInBgTabClicked.connect(self.openItemInBgTab)
+        tab.attrsTreeView.openInNewWindowClicked.connect(TabWidget.openItemInNewWindow)
 
     def _handleCurrTabItemChanged(self, tab: 'Tab', packItem: QModelIndex):
         if tab == self.currentWidget():

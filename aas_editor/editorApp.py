@@ -105,6 +105,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menuNavigate.addAction(self.packTreeView.openInNewTabAct)
         self.menuNavigate.addAction(self.packTreeView.openInCurrTabAct)
         self.menuNavigate.addAction(self.packTreeView.openInBackgroundAct)
+        self.menuNavigate.addAction(self.packTreeView.openInNewWindowAct)
 
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
