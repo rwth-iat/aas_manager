@@ -226,8 +226,8 @@ class PackTreeView(TreeView):
             absFile = pack.file.absolute().as_posix()
             self.updateRecentFiles(absFile)
         except (OSError, TypeError, ValueError) as e:
+            self.removeFromRecentFiles(file)
             QMessageBox.critical(self, "Error", f"Package {file} couldn't be opened: {e}")
-            self.removeFromRecentFiles(absFile)
         else:
             if Path(file).absolute() in self.model().openedFiles():
                 QMessageBox.critical(self, "Error", f"Package {file} is already opened")
@@ -295,7 +295,7 @@ class PackTreeView(TreeView):
                                              QMessageBox.Cancel |
                                              QMessageBox.Discard)
         dialog.setDefaultButton=QMessageBox.Save
-        dialog.button(QMessageBox.Save).setText("&Save&Close All")
+        dialog.button(QMessageBox.Save).setText("&Save and Close All")
         res = dialog.exec()
         if res == QMessageBox.Save:
             for pack in self.model().openedPacks():
