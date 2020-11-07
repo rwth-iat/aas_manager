@@ -1,11 +1,13 @@
 from PyQt5.QtCore import QObject, QVariant
-from aas.model import AASReference
+from PyQt5.QtGui import QIcon
+from aas.model import AASReference, ConceptDescription, Event, RelationshipElement, Operation, \
+    SubmodelElementCollection
+from aas.model import *
 
-from aas_editor.settings import LINK_TYPES, PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
-    VALUE_COLUMN
+from aas_editor.settings import *
 from aas_editor.util import getDescription, getAttrDoc, simplifyInfo, getTypeName
 from PyQt5.QtCore import Qt
-
+import qtawesome as qta
 
 class StandardItem(QObject):
     def __init__(self, obj, name=None, parent=None, new=True):
@@ -40,6 +42,44 @@ class StandardItem(QObject):
             return self.obj
         if role == PACKAGE_ROLE:
             return self.package
+        if role == Qt.DecorationRole and column == 0:
+            if isinstance(self.obj, ConceptDescription):
+                icon = qta.icon("mdi.text-box")
+                icon = CONCEPT_ICON
+            elif isinstance(self.obj, Event):
+                icon = qta.icon("mdi.timeline-clock")  # mdi.timer mdi.bell
+                icon = EVENT_ICON
+            elif isinstance(self.obj, AnnotatedRelationshipElement):
+                icon = qta.icon("mdi.arrow-left-right")  # mdi.relation-one-to-one
+                icon = ANN_REL_ICON
+            elif isinstance(self.obj, RelationshipElement):
+                icon = qta.icon("mdi.arrow-left-right")  # mdi.relation-one-to-one
+                icon = REL_ICON
+            elif isinstance(self.obj, Operation):
+                icon = qta.icon("mdi.cog")
+                icon = OPERATION_ICON
+            elif isinstance(self.obj, SubmodelElementCollectionUnordered):
+                icon = COLLECT_ICON
+            elif isinstance(self.obj, SubmodelElementCollectionOrdered):
+                icon = qta.icon("mdi.package")
+                icon = ORDER_COLLECT_ICON
+            elif isinstance(self.obj, Entity):
+                icon = ENTITY_ICON
+            elif isinstance(self.obj, Capability):
+                icon = CAPABILITY_ICON
+            elif isinstance(self.obj, Asset):
+                icon = qta.icon("mdi.mini-sd") # mdi.toy-brick
+                icon = ASSET_ICON
+            elif isinstance(self.obj, AssetAdministrationShell):
+                icon = qta.icon("mdi.wallet") #  mdi.tab mdi.shredder folder-outline wallet
+                icon = SHELL_ICON
+            elif isinstance(self.obj, SubmodelElement):
+                return
+            elif isinstance(self.obj, Submodel):
+                icon = SUBMODEL_ICON
+            else:
+                return
+            return icon
         if role == Qt.DisplayRole:
             if column == ATTRIBUTE_COLUMN:
                 return self.objectName

@@ -21,9 +21,6 @@ import qtawesome as qta
 
 from .views.treeview_detailed import AttrsTreeView
 
-qta.set_defaults(**ICON_DEFAULTS)
-
-
 class EditorApp(QMainWindow, design.Ui_MainWindow):
     def __init__(self):
         super().__init__()
@@ -44,7 +41,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
     # noinspection PyArgumentList
     def initActions(self):
-        self.exitAct = QAction(qta.icon("mdi.exit-to-app"), "E&xit", self,
+        self.exitAct = QAction(EXIT_ICON, "E&xit", self,
                                statusTip="Exit the application",
                                triggered=self.close)
 

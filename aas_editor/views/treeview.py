@@ -26,7 +26,7 @@ class TreeView(QTreeView):
 
     # noinspection PyArgumentList
     def initActions(self):
-        self.copyAct = QAction(qta.icon("mdi.content-copy"), "Copy", self,
+        self.copyAct = QAction(COPY_ICON, "Copy", self,
                                statusTip="Copy selected item",
                                shortcut=SC_COPY,
                                shortcutContext=Qt.WidgetWithChildrenShortcut,
@@ -34,7 +34,7 @@ class TreeView(QTreeView):
                                enabled=True)
         self.addAction(self.copyAct)
 
-        self.pasteAct = QAction(qta.icon("mdi.content-paste"), "Paste", self,
+        self.pasteAct = QAction(PASTE_ICON, "Paste", self,
                                 statusTip="Paste from clipboard",
                                 shortcut=SC_PASTE,
                                 shortcutContext=Qt.WidgetWithChildrenShortcut,
@@ -42,7 +42,7 @@ class TreeView(QTreeView):
                                 enabled=True)
         self.addAction(self.pasteAct)
 
-        self.cutAct = QAction(qta.icon("mdi.content-cut"), "Cut", self,
+        self.cutAct = QAction(CUT_ICON, "Cut", self,
                               statusTip="Cut selected item",
                               shortcut=SC_CUT,
                               shortcutContext=Qt.WidgetWithChildrenShortcut,
@@ -50,7 +50,7 @@ class TreeView(QTreeView):
                               enabled=True)
         self.addAction(self.cutAct)
 
-        self.addAct = QAction(qta.icon("mdi.plus-circle"), "&Add", self,
+        self.addAct = QAction(ADD_ICON, "&Add", self,
                               statusTip="Add item to selected",
                               shortcut=SC_NEW,
                               shortcutContext=Qt.WidgetWithChildrenShortcut,
@@ -58,7 +58,7 @@ class TreeView(QTreeView):
                               enabled=False)
         self.addAction(self.addAct)
 
-        self.delClearAct = QAction(qta.icon("mdi.delete"), "Delete/clear", self,
+        self.delClearAct = QAction(DEL_ICON, "Delete/clear", self,
                                    statusTip="Delete/clear selected item",
                                    shortcut=SC_DELETE,
                                    shortcutContext=Qt.WidgetWithChildrenShortcut,
@@ -118,14 +118,14 @@ class TreeView(QTreeView):
                                            statusTip="Open selected item in background tab",
                                            enabled=False)
 
-        self.zoomInAct = QAction(qta.icon("mdi.magnify-plus"), "Zoom in", self,
+        self.zoomInAct = QAction(ZOOM_IN_ICON, "Zoom in", self,
                                  shortcut=SC_ZOOM_IN,
                                  shortcutContext=Qt.WidgetShortcut,
                                  statusTip="Zoom in",
                                  triggered=self.zoomIn)
         self.addAction(self.zoomInAct)
 
-        self.zoomOutAct = QAction(qta.icon("mdi.magnify-minus"), "Zoom out", self,
+        self.zoomOutAct = QAction(ZOOM_OUT_ICON, "Zoom out", self,
                                   shortcut=SC_ZOOM_OUT,
                                   shortcutContext=Qt.WidgetShortcut,
                                   statusTip="Zoom out",

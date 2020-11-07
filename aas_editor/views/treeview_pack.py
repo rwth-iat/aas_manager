@@ -8,7 +8,8 @@ from aas.model import Submodel, AssetAdministrationShell, Asset, SubmodelElement
 
 from aas_editor.models import Package, ConceptDescription
 from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ATTRS, SC_SAVE_ALL, SC_OPEN, \
-    PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, APPLICATION_NAME
+    PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, APPLICATION_NAME, ADD_ICON, OPEN_ICON, SAVE_ICON, \
+    SAVE_ALL_ICON
 from aas_editor.views.treeview import TreeView
 import qtawesome as qta
 
@@ -27,12 +28,12 @@ class PackTreeView(TreeView):
         self.addAct.setText("Add package")
         self.addAct.setEnabled(True)
 
-        self.newPackAct = QAction(qta.icon("mdi.plus-circle"), "&New AAS file", self,
+        self.newPackAct = QAction(ADD_ICON, "&New AAS file", self,
                                   statusTip="Create new AAS file",
                                   triggered=self.newPackWithDialog,
                                   enabled=True)
 
-        self.openPackAct = QAction(qta.icon("mdi.folder-open"), "&Open AAS file", self,
+        self.openPackAct = QAction(OPEN_ICON, "&Open AAS file", self,
                                    shortcut=SC_OPEN,
                                    statusTip="Open AAS file",
                                    triggered=self.openPackWithDialog,
@@ -47,7 +48,7 @@ class PackTreeView(TreeView):
                                     visible=False)
             self.recentFileActs.append(recentFileAct)
 
-        self.saveAct = QAction(qta.icon("mdi.content-save"), "Save", self,
+        self.saveAct = QAction(SAVE_ICON, "Save", self,
                                statusTip="Save current file",
                                triggered=lambda: self.savePack(),
                                enabled=False)
@@ -57,7 +58,7 @@ class PackTreeView(TreeView):
                                  triggered=lambda: self.savePackAsWithDialog(),
                                  enabled=False)
 
-        self.saveAllAct = QAction(qta.icon("mdi.content-save-all"), "&Save All", self,
+        self.saveAllAct = QAction(SAVE_ALL_ICON, "&Save All", self,
                                   shortcut=SC_SAVE_ALL,
                                   statusTip="Save all files",
                                   triggered=self.saveAll,

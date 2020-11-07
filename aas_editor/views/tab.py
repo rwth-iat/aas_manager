@@ -4,7 +4,7 @@ from PyQt5.QtGui import QIcon, QKeySequence, QPixmap, QRegion, QDrag, QCursor, Q
 from PyQt5.QtWidgets import QWidget, QLineEdit, QLabel, QMessageBox, QGridLayout, QVBoxLayout, \
     QTabWidget, QAction, QToolBar, QHBoxLayout, QFrame, QTabBar, QMenu, QSplitter
 
-from aas_editor.settings import NAME_ROLE, SC_BACK, SC_FORWARD
+from aas_editor.settings import *
 from aas_editor.views.treeview_detailed import AttrsTreeView
 from aas_editor.util import getTreeItemPath
 
@@ -101,12 +101,11 @@ class TabBar(QTabBar):
                                        statusTip="Close all tabs to the left",
                                        triggered=self.closeAllLeft)
 
-        self.splitHorizontallyAct = QAction(qta.icon("mdi.arrow-split-vertical"),
-                                            "Split horizontally", self,
+        self.splitHorizontallyAct = QAction(SPLIT_HORIZ_ICON, "Split horizontally", self,
                                             statusTip="Split editor area into 2 tab groups",
                                             triggered=self.splitHorizontally)
 
-        self.splitVerticallyAct = QAction(qta.icon("mdi.arrow-split-horizontal"),
+        self.splitVerticallyAct = QAction(SPLIT_VERT_ICON,
                                           "Split vertically", self,
                                           statusTip="Split editor area into 2 tab groups",
                                           triggered=self.splitVertically)
@@ -180,11 +179,11 @@ class TabWidget(QTabWidget):
 
     # noinspection PyArgumentList
     def initActions(self):
-        self.zoomInAct = QAction(qta.icon("mdi.magnify-minus"), "Zoom in", self,
+        self.zoomInAct = QAction(ZOOM_IN_ICON, "Zoom in", self,
                                  statusTip="Zoom in detailed info",
                                  triggered=self.zoomIn)
 
-        self.zoomOutAct = QAction(qta.icon("mdi.magnify-minus"), "Zoom out", self,
+        self.zoomOutAct = QAction(ZOOM_OUT_ICON, "Zoom out", self,
                                   statusTip="Zoom out detailed info",
                                   triggered=self.zoomOut)
 
@@ -296,14 +295,14 @@ class Tab(QWidget):
 
     # noinspection PyArgumentList
     def initActions(self):
-        self.backAct = QAction(qta.icon("fa5s.arrow-circle-left"), "Back", self,
+        self.backAct = QAction(BACK_ICON, "Back", self,
                                statusTip=f"Go back one item",
                                toolTip=f"Go back one item",
                                shortcut=SC_BACK,
                                triggered=self.openPrevItem,
                                enabled=False)
 
-        self.forwardAct = QAction(qta.icon("fa5s.arrow-circle-right"), "Forward", self,
+        self.forwardAct = QAction(FORWARD_ICON, "Forward", self,
                                   statusTip=f"Go forward one item",
                                   toolTip=f"Go forward one item",
                                   shortcut=SC_FORWARD,
