@@ -30,8 +30,20 @@ MAX_RECENT_FILES = 4
 PREFERED_LANGS_ORDER = ("en-us", "en", "de")
 
 ATTR_ORDER = (
-    "id_short", "category", "value", "in_output_variable", "input_variable", "output_variable",
-    "first", "second", "kind", "entity_type", "description", "administration", "identification",)
+    "id_short",
+    "category",
+    "value",
+    "in_output_variable",
+    "input_variable",
+    "output_variable",
+    "first",
+    "second",
+    "kind",
+    "entity_type",
+    "description",
+    "administration",
+    "identification",
+)
 
 LIGHT_BLUE = QColor(132, 185, 255)
 LINK_BLUE = QColor(26, 13, 171)
@@ -39,22 +51,34 @@ CHANGED_BLUE = QColor(83, 148, 236, 255)
 NEW_GREEN = QColor("green")
 
 PACKAGE_ATTRS = ("shells", "assets", "submodels", "concept_descriptions", "others")
-ATTRS_NOT_IN_DETAILED_INFO = ("gi_code", "gi_frame", "gi_running", "gi_yieldfrom",
-                              "namespace_element_sets", "parent", "security",
-                              # TODO delete when implemented in aas
+ATTRS_NOT_IN_DETAILED_INFO = ("gi_code",
+                              "gi_frame",
+                              "gi_running",
+                              "gi_yieldfrom",
+                              "namespace_element_sets",
+                              "parent",
+                              "security", #TODO delete when implemented in aas
                               "submodel_element") + PACKAGE_ATTRS
 TYPES_NOT_TO_POPULATE = (
     AbstractObjectStore, str, int, float, bool, Enum, Path)  # '+ TYPES_IN_ONE_ROW
 ATTRS_IN_PACKAGE_TREEVIEW = PACKAGE_ATTRS
 ATTR_INFOS_TO_SIMPLIFY = (AdministrativeInformation, Identifier,)
 LINK_TYPES = (
-    AASReference, Submodel, Asset, SubmodelElement, AssetAdministrationShell, ConceptDescription,)
+    AASReference,
+    Submodel,
+    Asset,
+    SubmodelElement,
+    AssetAdministrationShell,
+    ConceptDescription,
+)
 
 DEFAULT_ATTRS_TO_HIDE = {"parent": None}
 PACKAGE_ROLE = 1001
 NAME_ROLE = 1002
 OBJECT_ROLE = 1003
 PACK_ITEM_ROLE = 1004
+LINKED_ITEM_ROLE = 1005
+IS_LINK_ROLE = 1006
 COLUMNS_IN_DETAILED_INFO = ("attribute", "value")
 ATTRIBUTE_COLUMN = 0
 VALUE_COLUMN = 1

@@ -9,6 +9,7 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtWidgets import QFrame
 
 from aas_editor.settings import APPLICATION_NAME
 from aas_editor.views.treeview_pack import PackTreeView
@@ -65,6 +66,7 @@ class Ui_MainWindow(object):
 
         self.splitterTabWidgets = QtWidgets.QSplitter(self.rightLayoutWidget)
         self.splitterTabWidgets.setOrientation(QtCore.Qt.Horizontal)
+        self.splitterTabWidgets.setFrameShape(QFrame.StyledPanel)
         self.rightVerticalLayout.addWidget(self.splitterTabWidgets)
 
         self.tabWidget = TabWidget(self.splitterTabWidgets, unclosable=True)

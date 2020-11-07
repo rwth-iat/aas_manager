@@ -15,10 +15,11 @@ class PacksTable(StandardTable):
         for i in range(self.rowCount()):
             item = self.index(row=i)
             pack: Package = item.data(PACKAGE_ROLE)
-            try:
-                packs.add(pack)
-            except AttributeError:
-                continue
+            if pack:
+                try:
+                    packs.add(pack)
+                except AttributeError:
+                    continue
         return packs
 
     def openedFiles(self):

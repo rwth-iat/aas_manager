@@ -14,6 +14,7 @@ class TreeView(QTreeView):
     openInCurrTabClicked = pyqtSignal(['QModelIndex'])
     openInNewTabClicked = pyqtSignal(['QModelIndex'])
     openInBgTabClicked = pyqtSignal(['QModelIndex'])
+    openInNewWindowClicked = pyqtSignal(['QModelIndex'])
 
     treeObjClipboard = []
 
@@ -118,7 +119,11 @@ class TreeView(QTreeView):
                                            statusTip="Open selected item in background tab",
                                            enabled=False)
 
-        self.zoomInAct = QAction(ZOOM_IN_ICON, "Zoom in", self,
+        self.openInNewWindowAct = QAction("Open in new window", self,
+                                          statusTip="Open selected item in new window",
+                                          enabled=False)
+
+        self.zoomInAct = QAction(qta.icon("mdi.magnify-plus"), "Zoom in", self,
                                  shortcut=SC_ZOOM_IN,
                                  shortcutContext=Qt.WidgetShortcut,
                                  statusTip="Zoom in",
@@ -175,6 +180,7 @@ class TreeView(QTreeView):
         self.attrsMenu.addAction(self.openInCurrTabAct)
         self.attrsMenu.addAction(self.openInNewTabAct)
         self.attrsMenu.addAction(self.openInBackgroundAct)
+        self.attrsMenu.addAction(self.openInNewWindowAct)
 
     def openMenu(self, point):
         self.attrsMenu.exec_(self.viewport().mapToGlobal(point))
