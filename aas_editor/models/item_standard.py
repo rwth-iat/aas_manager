@@ -50,43 +50,11 @@ class StandardItem(QObject):
         if role == IS_LINK_ROLE:
             return self.isLink
         if role == Qt.DecorationRole and column == 0:
-            if isinstance(self.obj, ConceptDescription):
-                icon = qta.icon("mdi.text-box")
-                icon = CONCEPT_ICON
-            elif isinstance(self.obj, Event):
-                icon = qta.icon("mdi.timeline-clock")  # mdi.timer mdi.bell
-                icon = EVENT_ICON
-            elif isinstance(self.obj, AnnotatedRelationshipElement):
-                icon = qta.icon("mdi.arrow-left-right")  # mdi.relation-one-to-one
-                icon = ANN_REL_ICON
-            elif isinstance(self.obj, RelationshipElement):
-                icon = qta.icon("mdi.arrow-left-right")  # mdi.relation-one-to-one
-                icon = REL_ICON
-            elif isinstance(self.obj, Operation):
-                icon = qta.icon("mdi.cog")
-                icon = OPERATION_ICON
-            elif isinstance(self.obj, SubmodelElementCollectionUnordered):
-                icon = COLLECT_ICON
-            elif isinstance(self.obj, SubmodelElementCollectionOrdered):
-                icon = qta.icon("mdi.package")
-                icon = ORDER_COLLECT_ICON
-            elif isinstance(self.obj, Entity):
-                icon = ENTITY_ICON
-            elif isinstance(self.obj, Capability):
-                icon = CAPABILITY_ICON
-            elif isinstance(self.obj, Asset):
-                icon = qta.icon("mdi.mini-sd") # mdi.toy-brick
-                icon = ASSET_ICON
-            elif isinstance(self.obj, AssetAdministrationShell):
-                icon = qta.icon("mdi.wallet") #  mdi.tab mdi.shredder folder-outline wallet
-                icon = SHELL_ICON
-            elif isinstance(self.obj, SubmodelElement):
-                return
-            elif isinstance(self.obj, Submodel):
-                icon = SUBMODEL_ICON
-            else:
-                return
-            return icon
+            for cls in TYPE_ICON_DICT:
+                if isinstance(self.obj, cls):
+                    icon = TYPE_ICON_DICT[cls]
+                    return icon
+            return QVariant()
         if role == Qt.DisplayRole:
             if column == ATTRIBUTE_COLUMN:
                 return self.objectName

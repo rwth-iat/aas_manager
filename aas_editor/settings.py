@@ -3,8 +3,12 @@ from pathlib import Path
 
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QKeySequence, QColor, QFont
-from aas.model import AdministrativeInformation, Identifier, Submodel, AASReference, Asset, \
-    SubmodelElement, AssetAdministrationShell, ConceptDescription, AbstractObjectStore
+from aas.model import *
+# from aas.model import AdministrativeInformation, Identifier, Submodel, AASReference, Asset, \
+#     SubmodelElement, AssetAdministrationShell, ConceptDescription, AbstractObjectStore, Event, \
+#     AnnotatedRelationshipElement, RelationshipElement, Operation, \
+#     SubmodelElementCollectionUnordered, SubmodelElementCollectionOrdered, Entity, Capability, \
+#     Property
 
 AAS_CREATOR = "PyI40AAS Testing Framework"
 
@@ -152,17 +156,40 @@ CHARS4=[{'offset': (-0.54, 0)}, {'offset': (-0.18, 0)},
         {'offset': (0.18, 0)}, {'offset': (0.54, 0)}]
 CHARS1_3=CHARS4
 
+
+def getCharsIcon(chars: str):
+    if len(chars) == 3:
+        options = CHARS3
+    elif len(chars) == 4:
+        options = CHARS4
+
+    mdiChar = "mdi.alpha"
+    args = []
+    for char in chars.lower():
+        args.append(f"{mdiChar}-{char}")
+    return qta.icon(*args, options=options)
+
 # element icons
 qta.set_defaults(**ELEM_ICON_DEFAULTS)
-SHELL_ICON = qta.icon("mdi.alpha-s", "mdi.alpha-h", "mdi.alpha-e", "mdi.alpha-l", options=CHARS4)
-ASSET_ICON = qta.icon("mdi.alpha-a", "mdi.alpha-s", "mdi.alpha-s", "mdi.alpha-t", options=CHARS4)
-SUBMODEL_ICON = qta.icon("mdi.alpha-s", "mdi.alpha-u", "mdi.alpha-b", options=CHARS3)
-ENTITY_ICON = qta.icon("mdi.alpha-e", "mdi.alpha-n", "mdi.alpha-t", options=CHARS3)
-REL_ICON = qta.icon("mdi.alpha-r", "mdi.alpha-e", "mdi.alpha-l", options=CHARS3)
-ANN_REL_ICON = qta.icon("mdi.alpha-a", "mdi.alpha-r", "mdi.alpha-e", "mdi.alpha-l", options=CHARS1_3)
-OPERATION_ICON = qta.icon("mdi.alpha-o", "mdi.alpha-p", "mdi.alpha-e", "mdi.alpha-r", options=CHARS4)
-CAPABILITY_ICON = qta.icon("mdi.alpha-c", "mdi.alpha-a", "mdi.alpha-p", options=CHARS3)
-EVENT_ICON = qta.icon("mdi.alpha-e", "mdi.alpha-v", "mdi.alpha-n", "mdi.alpha-t", options=CHARS4)
-ORDER_COLLECT_ICON = qta.icon("mdi.alpha-o", "mdi.alpha-c", "mdi.alpha-o", "mdi.alpha-l", options=CHARS1_3)
-COLLECT_ICON = qta.icon("mdi.alpha-u", "mdi.alpha-c", "mdi.alpha-o", "mdi.alpha-l", options=CHARS1_3)
-CONCEPT_ICON = qta.icon("mdi.alpha-c", "mdi.alpha-o", "mdi.alpha-n", "mdi.alpha-c", options=CHARS4)
+TYPE_ICON_DICT = {
+    AssetAdministrationShell: getCharsIcon("shel"),  # qta.icon("mdi.wallet") #  mdi.tab mdi.shredder folder-outline wallet
+    Asset: getCharsIcon("asst"),  # qta.icon("mdi.mini-sd") # mdi.toy-brick
+    ConceptDescription: getCharsIcon("conc"),  # qta.icon("mdi.text-box")
+    Submodel: getCharsIcon("sub"),
+
+    Property: getCharsIcon("prop"),
+    Entity: getCharsIcon("ent"),
+    Capability: getCharsIcon("cap"),
+    Event: getCharsIcon("evnt"),  # qta.icon("mdi.timeline-clock")  # mdi.timer mdi.bell
+    Operation: getCharsIcon("oper"),  # qta.icon("mdi.cog")
+    RelationshipElement: getCharsIcon("rel"),
+    AnnotatedRelationshipElement: getCharsIcon("arel"), # qta.icon("mdi.arrow-left-right")  # mdi.relation-one-to-one
+    SubmodelElementCollectionUnordered: getCharsIcon("ucol"),
+    SubmodelElementCollectionOrdered: getCharsIcon("ocol"),  # qta.icon("mdi.package")
+
+    Range: getCharsIcon("rnge"),
+    Blob: getCharsIcon("blob"),
+    File: getCharsIcon("file"),
+    ReferenceElement: getCharsIcon("ref"),
+    DataElement: getCharsIcon("data"),
+}
