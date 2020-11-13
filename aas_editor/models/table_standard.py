@@ -154,8 +154,7 @@ class StandardTable(QAbstractItemModel):
             if isinstance(value, QFont):
                 font = QFont(value)
                 self.defaultFont.setPointSize(font.pointSize())
-                self.dataChanged.emit(self.index(0), self.index(self.rowCount()),
-                                      (Qt.FontRole, Qt.SizeHintRole))
+                self.dataChanged.emit(self.index(0), self.index(self.rowCount()))
         elif role == Qt.EditRole:
             try:
                 if self.hasChildren(index):

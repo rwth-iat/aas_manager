@@ -1,11 +1,17 @@
+from PyQt5.QtCore import QObject, QVariant
+from PyQt5.QtGui import QIcon
+from aas.model import AASReference, ConceptDescription, Event, RelationshipElement, Operation, \
+    SubmodelElementCollection
+from aas.model import *
 from PyQt5.QtCore import QObject, QVariant, QModelIndex
 from aas.model import AASReference
 
+from aas_editor.settings import *
 from aas_editor.settings import LINK_TYPES, PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
     VALUE_COLUMN, IS_LINK_ROLE
 from aas_editor.util import getDescription, getAttrDoc, simplifyInfo, getTypeName
 from PyQt5.QtCore import Qt
-
+import qtawesome as qta
 
 class StandardItem(QObject):
     def __init__(self, obj, name=None, parent=None, new=True):
@@ -43,6 +49,12 @@ class StandardItem(QObject):
             return self.package
         if role == IS_LINK_ROLE:
             return self.isLink
+        if role == Qt.DecorationRole and column == 0:
+            for cls in TYPE_ICON_DICT:
+                if isinstance(self.obj, cls):
+                    icon = TYPE_ICON_DICT[cls]
+                    return icon
+            return QVariant()
         if role == Qt.DisplayRole:
             if column == ATTRIBUTE_COLUMN:
                 return self.objectName

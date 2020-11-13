@@ -1,12 +1,12 @@
 import sys
 
-from aas_editor.editorApp import EditorApp
 from PyQt5 import QtWidgets
 
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
 
+    from aas_editor.editorApp import EditorApp
     window = EditorApp()
     # window.packTreeModel.addItem(Package("aas_files/TestPackage.aasx"))
     window.show()
