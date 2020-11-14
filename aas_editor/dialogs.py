@@ -152,46 +152,20 @@ class GroupBox(QGroupBox):
         self.type = GroupBoxType.SIMPLE
 
     def paintEvent(self, a0: QPaintEvent) -> None:
-        if not self.isCheckable():
-            super(GroupBox, self).paintEvent(a0)
-        else:
-            paint = QStylePainter(self)
-            option = QStyleOptionGroupBox()
-            self.initStyleOption(option)
-            #  don't remove the original check box control, as we want to keep
-            #  it as a placeholder
-            option.subControls &= ~QStyle.SC_GroupBoxCheckBox
-            paint.drawComplexControl(QStyle.CC_GroupBox, option)
-
-            #  re-use the style option, it contians enough info to make sure
-            #  the button is correctly checked
-            option.rect = self.style().subControlRect(
-                QStyle.CC_GroupBox, option, QStyle.SC_GroupBoxCheckBox, self)
-
-            option.rect.moveLeft(option.rect.left() - 1)
-            option.rect.setWidth(option.rect.width() + 2)
-            option.rect.moveTop(option.rect.top() - 1)
-            option.rect.setHeight(option.rect.height() + 2)
-
-            paint.save()
-            px = QPixmap(option.rect.width(), option.rect.height())
-            px.fill(self.palette().color(self.backgroundRole()))
-            brush = QBrush(px)
-            paint.fillRect(option.rect, brush)
-            paint.restore()
-
-            if self.isClosable():
-                paint.drawPrimitive(QStyle.PE_IndicatorTabClose, option)
-            elif self.isAddable():
-                paint.drawPrimitive(QStyle.PE_IndicatorSpinPlus, option)
-
+        super(GroupBox, self).paintEvent(a0)
+        if self.isCheckable():
             self.setStyleSheet(
+                "GroupBox::indicator:checked"
+                "{"
+                "    border-image: url(aas_editor/models/icons/close-hover.svg);"
+                "}"
                 "GroupBox::indicator:checked:hover,"
                 "GroupBox::indicator:checked:focus,"
                 "GroupBox::indicator:checked:pressed"
                 "{"
-                "    color: red;"
-                "}")
+                "    border-image: url(aas_editor/models/icons/close-pressed.svg);"
+                "}"
+            )
 
     def setClosable(self, b: bool) -> None:
         self.type = GroupBoxType.CLOSABLE if b else GroupBoxType.SIMPLE
@@ -291,7 +265,7 @@ class IterableGroupBox(GroupBox):
                 raise TypeError(f"expected 2 arguments, got {len(self.argTypes)}", self.argTypes)
 
         widget = getInputWidget(argType,
-                                title=f"{argType} {len(self.inputWidgets)}",
+                                title=f"{getTypeName(argType)} {len(self.inputWidgets)}",
                                 rmDefParams=self.rmDefParams, objVal=objVal)
         widget.setClosable(True)
         widget.toggled.connect(lambda: self._delInputWidget(widget))

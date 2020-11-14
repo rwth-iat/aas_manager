@@ -54,7 +54,7 @@ LINK_BLUE = QColor(26, 13, 171)
 CHANGED_BLUE = QColor(83, 148, 236, 255)
 NEW_GREEN = QColor("green")
 
-PACKAGE_ATTRS = ("shells", "assets", "submodels", "concept_descriptions", "others")
+PACKAGE_ATTRS = ("shells", "assets", "submodels", "concept_descriptions", "others", "files")
 ATTRS_NOT_IN_DETAILED_INFO = ("gi_code",
                               "gi_frame",
                               "gi_running",
