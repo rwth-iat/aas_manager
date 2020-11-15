@@ -1,6 +1,5 @@
 # pyuic5 aas_editor/mainwindow_base.ui -o aas_editor/design.py
 
-from .util_classes import *
 from .item_standard import *
 from .item_detailed_info import *
 from .item_pack_treeview import *

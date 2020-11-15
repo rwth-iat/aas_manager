@@ -10,10 +10,11 @@ from aas.model.concept import *
 from aas.model.provider import *
 from aas.model.submodel import *
 
-from aas_editor.models import DictItem
+
 from aas_editor.settings import DEFAULT_ATTRS_TO_HIDE
 from aas_editor.util import issubtype, inheritors, isMeta, getTypeName, isoftype, isIterableType, \
     getReqParams4init, getParams4init
+from aas_editor.util_classes import DictItem
 
 
 class AddDialog(QDialog):

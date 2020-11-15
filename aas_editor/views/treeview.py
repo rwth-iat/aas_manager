@@ -4,10 +4,12 @@ from PyQt5.QtGui import QKeySequence, QMouseEvent, QKeyEvent, QClipboard, QIcon,
 from PyQt5.QtWidgets import QTreeView, QAction, QMenu, QApplication, QDialog, QAbstractItemView
 
 from aas_editor.dialogs import AddObjDialog
-from aas_editor.models import DictItem
 from aas_editor.settings import *
 from aas_editor.util import getDefaultVal, isIterable, getReqParams4init, delAASParents
 import qtawesome as qta
+
+from aas_editor.util_classes import DictItem
+
 
 class TreeView(QTreeView):
     wheelClicked = pyqtSignal(['QModelIndex'])

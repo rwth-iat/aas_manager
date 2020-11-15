@@ -1,6 +1,7 @@
 from pathlib import Path
 
-from PyQt5.QtCore import QModelIndex, QRect, QStandardPaths, QSettings, QPoint, QSize
+from PyQt5.QtCore import QModelIndex, QRect, QStandardPaths, QSettings, QPoint, QSize, \
+    QSortFilterProxyModel
 from aas.adapter import aasx
 from aas.adapter.aasx import DictSupplementaryFileContainer
 

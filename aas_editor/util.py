@@ -1,6 +1,5 @@
 import inspect
 import re
-from abc import ABCMeta
 from enum import Enum
 from typing import List, Tuple, Union, Dict, Type, Iterable
 
@@ -10,9 +9,9 @@ from aas.model import SubmodelElement, DataElement, SubmodelElementCollection, E
     Namespace, Referable, Identifiable, HasSemantics, HasKind, Qualifiable, \
     DataSpecificationContent
 
-from .models import DictItem
-from .settings import ATTR_ORDER, PREFERED_LANGS_ORDER, ATTRS_NOT_IN_DETAILED_INFO, \
-    ATTR_INFOS_TO_SIMPLIFY, THEMES, NAME_ROLE, OBJECT_ROLE
+from aas_editor.util_classes import DictItem
+from aas_editor.settings import ATTR_ORDER, PREFERED_LANGS_ORDER, ATTRS_NOT_IN_DETAILED_INFO, \
+    ATTR_INFOS_TO_SIMPLIFY, NAME_ROLE, OBJECT_ROLE
 
 
 def nameIsSpecial(method_name):
@@ -281,7 +280,7 @@ def _isoftype(obj, typ) -> bool:
 
     if getTypeName(typ) == "Type" and hasattr(typ, "__args__") and typ.__args__:
         args = typ.__args__ if not isUnion(typ.__args__[0]) else typ.__args__[0].__args__
-        return isoftype(obj, args)
+        return issubtype(obj, args)
 
     #  TypeVar
     if hasattr(typ, "__bound__"):
@@ -329,7 +328,7 @@ def _isoftype(obj, typ) -> bool:
 
 
 def isIterableType(objType):
-    return issubtype(objType, Iterable) and not issubtype(objType, (str, bytes, bytearray,DictItem))
+    return issubtype(objType, Iterable) and not issubtype(objType, (str, bytes, bytearray, DictItem))
 
 
 def isIterable(obj):

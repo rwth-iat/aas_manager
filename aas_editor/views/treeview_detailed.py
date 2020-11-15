@@ -5,7 +5,7 @@ from PyQt5.QtCore import Qt, QModelIndex
 from PyQt5.QtWidgets import QAction, QDialog, QSizePolicy, QFrame, QAbstractScrollArea
 
 from aas_editor.dialogs import AddObjDialog
-from aas_editor.models import DetailedInfoTable, DictItem
+from aas_editor.models import DetailedInfoTable
 from aas_editor.qcomboboxenumdelegate import QComboBoxEnumDelegate
 from aas_editor.settings import ATTR_COLUMN_WIDTH, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
     VALUE_COLUMN, NOT_GIVEN, LINKED_ITEM_ROLE, IS_LINK_ROLE
