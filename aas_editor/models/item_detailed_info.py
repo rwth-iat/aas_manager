@@ -1,7 +1,7 @@
 from typing import AbstractSet
 
 from aas_editor.models import StandardItem
-from aas_editor.settings import TYPES_NOT_TO_POPULATE
+from aas_editor.settings import TYPES_NOT_TO_POPULATE, PACKAGE_ROLE
 from aas_editor.util import getAttrs4detailInfo, getTypeName, isIterable
 from aas_editor.util_classes import Package
 
@@ -9,7 +9,10 @@ from aas_editor.util_classes import Package
 class DetailedInfoItem(StandardItem):
     def __init__(self, obj, name, parent=None, package: Package = None, new=True):
         super().__init__(obj, name, parent, new=new)
-        self.package = package
+        if parent and not package:
+            self.package = parent.data(PACKAGE_ROLE)
+        else:
+            self.package = package
         self.populate()
 
     def populate(self):

@@ -6,7 +6,7 @@ from PyQt5.QtGui import QColor, QFont
 from aas_editor.models import Package, DetailedInfoItem, StandardTable
 from aas_editor.settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, COLUMNS_IN_DETAILED_INFO, \
     ATTRIBUTE_COLUMN, VALUE_COLUMN, PACK_ITEM_ROLE, LIGHT_BLUE, LINK_BLUE, CHANGED_BLUE, NEW_GREEN, \
-    DEFAULT_FONT, LINKED_ITEM_ROLE
+    DEFAULT_FONT, LINKED_ITEM_ROLE, IS_LINK_ROLE
 
 
 class DetailedInfoTable(StandardTable):
@@ -51,7 +51,7 @@ class DetailedInfoTable(StandardTable):
 
     def _getFgColor(self, index: QModelIndex):
         if index.column() == VALUE_COLUMN:
-            if self.objByIndex(index).isLink:
+            if index.data(IS_LINK_ROLE):
                 return LINK_BLUE
         elif index.column() == ATTRIBUTE_COLUMN:
             if self.objByIndex(index).new:
@@ -69,13 +69,13 @@ class DetailedInfoTable(StandardTable):
             if not isinstance(index.parent().data(OBJECT_ROLE), dict):
                 font.setBold(True)
         elif index.column() == VALUE_COLUMN:
-            if self.objByIndex(index).isLink:
+            if index.data(IS_LINK_ROLE):
                 font.setUnderline(True)
 
         return font
 
     def getLinkedItem(self, index: QModelIndex) -> QModelIndex:
-        if not self.objByIndex(index).isLink:
+        if not index.data(IS_LINK_ROLE):
             return QModelIndex()
         try:
             reference = self.data(index, OBJECT_ROLE)

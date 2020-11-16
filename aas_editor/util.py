@@ -11,7 +11,7 @@ from aas.model import SubmodelElement, DataElement, SubmodelElementCollection, E
 
 from aas_editor.util_classes import DictItem
 from aas_editor.settings import ATTR_ORDER, PREFERED_LANGS_ORDER, ATTRS_NOT_IN_DETAILED_INFO, \
-    ATTR_INFOS_TO_SIMPLIFY, NAME_ROLE, OBJECT_ROLE
+    ATTR_INFOS_TO_SIMPLIFY, NAME_ROLE, OBJECT_ROLE, PARENT_OBJ_ROLE
 
 
 def nameIsSpecial(method_name):
@@ -359,11 +359,11 @@ def getAttrTypeHint(objType, attr):
 
 def getTypeHint(index: QModelIndex):
     attr = index.data(NAME_ROLE)
-    parentObj = index.internalPointer().parentObj
+    parentObj = index.data(PARENT_OBJ_ROLE)
     parentAttr = index.parent().data(NAME_ROLE)
 
     if index.parent().isValid() and isIterableType(type(parentObj)):
-        grandParentObj = index.parent().internalPointer().parentObj
+        grandParentObj = index.parent().data(PARENT_OBJ_ROLE)
         try:
             parentAttrType = getAttrTypeHint(type(grandParentObj), parentAttr)
             if issubtype(parentAttrType, dict):

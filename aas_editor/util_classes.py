@@ -113,6 +113,9 @@ class Package:
     def add(self, obj):
         self.objStore.add(obj)
 
+    def discard(self, obj):
+        self.objStore.discard(obj)
+
     @property
     def numOfShells(self):
         return len(tuple(self.shells))

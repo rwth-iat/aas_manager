@@ -9,9 +9,8 @@ from aas.model import Submodel, AssetAdministrationShell, Asset, SubmodelElement
 from aas_editor.models import Package, ConceptDescription
 from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ATTRS, SC_SAVE_ALL, SC_OPEN, \
     PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, APPLICATION_NAME, ADD_ICON, OPEN_ICON, SAVE_ICON, \
-    SAVE_ALL_ICON, OPENED_PACKS_ROLE, OPENED_FILES_ROLE
+    SAVE_ALL_ICON, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE
 from aas_editor.views.treeview import TreeView
-import qtawesome as qta
 
 
 class PackTreeView(TreeView):
@@ -208,7 +207,7 @@ class PackTreeView(TreeView):
         if file:
             pack = Package()
             self.savePack(pack, file)
-            self.model().addItem(pack, parent=QModelIndex())
+            self.model().setData(QModelIndex(), pack, ADD_ITEM_ROLE)
 
     def openPackWithDialog(self):
         file = QFileDialog.getOpenFileName(self, "Open AAS file",
@@ -233,7 +232,7 @@ class PackTreeView(TreeView):
             if Path(file).absolute() in self.model().data(QModelIndex(), OPENED_FILES_ROLE):
                 QMessageBox.critical(self, "Error", f"Package {file} is already opened")
             else:
-                self.model().addItem(pack)
+                self.model().setData(QModelIndex(), pack, ADD_ITEM_ROLE)
 
     def savePack(self, pack: Package = None, file: str = None):
         pack = self.currentIndex().data(PACKAGE_ROLE) if pack is None else pack

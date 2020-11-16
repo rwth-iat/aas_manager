@@ -1,10 +1,11 @@
 from pathlib import Path
 
 from PyQt5.QtCore import QModelIndex, QRect, QStandardPaths, QSettings, QPoint, QSize, \
-    QSortFilterProxyModel
+    QSortFilterProxyModel, QItemSelectionModel
 from aas.adapter import aasx
 from aas.adapter.aasx import DictSupplementaryFileContainer
 
+from aas_editor.views.treeview_pack import PackTreeView
 from . import design
 
 from PyQt5.QtGui import *
@@ -29,8 +30,21 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.currTheme = DEFAULT_THEME
 
         self.packTreeModel = PacksTable()
+
+        self.filterProxyModel = QSortFilterProxyModel()
+        self.filterProxyModel.setSourceModel(self.packTreeModel)
+        self.filterProxyModel.setFilterCaseSensitivity(Qt.CaseInsensitive)
+        self.filterProxyModel.setFilterKeyColumn(ATTRIBUTE_COLUMN)
+        self.filterProxyModel.setRecursiveFilteringEnabled(True)
+        self.searchField.textChanged.connect(self.filterProxyModel.setFilterRegExp)
+        self.searchField.textChanged.connect(lambda: self.packTreeView.expandAll())
+
         self.packTreeView.setHeaderHidden(True)
-        self.packTreeView.setModel(self.packTreeModel)
+        self.packTreeView.setModel(self.filterProxyModel)
+
+        self.packTreeView1 = PackTreeView(self.leftLayoutWidget)
+        self.packTreeView1.setModel(self.packTreeModel)
+        self.leftVerticalLayout.addWidget(self.packTreeView1)
 
         self.tabWidget.addTab(Tab(parent=self.tabWidget), "Welcome")
 

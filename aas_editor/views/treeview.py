@@ -27,6 +27,11 @@ class TreeView(QTreeView):
         self.customContextMenuRequested.connect(self.openMenu)
         self.setUniformRowHeights(True)
 
+    def setModel(self, model: QtCore.QAbstractItemModel) -> None:
+        super(TreeView, self).setModel(model)
+        self.model().rowsInserted.connect(lambda parent, first, last:
+                                          self.setCurrentIndex(parent.child(last, 0)))
+
     # noinspection PyArgumentList
     def initActions(self):
         self.copyAct = QAction(COPY_ICON, "Copy", self,
@@ -248,9 +253,9 @@ class TreeView(QTreeView):
         try:
             parentObjType = type(index.data(PARENT_OBJ_ROLE))
             defaultVal = getDefaultVal(attribute, parentObjType)
-            self.model().clearRow(index.row(), index.parent(), defaultVal)
+            self.model().setData(index, defaultVal, CLEAR_ROW_ROLE)
         except (AttributeError, IndexError):
-            self.model().clearRow(index.row(), index.parent())
+            self.model().setData(index, NOT_GIVEN, CLEAR_ROW_ROLE)
 
     def _copyHandler(self):
         index = self.currentIndex()
@@ -273,7 +278,7 @@ class TreeView(QTreeView):
         # if no req. attrs, paste data without dialog
         if not reqAttrsDict:
             if isIterable(index.parent().data(OBJECT_ROLE)) and not isIterable(obj2paste):
-                self.model().addItem(obj2paste, index.parent())
+                self.model().setData(index.parent(), obj2paste, ADD_ITEM_ROLE)
             else:
                 self.model().setData(index, obj2paste, Qt.EditRole)
         # if req. attrs, paste data with dialog for asking to check req. attrs
@@ -295,14 +300,13 @@ class TreeView(QTreeView):
             obj = dialog.getObj2add()
             if isinstance(obj, dict):
                 for key, value in obj.items():
-                    self.model().addItem(DictItem(key, value), parent)
+                    self.model().setData(parent, DictItem(key, value), ADD_ITEM_ROLE)
             elif isIterable(obj):
                 for i in obj:
-                    self.model().addItem(i, parent)
+                    self.model().setData(parent, i, ADD_ITEM_ROLE)
             else:
-                self.model().addItem(obj, parent)
+                self.model().setData(parent, obj, ADD_ITEM_ROLE)
             self.setFocus()
-            self.setCurrentIndex(parent)
         else:
             print("Item adding cancelled")
         dialog.deleteLater()
@@ -318,3 +322,9 @@ class TreeView(QTreeView):
         else:
             print("Item editing cancelled")
         dialog.deleteLater()
+
+    # def model(self) -> QtCore.QAbstractItemModel:
+    #     try:
+    #         return super(TreeView, self).model().sourceModel()
+    #     except AttributeError:
+    #         return super(TreeView, self).model()

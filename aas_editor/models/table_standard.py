@@ -7,7 +7,7 @@ from PyQt5.QtGui import QFont
 
 from aas_editor.models import Package, DetailedInfoItem, StandardItem, PackTreeViewItem
 from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, VALUE_COLUMN, NOT_GIVEN, \
-    PACKAGE_ROLE, PACK_ITEM_ROLE, PACKAGE_ATTRS, DEFAULT_FONT
+    PACKAGE_ROLE, PACK_ITEM_ROLE, PACKAGE_ATTRS, DEFAULT_FONT, ADD_ITEM_ROLE, CLEAR_ROW_ROLE
 
 from aas.model import Submodel, SubmodelElement
 
@@ -107,32 +107,33 @@ class StandardTable(QAbstractItemModel):
 
     def addItem(self, obj: Union[Package, SubmodelElement, Iterable],  # FIXME don't use update() instead use insertRow() and return index
                 parent: QModelIndex = QModelIndex()):
-        if isinstance(parent.data(OBJECT_ROLE), Submodel):
-            # TODO change if they make Submodel iterable
-            parentObj = parent.data(OBJECT_ROLE).submodel_element
-        else:
-            # print(parent.data(NAME_ROLE))
-            parentObj = parent.data(OBJECT_ROLE)
+        parentObj = parent.data(OBJECT_ROLE)
 
-        if isinstance(parentObj, AbstractSet):
-            parentObj.add(obj)
-        elif isinstance(parentObj, list):
-            parentObj.append(obj)
-        elif isinstance(parentObj, dict):
-            parentObj[obj.key] = obj.value
+        self.beginInsertRows(parent, self.rowCount(parent), self.rowCount(parent))
+        if isinstance(obj, Package):
+            item = PackTreeViewItem(obj, new=False, parent=self._rootItem)
         elif parent.data(NAME_ROLE) in PACKAGE_ATTRS:
             parent.data(PACKAGE_ROLE).add(obj)
-        elif isinstance(obj, Package):
-            self.beginInsertRows(parent, self.rowCount(parent), self.rowCount(parent))
-            item = PackTreeViewItem(obj, new=False)
-            item.setParent(self.objByIndex(QModelIndex()))
-            self.endInsertRows()
-            return True
+            item = PackTreeViewItem(obj, parent=self.objByIndex(parent))
+        elif isinstance(parent.data(OBJECT_ROLE), Submodel):
+            # TODO change if they make Submodel iterable
+            parentObj.submodel_element.add(obj)
+            item = PackTreeViewItem(obj, parent=self.objByIndex(parent))
+        elif isinstance(parentObj, AbstractSet):
+            parentObj.add(obj)
+            item = DetailedInfoItem(obj, "", parent=self.objByIndex(parent))
+        elif isinstance(parentObj, list):
+            parentObj.append(obj)
+            item = DetailedInfoItem(obj, "", parent=self.objByIndex(parent))
+        elif isinstance(parentObj, dict):
+            parentObj[obj.key] = obj.value
+            item = DetailedInfoItem(obj, obj.key, parent=self.objByIndex(parent))
         else:
+            self.endInsertRows()
             raise AttributeError(
                 f"Object couldn't be added: parent obj type is not appendable: {type(parentObj)}")
-        self.update(parent)
-        return True
+        self.endInsertRows()
+        return self.index(item.row(), 0, parent)
 
     def update(self, index: QModelIndex):
         if not index.isValid():
@@ -158,8 +159,14 @@ class StandardTable(QAbstractItemModel):
             return item.data(role, index.column())
 
     def setData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
-        if not index.isValid() and not role == Qt.FontRole:
+        if not index.isValid() and role not in (Qt.FontRole, ADD_ITEM_ROLE):
             return QVariant()
+        elif role == ADD_ITEM_ROLE:
+            self.addItem(value, index)
+            return True
+        elif role == CLEAR_ROW_ROLE:
+            self.clearRow(index.row(), index.parent(), value)
+            return True
         elif role == Qt.FontRole:
             if isinstance(value, QFont):
                 font = QFont(value)
@@ -231,17 +238,17 @@ class StandardTable(QAbstractItemModel):
                   parent: QModelIndex = ..., defaultVal=NOT_GIVEN) -> bool:
         """Delete rows if they are children of Iterable else set to Default"""
         parentItem = self.objByIndex(parent)
-        parentObj = parentItem.obj
+        parentObj = parent.data(OBJECT_ROLE)
 
         # if parentObj is Submodel and the parentObj is not rootItem
         # set submodel_element as parentObj
         if isinstance(parentObj, Submodel) and parent.isValid():
-            parentObj = parentItem.obj.submodel_element
+            parentObj = parentObj.submodel_element
 
         for n in range(row+count-1, row-1, -1):
             child = parentItem.children()[n]
             if isinstance(parentObj, list):
-                parentItem.obj.pop[n]
+                parentObj.pop[n]
                 self.removeRows(row, count, parent)
                 return True
             elif isinstance(parentObj, dict):
@@ -250,6 +257,10 @@ class StandardTable(QAbstractItemModel):
                 return True
             elif isinstance(parentObj, AbstractSet):
                 parentObj.discard(child.obj)
+                self.removeRows(row, count, parent)
+                return True
+            elif parent.data(NAME_ROLE) in PACKAGE_ATTRS:
+                parent.data(PACKAGE_ROLE).discard(child.obj)
                 self.removeRows(row, count, parent)
                 return True
             else:

@@ -1,14 +1,15 @@
 from aas_editor.models import StandardItem
 from aas_editor.settings import ATTRS_IN_PACKAGE_TREEVIEW, PACKAGE_ROLE
+from aas_editor.util_classes import Package
 
 
 class PackTreeViewItem(StandardItem):
     def __init__(self, obj, parent=None, objName=None, new=True):
         super().__init__(obj, objName, parent, new=new)
-        if parent:
-            self.package = parent.data(PACKAGE_ROLE)
-        else:
+        if isinstance(obj, Package):
             self.package = obj
+        else:
+            self.package = parent.data(PACKAGE_ROLE)
         self.populate()
 
     def populate(self):
