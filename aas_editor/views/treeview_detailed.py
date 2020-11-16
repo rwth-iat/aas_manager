@@ -8,7 +8,7 @@ from aas_editor.dialogs import AddObjDialog
 from aas_editor.models import DetailedInfoTable
 from aas_editor.qcomboboxenumdelegate import QComboBoxEnumDelegate
 from aas_editor.settings import ATTR_COLUMN_WIDTH, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
-    VALUE_COLUMN, NOT_GIVEN, LINKED_ITEM_ROLE, IS_LINK_ROLE
+    VALUE_COLUMN, NOT_GIVEN, LINKED_ITEM_ROLE, IS_LINK_ROLE, PARENT_OBJ_ROLE
 from aas_editor.util import getAttrTypeHint, getReqParams4init, isoftype, getDefaultVal, \
     isIterableType, isIterable, issubtype, getTypeHint
 from aas_editor.views.treeview import TreeView
@@ -94,7 +94,7 @@ class AttrsTreeView(TreeView):
             self.pasteAct.setEnabled(False)
 
         # update open actions
-        if self.model().objByIndex(index).isLink:
+        if index.data(IS_LINK_ROLE):
             self.openInCurrTabAct.setEnabled(True)
             self.openInBackgroundAct.setEnabled(True)
             self.openInNewTabAct.setEnabled(True)
@@ -134,7 +134,7 @@ class AttrsTreeView(TreeView):
     def _addHandler(self, objVal=None):
         index = self.currentIndex()
         attribute = index.data(NAME_ROLE)
-        attrType = getAttrTypeHint(type(self.model().objByIndex(index).parentObj), attribute)
+        attrType = getAttrTypeHint(type(index.data(PARENT_OBJ_ROLE)), attribute)
         if objVal:
             self.addItemWithDialog(index, attrType, objVal=objVal, title=f"Add {attribute} element", rmDefParams=True)
         else:
@@ -147,7 +147,7 @@ class AttrsTreeView(TreeView):
             objVal = objVal if objVal else index.data(OBJECT_ROLE)
             attribute = index.data(NAME_ROLE)
             try:
-                attrType = getAttrTypeHint(type(self.model().objByIndex(index).parentObj), attribute)
+                attrType = getAttrTypeHint(type(index.data(PARENT_OBJ_ROLE)), attribute)
             except KeyError as e:
                 if objVal:
                     attrType = type(objVal)
@@ -157,7 +157,7 @@ class AttrsTreeView(TreeView):
 
     def _openRef(self, detailInfoItem: QModelIndex, newTab=True, setCurrent=True, newWindow=False):
         if detailInfoItem.column() == VALUE_COLUMN and detailInfoItem.data(IS_LINK_ROLE):
-            linkedPackItem = self.model().data(detailInfoItem, LINKED_ITEM_ROLE)
+            linkedPackItem = detailInfoItem.data(LINKED_ITEM_ROLE)
             if newWindow:
                 self.openInNewWindowClicked.emit(linkedPackItem)
             elif newTab and setCurrent:

@@ -9,7 +9,7 @@ from aas.model import Submodel, AssetAdministrationShell, Asset, SubmodelElement
 from aas_editor.models import Package, ConceptDescription
 from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ATTRS, SC_SAVE_ALL, SC_OPEN, \
     PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, APPLICATION_NAME, ADD_ICON, OPEN_ICON, SAVE_ICON, \
-    SAVE_ALL_ICON
+    SAVE_ALL_ICON, OPENED_PACKS_ROLE, OPENED_FILES_ROLE
 from aas_editor.views.treeview import TreeView
 import qtawesome as qta
 
@@ -164,10 +164,10 @@ class PackTreeView(TreeView):
         return True if pack else False
 
     def _isSaveAllOk(self):
-        return True if self.model().openedPacks() else False
+        return True if self.model().data(QModelIndex(), OPENED_PACKS_ROLE) else False
 
     def _isCloseAllOk(self):
-        return True if self.model().openedPacks() else False
+        return True if self.model().data(QModelIndex(), OPENED_PACKS_ROLE) else False
 
     def _addHandler(self, objVal=None, parent: QModelIndex = None):
         parent = parent if parent else self.currentIndex()
@@ -230,7 +230,7 @@ class PackTreeView(TreeView):
             self.removeFromRecentFiles(file)
             QMessageBox.critical(self, "Error", f"Package {file} couldn't be opened: {e}")
         else:
-            if Path(file).absolute() in self.model().openedFiles():
+            if Path(file).absolute() in self.model().data(QModelIndex(), OPENED_FILES_ROLE):
                 QMessageBox.critical(self, "Error", f"Package {file} is already opened")
             else:
                 self.model().addItem(pack)
@@ -262,12 +262,16 @@ class PackTreeView(TreeView):
             self.savePack(pack, file)
 
     def saveAll(self):
-        for pack in self.model().openedPacks():
+        for pack in self.model().data(QModelIndex(), OPENED_PACKS_ROLE):
             self.savePack(pack)
 
     def closeFileWithDialog(self):
         pack = self.currentIndex().data(PACKAGE_ROLE)
-        packItem = self.model().findItemByObj(pack)
+        try:
+            packItem, = self.model().match(QModelIndex(), OBJECT_ROLE, pack, hits=1)
+        except ValueError:
+            QMessageBox.critical(self, "Not found error",
+                                 f"The file to close is not found: {pack}")
         if packItem.isValid():
             try:
                 dialog = QMessageBox(QMessageBox.NoIcon, f"Close {pack}",
@@ -285,9 +289,6 @@ class PackTreeView(TreeView):
                     self.closeFile(packItem)
             except AttributeError as e:
                 QMessageBox.critical(self, "Error", f"No chosen package to close: {e}")
-        else:
-            QMessageBox.critical(self, "Not found error",
-                                 f"The file to close is not found: {pack}")
 
     def closeAllFilesWithDialog(self):
         dialog = QMessageBox(QMessageBox.NoIcon, f"Close all AAS files",
@@ -299,13 +300,13 @@ class PackTreeView(TreeView):
         dialog.button(QMessageBox.Save).setText("&Save and Close All")
         res = dialog.exec()
         if res == QMessageBox.Save:
-            for pack in self.model().openedPacks():
+            for pack in self.model().data(QModelIndex(), OPENED_PACKS_ROLE):
                 self.savePack(pack)
-                packItem = self.model().findItemByObj(pack)
+                packItem, = self.model().match(QModelIndex(), OBJECT_ROLE, pack, hits=1)
                 self.closeFile(packItem)
         elif res == QMessageBox.Discard:
-            for pack in self.model().openedPacks():
-                packItem = self.model().findItemByObj(pack)
+            for pack in self.model().data(QModelIndex(), OPENED_PACKS_ROLE):
+                packItem, = self.model().match(QModelIndex(), OBJECT_ROLE, pack, hits=1)
                 self.closeFile(packItem)
 
     def closeFile(self, packItem: QModelIndex):

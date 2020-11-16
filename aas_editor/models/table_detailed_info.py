@@ -81,7 +81,7 @@ class DetailedInfoTable(StandardTable):
             reference = self.data(index, OBJECT_ROLE)
             objStore = self.data(index, PACKAGE_ROLE).objStore
             obj = reference.resolve(objStore)
-            linkedPackItem = self.data(index, PACK_ITEM_ROLE).model().findItemByObj(obj)
+            linkedPackItem, = self.data(index, PACK_ITEM_ROLE).model().match(QModelIndex(), OBJECT_ROLE, obj, hits=1)
             return linkedPackItem
         except AttributeError:
             return QModelIndex()

@@ -4,7 +4,8 @@ from PyQt5.QtCore import QModelIndex, QVariant, Qt
 from PyQt5.QtGui import QFont
 
 from aas_editor.models import Package, StandardTable, QColor
-from aas_editor.settings import PACKAGE_ROLE, NAME_ROLE, DEFAULT_FONT
+from aas_editor.settings import PACKAGE_ROLE, NAME_ROLE, DEFAULT_FONT, OPENED_PACKS_ROLE, \
+    OPENED_FILES_ROLE
 
 
 class PacksTable(StandardTable):
@@ -29,6 +30,10 @@ class PacksTable(StandardTable):
     def data(self, index: QModelIndex, role: int = ...) -> Any:
         if role == Qt.ForegroundRole:
             return self._getFgColor(index)
+        elif role == OPENED_PACKS_ROLE:
+            return self.openedPacks()
+        elif role == OPENED_FILES_ROLE:
+            return self.openedFiles()
         else:
             return super(PacksTable, self).data(index, role)
 

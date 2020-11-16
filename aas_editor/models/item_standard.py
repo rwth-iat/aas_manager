@@ -41,10 +41,14 @@ class StandardItem(QObject):
                 return getDescription(self.obj.description)
             except AttributeError:
                 pass
+        if role == ITEM_ROLE:
+            return self
         if role == NAME_ROLE:
             return self.objectName
         if role == OBJECT_ROLE:
             return self.obj
+        if role == PARENT_OBJ_ROLE:
+            return self.parentObj
         if role == PACKAGE_ROLE:
             return self.package
         if role == IS_LINK_ROLE:

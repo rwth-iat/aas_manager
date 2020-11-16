@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Iterable, Union, AbstractSet
+from typing import Any, Iterable, Union, AbstractSet, List
 
 from PyQt5.QtCore import QAbstractItemModel, QVariant, QModelIndex, Qt, pyqtSignal, QItemSelection, \
     QSize
@@ -29,10 +29,15 @@ class StandardTable(QAbstractItemModel):
         return self.createIndex(row, column, parentObj.children()[row])
 
     def parent(self, child: QModelIndex) -> QModelIndex:
+        if not child.isValid():
+            return QModelIndex()
+
         childObj = self.objByIndex(child)
         parentObj = childObj.parent()
-        if parentObj == self._rootItem:
+
+        if parentObj == self._rootItem or not parentObj:
             return QModelIndex()
+
         grandParentObj = parentObj.parent()
         row = grandParentObj.children().index(parentObj)
         return self.createIndex(row, 0, parentObj)
@@ -83,26 +88,31 @@ class StandardTable(QAbstractItemModel):
                     yield from recurse(childIndex)
         yield from recurse(parent)
 
-    # todo redefine to match()
-    def findItemByObj(self, obj) -> QModelIndex:
-        for item in self.iterItems():
-            print("Name:", item.data(NAME_ROLE))
-            try:
-                if item.data(OBJECT_ROLE) is obj:
-                    return item
-                if item.data(OBJECT_ROLE) == obj:
-                    return item
-            except AttributeError:
-                continue
-        return QModelIndex()
+    def match(self, start: QModelIndex, role: int, value: Any, hits: int = ...,
+              flags: Union[Qt.MatchFlags, Qt.MatchFlag] = ...) -> List[QModelIndex]:
+        if role == OBJECT_ROLE and hits != 0:
+            res = []
+            for item in self.iterItems(start):
+                print("match for:", item.data(NAME_ROLE))
+                try:
+                    if (item.data(OBJECT_ROLE) is value) or (item.data(OBJECT_ROLE) == value):
+                        res.append(item)
+                except AttributeError:
+                    continue
+                if hits == len(res):
+                    break
+            return res
+        else:
+            return super(StandardTable, self).match(start, role, value, hits, flags)
 
     def addItem(self, obj: Union[Package, SubmodelElement, Iterable],  # FIXME don't use update() instead use insertRow() and return index
                 parent: QModelIndex = QModelIndex()):
         if isinstance(parent.data(OBJECT_ROLE), Submodel):
             # TODO change if they make Submodel iterable
-            parentObj = self.objByIndex(parent).data(OBJECT_ROLE).submodel_element
+            parentObj = parent.data(OBJECT_ROLE).submodel_element
         else:
-            parentObj = self.objByIndex(parent).data(OBJECT_ROLE)
+            # print(parent.data(NAME_ROLE))
+            parentObj = parent.data(OBJECT_ROLE)
 
         if isinstance(parentObj, AbstractSet):
             parentObj.add(obj)

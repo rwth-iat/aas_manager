@@ -246,7 +246,7 @@ class TreeView(QTreeView):
         index = self.currentIndex()
         attribute = index.data(NAME_ROLE)
         try:
-            parentObjType = type(self.model().objByIndex(index).parentObj)
+            parentObjType = type(index.data(PARENT_OBJ_ROLE))
             defaultVal = getDefaultVal(attribute, parentObjType)
             self.model().clearRow(index.row(), index.parent(), defaultVal)
         except (AttributeError, IndexError):

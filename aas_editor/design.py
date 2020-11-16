@@ -43,10 +43,10 @@ class Ui_MainWindow(object):
         self.toolBar.setObjectName("toolBar")
         self.leftVerticalLayout.addWidget(self.toolBar)
 
-        self.lineEdit = QtWidgets.QLineEdit(self.leftLayoutWidget)
-        self.lineEdit.setBaseSize(QtCore.QSize(256, 25))
-        self.lineEdit.setObjectName("lineEdit")
-        self.leftVerticalLayout.addWidget(self.lineEdit)
+        self.searchField = QtWidgets.QLineEdit(self.leftLayoutWidget)
+        self.searchField.setBaseSize(QtCore.QSize(256, 25))
+        self.searchField.setObjectName("lineEdit")
+        self.leftVerticalLayout.addWidget(self.searchField)
 
         self.packTreeView = PackTreeView(self.leftLayoutWidget)
         self.packTreeView.setFocusPolicy(QtCore.Qt.StrongFocus)
@@ -84,6 +84,6 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", APPLICATION_NAME))
-        self.lineEdit.setPlaceholderText(_translate("MainWindow", "Search"))
+        self.searchField.setPlaceholderText(_translate("MainWindow", "Search"))
         self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar"))
 
