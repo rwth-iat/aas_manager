@@ -1328,7 +1328,7 @@ QSlider::sub-page:vertical
 QToolButton
 {
     background-color: transparent;
-    border: 0.2ex solid #76797c;
+    border: None;
     border-radius: 0.2ex;
     margin: 0.3ex;
     padding: 0.5ex;
