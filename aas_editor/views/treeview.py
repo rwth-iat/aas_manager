@@ -162,6 +162,7 @@ class TreeView(QTreeView):
             return
         font.setPointSize(fontSize)
         self.model().setData(QModelIndex(), font, Qt.FontRole)
+        self.setFont(font)
 
     def initMenu(self) -> None:
         self.attrsMenu = QMenu(self)

@@ -105,7 +105,7 @@ class StandardTable(QAbstractItemModel):
         else:
             return super(StandardTable, self).match(start, role, value, hits, flags)
 
-    def addItem(self, obj: Union[Package, SubmodelElement, Iterable],  # FIXME don't use update() instead use insertRow() and return index
+    def addItem(self, obj: Union[Package, SubmodelElement, Iterable],
                 parent: QModelIndex = QModelIndex()):
         parentObj = parent.data(OBJECT_ROLE)
 
@@ -172,6 +172,7 @@ class StandardTable(QAbstractItemModel):
                 font = QFont(value)
                 self.defaultFont.setPointSize(font.pointSize())
                 self.dataChanged.emit(self.index(0), self.index(self.rowCount()))
+            return True
         elif role == Qt.EditRole:
             try:
                 if self.hasChildren(index):

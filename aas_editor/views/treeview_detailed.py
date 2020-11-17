@@ -139,7 +139,6 @@ class AttrsTreeView(TreeView):
             self.addItemWithDialog(index, attrType, objVal=objVal, title=f"Add {attribute} element", rmDefParams=True)
         else:
             self.addItemWithDialog(index, attrType, title=f"Add {attribute} element", rmDefParams=True)
-    # todo reimplement search func findItemByObj
 
     def _editCreateHandler(self, objVal=None):
         index = self.currentIndex()
