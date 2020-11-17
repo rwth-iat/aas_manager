@@ -55,6 +55,9 @@ class Package:
         elif fileType == ".json":
             aasx.write_aas_json_file(self.file.as_posix(), self.objStore)
         elif fileType == ".aasx":
+            # todo ask user if save in xml, json or both
+            #  writer.write_aas_objects("/aasx/data.json" if args.json else "/aasx/data.xml",
+            #  [obj.identification for obj in self.objStore], self.objStore, self.fielSotre, write_json=args.json)
             with aasx.AASXWriter(self.file.as_posix()) as writer:
                 writer.write_aas(self.objStore, self.fileStore) #FIXME
                 # Create OPC/AASX core properties
