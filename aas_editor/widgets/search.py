@@ -5,7 +5,8 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QLineEdit, QWidget, QHBoxLayout, QToolButton, QAction, QTreeView
 
 from aas_editor.models.search_proxy_model import SearchProxyModel
-from aas_editor.settings import REGEX_ICON, CASE_ICON, NEXT_ICON, PREV_ICON, FILTER_ICON, NAME_ROLE
+from aas_editor.settings import REGEX_ICON, CASE_ICON, NEXT_ICON, PREV_ICON, FILTER_ICON, \
+    NAME_ROLE, ATTRIBUTE_COLUMN
 from aas_editor.util import absRow
 
 
@@ -13,7 +14,8 @@ class SearchBar(QWidget):
     def __init__(self, view: QTreeView, parent: QWidget):
         super(SearchBar, self).__init__(parent)
         self.view = view
-        self.model: SearchProxyModel = view.model()
+        self.setModel(view.model())
+
         self.searchLine = QLineEdit(self)
         self.searchLine.setClearButtonEnabled(True)
         self.searchLine.setPlaceholderText("Search")
@@ -38,12 +40,21 @@ class SearchBar(QWidget):
         self.initLayout()
 
     def buildHandlers(self):
+        self.view.modelChanged.connect(self.setModel)
         self.nextBtn.clicked.connect(self.next)
         self.prevBtn.clicked.connect(self.previous)
         self.caseBtn.toggled.connect(self.setMatchCase)
         self.filterBtn.toggled.connect(self.search)
         self.regexBtn.toggled.connect(self.search)
         self.searchLine.textChanged.connect(self.search)
+
+    def setModel(self, model):
+        if isinstance(model, SearchProxyModel):
+            self.model = model
+        else:
+            self.model = SearchProxyModel()
+        self.model.setFilterKeyColumn(ATTRIBUTE_COLUMN)
+        self.model.setRecursiveFilteringEnabled(True)
 
     def setMatchCase(self, checked: bool):
         if checked:

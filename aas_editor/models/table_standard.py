@@ -7,13 +7,13 @@ from PyQt5.QtGui import QFont
 
 from aas_editor.models import Package, DetailedInfoItem, StandardItem, PackTreeViewItem
 from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, VALUE_COLUMN, NOT_GIVEN, \
-    PACKAGE_ROLE, PACK_ITEM_ROLE, PACKAGE_ATTRS, DEFAULT_FONT, ADD_ITEM_ROLE, CLEAR_ROW_ROLE
+    PACKAGE_ROLE, PACK_ITEM_ROLE, PACKAGE_ATTRS, DEFAULT_FONT, ADD_ITEM_ROLE, CLEAR_ROW_ROLE, \
+    DATA_CHANGE_FAILED_ROLE
 
 from aas.model import Submodel, SubmodelElement
 
 
 class StandardTable(QAbstractItemModel):
-    valueChangeFailed = pyqtSignal(['QString'])
     defaultFont = QFont(DEFAULT_FONT)
 
     def __init__(self, columns=("Item",), rootItem: StandardItem = None):
@@ -207,10 +207,9 @@ class StandardTable(QAbstractItemModel):
                                       index.child(self.rowCount(index), self.columnCount(index)))
                 return True
             except (ValueError, AttributeError) as e:
-                self.dataChanged.emit(index, index)
+                self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
                 # noinspection PyUnresolvedReferences
-                self.valueChangeFailed.emit(
-                    f"Error occurred while setting {self.objByIndex(index).objName}: {e}")
+                print(f"Error occurred while setting {self.objByIndex(index).objName}: {e}")
             return False
 
     def setChanged(self, topLeft: QModelIndex, bottomRight: QModelIndex = None):
@@ -274,8 +273,8 @@ class StandardTable(QAbstractItemModel):
                     self.setData(self.index(n, 0, parent), defaultVal, Qt.EditRole)
                     return True
                 else:
-                    self.valueChangeFailed.emit(
-                        f"{child.objectName} could not be deleted or set to default")
+                    self.dataChanged.emit(parent, parent, [DATA_CHANGE_FAILED_ROLE])
+                    print(f"{child.objectName} could not be deleted or set to default")
                     return False
 
     def clearRow(self, row: int, parent: QModelIndex = ..., defaultVal=NOT_GIVEN) -> bool:

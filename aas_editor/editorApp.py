@@ -33,17 +33,13 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.packTreeModel = PacksTable()
 
-        self.filterProxyModel = SearchProxyModel()
-        self.filterProxyModel.setSourceModel(self.packTreeModel)
-        self.filterProxyModel.setFilterCaseSensitivity(Qt.CaseInsensitive)
-        self.filterProxyModel.setFilterKeyColumn(ATTRIBUTE_COLUMN)
-        self.filterProxyModel.setRecursiveFilteringEnabled(True)
+        # self.filterProxyModel = SearchProxyModel()
+        # self.filterProxyModel.setSourceModel(self.packTreeModel)
 
         self.packTreeView.setHeaderHidden(True)
-        self.packTreeView.setModel(self.filterProxyModel)
+        self.packTreeView.setModel(self.packTreeModel)
 
         self.searchBarPack = SearchBar(self.packTreeView, self.leftLayoutWidget)
-        self.searchBarPack.searchLine.textChanged.connect(lambda: self.packTreeView.expandAll())
         self.leftVerticalLayout.insertWidget(1, self.searchBarPack)
 
         self.packTreeView1 = PackTreeView(self.leftLayoutWidget)

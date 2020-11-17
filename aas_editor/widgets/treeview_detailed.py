@@ -23,7 +23,7 @@ class AttrsTreeView(TreeView):
     # noinspection PyUnresolvedReferences
     def newPackItem(self, packItem):
         self._initTreeView(packItem)
-        self.model().valueChangeFailed.connect(self.parent().itemDataChangeFailed)
+        self.model().dataChanged.connect(self.parent().itemDataChangeFailed)
         self.selectionModel().currentChanged.connect(self._updateMenu)
 
     def _initTreeView(self, packItem):

@@ -4,6 +4,7 @@ from PyQt5.QtGui import QKeySequence, QMouseEvent, QKeyEvent, QClipboard, QIcon,
 from PyQt5.QtWidgets import QTreeView, QAction, QMenu, QApplication, QDialog, QAbstractItemView
 
 from aas_editor.dialogs import AddObjDialog
+from aas_editor.models.search_proxy_model import SearchProxyModel
 from aas_editor.settings import *
 from aas_editor.util import getDefaultVal, isIterable, getReqParams4init, delAASParents
 import qtawesome as qta
@@ -18,6 +19,8 @@ class TreeView(QTreeView):
     openInBgTabClicked = pyqtSignal(['QModelIndex'])
     openInNewWindowClicked = pyqtSignal(['QModelIndex'])
 
+    modelChanged = pyqtSignal(['QAbstractItemModel'])
+
     treeObjClipboard = []
 
     def __init__(self, parent=None):
@@ -28,9 +31,13 @@ class TreeView(QTreeView):
         self.setUniformRowHeights(True)
 
     def setModel(self, model: QtCore.QAbstractItemModel) -> None:
-        super(TreeView, self).setModel(model)
+        # proxy model will always be used by setting new models
+        proxyModel = SearchProxyModel()
+        proxyModel.setSourceModel(model)
+        super(TreeView, self).setModel(proxyModel)
         self.model().rowsInserted.connect(lambda parent, first, last:
                                           self.setCurrentIndex(parent.child(last, 0)))
+        self.modelChanged.emit(proxyModel)
 
     # noinspection PyArgumentList
     def initActions(self):

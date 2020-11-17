@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QWidget, QLineEdit, QLabel, QMessageBox, QGridLayout
     QTabWidget, QAction, QToolBar, QHBoxLayout, QFrame, QTabBar, QMenu, QSplitter
 
 from aas_editor.settings import *
+from aas_editor.widgets.search import SearchBar
 from aas_editor.widgets.treeview_detailed import AttrsTreeView
 from aas_editor.util import getTreeItemPath
 
@@ -179,6 +180,7 @@ class TabBar(QTabBar):
     def openMenu(self, point):
         self.menu.exec_(self.mapToGlobal(point))
 
+
 class TabWidget(QTabWidget):
     # signal for changing current item in packet treeview
     currItemChanged = pyqtSignal(['QModelIndex'])
@@ -321,6 +323,8 @@ class Tab(QWidget):
         self.attrsTreeView = AttrsTreeView(self)
         self.attrsTreeView.setFrameShape(QFrame.NoFrame)
 
+        self.searchBar = SearchBar(self.attrsTreeView, self)
+
         self.packItem = QPersistentModelIndex(QModelIndex())
         self.prevItems = []
         self.nextItems = []
@@ -379,12 +383,12 @@ class Tab(QWidget):
         self.forwardAct.setEnabled(True) if self.nextItems else self.forwardAct.setDisabled(True)
         self.backAct.setEnabled(True) if self.prevItems else self.backAct.setDisabled(True)
 
-
     def showDetailInfoItemDoc(self, detailInfoItem: QModelIndex):
         self.descrLabel.setText(detailInfoItem.data(Qt.WhatsThisRole))
 
-    def itemDataChangeFailed(self, msg):
-        QMessageBox.critical(self, "Error", msg)
+    def itemDataChangeFailed(self, topLeft, bottomRight, roles):
+        if DATA_CHANGE_FAILED_ROLE in roles:
+            QMessageBox.critical(self, "Error", "Data change failed")
 
     def _initLayout(self):
         layout = QVBoxLayout(self)
@@ -395,6 +399,7 @@ class Tab(QWidget):
         pathLayout.addWidget(self.toolBar)
         pathLayout.addWidget(self.pathLine)
         layout.addWidget(pathWidget)
+        layout.addWidget(self.searchBar)
         layout.addWidget(self.attrsTreeView)
         layout.addWidget(self.descrLabel)
         layout.setSpacing(2)
