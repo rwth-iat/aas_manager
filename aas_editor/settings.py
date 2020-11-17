@@ -151,6 +151,10 @@ SPLIT_HORIZ_ICON = qta.icon("mdi.arrow-split-vertical")
 ZOOM_IN_ICON = qta.icon("mdi.magnify-plus")
 ZOOM_OUT_ICON = qta.icon("mdi.magnify-minus")
 
+NEXT_ICON = qta.icon("mdi.arrow-down")
+PREV_ICON = qta.icon("mdi.arrow-up")
+REGEX_ICON = qta.icon("mdi.regex")
+CASE_ICON = qta.icon("mdi.format-letter-case")
 
 # CHARS4=[{'offset': (-0.48, 0)}, {'offset': (-0.16, 0)},
 #         {'offset': (0.15, 0)}, {'offset': (0.46, 0)}]

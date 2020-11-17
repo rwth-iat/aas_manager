@@ -5,6 +5,7 @@ from PyQt5.QtCore import QModelIndex, QRect, QStandardPaths, QSettings, QPoint, 
 from aas.adapter import aasx
 from aas.adapter.aasx import DictSupplementaryFileContainer
 
+from aas_editor.widgets.search import SearchWidget
 from aas_editor.widgets.treeview_pack import PackTreeView
 from . import design
 
@@ -36,8 +37,10 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.filterProxyModel.setFilterCaseSensitivity(Qt.CaseInsensitive)
         self.filterProxyModel.setFilterKeyColumn(ATTRIBUTE_COLUMN)
         self.filterProxyModel.setRecursiveFilteringEnabled(True)
-        self.searchField.textChanged.connect(self.filterProxyModel.setFilterRegExp)
-        self.searchField.textChanged.connect(lambda: self.packTreeView.expandAll())
+
+        self.searchPackTree = SearchWidget(self.filterProxyModel, self.leftLayoutWidget)
+        self.searchPackTree.searchLine.textChanged.connect(lambda: self.packTreeView.expandAll())
+        self.leftVerticalLayout.insertWidget(1, self.searchPackTree)
 
         self.packTreeView.setHeaderHidden(True)
         self.packTreeView.setModel(self.filterProxyModel)
