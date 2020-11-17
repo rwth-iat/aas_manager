@@ -5,7 +5,7 @@ from PyQt5.QtCore import QModelIndex, QRect, QStandardPaths, QSettings, QPoint, 
 from aas.adapter import aasx
 from aas.adapter.aasx import DictSupplementaryFileContainer
 
-from aas_editor.widgets.search import SearchWidget
+from aas_editor.widgets.search import SearchBar
 from aas_editor.widgets.treeview_pack import PackTreeView
 from . import design
 
@@ -38,9 +38,9 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.filterProxyModel.setFilterKeyColumn(ATTRIBUTE_COLUMN)
         self.filterProxyModel.setRecursiveFilteringEnabled(True)
 
-        self.searchPackTree = SearchWidget(self.filterProxyModel, self.leftLayoutWidget)
-        self.searchPackTree.searchLine.textChanged.connect(lambda: self.packTreeView.expandAll())
-        self.leftVerticalLayout.insertWidget(1, self.searchPackTree)
+        self.searchBarPack = SearchBar(self.filterProxyModel, self.leftLayoutWidget)
+        self.searchBarPack.searchLine.textChanged.connect(lambda: self.packTreeView.expandAll())
+        self.leftVerticalLayout.insertWidget(1, self.searchBarPack)
 
         self.packTreeView.setHeaderHidden(True)
         self.packTreeView.setModel(self.filterProxyModel)
@@ -105,6 +105,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menuView.addAction(self.menuChoose_theme.menuAction())
         self.menuAppearance = QMenu("Appearance", self.menuView)
         self.menuAppearance.addAction(self.toolBar.toggleViewAction())
+        self.menuAppearance.addAction(self.searchBarPack.toggleViewAction())
         self.menuView.addAction(self.menuAppearance.menuAction())
         self.menuView.addSection("AAS file view")
         self.menuView.addAction(self.packTreeView.zoomInAct)

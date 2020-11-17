@@ -1,13 +1,13 @@
 from PyQt5.QtCore import QAbstractProxyModel, QSortFilterProxyModel
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QLineEdit, QWidget, QHBoxLayout, QToolButton
+from PyQt5.QtWidgets import QLineEdit, QWidget, QHBoxLayout, QToolButton, QAction
 
 from aas_editor.settings import REGEX_ICON, CASE_ICON, NEXT_ICON, PREV_ICON
 
 
-class SearchWidget(QWidget):
+class SearchBar(QWidget):
     def __init__(self, proxymodel: QSortFilterProxyModel, parent: QWidget):
-        super(SearchWidget, self).__init__(parent)
+        super(SearchBar, self).__init__(parent)
         self.model = proxymodel
         self.searchLine = QLineEdit(self)
         self.searchLine.setClearButtonEnabled(True)
@@ -47,6 +47,19 @@ class SearchWidget(QWidget):
             self.model.setFilterRegExp(text)
         else:
             self.model.setFilterFixedString(text)
+
+    def toggleViewAction(self):
+        return QAction("searchBar", self,
+                       statusTip="Show/hide search bar",
+                       toggled=self.toggleView,
+                       checkable=True,
+                       checked=True)
+
+    def toggleView(self, toggled: bool):
+        if toggled:
+            self.show()
+        else:
+            self.hide()
 
     def initLayout(self):
         pathLayout = QHBoxLayout(self)
