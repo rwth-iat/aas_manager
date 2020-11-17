@@ -1,17 +1,24 @@
-from PyQt5.QtCore import QAbstractProxyModel, QSortFilterProxyModel
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QLineEdit, QWidget, QHBoxLayout, QToolButton, QAction
+from typing import List
 
-from aas_editor.settings import REGEX_ICON, CASE_ICON, NEXT_ICON, PREV_ICON
+from PyQt5.QtCore import QModelIndex, QPersistentModelIndex
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QLineEdit, QWidget, QHBoxLayout, QToolButton, QAction, QTreeView
+
+from aas_editor.models.search_proxy_model import SearchProxyModel
+from aas_editor.settings import REGEX_ICON, CASE_ICON, NEXT_ICON, PREV_ICON, FILTER_ICON, NAME_ROLE
+from aas_editor.util import absRow
 
 
 class SearchBar(QWidget):
-    def __init__(self, proxymodel: QSortFilterProxyModel, parent: QWidget):
+    def __init__(self, view: QTreeView, parent: QWidget):
         super(SearchBar, self).__init__(parent)
-        self.model = proxymodel
+        self.view = view
+        self.model: SearchProxyModel = view.model()
         self.searchLine = QLineEdit(self)
         self.searchLine.setClearButtonEnabled(True)
         self.searchLine.setPlaceholderText("Search")
+        self.filterBtn = QToolButton(self, icon=FILTER_ICON, toolTip="Filter",
+                                    statusTip="Leave only matching items", checkable=True)
         self.regexBtn = QToolButton(self, icon=REGEX_ICON, toolTip="Regex",
                                     statusTip="Use regular expression", checkable=True)
         self.regexBtn.setAutoRaise(True)
@@ -25,12 +32,17 @@ class SearchBar(QWidget):
                                    statusTip="Navigate to the prevous occurrence")
         self.prevBtn.setAutoRaise(True)
 
+        self.foundItems: List[QPersistentModelIndex] = []
+
         self.buildHandlers()
         self.initLayout()
 
     def buildHandlers(self):
+        self.nextBtn.clicked.connect(self.next)
+        self.prevBtn.clicked.connect(self.previous)
         self.caseBtn.toggled.connect(self.setMatchCase)
-        self.regexBtn.toggled.connect(self.setRegex)
+        self.filterBtn.toggled.connect(self.search)
+        self.regexBtn.toggled.connect(self.search)
         self.searchLine.textChanged.connect(self.search)
 
     def setMatchCase(self, checked: bool):
@@ -39,14 +51,33 @@ class SearchBar(QWidget):
         else:
             self.model.setFilterCaseSensitivity(Qt.CaseInsensitive)
 
-    def setRegex(self, checked: bool):
-        self.search(self.searchLine.text())
+    def search(self):
+        self.foundItems = self.model.setHighLightFilter(self.searchLine.text(),
+                                                        regExp=self.regexBtn.isChecked(),
+                                                        filter=self.filterBtn.isChecked())
+        if self.foundItems:
+            self.view.setCurrentIndex(QModelIndex(self.foundItems[0]))
 
-    def search(self, text: str):
-        if self.regexBtn.isChecked():
-            self.model.setFilterRegExp(text)
-        else:
-            self.model.setFilterFixedString(text)
+    def next(self):
+        items = [QModelIndex(i) for i in self.foundItems]
+        items.sort(key=absRow)
+        for item in items:
+            print(item.data(NAME_ROLE))
+        print(self.view.currentIndex().data(NAME_ROLE))
+        for item in items:
+            if absRow(item) > absRow(self.view.currentIndex()):
+                self.view.setCurrentIndex(item)
+                return
+
+    def previous(self):
+        items = [QModelIndex(i) for i in self.foundItems]
+        items.sort(key=absRow, reverse=True)
+        for item in items:
+            print(item.data(NAME_ROLE))
+        for item in items:
+            if absRow(item) < absRow(self.view.currentIndex()):
+                self.view.setCurrentIndex(item)
+                return
 
     def toggleViewAction(self):
         return QAction("searchBar", self,
@@ -68,5 +99,6 @@ class SearchBar(QWidget):
         pathLayout.addWidget(self.searchLine)
         pathLayout.addWidget(self.prevBtn)
         pathLayout.addWidget(self.nextBtn)
+        pathLayout.addWidget(self.filterBtn)
         pathLayout.addWidget(self.caseBtn)
         pathLayout.addWidget(self.regexBtn)

@@ -20,7 +20,6 @@ class StandardTable(QAbstractItemModel):
         super(StandardTable, self).__init__()
         self._rootItem = rootItem if rootItem else DetailedInfoItem(None, "") # FIXME
         self._columns = columns
-        self.dataChanged.connect(self.setChanged)
 
     def index(self, row: int, column: int = 0, parent: QModelIndex = QModelIndex()) -> QModelIndex:
         if not self.hasIndex(row, column, parent):
@@ -167,12 +166,18 @@ class StandardTable(QAbstractItemModel):
         elif role == CLEAR_ROW_ROLE:
             self.clearRow(index.row(), index.parent(), value)
             return True
+        elif role == Qt.BackgroundRole:
+            item = self.objByIndex(index)
+            res = item.setData(value, role, index.column())
+            self.dataChanged.emit(index, index)
+            return res
         elif role == Qt.FontRole:
             if isinstance(value, QFont):
                 font = QFont(value)
                 self.defaultFont.setPointSize(font.pointSize())
                 self.dataChanged.emit(self.index(0), self.index(self.rowCount()))
-            return True
+                return True
+            return False
         elif role == Qt.EditRole:
             try:
                 if self.hasChildren(index):

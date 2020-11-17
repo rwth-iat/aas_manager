@@ -5,6 +5,7 @@ from PyQt5.QtCore import QModelIndex, QRect, QStandardPaths, QSettings, QPoint, 
 from aas.adapter import aasx
 from aas.adapter.aasx import DictSupplementaryFileContainer
 
+from aas_editor.models.search_proxy_model import SearchProxyModel
 from aas_editor.widgets.search import SearchBar
 from aas_editor.widgets.treeview_pack import PackTreeView
 from . import design
@@ -32,18 +33,18 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.packTreeModel = PacksTable()
 
-        self.filterProxyModel = QSortFilterProxyModel()
+        self.filterProxyModel = SearchProxyModel()
         self.filterProxyModel.setSourceModel(self.packTreeModel)
         self.filterProxyModel.setFilterCaseSensitivity(Qt.CaseInsensitive)
         self.filterProxyModel.setFilterKeyColumn(ATTRIBUTE_COLUMN)
         self.filterProxyModel.setRecursiveFilteringEnabled(True)
 
-        self.searchBarPack = SearchBar(self.filterProxyModel, self.leftLayoutWidget)
-        self.searchBarPack.searchLine.textChanged.connect(lambda: self.packTreeView.expandAll())
-        self.leftVerticalLayout.insertWidget(1, self.searchBarPack)
-
         self.packTreeView.setHeaderHidden(True)
         self.packTreeView.setModel(self.filterProxyModel)
+
+        self.searchBarPack = SearchBar(self.packTreeView, self.leftLayoutWidget)
+        self.searchBarPack.searchLine.textChanged.connect(lambda: self.packTreeView.expandAll())
+        self.leftVerticalLayout.insertWidget(1, self.searchBarPack)
 
         self.packTreeView1 = PackTreeView(self.leftLayoutWidget)
         self.packTreeView1.setModel(self.packTreeModel)

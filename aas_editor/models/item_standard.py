@@ -1,5 +1,5 @@
 from PyQt5.QtCore import QObject, QVariant
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QBrush
 from aas.model import AASReference, ConceptDescription, Event, RelationshipElement, Operation, \
     SubmodelElementCollection
 from aas.model import *
@@ -20,6 +20,7 @@ class StandardItem(QObject):
         self.objName = name
         self.new = new
         self.changed = False
+        self.bg = None
 
     @property
     def obj(self):
@@ -32,6 +33,12 @@ class StandardItem(QObject):
     @obj.setter
     def obj(self, obj):
         self._obj = obj
+
+    def setData(self, value, role, column=ATTRIBUTE_COLUMN):
+        if role == Qt.BackgroundRole and isinstance(value, QBrush):
+            self.bg = value
+            return True
+        return False
 
     def data(self, role, column=ATTRIBUTE_COLUMN):
         if role == Qt.WhatsThisRole:
@@ -51,6 +58,8 @@ class StandardItem(QObject):
             return self.package
         if role == IS_LINK_ROLE:
             return self.isLink
+        if role == Qt.BackgroundRole:
+            return self.bg
         if role == Qt.DecorationRole and column == 0:
             for cls in TYPE_ICON_DICT:
                 if isinstance(self.obj, cls):
