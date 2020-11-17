@@ -425,6 +425,14 @@ def getTreeItemPath(treeItem: QModelIndex) -> str:
     return path
 
 
+def absRow(index: QModelIndex):
+    row = 0
+    while index.isValid():
+        row += index.row()+1
+        index = index.parent()
+    return row
+
+
 def toggleStylesheet(path: str) -> None:
     """
     Toggle the stylesheet to use the desired path in the Qt resource
