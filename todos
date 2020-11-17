@@ -1,8 +1,10 @@
+populate SubmodelCollection elements in left tree
+add save all to toolbar
+
 Add properties isNew, isEdited to mark new or edited items (green, blue)
 finish changed and new properties
 Refactor open/save/close for handling pack as QModelIndex not Package
 
-in addItem() don't use update() instead use insertRow()
 Add typehint to model item (for copy/paste)
 Red color if value doesn't fit to TypeHint
 Replace comboboxes with boxes that allow typing
@@ -33,6 +35,7 @@ Search
 integrate validator
 
 Done:
+in addItem() don't use update() instead use insertRow()
 settings
 New window
 Drag&drop for tabs
