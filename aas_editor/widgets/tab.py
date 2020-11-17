@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QWidget, QLineEdit, QLabel, QMessageBox, QGridLayout
     QTabWidget, QAction, QToolBar, QHBoxLayout, QFrame, QTabBar, QMenu, QSplitter
 
 from aas_editor.settings import *
-from aas_editor.views.treeview_detailed import AttrsTreeView
+from aas_editor.widgets.treeview_detailed import AttrsTreeView
 from aas_editor.util import getTreeItemPath
 
 import qtawesome as qta

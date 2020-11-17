@@ -10,8 +10,8 @@ from aas.model import AASReference, Reference, Submodel, IdentifierType, Referab
 
 from aas_editor.editorApp import EditorApp
 from aas_editor.settings import DEFAULT_THEME, NAME_ROLE, VALUE_COLUMN
-from aas_editor.views.tab import Tab
-from aas_editor.views.treeview_pack import PackTreeView
+from aas_editor.widgets.tab import Tab
+from aas_editor.widgets.treeview_pack import PackTreeView
 
 
 class TestUi(TestCase):

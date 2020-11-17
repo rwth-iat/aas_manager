@@ -12,8 +12,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QFrame
 
 from aas_editor.settings import APPLICATION_NAME
-from aas_editor.views.treeview_pack import PackTreeView
-from aas_editor.views.tab import TabWidget
+from aas_editor.widgets.treeview_pack import PackTreeView
+from aas_editor.widgets.tab import TabWidget
 
 
 class Ui_MainWindow(object):

@@ -5,7 +5,7 @@ from PyQt5.QtCore import QModelIndex, QRect, QStandardPaths, QSettings, QPoint, 
 from aas.adapter import aasx
 from aas.adapter.aasx import DictSupplementaryFileContainer
 
-from aas_editor.views.treeview_pack import PackTreeView
+from aas_editor.widgets.treeview_pack import PackTreeView
 from . import design
 
 from PyQt5.QtGui import *
@@ -15,13 +15,13 @@ from PyQt5.QtCore import Qt
 from .models import Package, StandardTable, DictObjectStore, DetailedInfoTable
 from .models.table_packs import PacksTable
 
-from .views.tab import Tab
+from .widgets.tab import Tab
 from .settings import *
 from .util import toggleStylesheet
 
 import qtawesome as qta
 
-from .views.treeview_detailed import AttrsTreeView
+from .widgets.treeview_detailed import AttrsTreeView
 
 class EditorApp(QMainWindow, design.Ui_MainWindow):
     def __init__(self):

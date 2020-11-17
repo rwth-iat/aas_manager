@@ -11,7 +11,7 @@ from aas_editor.settings import ATTR_COLUMN_WIDTH, NAME_ROLE, OBJECT_ROLE, ATTRI
     VALUE_COLUMN, NOT_GIVEN, LINKED_ITEM_ROLE, IS_LINK_ROLE, PARENT_OBJ_ROLE
 from aas_editor.util import getAttrTypeHint, getReqParams4init, isoftype, getDefaultVal, \
     isIterableType, isIterable, issubtype, getTypeHint
-from aas_editor.views.treeview import TreeView
+from aas_editor.widgets.treeview import TreeView
 
 
 class AttrsTreeView(TreeView):
