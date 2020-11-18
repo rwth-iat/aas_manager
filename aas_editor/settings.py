@@ -52,7 +52,7 @@ ATTR_ORDER = (
 LIGHT_BLUE = QColor(132, 185, 255)
 LINK_BLUE = QColor(26, 13, 171)
 CHANGED_BLUE = QColor(83, 148, 236, 255)
-HIGHLIGHT_YELLOW = QColor(255, 255, 0, 100)
+HIGHLIGHT_YELLOW = QColor(255, 255, 0, 130)
 NEW_GREEN = QColor("green")
 
 PACKAGE_ATTRS = ("shells", "assets", "submodels", "concept_descriptions", "others", "files")

@@ -33,11 +33,8 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.packTreeModel = PacksTable()
 
-        # self.filterProxyModel = SearchProxyModel()
-        # self.filterProxyModel.setSourceModel(self.packTreeModel)
-
         self.packTreeView.setHeaderHidden(True)
-        self.packTreeView.setModel(self.packTreeModel)
+        self.packTreeView.setModelWithProxy(self.packTreeModel)
 
         self.searchBarPack = SearchBar(self.packTreeView, filterColumns=[ATTRIBUTE_COLUMN],
                                        parent=self.leftLayoutWidget)

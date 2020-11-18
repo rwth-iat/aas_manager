@@ -46,8 +46,8 @@ class SearchBar(QWidget):
         self.initLayout()
 
     def buildHandlers(self):
-        self.closeBtn.clicked.connect(self.closeBar)
         self.view.modelChanged.connect(self.setModel)
+        self.closeBtn.clicked.connect(self.closeBar)
         self.nextBtn.clicked.connect(self.next)
         self.prevBtn.clicked.connect(self.previous)
 

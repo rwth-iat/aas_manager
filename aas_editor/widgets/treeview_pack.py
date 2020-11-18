@@ -92,10 +92,6 @@ class PackTreeView(TreeView):
         self.openInNewWindowAct.triggered.connect(
             lambda: self.openInNewWindowClicked.emit(self.currentIndex()))
 
-    def setModel(self, model: QtCore.QAbstractItemModel) -> None:
-        super(PackTreeView, self).setModel(model)
-        self.selectionModel().currentChanged.connect(self._updateMenu)
-
     def _updateMenu(self, index: QModelIndex):
         if index.isValid():
             self.openInCurrTabAct.setEnabled(True)

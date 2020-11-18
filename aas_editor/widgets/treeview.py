@@ -27,17 +27,30 @@ class TreeView(QTreeView):
         super(TreeView, self).__init__(parent)
         self.initActions()
         self.initMenu()
-        self.customContextMenuRequested.connect(self.openMenu)
         self.setUniformRowHeights(True)
+        self.buildHandlers()
+
+    def buildHandlers(self):
+        self.customContextMenuRequested.connect(self.openMenu)
+        self.modelChanged.connect(self.buildNewModelHandlers)
+
+    def buildNewModelHandlers(self, model):
+        model.rowsInserted.connect(lambda parent, first, last:
+                                   self.setCurrentIndex(parent.child(last, 0)))
+        self.selectionModel().currentChanged.connect(self._updateMenu)
+
+    def _updateMenu(self, index: QModelIndex):
+        pass
 
     def setModel(self, model: QtCore.QAbstractItemModel) -> None:
+        super(TreeView, self).setModel(model)
+        self.modelChanged.emit(model)
+
+    def setModelWithProxy(self, model: QtCore.QAbstractItemModel) -> None:
         # proxy model will always be used by setting new models
         proxyModel = SearchProxyModel()
         proxyModel.setSourceModel(model)
-        super(TreeView, self).setModel(proxyModel)
-        self.model().rowsInserted.connect(lambda parent, first, last:
-                                          self.setCurrentIndex(parent.child(last, 0)))
-        self.modelChanged.emit(proxyModel)
+        self.setModel(proxyModel)
 
     # noinspection PyArgumentList
     def initActions(self):

@@ -24,7 +24,6 @@ class AttrsTreeView(TreeView):
     def newPackItem(self, packItem):
         self._initTreeView(packItem)
         self.model().dataChanged.connect(self.parent().itemDataChangeFailed)
-        self.selectionModel().currentChanged.connect(self._updateMenu)
 
     def _initTreeView(self, packItem):
         self.setExpandsOnDoubleClick(False)
@@ -32,7 +31,7 @@ class AttrsTreeView(TreeView):
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
         self.setObjectName("attrsTreeView")
-        self.setModel(DetailedInfoTable(packItem))
+        self.setModelWithProxy(DetailedInfoTable(packItem))
         self.setColumnWidth(ATTRIBUTE_COLUMN, ATTR_COLUMN_WIDTH)
         self.setItemDelegate(QComboBoxEnumDelegate())
 
