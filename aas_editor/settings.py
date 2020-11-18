@@ -117,6 +117,8 @@ SC_SAVE_ALL = QKeySequence(Qt.CTRL + Qt.Key_S)
 SC_BACK = QKeySequence.Back
 SC_FORWARD = QKeySequence.Forward
 
+SC_SEARCH = QKeySequence(Qt.CTRL + Qt.Key_F)
+
 SC_FOCUS2RIGTH_TREE = QKeySequence(Qt.CTRL + Qt.RightArrow)
 SC_FOCUS2LEFT_TREE = QKeySequence(Qt.CTRL + Qt.LeftArrow)
 
@@ -158,6 +160,7 @@ PREV_ICON = qta.icon("mdi.arrow-up")
 FILTER_ICON = qta.icon("mdi.filter")
 REGEX_ICON = qta.icon("mdi.regex")
 CASE_ICON = qta.icon("mdi.format-letter-case")
+CLOSE_ICON = qta.icon("mdi.close")
 
 # CHARS4=[{'offset': (-0.48, 0)}, {'offset': (-0.16, 0)},
 #         {'offset': (0.15, 0)}, {'offset': (0.46, 0)}]

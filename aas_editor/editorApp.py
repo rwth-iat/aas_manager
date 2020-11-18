@@ -39,7 +39,8 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.packTreeView.setHeaderHidden(True)
         self.packTreeView.setModel(self.packTreeModel)
 
-        self.searchBarPack = SearchBar(self.packTreeView, self.leftLayoutWidget)
+        self.searchBarPack = SearchBar(self.packTreeView, filterColumns=[ATTRIBUTE_COLUMN],
+                                       parent=self.leftLayoutWidget)
         self.leftVerticalLayout.insertWidget(1, self.searchBarPack)
 
         self.packTreeView1 = PackTreeView(self.leftLayoutWidget)

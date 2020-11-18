@@ -6,15 +6,16 @@ from PyQt5.QtWidgets import QLineEdit, QWidget, QHBoxLayout, QToolButton, QActio
 
 from aas_editor.models.search_proxy_model import SearchProxyModel
 from aas_editor.settings import REGEX_ICON, CASE_ICON, NEXT_ICON, PREV_ICON, FILTER_ICON, \
-    NAME_ROLE, ATTRIBUTE_COLUMN
+    NAME_ROLE, ATTRIBUTE_COLUMN, CLOSE_ICON
 from aas_editor.util import absRow
 
 
 class SearchBar(QWidget):
-    def __init__(self, view: QTreeView, parent: QWidget):
+    def __init__(self, view: QTreeView, filterColumns: List[int], parent: QWidget, closable=False):
         super(SearchBar, self).__init__(parent)
         self.view = view
         self.setModel(view.model())
+        self.filterColumns = filterColumns
 
         self.searchLine = QLineEdit(self)
         self.searchLine.setClearButtonEnabled(True)
@@ -33,6 +34,11 @@ class SearchBar(QWidget):
         self.prevBtn = QToolButton(self, icon=PREV_ICON, toolTip="Previous",
                                    statusTip="Navigate to the prevous occurrence")
         self.prevBtn.setAutoRaise(True)
+        self.closeBtn = QToolButton(self, icon=CLOSE_ICON, toolTip="Close",
+                                    statusTip="Close search bar")
+        if not closable:
+            self.closeBtn.hide()
+        self.closeBtn.setAutoRaise(True)
 
         self.foundItems: List[QPersistentModelIndex] = []
 
@@ -40,32 +46,33 @@ class SearchBar(QWidget):
         self.initLayout()
 
     def buildHandlers(self):
+        self.closeBtn.clicked.connect(self.closeBar)
         self.view.modelChanged.connect(self.setModel)
         self.nextBtn.clicked.connect(self.next)
         self.prevBtn.clicked.connect(self.previous)
-        self.caseBtn.toggled.connect(self.setMatchCase)
+
+        self.caseBtn.toggled.connect(self.search)
         self.filterBtn.toggled.connect(self.search)
         self.regexBtn.toggled.connect(self.search)
         self.searchLine.textChanged.connect(self.search)
+
+    def closeBar(self):
+        self.searchLine.setText("")
+        self.hide()
 
     def setModel(self, model):
         if isinstance(model, SearchProxyModel):
             self.model = model
         else:
             self.model = SearchProxyModel()
-        self.model.setFilterKeyColumn(ATTRIBUTE_COLUMN)
         self.model.setRecursiveFilteringEnabled(True)
-
-    def setMatchCase(self, checked: bool):
-        if checked:
-            self.model.setFilterCaseSensitivity(Qt.CaseSensitive)
-        else:
-            self.model.setFilterCaseSensitivity(Qt.CaseInsensitive)
 
     def search(self):
         self.foundItems = self.model.setHighLightFilter(self.searchLine.text(),
+                                                        filterColumns=self.filterColumns,
                                                         regExp=self.regexBtn.isChecked(),
-                                                        filter=self.filterBtn.isChecked())
+                                                        filter=self.filterBtn.isChecked(),
+                                                        matchCase=self.caseBtn.isChecked())
         if self.foundItems:
             self.view.setCurrentIndex(QModelIndex(self.foundItems[0]))
 
@@ -113,3 +120,4 @@ class SearchBar(QWidget):
         pathLayout.addWidget(self.filterBtn)
         pathLayout.addWidget(self.caseBtn)
         pathLayout.addWidget(self.regexBtn)
+        pathLayout.addWidget(self.closeBtn)

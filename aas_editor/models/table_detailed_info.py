@@ -1,7 +1,7 @@
 from typing import Any
 
 from PyQt5.QtCore import pyqtSignal, QModelIndex, QVariant, Qt, QPersistentModelIndex, QSize
-from PyQt5.QtGui import QColor, QFont
+from PyQt5.QtGui import QColor, QFont, QBrush
 
 from aas_editor.models import Package, DetailedInfoItem, StandardTable
 from aas_editor.settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, COLUMNS_IN_DETAILED_INFO, \
@@ -35,6 +35,10 @@ class DetailedInfoTable(StandardTable):
             return super(DetailedInfoTable, self).data(index, role)
 
     def _getBgColor(self, index: QModelIndex):
+        bg = self.objByIndex(index).data(Qt.BackgroundRole)
+        if isinstance(bg, QBrush) and bg.color().alpha():
+            return bg.color()
+
         color = LIGHT_BLUE
         if index.parent().isValid():
             if index.row() == 0:

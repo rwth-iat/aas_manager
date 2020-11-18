@@ -20,7 +20,7 @@ class StandardItem(QObject):
         self.objName = name
         self.new = new
         self.changed = False
-        self.bg = None
+        self.bg = QBrush(QColor(0, 0, 0, 0))
 
     @property
     def obj(self):

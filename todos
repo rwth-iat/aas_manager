@@ -30,11 +30,11 @@ Active address
 Autocomplete (id_shorts)
 
 Repository with scratch packages to copy from
-Search
 
 integrate validator
 
 Done:
+Search
 in addItem() don't use update() instead use insertRow()
 settings
 New window

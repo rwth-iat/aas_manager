@@ -3,7 +3,7 @@ from PyQt5.QtCore import pyqtSignal, QModelIndex, Qt, QPersistentModelIndex, QPo
 from PyQt5.QtGui import QIcon, QKeySequence, QPixmap, QRegion, QDrag, QCursor, QMouseEvent, \
     QDragEnterEvent, QDragLeaveEvent, QDropEvent, QCloseEvent
 from PyQt5.QtWidgets import QWidget, QLineEdit, QLabel, QMessageBox, QGridLayout, QVBoxLayout, \
-    QTabWidget, QAction, QToolBar, QHBoxLayout, QFrame, QTabBar, QMenu, QSplitter
+    QTabWidget, QAction, QToolBar, QHBoxLayout, QFrame, QTabBar, QMenu, QSplitter, QShortcut
 
 from aas_editor.settings import *
 from aas_editor.widgets.search import SearchBar
@@ -323,7 +323,11 @@ class Tab(QWidget):
         self.attrsTreeView = AttrsTreeView(self)
         self.attrsTreeView.setFrameShape(QFrame.NoFrame)
 
-        self.searchBar = SearchBar(self.attrsTreeView, self)
+        self.searchBar = SearchBar(self.attrsTreeView, parent=self,
+                                   filterColumns=[ATTRIBUTE_COLUMN, VALUE_COLUMN], closable=True)
+        self.searchBar.hide()
+        self.openSearchBarSC = QShortcut(SC_SEARCH, self,
+                                         activated=self.openSearchBar)
 
         self.packItem = QPersistentModelIndex(QModelIndex())
         self.prevItems = []
@@ -351,6 +355,10 @@ class Tab(QWidget):
     @property
     def objectName(self) -> str:
         return self.packItem.data(NAME_ROLE)
+
+    def openSearchBar(self):
+        self.searchBar.show()
+        self.searchBar.searchLine.setFocus()
 
     def openItem(self, packItem: QModelIndex):
         if not packItem == QModelIndex(self.packItem):
