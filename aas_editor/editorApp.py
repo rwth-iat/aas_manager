@@ -120,6 +120,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menubar.addAction(self.menuNavigate.menuAction())
 
     def initToolbar(self):
+        self.toolBar.addAction(self.packTreeView.saveAllAct)
         self.toolBar.addAction(self.packTreeView.saveAct)
         self.toolBar.addAction(self.packTreeView.openPackAct)
         self.toolBar.addSeparator()

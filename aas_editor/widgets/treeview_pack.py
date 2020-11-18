@@ -102,6 +102,8 @@ class PackTreeView(TreeView):
 
         # update save and close actions
         self.saveAct.setEnabled(self._isSaveOk())
+        self.saveAct.setText(f"Save {index.data(PACKAGE_ROLE)}")
+        self.saveAct.setToolTip(f"Save {index.data(PACKAGE_ROLE)}")
         self.saveAsAct.setEnabled(self._isSaveOk())
         self.saveAllAct.setEnabled(self._isSaveAllOk())
         self.closeAct.setEnabled(self._isCloseOk())
