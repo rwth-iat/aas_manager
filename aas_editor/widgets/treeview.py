@@ -1,6 +1,6 @@
 from PyQt5 import QtCore
-from PyQt5.QtCore import pyqtSignal, Qt, QModelIndex, QEvent
-from PyQt5.QtGui import QKeySequence, QMouseEvent, QKeyEvent, QClipboard, QIcon, QFont, QWheelEvent
+from PyQt5.QtCore import pyqtSignal, Qt, QModelIndex
+from PyQt5.QtGui import QMouseEvent, QKeyEvent, QClipboard, QWheelEvent
 from PyQt5.QtWidgets import QTreeView, QAction, QMenu, QApplication, QDialog, QAbstractItemView
 
 from aas_editor.dialogs import AddObjDialog
@@ -37,9 +37,9 @@ class TreeView(QTreeView):
     def buildNewModelHandlers(self, model):
         model.rowsInserted.connect(lambda parent, first, last:
                                    self.setCurrentIndex(parent.child(last, 0)))
-        self.selectionModel().currentChanged.connect(self._updateMenu)
+        self.selectionModel().currentChanged.connect(self.updateMenu)
 
-    def _updateMenu(self, index: QModelIndex):
+    def updateMenu(self, index: QModelIndex):
         pass
 
     def setModel(self, model: QtCore.QAbstractItemModel) -> None:
@@ -343,9 +343,3 @@ class TreeView(QTreeView):
         else:
             print("Item editing cancelled")
         dialog.deleteLater()
-
-    # def model(self) -> QtCore.QAbstractItemModel:
-    #     try:
-    #         return super(TreeView, self).model().sourceModel()
-    #     except AttributeError:
-    #         return super(TreeView, self).model()

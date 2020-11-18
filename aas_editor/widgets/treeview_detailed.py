@@ -2,23 +2,21 @@ from typing import Iterable
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex
-from PyQt5.QtWidgets import QAction, QDialog, QSizePolicy, QFrame, QAbstractScrollArea
+from PyQt5.QtWidgets import QAction, QAbstractScrollArea
 
-from aas_editor.dialogs import AddObjDialog
 from aas_editor.models import DetailedInfoTable
 from aas_editor.qcomboboxenumdelegate import QComboBoxEnumDelegate
 from aas_editor.settings import ATTR_COLUMN_WIDTH, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
-    VALUE_COLUMN, NOT_GIVEN, LINKED_ITEM_ROLE, IS_LINK_ROLE, PARENT_OBJ_ROLE
-from aas_editor.util import getAttrTypeHint, getReqParams4init, isoftype, getDefaultVal, \
-    isIterableType, isIterable, issubtype, getTypeHint
+    VALUE_COLUMN, LINKED_ITEM_ROLE, IS_LINK_ROLE, PARENT_OBJ_ROLE
+from aas_editor.util import getAttrTypeHint, isoftype, getDefaultVal, getTypeHint
 from aas_editor.widgets.treeview import TreeView
 
 
 class AttrsTreeView(TreeView):
     def __init__(self, parent):
         super(AttrsTreeView, self).__init__(parent)
-        self._upgradeMenu()
-        self._buildHandlers()
+        self.initMenu()
+        self.buildHandlers()
 
     # noinspection PyUnresolvedReferences
     def newPackItem(self, packItem):
@@ -35,14 +33,16 @@ class AttrsTreeView(TreeView):
         self.setColumnWidth(ATTRIBUTE_COLUMN, ATTR_COLUMN_WIDTH)
         self.setItemDelegate(QComboBoxEnumDelegate())
 
-    def _buildHandlers(self):
+    def buildHandlers(self):
+        super(AttrsTreeView, self).buildHandlers()
         self.setItemDelegate(QComboBoxEnumDelegate())
         self.clicked.connect(self._openRef)
         self.wheelClicked.connect(
             lambda refItem: self._openRef(refItem, setCurrent=False))
 
     # noinspection PyArgumentList
-    def _upgradeMenu(self):
+    def initMenu(self):
+        super(AttrsTreeView, self).initMenu()
         self.editCreateAct = QAction("E&dit/create in dialog", self,
                                      statusTip="Edit/create selected item in dialog",
                                      shortcut=Qt.CTRL+Qt.Key_E,
@@ -68,7 +68,7 @@ class AttrsTreeView(TreeView):
         self.openInNewWindowAct.triggered.connect(
             lambda: self._openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), newWindow=True))
 
-    def _updateMenu(self, index: QModelIndex):
+    def updateMenu(self, index: QModelIndex):
         # update edit action
         if index.flags() & Qt.ItemIsEditable:
             self.editAct.setEnabled(True)

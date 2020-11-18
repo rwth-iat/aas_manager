@@ -40,11 +40,8 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                                        parent=self.leftLayoutWidget)
         self.leftVerticalLayout.insertWidget(1, self.searchBarPack)
 
-        self.packTreeView1 = PackTreeView(self.leftLayoutWidget)
-        self.packTreeView1.setModel(self.packTreeModel)
-        self.leftVerticalLayout.addWidget(self.packTreeView1)
-
-        self.tabWidget.addTab(Tab(parent=self.tabWidget), "Welcome")
+        welcomeTab = self.tabWidget.addTab(Tab(parent=self.tabWidget), "Welcome")
+        self.tabWidget.widget(welcomeTab).openSearchBar()
 
         self.initActions()
         self.initMenu()

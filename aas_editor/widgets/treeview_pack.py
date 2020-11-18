@@ -1,6 +1,5 @@
 from pathlib import Path
 
-from PyQt5 import QtCore
 from PyQt5.QtCore import QModelIndex, QSettings
 from PyQt5.QtGui import QDropEvent, QDragEnterEvent
 from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog
@@ -18,12 +17,13 @@ class PackTreeView(TreeView):
         super(PackTreeView, self).__init__(parent)
         PackTreeView.__instance = self
         self.recentFilesSeparator = None
-        self._upgradeActions()
-        self._upgradeMenu()
+        self.initActions()
+        self.initMenu()
         self.setAcceptDrops(True)
 
     # noinspection PyArgumentList
-    def _upgradeActions(self):
+    def initActions(self):
+        super(PackTreeView, self).initActions()
         self.addAct.setText("Add package")
         self.addAct.setEnabled(True)
 
@@ -74,7 +74,8 @@ class PackTreeView(TreeView):
                                    enabled=False)
 
     # noinspection PyUnresolvedReferences
-    def _upgradeMenu(self):
+    def initMenu(self):
+        super(PackTreeView, self).initMenu()
         self.attrsMenu.addSeparator()
         self.attrsMenu.addAction(self.openPackAct)
         self.attrsMenu.addAction(self.saveAct)
@@ -92,7 +93,7 @@ class PackTreeView(TreeView):
         self.openInNewWindowAct.triggered.connect(
             lambda: self.openInNewWindowClicked.emit(self.currentIndex()))
 
-    def _updateMenu(self, index: QModelIndex):
+    def updateMenu(self, index: QModelIndex):
         if index.isValid():
             self.openInCurrTabAct.setEnabled(True)
             self.openInNewTabAct.setEnabled(True)
