@@ -10,7 +10,8 @@ from aas_editor.settings import HIGHLIGHT_YELLOW, ATTRIBUTE_COLUMN, VALUE_COLUMN
 class SearchProxyModel(QSortFilterProxyModel):
     def match(self, start: QModelIndex, role: int, value: Any, hits: int = ..., flags: Union[Qt.MatchFlags, Qt.MatchFlag] = ...) -> List[QModelIndex]:
         if role == OBJECT_ROLE:
-            return self.sourceModel().match(start, role, value, hits, flags)
+            items = self.sourceModel().match(start, role, value, hits, flags)
+            return [self.mapFromSource(item) for item in items]
         else:
             return super(SearchProxyModel, self).match(start, role, value, hits, flags)
 
