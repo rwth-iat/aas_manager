@@ -355,7 +355,7 @@ QLineEdit
     background-color: #FCFCFC;
     padding: 0.5ex;
     border-style: solid;
-    border: 0.2ex solid #BAB9B8;
+    border: 0.2ex solid #FCFCFC;
     border-radius: 0.2ex;
     color: #31363B;
 }
@@ -667,9 +667,10 @@ QPushButton:focus
 
 QComboBox
 {
+    background-color: #FCFCFC;
     selection-background-color: #33A4DF;
     border-style: solid;
-    border: 0.2ex solid #BAB9B8;
+    border: 0.2ex solid #FCFCFC;
     border-radius: 0.2ex;
     padding: 0.5ex;
     min-width: 7.5ex;
@@ -724,7 +725,7 @@ QComboBox::drop-down
 {
     subcontrol-origin: padding;
     subcontrol-position: top right;
-    width: 1.5ex;
+    width: 5.5ex;
 
     border-left-width: 0ex;
     border-left-color: darkgray;
@@ -736,8 +737,8 @@ QComboBox::drop-down
 QComboBox::down-arrow
 {
     border-image: url(themes/light/down_arrow_disabled.svg);
-    width: 0.9ex;
-    height: 0.6ex;
+    width: 2.9ex;
+    height: 1.6ex;
 }
 
 QComboBox::down-arrow:on,
@@ -745,8 +746,8 @@ QComboBox::down-arrow:hover,
 QComboBox::down-arrow:focus
 {
     border-image: url(themes/light/down_arrow.svg);
-    width: 0.9ex;
-    height: 0.6ex;
+    width: 2.9ex;
+    height: 1.6ex;
 }
 
 QAbstractSpinBox
@@ -778,15 +779,15 @@ QAbstractSpinBox::up-arrow:disabled,
 QAbstractSpinBox::up-arrow:off
 {
     border-image: url(themes/light/up_arrow_disabled.svg);
-    width: 0.9ex;
-    height: 0.6ex;
+    width: 2.9ex;
+    height: 1.6ex;
 }
 
 QAbstractSpinBox::up-arrow:hover
 {
     border-image: url(themes/light/up_arrow.svg);
-    width: 0.9ex;
-    height: 0.6ex;
+    width: 2.9ex;
+    height: 1.6ex;
 }
 
 QAbstractSpinBox::down-arrow,
@@ -794,15 +795,15 @@ QAbstractSpinBox::down-arrow:disabled,
 QAbstractSpinBox::down-arrow:off
 {
     border-image: url(themes/light/down_arrow_disabled.svg);
-    width: 0.9ex;
-    height: 0.6ex;
+    width: 2.9ex;
+    height: 1.6ex;
 }
 
 QAbstractSpinBox::down-arrow:hover
 {
     border-image: url(themes/light/down_arrow.svg);
-    width: 0.9ex;
-    height: 0.6ex;
+    width: 2.9ex;
+    height: 1.6ex;
 }
 
 QLabel
@@ -1290,7 +1291,7 @@ QSlider::sub-page:vertical
 QToolButton
 {
     background-color: transparent;
-    border: None;
+    border: none;
     border-radius: 0.2ex;
     margin: 0.3ex;
     padding: 0.5ex;
@@ -1569,8 +1570,8 @@ QSpinBox::up-arrow,
 QDoubleSpinBox::up-arrow
 {
     border-image: url(themes/light/up_arrow.svg);
-    width: 0.9ex;
-    height: 0.6ex;
+    width: 2.9ex;
+    height: 1.6ex;
 }
 
 QSpinBox::up-arrow:hover,
@@ -1579,8 +1580,8 @@ QDoubleSpinBox::up-arrow:hover,
 QDoubleSpinBox::up-arrow:pressed
 {
     border-image: url(themes/light/up_arrow-hover.svg);
-    width: 0.9ex;
-    height: 0.6ex;
+    width: 2.9ex;
+    height: 1.6ex;
 }
 
 QSpinBox::up-arrow:disabled,
@@ -1605,8 +1606,8 @@ QSpinBox::down-arrow,
 QDoubleSpinBox::down-arrow
 {
     border-image: url(themes/light/down_arrow.svg);
-    width: 0.9ex;
-    height: 0.6ex;
+    width: 2.9ex;
+    height: 1.6ex;
 }
 
 QSpinBox::down-arrow:hover,
@@ -1615,8 +1616,8 @@ QDoubleSpinBox::down-arrow:hover,
 QDoubleSpinBox::down-arrow:pressed
 {
     border-image: url(themes/light/down_arrow-hover.svg);
-    width: 0.9ex;
-    height: 0.6ex;
+    width: 2.9ex;
+    height: 1.6ex;
 }
 
 QSpinBox::down-arrow:disabled,
