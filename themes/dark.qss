@@ -355,7 +355,7 @@ QLineEdit
 
 QGroupBox
 {
-    border: 0.2ex solid #76797c;
+    border: 0.2ex solid rgba(118, 121, 124, 0.5);
     border-radius: 0.2ex;
     padding-top: 1ex;
     margin-top: 1ex;
@@ -635,9 +635,9 @@ QPushButton
     color: #eff0f1;
     background-color: qlineargradient(x1: 0.5, y1: 0.5 x2: 0.5, y2: 1, stop: 0 #3b4045, stop: 0.5 #31363b);
     border-width: 0.2ex;
-    border-color: #76797c;
+    border-color: rgba(118, 121, 124, 0.5);
     border-style: solid;
-    padding: 0.5ex;
+    padding: 1.5ex;
     border-radius: 0.2ex;
     outline: none;
 }
