@@ -22,6 +22,7 @@ class SearchBar(QWidget):
         self.searchLine.setPlaceholderText("Search")
         self.filterBtn = QToolButton(self, icon=FILTER_ICON, toolTip="Filter",
                                     statusTip="Leave only matching items", checkable=True)
+        self.filterBtn.setAutoRaise(True)
         self.regexBtn = QToolButton(self, icon=REGEX_ICON, toolTip="Regex",
                                     statusTip="Use regular expression", checkable=True)
         self.regexBtn.setAutoRaise(True)
