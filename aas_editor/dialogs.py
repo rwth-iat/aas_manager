@@ -1,9 +1,8 @@
 from PyQt5.QtCore import Qt
 from PyQt5 import QtWidgets
-from PyQt5.QtGui import QIntValidator, QDoubleValidator, QPaintEvent, QPixmap, QBrush, QColor, \
-    QPalette
-from PyQt5.QtWidgets import QLineEdit, QLabel, QComboBox, QPushButton, QDialog, QDialogButtonBox, \
-    QGroupBox, QCheckBox, QWidget, QStylePainter, QStyleOptionGroupBox, QStyle
+from PyQt5.QtGui import QIntValidator, QDoubleValidator, QPaintEvent
+from PyQt5.QtWidgets import QLineEdit, QLabel, QPushButton, QDialog, QDialogButtonBox, \
+    QGroupBox, QCheckBox, QWidget
 
 from aas.model.base import *
 from aas.model.concept import *
@@ -15,6 +14,7 @@ from aas_editor.settings import DEFAULT_ATTRS_TO_HIDE
 from aas_editor.util import issubtype, inheritors, isMeta, getTypeName, isoftype, isIterableType, \
     getReqParams4init, getParams4init
 from aas_editor.util_classes import DictItem
+from aas_editor.widgets.combobox import CompleterComboBox
 
 
 class AddDialog(QDialog):
@@ -325,7 +325,7 @@ class StandardInputWidget(QtWidgets.QWidget):
             widget.setValidator(QDoubleValidator())
             widget.setText(objVal) if objVal is not None else ""
         elif issubtype(self.attrType, (Enum, Type)):
-            widget = QComboBox(self)
+            widget = CompleterComboBox(self)
             if issubtype(self.attrType, Enum):
                 # add enum types to types
                 types = [member for member in self.attrType]
@@ -379,7 +379,7 @@ class TypeOptionObjGroupBox(GroupBox):
 
     def _initTypeComboBox(self):
         """Init func for ComboBox where desired Type of input data will be chosen"""
-        self.typeComboBox = QComboBox(self)
+        self.typeComboBox = CompleterComboBox(self)
         for typ in self.objType:
             self.typeComboBox.addItem(getTypeName(typ), typ)
             self.typeComboBox.model().sort(0, Qt.AscendingOrder)

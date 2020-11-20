@@ -6,7 +6,6 @@ Refactor open/save/close for handling pack as QModelIndex not Package
 
 Add typehint to model item (for copy/paste)
 Red color if value doesn't fit to TypeHint
-Replace comboboxes with boxes that allow typing
 
 paste/isPasteOk/pasteHandler
 DictItem in data in model
@@ -33,6 +32,7 @@ Repository with scratch packages to copy from
 integrate validator
 
 Done:
+Replace comboboxes with boxes that allow typing
 add save all to toolbar
 Search
 in addItem() don't use update() instead use insertRow()
