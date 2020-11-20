@@ -12,6 +12,8 @@ from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, VALUE_
 
 from aas.model import Submodel, SubmodelElement
 
+from aas_editor.util_classes import DictItem
+
 
 class StandardTable(QAbstractItemModel):
     defaultFont = QFont(DEFAULT_FONT)
@@ -58,13 +60,13 @@ class StandardTable(QAbstractItemModel):
             return Qt.NoItemFlags
 
         if (index.column() == ATTRIBUTE_COLUMN
-            and not isinstance(index.parent().data(OBJECT_ROLE), dict)) \
+            and not isinstance(index.data(OBJECT_ROLE), DictItem)) \
                 or self.hasChildren(index):
             return Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
         # FIXME check if other types are also editable
         if isinstance(index.data(OBJECT_ROLE),
-                      (Enum, bool, int, float, str, bytes, type(None), dict, list, AbstractSet)):
+                      (DictItem, Enum, bool, int, float, str, bytes, type(None), dict, list, AbstractSet)):
             return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
         return Qt.ItemIsEnabled | Qt.ItemIsSelectable
@@ -106,7 +108,7 @@ class StandardTable(QAbstractItemModel):
 
     def addItem(self, obj: Union[Package, SubmodelElement, Iterable],
                 parent: QModelIndex = QModelIndex()):
-        parentObj = parent.data(OBJECT_ROLE)
+        parentObj = self.objByIndex(parent).data(OBJECT_ROLE)
 
         self.beginInsertRows(parent, self.rowCount(parent), self.rowCount(parent))
         if isinstance(obj, Package):
@@ -139,10 +141,11 @@ class StandardTable(QAbstractItemModel):
             return QVariant()
         if self.hasChildren(index):
             self.removeRows(0, self.rowCount(index), index)
-        self.beginInsertRows(index, self.rowCount(index), self.rowCount(index))
         self.objByIndex(index).populate()
+        self.beginInsertRows(index, 0, self.rowCount(index)-1)
         self.endInsertRows()
-        self.dataChanged.emit(index, index.child(self.rowCount(index), self.columnCount(index)))
+        self.rowsInserted.emit(index, 0, self.rowCount(index)-1)
+        self.dataChanged.emit(index, index.child(self.rowCount(index)-1, self.columnCount(index)-1))
         return True
 
     def data(self, index: QModelIndex, role: int = ...) -> Any:
@@ -180,8 +183,6 @@ class StandardTable(QAbstractItemModel):
             return False
         elif role == Qt.EditRole:
             try:
-                if self.hasChildren(index):
-                    self.removeRows(0, self.rowCount(index), index)
                 value = None if str(value) == "None" else value
                 item = self.objByIndex(index)
                 if isinstance(index.parent().data(OBJECT_ROLE), list):
@@ -191,20 +192,21 @@ class StandardTable(QAbstractItemModel):
                     item.parentObj.remove(item.obj)
                     item.parentObj.add(value)
                     item.obj = value
-                elif isinstance(index.parent().data(OBJECT_ROLE), dict):
+                elif isinstance(index.data(OBJECT_ROLE), DictItem):
                     if index.column() == VALUE_COLUMN:
-                        item.parentObj[item.objName] = value
-                        item.obj = item.parentObj[item.objName]
+                        item.obj = DictItem(item.obj.key, value)
                     elif index.column() == ATTRIBUTE_COLUMN:
-                        item.parentObj[value] = item.parentObj.pop(item.objName)
-                        item.objName = value
+                        item.obj = DictItem(value, item.obj.value)
+                    item.parentObj.update([item.obj])
                 else:
                     setattr(item.parentObj, item.objName, value)
                     item.obj = getattr(item.parentObj, item.objName)
                 self.setChanged(index)
-                item.populate()
-                self.dataChanged.emit(index,
-                                      index.child(self.rowCount(index), self.columnCount(index)))
+                self.update(index)
+                # item.populate()
+                # self.rowsInserted.emit(index, self.rowCount(index), self.columnCount(index))
+                # self.dataChanged.emit(index,
+                #                       index.child(self.rowCount(index), self.columnCount(index)))
                 return True
             except (ValueError, AttributeError) as e:
                 self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])

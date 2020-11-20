@@ -10,7 +10,8 @@ from aas.model.base import *
 from aas.model.concept import *
 from aas.model.submodel import *
 
-from .settings import NAME_ROLE
+from aas_editor.util_classes import DictItem
+from .settings import NAME_ROLE, VALUE_COLUMN, ATTRIBUTE_COLUMN
 
 STR_ATTRS = [
     "id_short",
@@ -33,8 +34,9 @@ class QComboBoxEnumDelegate(QStyledItemDelegate):
         if isinstance(index.data(Qt.EditRole), Enum):
             editor = QtWidgets.QComboBox(parent)
             editor.setAutoFillBackground(True)
-        elif index.data(NAME_ROLE) in STR_ATTRS:
-            editor = super().createEditor(parent, option, index)
+        elif isinstance(index.data(Qt.EditRole), DictItem):
+            editor = QtWidgets.QLineEdit(parent)
+            editor.setAutoFillBackground(True)
         else:
             editor = super().createEditor(parent, option, index)
         return editor
@@ -46,6 +48,12 @@ class QComboBoxEnumDelegate(QStyledItemDelegate):
             for item in items:
                 editor.addItem(item.name, item)
             editor.setCurrentText(currItem.name)
+        elif isinstance(index.data(Qt.EditRole), DictItem):
+            currItem = index.data(Qt.EditRole)
+            if index.column() == ATTRIBUTE_COLUMN:
+                editor.setText(currItem.key)
+            elif index.column() == VALUE_COLUMN:
+                editor.setText(currItem.value)
         else:
             super().setEditorData(editor, index)
 

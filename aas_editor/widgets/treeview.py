@@ -246,9 +246,11 @@ class TreeView(QTreeView):
             super(TreeView, self).wheelEvent(a0)
 
     def handleEnterEvent(self):
-        index2edit = self.currentIndex().siblingAtColumn(VALUE_COLUMN)
+        index2edit = self.currentIndex()
         # if we're not editing, check if editable and start editing or expand/collapse
         if index2edit.flags() & Qt.ItemIsEditable:
+            self.edit(index2edit)
+        if index2edit.siblingAtColumn(VALUE_COLUMN).flags() & Qt.ItemIsEditable:
             if not index2edit.data(OBJECT_ROLE):
                 self._editCreateHandler()
             else:

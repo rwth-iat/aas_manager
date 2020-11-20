@@ -1,5 +1,4 @@
 from datetime import datetime
-from os import PathLike
 from typing import NamedTuple, Any, Union, IO
 
 import pyecma376_2
@@ -139,4 +138,17 @@ class Package:
         return len(tuple(self.concept_descriptions))
 
 
-DictItem = NamedTuple("DictItem", key=Any, value=Any)
+# DictItem = NamedTuple("DictItem", key=Any, value=Any)
+class DictItem(NamedTuple):
+    key: Any
+    value: Any
+
+    @property
+    def name(self):
+        return self.key
+
+    def __str__(self):
+        return str(self.value)
+
+    def __repr__(self):
+        return f"{self.key}: {self.value}"
