@@ -379,7 +379,7 @@ QAbstractScrollArea
 
 QScrollBar:horizontal
 {
-    height: 1.5ex;
+    height: 3.5ex;
     margin: 0.3ex 1.5ex 0.3ex 1.5ex;
     border: 0.2ex transparent #2A2929;
     border-radius: 0.4ex;
@@ -450,7 +450,7 @@ QScrollBar::sub-page:horizontal
 QScrollBar:vertical
 {
     background-color: #2A2929;
-    width: 1.5ex;
+    width: 3.5ex;
     margin: 1.5ex 0.3ex 1.5ex 0.3ex;
     border: 0.2ex transparent #2A2929;
     border-radius: 0.4ex;
@@ -908,19 +908,9 @@ QTabBar::tab:top
     border-top-right-radius: 0.2ex;
 }
 
-QTabBar::tab:top:last,
-QTabBar::tab:top:only-one
+QTabBar::tab:top:selected
 {
-    color: #eff0f1;
-    border: 0.2ex transparent black;
-    border-left: 0.2ex solid #76797c;
-    border-right: 0.2ex solid #76797c;
-    border-top: 0.2ex solid #76797c;
-    background-color: #31363b;
-    padding: 0.5ex;
-    min-width: 50px;
-    border-top-left-radius: 0.2ex;
-    border-top-right-radius: 0.2ex;
+    border-bottom: 1.5ex solid #3daee9;
 }
 
 QTabBar::tab:top:!selected
@@ -929,15 +919,7 @@ QTabBar::tab:top:!selected
     background-color: #54575B;
     border: 0.2ex transparent black;
     border-left: 0.2ex solid #76797c;
-    border-top-left-radius: 0.2ex;
-    border-top-right-radius: 0.2ex;
-}
-
-QTabBar::tab:top:first:!selected
-{
-    color: #eff0f1;
-    background-color: #54575B;
-    border: 0.2ex transparent black;
+    border-bottom: 1.5ex solid #54575B;
     border-top-left-radius: 0.2ex;
     border-top-right-radius: 0.2ex;
 }
@@ -946,13 +928,8 @@ QTabBar::tab:top:!selected:hover
 {
     background-color: rgba(61, 173, 232, 0.2);
     border: 0.2ex rgba(61, 173, 232, 0.2);
+    border-bottom: 1.5ex solid rgba(61, 173, 232, 0.2);
     border-left: 0.2ex solid #76797c;
-}
-
-QTabBar::tab:top:!selected:first:hover
-{
-    background-color: rgba(61, 173, 232, 0.2);
-    border: 0.2ex rgba(61, 173, 232, 0.2);
 }
 
 /* BOTTOM TABS */
