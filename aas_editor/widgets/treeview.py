@@ -1,6 +1,7 @@
 from PyQt5 import QtCore
-from PyQt5.QtCore import pyqtSignal, Qt, QModelIndex
-from PyQt5.QtGui import QMouseEvent, QKeyEvent, QClipboard, QWheelEvent
+from PyQt5.QtCore import pyqtSignal, Qt, QModelIndex, QRect, QPoint
+from PyQt5.QtGui import QMouseEvent, QKeyEvent, QClipboard, QWheelEvent, QPaintEvent, QPainter, \
+    QIcon
 from PyQt5.QtWidgets import QTreeView, QAction, QMenu, QApplication, QDialog, QAbstractItemView
 
 from aas_editor.dialogs import AddObjDialog
@@ -11,6 +12,8 @@ import qtawesome as qta
 
 from aas_editor.util_classes import DictItem
 
+EMPTY_VIEW_MSG = "There are no elements in this view"
+EMPTY_VIEW_ICON = None
 
 class TreeView(QTreeView):
     wheelClicked = pyqtSignal(['QModelIndex'])
@@ -23,8 +26,10 @@ class TreeView(QTreeView):
 
     treeObjClipboard = []
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, *, emptyViewMsg=EMPTY_VIEW_MSG, emptyViewIcon=EMPTY_VIEW_ICON):
         super(TreeView, self).__init__(parent)
+        self.emptyViewMsg = emptyViewMsg
+        self.emptyViewIcon = emptyViewIcon
         self.initActions()
         self.initMenu()
         self.setUniformRowHeights(True)
@@ -345,3 +350,24 @@ class TreeView(QTreeView):
         else:
             print("Item editing cancelled")
         dialog.deleteLater()
+
+    def paintEvent(self, e: QPaintEvent) -> None:
+        if (self.model() and self.model().rowCount()) \
+                or not (self.emptyViewMsg or self.emptyViewIcon):
+            super(TreeView, self).paintEvent(e)
+        else:
+            # If no items draw a text in the center of the viewport.
+            position = self.viewport().rect().center()
+
+            if self.emptyViewMsg:
+                painter = QPainter(self.viewport())
+                textRect = painter.fontMetrics().boundingRect(self.emptyViewMsg)
+                textRect.moveCenter(position)
+                painter.drawText(textRect, Qt.AlignCenter, self.emptyViewMsg)
+                # set position for icon
+                position.setY(position.y()+textRect.height()+25)
+
+            if self.emptyViewIcon:
+                iconRect = QRect(0, 0, 50, 50)
+                iconRect.moveCenter(position)
+                painter.drawPixmap(iconRect, self.emptyViewIcon.pixmap(QSize(50, 50)))

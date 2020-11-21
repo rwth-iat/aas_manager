@@ -139,6 +139,7 @@ qta.set_defaults(**ICON_DEFAULTS)
 
 EXIT_ICON = qta.icon("mdi.exit-to-app")
 OPEN_ICON = qta.icon("mdi.folder-open")
+OPEN_DRAG_ICON = qta.icon("mdi.open-in-app")
 SAVE_ICON = qta.icon("mdi.content-save")
 SAVE_ALL_ICON = qta.icon("mdi.content-save-all")
 

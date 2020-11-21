@@ -8,13 +8,17 @@ from aas.model import Submodel, AssetAdministrationShell, Asset, SubmodelElement
 from aas_editor.models import Package, ConceptDescription
 from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ATTRS, SC_SAVE_ALL, SC_OPEN, \
     PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, APPLICATION_NAME, ADD_ICON, OPEN_ICON, SAVE_ICON, \
-    SAVE_ALL_ICON, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE
+    SAVE_ALL_ICON, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, OPEN_DRAG_ICON
 from aas_editor.widgets.treeview import TreeView
 
+EMPTY_VIEW_MSG = "Drop AAS files here"
+EMPTY_VIEW_ICON = OPEN_DRAG_ICON
 
 class PackTreeView(TreeView):
     def __init__(self, parent=None):
-        super(PackTreeView, self).__init__(parent)
+        super(PackTreeView, self).__init__(parent,
+                                           emptyViewMsg=EMPTY_VIEW_MSG,
+                                           emptyViewIcon=EMPTY_VIEW_ICON)
         PackTreeView.__instance = self
         self.recentFilesSeparator = None
         self.initActions()
