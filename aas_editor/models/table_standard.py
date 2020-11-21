@@ -140,12 +140,21 @@ class StandardTable(QAbstractItemModel):
         if not index.isValid():
             return QVariant()
         if self.hasChildren(index):
+            self.beginRemoveRows(index, 0, max(self.rowCount(index)-1, 0))
             self.removeRows(0, self.rowCount(index), index)
+            self.endRemoveRows()
+            self.rowsRemoved.emit(index, 0, max(self.rowCount(index)-1, 0))
+            self.dataChanged.emit(index, index.child(self.rowCount(index) - 1,
+                                                     self.columnCount(index) - 1))
+
         self.objByIndex(index).populate()
-        self.beginInsertRows(index, 0, self.rowCount(index)-1)
-        self.endInsertRows()
-        self.rowsInserted.emit(index, 0, self.rowCount(index)-1)
-        self.dataChanged.emit(index, index.child(self.rowCount(index)-1, self.columnCount(index)-1))
+        if self.hasChildren(index):
+            self.beginInsertRows(index, 0, max(self.rowCount(index)-1, 0))
+            self.endInsertRows()
+            self.rowsInserted.emit(index, 0, max(self.rowCount(index)-1, 0))
+            self.dataChanged.emit(index, index.child(self.rowCount(index)-1, self.columnCount(index)-1))
+        else:
+            self.dataChanged.emit(index, index)
         return True
 
     def data(self, index: QModelIndex, role: int = ...) -> Any:
@@ -211,7 +220,7 @@ class StandardTable(QAbstractItemModel):
             except (ValueError, AttributeError) as e:
                 self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
                 # noinspection PyUnresolvedReferences
-                print(f"Error occurred while setting {self.objByIndex(index).objName}: {e}")
+                print(f"Error occurred while setting {self.objByIndex(index).objectName}: {e}")
             return False
 
     def setChanged(self, topLeft: QModelIndex, bottomRight: QModelIndex = None):
@@ -245,7 +254,7 @@ class StandardTable(QAbstractItemModel):
                   parent: QModelIndex = ..., defaultVal=NOT_GIVEN) -> bool:
         """Delete rows if they are children of Iterable else set to Default"""
         parentItem = self.objByIndex(parent)
-        parentObj = parent.data(OBJECT_ROLE)
+        parentObj = parentItem.data(OBJECT_ROLE)
 
         # if parentObj is Submodel and the parentObj is not rootItem
         # set submodel_element as parentObj
@@ -259,7 +268,7 @@ class StandardTable(QAbstractItemModel):
                 self.removeRows(row, count, parent)
                 return True
             elif isinstance(parentObj, dict):
-                parentObj.pop(child.objName)
+                parentObj.pop(child.objectName)
                 self.removeRows(row, count, parent)
                 return True
             elif isinstance(parentObj, AbstractSet):
