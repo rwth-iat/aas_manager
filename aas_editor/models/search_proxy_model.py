@@ -43,11 +43,12 @@ class SearchProxyModel(QSortFilterProxyModel):
             # paint Background of found items
             for index in self.iterItems():
                 self.setData(index, QBrush(HIGHLIGHT_YELLOW), Qt.BackgroundRole)
-                foundItems.append(QPersistentModelIndex(index))
+                foundItems.append(self.mapToSource(index))
 
         if not filter:
             # show all items
             self.setFilterRegExp("")
+        foundItems = [QPersistentModelIndex(self.mapFromSource(i)) for i in foundItems]
         return foundItems
 
     def iterItems(self, parent: QModelIndex = QModelIndex()) -> QModelIndex:

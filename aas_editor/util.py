@@ -426,8 +426,10 @@ def getTreeItemPath(treeItem: QModelIndex) -> str:
 
 
 def absRow(index: QModelIndex):
+    maxChildren = 100
     row = 0
     while index.isValid():
+        row /= maxChildren
         row += index.row()+1
         index = index.parent()
     return row
