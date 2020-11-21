@@ -73,6 +73,8 @@ class StandardItem(QObject):
             if column == ATTRIBUTE_COLUMN:
                 return self.objectName
             if column == VALUE_COLUMN:
+                if isinstance(self.obj, DictItem):
+                    return self.obj.value
                 return self.obj
         return QVariant()
 

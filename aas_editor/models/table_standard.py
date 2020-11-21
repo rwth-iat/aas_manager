@@ -205,6 +205,7 @@ class StandardTable(QAbstractItemModel):
                     if index.column() == VALUE_COLUMN:
                         item.obj = DictItem(item.obj.key, value)
                     elif index.column() == ATTRIBUTE_COLUMN:
+                        item.parentObj.pop(item.obj.key)
                         item.obj = DictItem(value, item.obj.value)
                     item.parentObj.update([item.obj])
                 else:
