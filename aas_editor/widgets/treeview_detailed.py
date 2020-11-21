@@ -5,7 +5,7 @@ from PyQt5.QtCore import Qt, QModelIndex
 from PyQt5.QtWidgets import QAction, QAbstractScrollArea
 
 from aas_editor.models import DetailedInfoTable
-from aas_editor.qcomboboxenumdelegate import QComboBoxEnumDelegate
+from aas_editor.edit_delegate import EditDelegate
 from aas_editor.settings import ATTR_COLUMN_WIDTH, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
     VALUE_COLUMN, LINKED_ITEM_ROLE, IS_LINK_ROLE, PARENT_OBJ_ROLE
 from aas_editor.util import getAttrTypeHint, isoftype, getDefaultVal, getTypeHint
@@ -31,11 +31,11 @@ class AttrsTreeView(TreeView):
         self.setObjectName("attrsTreeView")
         self.setModelWithProxy(DetailedInfoTable(packItem))
         self.setColumnWidth(ATTRIBUTE_COLUMN, ATTR_COLUMN_WIDTH)
-        self.setItemDelegate(QComboBoxEnumDelegate())
+        self.setItemDelegate(EditDelegate())
 
     def buildHandlers(self):
         super(AttrsTreeView, self).buildHandlers()
-        self.setItemDelegate(QComboBoxEnumDelegate())
+        self.setItemDelegate(EditDelegate())
         self.clicked.connect(self._openRef)
         self.wheelClicked.connect(
             lambda refItem: self._openRef(refItem, setCurrent=False))

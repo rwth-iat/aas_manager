@@ -10,7 +10,7 @@ from aas.model.concept import *
 from aas.model.submodel import *
 
 
-class QComboBoxEnumDelegate(QStyledItemDelegate):
+class EditDelegate(QStyledItemDelegate):
     def __init__(self):
         super().__init__()
 
