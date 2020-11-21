@@ -64,8 +64,10 @@ ATTRS_NOT_IN_DETAILED_INFO = ("gi_code",
                               "parent",
                               "security", #TODO delete when implemented in aas
                               "submodel_element") + PACKAGE_ATTRS
+
+from aas_editor.util_classes import DictItem
 TYPES_NOT_TO_POPULATE = (
-    AbstractObjectStore, str, int, float, bool, Enum, Path)  # '+ TYPES_IN_ONE_ROW
+    AbstractObjectStore, str, int, float, bool, Enum, Path, DictItem)  # '+ TYPES_IN_ONE_ROW
 ATTRS_IN_PACKAGE_TREEVIEW = PACKAGE_ATTRS
 ATTR_INFOS_TO_SIMPLIFY = (AdministrativeInformation, Identifier,)
 LINK_TYPES = (

@@ -3,7 +3,7 @@ from typing import AbstractSet
 from aas_editor.models import StandardItem
 from aas_editor.settings import TYPES_NOT_TO_POPULATE, PACKAGE_ROLE
 from aas_editor.util import getAttrs4detailInfo, getTypeName, isIterable
-from aas_editor.util_classes import Package
+from aas_editor.util_classes import Package, DictItem
 
 
 class DetailedInfoItem(StandardItem):
@@ -34,9 +34,9 @@ class DetailedInfoItem(StandardItem):
 
     @staticmethod
     def _populateDict(obj, **kwargs):
-        for attr, sub_item_obj in obj.items():
-            kwargs["name"] = attr
-            DetailedInfoItem(sub_item_obj, **kwargs)
+        for key, value in obj.items():
+            kwargs["name"] = ""
+            DetailedInfoItem(DictItem(key, value), **kwargs)
 
     @staticmethod
     def _populateIterable(obj, **kwargs):

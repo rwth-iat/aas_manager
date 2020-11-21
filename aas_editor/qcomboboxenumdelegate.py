@@ -1,5 +1,4 @@
 from PyQt5 import QtWidgets
-from PyQt5 import QtGui
 from PyQt5.QtWidgets import QWidget, QStyledItemDelegate
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
@@ -9,19 +8,6 @@ from aas.model.aas import *
 from aas.model.base import *
 from aas.model.concept import *
 from aas.model.submodel import *
-
-from .settings import NAME_ROLE
-
-STR_ATTRS = [
-    "id_short",
-    "category",
-    "version",
-    "revision",
-]
-
-STR_DICT = [
-    "description"
-]
 
 
 class QComboBoxEnumDelegate(QStyledItemDelegate):
@@ -33,8 +19,6 @@ class QComboBoxEnumDelegate(QStyledItemDelegate):
         if isinstance(index.data(Qt.EditRole), Enum):
             editor = QtWidgets.QComboBox(parent)
             editor.setAutoFillBackground(True)
-        elif index.data(NAME_ROLE) in STR_ATTRS:
-            editor = super().createEditor(parent, option, index)
         else:
             editor = super().createEditor(parent, option, index)
         return editor
