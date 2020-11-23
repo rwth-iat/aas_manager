@@ -6,6 +6,7 @@ from aas.adapter import aasx
 from aas.adapter.aasx import DictSupplementaryFileContainer
 
 from aas_editor.models.search_proxy_model import SearchProxyModel
+from aas_editor.widgets.address_line import AddressLine
 from aas_editor.widgets.search import SearchBar
 from aas_editor.widgets.treeview_pack import PackTreeView
 from . import design
@@ -35,6 +36,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.packTreeView.setHeaderHidden(True)
         self.packTreeView.setModelWithProxy(self.packTreeModel)
+        AddressLine.setModel(self.packTreeView.model())
 
         self.searchBarPack = SearchBar(self.packTreeView, filterColumns=[ATTRIBUTE_COLUMN],
                                        parent=self.leftLayoutWidget)

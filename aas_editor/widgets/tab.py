@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QWidget, QLineEdit, QLabel, QMessageBox, QGridLayout
     QTabWidget, QAction, QToolBar, QHBoxLayout, QFrame, QTabBar, QMenu, QSplitter, QShortcut
 
 from aas_editor.settings import *
+from aas_editor.widgets.address_line import AddressLine
 from aas_editor.widgets.search import SearchBar
 from aas_editor.widgets.treeview_detailed import AttrsTreeView
 from aas_editor.util import getTreeItemPath
@@ -313,8 +314,7 @@ class Tab(QWidget):
         self.toolBar.addAction(self.backAct)
         self.toolBar.addAction(self.forwardAct)
 
-        self.pathLine: QLineEdit = QLineEdit(self)
-        self.pathLine.setReadOnly(True)
+        self.pathLine: AddressLine = AddressLine(self)
 
         self.descrLabel = QLabel(self)
         self.descrLabel.setWordWrap(True)
