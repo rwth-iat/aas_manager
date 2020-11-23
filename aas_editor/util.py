@@ -417,12 +417,12 @@ def inheritors(klass) -> set:
     return subclasses
 
 
-def getTreeItemPath(treeItem: QModelIndex) -> str:
-    path = treeItem.data(Qt.DisplayRole)
-    while treeItem.parent().isValid():
-        treeItem = treeItem.parent()
-        path = f"{treeItem.data(Qt.DisplayRole)}/{path}"
-    return path
+def getTreeItemPath(index: QModelIndex, role=Qt.DisplayRole, separator="/") -> str:
+    path = ""
+    while index.isValid():
+        path = f"{index.data(role)}{separator}{path}"
+        index = index.parent()
+    return path.rstrip(separator)
 
 
 def absRow(index: QModelIndex):
