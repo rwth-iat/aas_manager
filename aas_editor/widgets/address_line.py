@@ -1,8 +1,8 @@
 from typing import List
 
 from PyQt5.QtCore import QModelIndex, Qt, QAbstractProxyModel, qDebug, \
-    qCritical, pyqtSignal, QObject
-from PyQt5.QtWidgets import QMessageBox, QCompleter, QLineEdit
+    qCritical, pyqtSignal, QObject, QAbstractItemModel
+from PyQt5.QtWidgets import QMessageBox, QCompleter, QLineEdit, QStyledItemDelegate
 
 from aas_editor.models import StandardTable
 from aas_editor.util import getTreeItemPath
@@ -29,6 +29,7 @@ class AddressLine(QLineEdit):
         self.completer().setCaseSensitivity(CASE_SENSITIVITY)
         if AddressLine._model:
             self.completer().setModel(AddressLine._model)
+            self.completer().activated[QModelIndex].connect(self.onReturnPressed)
             self.returnPressed.connect(self.onReturnPressed)
         AddressLine.signal.modelChanged.connect(self.onModelChanged)
 
@@ -62,8 +63,16 @@ class AddressLine(QLineEdit):
 
 
 class Completer(QCompleter):
+    mCompleterItemDelegate = QStyledItemDelegate()
+
     def pathFromIndex(self, index: QModelIndex) -> str:
         return getTreeItemPath(index, role=self.completionRole())
 
     def splitPath(self, path: str) -> List[str]:
         return path.split("/")
+
+    def setModel(self, c: QAbstractItemModel) -> None:
+        super(Completer, self).setModel(c)
+        # set obj name for qss style sheet
+        self.popup().setObjectName("completerPopup")
+        self.popup().setItemDelegate(self.mCompleterItemDelegate)
