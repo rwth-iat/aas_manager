@@ -22,8 +22,6 @@ find usages func
 
 Speed view tab
 
-Active address
-
 Autocomplete (id_shorts)
 
 Repository with scratch packages to copy from
@@ -31,6 +29,7 @@ Repository with scratch packages to copy from
 integrate validator
 
 Done:
+Active address
 DictItem in data in model
 Replace comboboxes with boxes that allow typing
 add save all to toolbar
