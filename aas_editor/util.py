@@ -56,13 +56,13 @@ def simplifyInfo(obj, attrName: str = "") -> str:
 def getTypeName(objType):
     try:
         return objType.__name__
-    except AttributeError as e:
-        print(e)
+    except AttributeError:
+        pass
 
     try:
         return objType._name
-    except AttributeError as e:
-        print(e)
+    except AttributeError:
+        pass
 
     try:
         return objType.name
@@ -210,8 +210,8 @@ def issubtype(typ, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:
     try:
         if issubclass(types, Enum):
             return _issubtype(typ, types)
-    except TypeError as e:
-        print(e)
+    except TypeError:
+        pass
 
     try:
         for tp in types:
