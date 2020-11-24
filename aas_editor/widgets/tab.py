@@ -225,7 +225,7 @@ class TabWidget(QTabWidget):
 
     def buildHandlers(self):
         self.tabCloseRequested.connect(self.removeTab)
-        self.currentChanged.connect(self._currentTabChanged)
+        self.currentChanged.connect(self.onCurrTabChanged)
 
     def tabInserted(self, index):
         super(TabWidget, self).tabInserted(index)
@@ -242,7 +242,7 @@ class TabWidget(QTabWidget):
         if tab == self.currentWidget():
             self.currItemChanged.emit(packItem)
 
-    def _currentTabChanged(self, index: int):
+    def onCurrTabChanged(self, index: int):
         if index >= 0:
             packItem = QModelIndex(self.widget(index).packItem)
             self.currItemChanged.emit(packItem)
