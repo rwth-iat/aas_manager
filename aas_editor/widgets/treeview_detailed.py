@@ -2,7 +2,8 @@ from typing import Iterable
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex
-from PyQt5.QtWidgets import QAction, QAbstractScrollArea
+from PyQt5.QtGui import QMouseEvent, QKeyEvent
+from PyQt5.QtWidgets import QAction, QAbstractScrollArea, QAbstractItemView
 
 from aas_editor.models import DetailedInfoTable
 from aas_editor.edit_delegate import EditDelegate
@@ -161,3 +162,37 @@ class AttrsTreeView(TreeView):
                 self.openInBgTabClicked.emit(linkedPackItem)
             else:
                 self.openInCurrTabClicked.emit(linkedPackItem)
+
+    def mouseDoubleClickEvent(self, e: QMouseEvent) -> None:
+        if e.button() == Qt.LeftButton:
+            self.handleEnterEvent()
+        else:
+            super(TreeView, self).mouseDoubleClickEvent(e)
+
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        if event.key() in (Qt.Key_Return, Qt.Key_Enter):
+            if self.state() == QAbstractItemView.EditingState:
+                # if we are editing, inform base
+                super(TreeView, self).keyPressEvent(event)
+            else:
+                self.handleEnterEvent()
+        else:
+            # any other key was pressed, inform base
+            super(TreeView, self).keyPressEvent(event)
+
+    def handleEnterEvent(self):
+        index2edit = self.currentIndex()
+        # if we're not editing, check if editable and start editing or expand/collapse
+        if index2edit.flags() & Qt.ItemIsEditable:
+            self.edit(index2edit)
+        if index2edit.siblingAtColumn(VALUE_COLUMN).flags() & Qt.ItemIsEditable:
+            if not index2edit.data(OBJECT_ROLE):
+                self._editCreateHandler()
+            else:
+                self.edit(index2edit)
+        else:
+            index2fold = self.currentIndex().siblingAtColumn(0)
+            if self.isExpanded(index2fold):
+                self.collapse(index2fold)
+            else:
+                self.expand(index2fold)

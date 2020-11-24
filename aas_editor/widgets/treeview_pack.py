@@ -23,6 +23,7 @@ class PackTreeView(TreeView):
         PackTreeView.__instance = self
         self.recentFilesSeparator = None
         self.setAcceptDrops(True)
+        self.setExpandsOnDoubleClick(False)
 
     # noinspection PyArgumentList
     def initActions(self):

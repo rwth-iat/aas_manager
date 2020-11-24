@@ -1,64 +1,31 @@
-from PyQt5 import QtCore
-from PyQt5.QtCore import pyqtSignal, Qt, QModelIndex, QRect, QPoint
-from PyQt5.QtGui import QMouseEvent, QKeyEvent, QClipboard, QWheelEvent, QPaintEvent, QPainter, \
-    QIcon
-from PyQt5.QtWidgets import QTreeView, QAction, QMenu, QApplication, QDialog, QAbstractItemView
+from PyQt5.QtCore import pyqtSignal, Qt, QModelIndex
+from PyQt5.QtGui import QClipboard
+from PyQt5.QtWidgets import QAction, QMenu, QApplication, QDialog
 
 from aas_editor.dialogs import AddObjDialog
-from aas_editor.models.search_proxy_model import SearchProxyModel
 from aas_editor.settings import *
 from aas_editor.util import getDefaultVal, isIterable, getReqParams4init, delAASParents
 import qtawesome as qta
 
 from aas_editor.util_classes import DictItem
-
-EMPTY_VIEW_MSG = "There are no elements in this view"
-EMPTY_VIEW_ICON = None
+from aas_editor.widgets.treeview_basic import BasicTreeView
 
 
-class TreeView(QTreeView):
-    wheelClicked = pyqtSignal(['QModelIndex'])
-    openInCurrTabClicked = pyqtSignal(['QModelIndex'])
-    openInNewTabClicked = pyqtSignal(['QModelIndex'])
-    openInBgTabClicked = pyqtSignal(['QModelIndex'])
-    openInNewWindowClicked = pyqtSignal(['QModelIndex'])
-
-    modelChanged = pyqtSignal(['QAbstractItemModel'])
+class TreeView(BasicTreeView):
+    openInCurrTabClicked = pyqtSignal(QModelIndex)
+    openInNewTabClicked = pyqtSignal(QModelIndex)
+    openInBgTabClicked = pyqtSignal(QModelIndex)
+    openInNewWindowClicked = pyqtSignal(QModelIndex)
 
     treeObjClipboard = []
 
-    def __init__(self, parent=None, *, emptyViewMsg=EMPTY_VIEW_MSG, emptyViewIcon=EMPTY_VIEW_ICON):
-        super(TreeView, self).__init__(parent)
-        self.emptyViewMsg = emptyViewMsg
-        self.emptyViewIcon = emptyViewIcon
+    def __init__(self, parent=None, **kwargs):
+        super(TreeView, self).__init__(parent, **kwargs)
         self.initActions()
         self.initMenu()
         self.setUniformRowHeights(True)
         self.buildHandlers()
 
-    def buildHandlers(self):
-        self.customContextMenuRequested.connect(self.openMenu)
-        self.modelChanged.connect(self.buildNewModelHandlers)
-
-    def buildNewModelHandlers(self, model):
-        model.rowsInserted.connect(lambda parent, first, last:
-                                   self.setCurrentIndex(parent.child(last, 0)))
-        self.selectionModel().currentChanged.connect(self.updateMenu)
-
-    def updateMenu(self, index: QModelIndex):
-        pass
-
-    def setModel(self, model: QtCore.QAbstractItemModel) -> None:
-        super(TreeView, self).setModel(model)
-        self.modelChanged.emit(model)
-
-    def setModelWithProxy(self, model: QtCore.QAbstractItemModel) -> None:
-        # proxy model will always be used by setting new models
-        proxyModel = SearchProxyModel()
-        proxyModel.setSourceModel(model)
-        self.setModel(proxyModel)
-
-    # noinspection PyArgumentList
     def initActions(self):
         self.copyAct = QAction(COPY_ICON, "Copy", self,
                                statusTip="Copy selected item",
@@ -170,26 +137,6 @@ class TreeView(QTreeView):
                                   triggered=self.zoomOut)
         self.addAction(self.zoomOutAct)
 
-    def zoomIn(self):
-        self.zoom(delta=+2)
-
-    def zoomOut(self):
-        self.zoom(delta=-2)
-
-    def zoom(self, abs: int = DEFAULT_FONT.pointSize(), delta: int = 0):
-        font = QFont(self.model().data(QModelIndex(), Qt.FontRole))
-        if delta > 0:
-            fontSize = min(font.pointSize() + 2, MAX_FONT_SIZE)
-        elif delta < 0:
-            fontSize = max(font.pointSize() - 2, MIN_FONT_SIZE)
-        elif MIN_FONT_SIZE < abs < MAX_FONT_SIZE:
-            fontSize = abs
-        else:
-            return
-        font.setPointSize(fontSize)
-        self.model().setData(QModelIndex(), font, Qt.FontRole)
-        self.setFont(font)
-
     def initMenu(self) -> None:
         self.attrsMenu = QMenu(self)
         self.attrsMenu.addAction(self.cutAct)
@@ -219,62 +166,38 @@ class TreeView(QTreeView):
     def openMenu(self, point):
         self.attrsMenu.exec_(self.viewport().mapToGlobal(point))
 
-    def mouseReleaseEvent(self, event: QMouseEvent) -> None:
-        if event.button() == Qt.MiddleButton:
-            self.wheelClicked.emit(self.indexAt(event.pos()))
+    def updateMenu(self, index: QModelIndex):
+        pass
+
+    def buildHandlers(self):
+        self.customContextMenuRequested.connect(self.openMenu)
+        self.modelChanged.connect(self.onModelChanged)
+        self.ctrlWheelScrolled.connect(lambda delta: self.zoom(delta=delta))
+
+    def onModelChanged(self, model):
+        model.rowsInserted.connect(lambda parent, first, last:
+                                   self.setCurrentIndex(parent.child(last, 0)))
+        self.selectionModel().currentChanged.connect(self.updateMenu)
+
+    def zoomIn(self):
+        self.zoom(delta=+2)
+
+    def zoomOut(self):
+        self.zoom(delta=-2)
+
+    def zoom(self, pointSize: int = DEFAULT_FONT.pointSize(), delta: int = 0):
+        font = QFont(self.model().data(QModelIndex(), Qt.FontRole))
+        if delta > 0:
+            fontSize = min(font.pointSize() + 2, MAX_FONT_SIZE)
+        elif delta < 0:
+            fontSize = max(font.pointSize() - 2, MIN_FONT_SIZE)
+        elif MIN_FONT_SIZE < pointSize < MAX_FONT_SIZE:
+            fontSize = pointSize
         else:
-            super(TreeView, self).mouseReleaseEvent(event)
-
-    def mouseDoubleClickEvent(self, e: QMouseEvent) -> None:
-        if e.button() == Qt.LeftButton:
-            self.handleEnterEvent()
-        else:
-            super(TreeView, self).mouseDoubleClickEvent(e)
-
-    def keyPressEvent(self, event: QKeyEvent) -> None:
-        if event.key() in (Qt.Key_Return, Qt.Key_Enter):
-            if self.state() == QAbstractItemView.EditingState:
-                # if we are editing, inform base
-                super(TreeView, self).keyPressEvent(event)
-            else:
-                self.handleEnterEvent()
-        else:
-            # any other key was pressed, inform base
-            super(TreeView, self).keyPressEvent(event)
-
-    def wheelEvent(self, a0: QWheelEvent) -> None:
-        if a0.modifiers() & Qt.ControlModifier:
-            if a0.angleDelta().y() > 0:
-                self.zoomIn()
-            elif a0.angleDelta().y() < 0:
-                self.zoomOut()
-        else:
-            super(TreeView, self).wheelEvent(a0)
-
-    def handleEnterEvent(self):
-        index2edit = self.currentIndex()
-        # if we're not editing, check if editable and start editing or expand/collapse
-        if index2edit.flags() & Qt.ItemIsEditable:
-            self.edit(index2edit)
-        if index2edit.siblingAtColumn(VALUE_COLUMN).flags() & Qt.ItemIsEditable:
-            if not index2edit.data(OBJECT_ROLE):
-                self._editCreateHandler()
-            else:
-                self.edit(index2edit)
-        else:
-            index2fold = self.currentIndex().siblingAtColumn(0)
-            if self.isExpanded(index2fold):
-                self.collapse(index2fold)
-            else:
-                self.expand(index2fold)
-
-    def collapse(self, index: QtCore.QModelIndex) -> None:
-        newIndex = index.siblingAtColumn(0)
-        super(TreeView, self).collapse(newIndex)
-
-    def expand(self, index: QtCore.QModelIndex) -> None:
-        newIndex = index.siblingAtColumn(0)
-        super(TreeView, self).expand(newIndex)
+            return
+        font.setPointSize(fontSize)
+        self.model().setData(QModelIndex(), font, Qt.FontRole)
+        self.setFont(font)
 
     def _delClearHandler(self):
         index = self.currentIndex()
@@ -351,24 +274,3 @@ class TreeView(QTreeView):
         else:
             print("Item editing cancelled")
         dialog.deleteLater()
-
-    def paintEvent(self, e: QPaintEvent) -> None:
-        if (self.model() and self.model().rowCount()) \
-                or not (self.emptyViewMsg or self.emptyViewIcon):
-            super(TreeView, self).paintEvent(e)
-        else:
-            # If no items draw a text in the center of the viewport.
-            position = self.viewport().rect().center()
-
-            if self.emptyViewMsg:
-                painter = QPainter(self.viewport())
-                textRect = painter.fontMetrics().boundingRect(self.emptyViewMsg)
-                textRect.moveCenter(position)
-                painter.drawText(textRect, Qt.AlignCenter, self.emptyViewMsg)
-                # set position for icon
-                position.setY(position.y()+textRect.height()+25)
-
-            if self.emptyViewIcon:
-                iconRect = QRect(0, 0, 50, 50)
-                iconRect.moveCenter(position)
-                painter.drawPixmap(iconRect, self.emptyViewIcon.pixmap(QSize(50, 50)))
