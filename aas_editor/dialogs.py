@@ -1,3 +1,5 @@
+from inspect import isabstract
+
 from PyQt5.QtCore import Qt
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIntValidator, QDoubleValidator, QPaintEvent
@@ -11,7 +13,7 @@ from aas.model.submodel import *
 
 
 from aas_editor.settings import DEFAULT_ATTRS_TO_HIDE
-from aas_editor.util import issubtype, inheritors, isMeta, getTypeName, isoftype, isIterableType, \
+from aas_editor.util import issubtype, inheritors, getTypeName, isoftype, isIterableType, \
     getReqParams4init, getParams4init
 from aas_editor.util_classes import DictItem
 from aas_editor.widgets.combobox import CompleterComboBox
@@ -58,7 +60,7 @@ def getInputWidget(objType, rmDefParams=True, title="", attrsToHide: dict = None
         raise TypeError("Given object type does not match to real object type:", objType, objVal)
 
     attrsToHide = attrsToHide if attrsToHide else DEFAULT_ATTRS_TO_HIDE.copy()
-    if isMeta(objType) and not isIterableType(objType):
+    if isabstract(objType) and not isIterableType(objType):
         objTypes = inheritors(objType)
         widget = TypeOptionObjGroupBox(objTypes, attrsToHide=attrsToHide,
                                        rmDefParams=rmDefParams, title=title,

@@ -1,5 +1,7 @@
 from typing import AbstractSet
 
+from aas.model import AssetAdministrationShell, Submodel
+
 from aas_editor.models import StandardItem
 from aas_editor.settings import TYPES_NOT_TO_POPULATE, PACKAGE_ROLE
 from aas_editor.util import getAttrs4detailInfo, getTypeName, isIterable
@@ -27,7 +29,7 @@ class DetailedInfoItem(StandardItem):
 
         if isinstance(self.obj, dict):
             self._populateDict(self.obj, **kwargs)
-        elif isIterable(self.obj):
+        elif isIterable(self.obj) and not isinstance(self.obj, (Submodel, AssetAdministrationShell)):
             self._populateIterable(self.obj, **kwargs)
         else:
             self._populateUnknown(self.obj, **kwargs)
