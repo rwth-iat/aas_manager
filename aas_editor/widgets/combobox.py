@@ -23,7 +23,10 @@ class CompleterLineEdit(QLineEdit):
     clicked = pyqtSignal()
 
     def __init__(self, parent: Optional[QWidget] = ...) -> None:
-        super(CompleterLineEdit, self).__init__(parent)
+        if parent is ...:
+            super(CompleterLineEdit, self).__init__()
+        else:
+            super(CompleterLineEdit, self).__init__(parent)
         self.textEdited.connect(self.onTextEdited)
 
     def mouseReleaseEvent(self, a0: QMouseEvent) -> None:

@@ -73,6 +73,4 @@ class Completer(QCompleter):
 
     def setModel(self, c: QAbstractItemModel) -> None:
         super(Completer, self).setModel(c)
-        # set obj name for qss style sheet
-        self.popup().setObjectName("completerPopup")
         self.popup().setItemDelegate(self.mCompleterItemDelegate)
