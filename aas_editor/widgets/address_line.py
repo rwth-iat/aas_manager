@@ -24,7 +24,7 @@ class AddressLine(QLineEdit):
         super(AddressLine, self).__init__(parent)
         self.tab = parent
 
-        self.setCompleter(Completer(self))
+        self.setCompleter(AddressLineCompleter(self))
         self.completer().setCompletionRole(COMPLETION_ROLE)
         self.completer().setCaseSensitivity(CASE_SENSITIVITY)
         if AddressLine._model:
@@ -62,7 +62,7 @@ class AddressLine(QLineEdit):
             QMessageBox.critical(self, "Error", f"Item not found: {self.text()}")
 
 
-class Completer(QCompleter):
+class AddressLineCompleter(QCompleter):
     mCompleterItemDelegate = QStyledItemDelegate()
 
     def pathFromIndex(self, index: QModelIndex) -> str:
@@ -72,5 +72,5 @@ class Completer(QCompleter):
         return path.split("/")
 
     def setModel(self, c: QAbstractItemModel) -> None:
-        super(Completer, self).setModel(c)
+        super(AddressLineCompleter, self).setModel(c)
         self.popup().setItemDelegate(self.mCompleterItemDelegate)
