@@ -230,14 +230,15 @@ class TabWidget(QTabWidget):
     def tabInserted(self, index):
         super(TabWidget, self).tabInserted(index)
         tab: Tab = self.widget(index)
-        tab.objectNameChanged.connect(lambda text: self.setTabText(self.indexOf(tab), text))
-        tab.currItemChanged.connect(lambda packItem: self._handleCurrTabItemChanged(tab, packItem))
+        tab.windowTitleChanged.connect(lambda text: self.setTabText(self.indexOf(tab), text))
+        tab.windowIconChanged.connect(lambda icon: self.setTabIcon(self.indexOf(tab), icon))
+        tab.currItemChanged.connect(lambda packItem: self.onCurrTabItemChanged(tab, packItem))
         tab.attrsTreeView.openInCurrTabClicked.connect(self.openItem)
         tab.attrsTreeView.openInNewTabClicked.connect(self.openItemInNewTab)
         tab.attrsTreeView.openInBgTabClicked.connect(self.openItemInBgTab)
         tab.attrsTreeView.openInNewWindowClicked.connect(TabWidget.openItemInNewWindow)
 
-    def _handleCurrTabItemChanged(self, tab: 'Tab', packItem: QModelIndex):
+    def onCurrTabItemChanged(self, tab: 'Tab', packItem: QModelIndex):
         if tab == self.currentWidget():
             self.currItemChanged.emit(packItem)
 
@@ -266,17 +267,23 @@ class TabWidget(QTabWidget):
 
     def openItemInNewTab(self, packItem: QModelIndex, afterCurrent: bool = True) -> int:
         tab = Tab(packItem, parent=self)
-        if afterCurrent:
-            tabIndex = self.insertTab(self.currentIndex()+1, tab, tab.objectName)
-        else:
-            tabIndex = self.addTab(tab, tab.objectName)
+        tabIndex = self.newTab(tab, afterCurrent)
         self.setCurrentWidget(tab)
         self.currItemChanged.emit(packItem)
         return tabIndex
 
     def openItemInBgTab(self, packItem: QModelIndex) -> int:
         tab = Tab(packItem, parent=self)
-        tabIndex = self.insertTab(self.currentIndex()+1, tab, tab.objectName)
+        tabIndex = self.newTab(tab, afterCurrent=True)
+        return tabIndex
+
+    def newTab(self, widget: QWidget, afterCurrent: bool = False) -> int:
+        icon = widget.windowIcon()
+        label = widget.windowTitle()
+        if afterCurrent:
+            tabIndex = self.insertTab(self.currentIndex()+1, widget, icon, label)
+        else:
+            tabIndex = self.addTab(widget, icon, label)
         return tabIndex
 
     def setCurrentTab(self, tabName: str):
@@ -307,6 +314,7 @@ class Tab(QWidget):
 
     def __init__(self, packItem=QModelIndex(), parent: TabWidget = None):
         super(Tab, self).__init__(parent)
+        self.icon = QIcon()
         self.initActions()
 
         self.toolBar = QToolBar(self)
@@ -326,8 +334,7 @@ class Tab(QWidget):
         self.searchBar = SearchBar(self.attrsTreeView, parent=self,
                                    filterColumns=[ATTRIBUTE_COLUMN, VALUE_COLUMN], closable=True)
         self.searchBar.hide()
-        self.openSearchBarSC = QShortcut(SC_SEARCH, self,
-                                         activated=self.openSearchBar)
+        self.openSearchBarSC = QShortcut(SC_SEARCH, self, activated=self.openSearchBar)
 
         self.packItem = QPersistentModelIndex(QModelIndex())
         self.prevItems = []
@@ -352,9 +359,11 @@ class Tab(QWidget):
                                   triggered=self.openNextItem,
                                   enabled=False)
 
-    @property
-    def objectName(self) -> str:
+    def windowTitle(self) -> str:
         return self.packItem.data(NAME_ROLE)
+
+    def windowIcon(self) -> QIcon:
+        return self.packItem.data(Qt.DecorationRole)
 
     def openSearchBar(self):
         self.searchBar.show()
@@ -383,9 +392,10 @@ class Tab(QWidget):
         self.packItem = QPersistentModelIndex(packItem)
         self.pathLine.setText(getTreeItemPath(packItem))
         self.descrLabel.setText("")
+        self.setWindowIcon(self.packItem.data(Qt.DecorationRole))
+        self.setWindowTitle(self.packItem.data(Qt.DisplayRole))
         self.attrsTreeView.newPackItem(packItem)
         self.attrsTreeView.selectionModel().currentChanged.connect(self.showDetailInfoItemDoc)
-        self.objectNameChanged.emit(self.objectName)
         self.currItemChanged.emit(QModelIndex(self.packItem))
 
         self.forwardAct.setEnabled(True) if self.nextItems else self.forwardAct.setDisabled(True)

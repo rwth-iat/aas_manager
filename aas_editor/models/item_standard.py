@@ -1,4 +1,4 @@
-from PyQt5.QtGui import QBrush
+from PyQt5.QtGui import QBrush, QIcon
 from aas.model import AASReference, ConceptDescription, Event, RelationshipElement, Operation, \
     SubmodelElementCollection
 from aas.model import *
@@ -62,8 +62,8 @@ class StandardItem(QObject):
             for cls in TYPE_ICON_DICT:
                 if isinstance(self.obj, cls):
                     icon = TYPE_ICON_DICT[cls]
-                    return icon
-            return QVariant()
+                    return QIcon(icon)
+            return QIcon()
         if role == Qt.DisplayRole:
             if column == ATTRIBUTE_COLUMN:
                 return self.objectName
