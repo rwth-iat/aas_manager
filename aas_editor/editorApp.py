@@ -127,6 +127,9 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.toolBar.addAction(self.packTreeView.openPackAct)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.packTreeView.addAct)
+        self.toolBar.addSeparator()
+        self.toolBar.addAction(self.packTreeView.collapseAllAct)
+        self.toolBar.addAction(self.packTreeView.expandAllAct)
 
     @staticmethod
     def iterItems(root):

@@ -112,7 +112,7 @@ class TreeView(QTreeView):
                                       triggered=lambda: self.collapse(self.currentIndex()))
         self.addAction(self.collapseRecAct)
 
-        self.collapseAllAct = QAction("Collapse all", self,
+        self.collapseAllAct = QAction(COLLAPSE_ALL_ICON, "Collapse all", self,
                                       shortcut=SC_COLLAPSE_ALL,
                                       shortcutContext=Qt.WidgetWithChildrenShortcut,
                                       statusTip="Collapse all items",
@@ -132,7 +132,7 @@ class TreeView(QTreeView):
                                     triggered=lambda: self.expandRecursively(self.currentIndex()))
         self.addAction(self.expandRecAct)
 
-        self.expandAllAct = QAction("Expand all", self,
+        self.expandAllAct = QAction(EXPAND_ALL_ICON, "Expand all", self,
                                     shortcut=SC_EXPAND_ALL,
                                     shortcutContext=Qt.WidgetWithChildrenShortcut,
                                     statusTip="Expand all items",

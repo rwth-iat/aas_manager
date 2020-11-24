@@ -165,6 +165,9 @@ REGEX_ICON = qta.icon("mdi.regex")
 CASE_ICON = qta.icon("mdi.format-letter-case")
 CLOSE_ICON = qta.icon("mdi.close")
 
+EXPAND_ALL_ICON = qta.icon("mdi.arrow-expand-vertical")
+COLLAPSE_ALL_ICON = qta.icon("mdi.arrow-collapse-vertical")
+
 # CHARS4=[{'offset': (-0.48, 0)}, {'offset': (-0.16, 0)},
 #         {'offset': (0.15, 0)}, {'offset': (0.46, 0)}]
 CHARS1_3=[{'offset': (-0.48, 0)}, {'offset': (-0.13, 0)},
