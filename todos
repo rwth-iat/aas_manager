@@ -18,12 +18,12 @@ search funcs
 find usages func
     handle if id_short or identification will be changed
 
-Speed view tab
 Autocomplete (id_shorts)
 Repository with scratch packages to copy from
 integrate validator
 
 Done:
+Speed view tab
 populate SubmodelCollection elements in left tree
 Active address
 DictItem in data in model
