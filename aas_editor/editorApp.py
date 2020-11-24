@@ -1,30 +1,19 @@
-from pathlib import Path
+from PyQt5.QtCore import Qt, QModelIndex, QSettings
 
-from PyQt5.QtCore import QModelIndex, QRect, QStandardPaths, QSettings, QPoint, QSize, \
-    QSortFilterProxyModel, QItemSelectionModel
-from aas.adapter import aasx
-from aas.adapter.aasx import DictSupplementaryFileContainer
-
-from aas_editor.models.search_proxy_model import SearchProxyModel
 from aas_editor.widgets.address_line import AddressLine
 from aas_editor.widgets.search import SearchBar
-from aas_editor.widgets.treeview_pack import PackTreeView
 from . import design
 
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import Qt
 
-from .models import Package, StandardTable, DictObjectStore, DetailedInfoTable
+from .models import DetailedInfoTable
 from .models.table_packs import PacksTable
 
 from .widgets.tab import Tab
 from .settings import *
 from .util import toggleStylesheet
 
-import qtawesome as qta
-
-from .widgets.treeview_detailed import AttrsTreeView
 
 class EditorApp(QMainWindow, design.Ui_MainWindow):
     def __init__(self):
@@ -42,12 +31,12 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                                        parent=self.leftLayoutWidget)
         self.leftVerticalLayout.insertWidget(1, self.searchBarPack)
 
-        welcomeTab = self.tabWidget.addTab(Tab(parent=self.tabWidget), "Welcome")
-        self.tabWidget.widget(welcomeTab).openSearchBar()
+        welcomeTab = self.mainTabWidget.addTab(Tab(parent=self.mainTabWidget), "Welcome")
+        self.mainTabWidget.widget(welcomeTab).openSearchBar()
 
         self.initActions()
         self.initMenu()
-        self.initToolbar()
+        self.initToolbars()
         self.buildHandlers()
         self.readSettings()
 
@@ -105,8 +94,8 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menuView.addAction(self.packTreeView.zoomInAct)
         self.menuView.addAction(self.packTreeView.zoomOutAct)
         self.menuView.addSection("Detailed view")
-        self.menuView.addAction(self.tabWidget.zoomInAct)
-        self.menuView.addAction(self.tabWidget.zoomOutAct)
+        self.menuView.addAction(self.mainTabWidget.zoomInAct)
+        self.menuView.addAction(self.mainTabWidget.zoomOutAct)
 
         self.menuNavigate = QMenu("&Navigate", self.menubar)
         # self.menuNavigate.addAction(self.tabWidget.backAct)
@@ -121,15 +110,17 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menubar.addAction(self.menuView.menuAction())
         self.menubar.addAction(self.menuNavigate.menuAction())
 
-    def initToolbar(self):
+    def initToolbars(self):
         self.toolBar.addAction(self.packTreeView.saveAllAct)
         self.toolBar.addAction(self.packTreeView.saveAct)
         self.toolBar.addAction(self.packTreeView.openPackAct)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.packTreeView.addAct)
-        self.toolBar.addSeparator()
-        self.toolBar.addAction(self.packTreeView.collapseAllAct)
-        self.toolBar.addAction(self.packTreeView.expandAllAct)
+
+        self.packToolBar.addAction(self.packTreeView.collapseAllAct)
+        self.packToolBar.addAction(self.packTreeView.expandAllAct)
+        self.packToolBar.addWidget(self.packTreeView.autoScrollFromSrcBtn)
+        self.packToolBar.addWidget(self.packTreeView.autoScrollToSrcBtn)
 
     @staticmethod
     def iterItems(root):
@@ -145,28 +136,41 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             yield from recurse(root)
 
     def buildHandlers(self):
-        self.tabWidget.currItemChanged.connect(self.packTreeView.setCurrentIndex)
+        self.mainTabWidget.currItemChanged.connect(self.onCurrTabItemChanged)
+        self.packTreeView.selectionModel().currentChanged.connect(self.onSelectedPackItemChanged)
+        self.packTreeView.doubleClicked.connect(self.onDoubleClicked)
 
-        self.packTreeView.selectionModel().currentChanged.connect(self.tabWidget.openItem)
-        self.packTreeView.wheelClicked.connect(self.tabWidget.openItemInBgTab)
-        self.packTreeView.openInBgTabClicked.connect(self.tabWidget.openItemInBgTab)
-        self.packTreeView.openInNewTabClicked.connect(self.tabWidget.openItemInNewTab)
-        self.packTreeView.openInCurrTabClicked.connect(self.tabWidget.openItem)
-        self.packTreeView.openInNewWindowClicked.connect(self.tabWidget.openItemInNewWindow)
+        self.packTreeView.wheelClicked.connect(self.mainTabWidget.openItemInBgTab)
+        self.packTreeView.openInBgTabClicked.connect(self.mainTabWidget.openItemInBgTab)
+        self.packTreeView.openInNewTabClicked.connect(self.mainTabWidget.openItemInNewTab)
+        self.packTreeView.openInCurrTabClicked.connect(self.mainTabWidget.openItem)
+        self.packTreeView.openInNewWindowClicked.connect(self.mainTabWidget.openItemInNewWindow)
 
-        self.packTreeModel.rowsRemoved.connect(self.tabWidget.removePackTab)
+        self.packTreeModel.rowsRemoved.connect(self.mainTabWidget.removePackTab)
+
+    def onCurrTabItemChanged(self, item: QModelIndex):
+        if self.packTreeView.autoScrollFromSrcBtn.isChecked():
+            self.packTreeView.setCurrentIndex(item)
+
+    def onSelectedPackItemChanged(self, item: QModelIndex):
+        if self.packTreeView.autoScrollToSrcBtn.isChecked():
+            self.mainTabWidget.openItem(item)
+
+    def onDoubleClicked(self, item: QModelIndex):
+        if not self.packTreeView.autoScrollToSrcBtn.isChecked():
+            self.mainTabWidget.openItemInNewTab(item)
 
     def removeTabsOfClosedRows(self, parent: QModelIndex, first: int, last: int):
         for row in range(first, last):
             packItem = self.packTreeModel.index(row, 0, parent)
-            self.tabWidget.removePackTab(packItem)
+            self.mainTabWidget.removePackTab(packItem)
 
     def setFocus2rightTree(self):
-        tab: 'Tab' = self.tabWidget.currentWidget()
+        tab: 'Tab' = self.mainTabWidget.currentWidget()
         if not tab.attrsTreeView.currentIndex().isValid():
             firstItem = tab.attrsTreeView.model().index(0, 0, QModelIndex())
             tab.attrsTreeView.setCurrentIndex(firstItem)
-        self.tabWidget.currentWidget().attrsTreeView.setFocus()
+        self.mainTabWidget.currentWidget().attrsTreeView.setFocus()
 
     def toggleThemeSlot(self):
         action = self.sender()

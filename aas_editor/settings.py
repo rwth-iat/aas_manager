@@ -167,6 +167,8 @@ CLOSE_ICON = qta.icon("mdi.close")
 
 EXPAND_ALL_ICON = qta.icon("mdi.arrow-expand-vertical")
 COLLAPSE_ALL_ICON = qta.icon("mdi.arrow-collapse-vertical")
+AUTOSCROLL_TO_SRC_ICON = qta.icon("mdi.package-down")
+AUTOSCROLL_FROM_SRC_ICON = qta.icon("mdi.package-up")
 
 # CHARS4=[{'offset': (-0.48, 0)}, {'offset': (-0.16, 0)},
 #         {'offset': (0.15, 0)}, {'offset': (0.46, 0)}]

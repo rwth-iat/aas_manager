@@ -43,10 +43,9 @@ class Ui_MainWindow(object):
         self.toolBar.setObjectName("toolBar")
         self.leftVerticalLayout.addWidget(self.toolBar)
 
-        # self.searchField = QtWidgets.QLineEdit(self.leftLayoutWidget)
-        # self.searchField.setBaseSize(QtCore.QSize(256, 25))
-        # self.searchField.setObjectName("searchField")
-        # self.leftVerticalLayout.addWidget(self.searchField)
+        self.packToolBar = QtWidgets.QToolBar(self.leftLayoutWidget)
+        self.packToolBar.setMaximumHeight(30)
+        self.leftVerticalLayout.addWidget(self.packToolBar)
 
         self.packTreeView = PackTreeView(self.leftLayoutWidget)
         self.packTreeView.setFocusPolicy(QtCore.Qt.StrongFocus)
@@ -69,8 +68,8 @@ class Ui_MainWindow(object):
         self.splitterTabWidgets.setFrameShape(QFrame.StyledPanel)
         self.rightVerticalLayout.addWidget(self.splitterTabWidgets)
 
-        self.tabWidget = TabWidget(self.splitterTabWidgets, unclosable=True)
-        self.tabWidget.setObjectName("tabWidget")
+        self.mainTabWidget = TabWidget(self.splitterTabWidgets, unclosable=True)
+        self.mainTabWidget.setObjectName("tabWidget")
         self.gridLayout.addWidget(self.splitter, 1, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
 

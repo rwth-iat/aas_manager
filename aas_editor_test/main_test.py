@@ -27,7 +27,7 @@ class TestUi(TestCase):
 
         self.packTreeView: PackTreeView = self.window.packTreeView
         self.packTreeView.expandAll()
-        self.tab1: Tab = self.window.tabWidget.widget(0)
+        self.tab1: Tab = self.window.mainTabWidget.widget(0)
         self.attrsTreeView = self.tab1.attrsTreeView
 
         self.itemsGenerator = self.packTreeView.model().iterItems()
@@ -57,15 +57,15 @@ class TestUi(TestCase):
     def _testLinks(self):
         currIndex = self.attrsTreeView.currentIndex()
         print(currIndex.data(NAME_ROLE))
-        self.assertTrue(self.window.tabWidget.count() <= 2)
+        self.assertTrue(self.window.mainTabWidget.count() <= 2)
         try:
             try:
-                if self.window.tabWidget.currentIndex() == 1:
+                if self.window.mainTabWidget.currentIndex() == 1:
                     # Tab of link item is opened
                     self.assertTrue(self.packTreeView.currentIndex().isValid())
                     self.assertNotEqual(self.currIterPackIndex.data(NAME_ROLE),
                                         self.packTreeView.currentIndex().data(NAME_ROLE))
-                    self.window.tabWidget.removeTab(1)
+                    self.window.mainTabWidget.removeTab(1)
                     return
                 elif self.attrsTreeView.openInNewTabAct.isEnabled():
                     self.currIterPackIndex = self.packTreeView.currentIndex()

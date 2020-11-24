@@ -2,13 +2,14 @@ from pathlib import Path
 
 from PyQt5.QtCore import QModelIndex, QSettings
 from PyQt5.QtGui import QDropEvent, QDragEnterEvent
-from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog
+from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QToolButton, QToolBar, QHBoxLayout
 from aas.model import Submodel, AssetAdministrationShell, Asset, SubmodelElement
 
 from aas_editor.models import Package, ConceptDescription
 from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ATTRS, SC_SAVE_ALL, SC_OPEN, \
     PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, APPLICATION_NAME, ADD_ICON, OPEN_ICON, SAVE_ICON, \
-    SAVE_ALL_ICON, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, OPEN_DRAG_ICON
+    SAVE_ALL_ICON, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, OPEN_DRAG_ICON, \
+    AUTOSCROLL_TO_SRC_ICON, CASE_ICON, AUTOSCROLL_FROM_SRC_ICON
 from aas_editor.widgets.treeview import TreeView
 
 EMPTY_VIEW_MSG = "Drop AAS files here"
@@ -24,6 +25,15 @@ class PackTreeView(TreeView):
         self.recentFilesSeparator = None
         self.setAcceptDrops(True)
         self.setExpandsOnDoubleClick(False)
+
+        self.autoScrollToSrcBtn = QToolButton(self, icon=AUTOSCROLL_TO_SRC_ICON,
+                                              toolTip="Autoscroll to source",
+                                              statusTip="Autoscroll to source", checkable=True)
+        self.autoScrollToSrcBtn.setAutoRaise(True)
+        self.autoScrollFromSrcBtn = QToolButton(self, icon=AUTOSCROLL_FROM_SRC_ICON,
+                                                toolTip="Autoscroll from source",
+                                                statusTip="Autoscroll from source", checkable=True)
+        self.autoScrollFromSrcBtn.setAutoRaise(True)
 
     # noinspection PyArgumentList
     def initActions(self):
