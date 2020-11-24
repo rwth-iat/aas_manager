@@ -14,6 +14,7 @@ from aas_editor.widgets.treeview import TreeView
 EMPTY_VIEW_MSG = "Drop AAS files here"
 EMPTY_VIEW_ICON = OPEN_DRAG_ICON
 
+
 class PackTreeView(TreeView):
     def __init__(self, parent=None):
         super(PackTreeView, self).__init__(parent,
@@ -21,8 +22,6 @@ class PackTreeView(TreeView):
                                            emptyViewIcon=EMPTY_VIEW_ICON)
         PackTreeView.__instance = self
         self.recentFilesSeparator = None
-        self.initActions()
-        self.initMenu()
         self.setAcceptDrops(True)
 
     # noinspection PyArgumentList

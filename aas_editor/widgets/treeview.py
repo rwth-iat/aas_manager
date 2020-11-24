@@ -15,6 +15,7 @@ from aas_editor.util_classes import DictItem
 EMPTY_VIEW_MSG = "There are no elements in this view"
 EMPTY_VIEW_ICON = None
 
+
 class TreeView(QTreeView):
     wheelClicked = pyqtSignal(['QModelIndex'])
     openInCurrTabClicked = pyqtSignal(['QModelIndex'])
@@ -218,11 +219,11 @@ class TreeView(QTreeView):
     def openMenu(self, point):
         self.attrsMenu.exec_(self.viewport().mapToGlobal(point))
 
-    def mousePressEvent(self, e: QMouseEvent) -> None:
-        if e.button() == Qt.MiddleButton:
-            self.wheelClicked.emit(self.indexAt(e.pos()))
+    def mouseReleaseEvent(self, event: QMouseEvent) -> None:
+        if event.button() == Qt.MiddleButton:
+            self.wheelClicked.emit(self.indexAt(event.pos()))
         else:
-            super(TreeView, self).mousePressEvent(e)
+            super(TreeView, self).mouseReleaseEvent(event)
 
     def mouseDoubleClickEvent(self, e: QMouseEvent) -> None:
         if e.button() == Qt.LeftButton:

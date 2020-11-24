@@ -15,8 +15,6 @@ from aas_editor.widgets.treeview import TreeView
 class AttrsTreeView(TreeView):
     def __init__(self, parent):
         super(AttrsTreeView, self).__init__(parent)
-        self.initMenu()
-        self.buildHandlers()
 
     # noinspection PyUnresolvedReferences
     def newPackItem(self, packItem):
@@ -37,8 +35,7 @@ class AttrsTreeView(TreeView):
         super(AttrsTreeView, self).buildHandlers()
         self.setItemDelegate(EditDelegate())
         self.clicked.connect(self._openRef)
-        self.wheelClicked.connect(
-            lambda refItem: self._openRef(refItem, setCurrent=False))
+        self.wheelClicked.connect(lambda refItem: self._openRef(refItem, setCurrent=False))
 
     # noinspection PyArgumentList
     def initMenu(self):
