@@ -20,7 +20,7 @@ class StandardTable(QAbstractItemModel):
 
     def __init__(self, columns=("Item",), rootItem: StandardItem = None):
         super(StandardTable, self).__init__()
-        self._rootItem = rootItem if rootItem else DetailedInfoItem(None, "") # FIXME
+        self._rootItem = rootItem if rootItem else DetailedInfoItem(None, name="") # FIXME
         self._columns = columns
 
     def index(self, row: int, column: int = 0, parent: QModelIndex = QModelIndex()) -> QModelIndex:
@@ -123,13 +123,13 @@ class StandardTable(QAbstractItemModel):
             item = PackTreeViewItem(obj, parent=self.objByIndex(parent))
         elif isinstance(parentObj, AbstractSet):
             parentObj.add(obj)
-            item = DetailedInfoItem(obj, "", parent=self.objByIndex(parent))
+            item = DetailedInfoItem(obj, name="", parent=self.objByIndex(parent))
         elif isinstance(parentObj, list):
             parentObj.append(obj)
-            item = DetailedInfoItem(obj, "", parent=self.objByIndex(parent))
+            item = DetailedInfoItem(obj, name="", parent=self.objByIndex(parent))
         elif isinstance(parentObj, dict):
             parentObj[obj.key] = obj.value
-            item = DetailedInfoItem(obj, obj.key, parent=self.objByIndex(parent))
+            item = DetailedInfoItem(obj, name=obj.key, parent=self.objByIndex(parent))
         else:
             self.endInsertRows()
             raise AttributeError(

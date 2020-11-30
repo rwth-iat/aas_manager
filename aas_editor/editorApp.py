@@ -21,10 +21,10 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.setupUi(self)
         self.currTheme = DEFAULT_THEME
 
-        self.packTreeModel = PacksTable()
-
-        self.packTreeView.setHeaderHidden(True)
+        self.packTreeModel = PacksTable(COLUMNS_IN_PACKS_TABLE)
         self.packTreeView.setModelWithProxy(self.packTreeModel)
+        self.packTreeView.hideColumn(VALUE_COLUMN)
+
         AddressLine.setModel(self.packTreeView.model())
 
         self.searchBarPack = SearchBar(self.packTreeView, filterColumns=[ATTRIBUTE_COLUMN],

@@ -5,8 +5,8 @@ from aas_editor.util_classes import Package
 
 
 class PackTreeViewItem(StandardItem):
-    def __init__(self, obj, parent=None, objName=None, new=True):
-        super().__init__(obj, objName, parent, new=new)
+    def __init__(self, obj, parent, **kwargs):
+        super().__init__(obj, parent=parent, **kwargs)
         if isinstance(obj, Package):
             self.package = obj
         else:
@@ -21,7 +21,7 @@ class PackTreeViewItem(StandardItem):
         if isinstance(self.obj, Package):
             for attr in ATTRS_IN_PACKAGE_TREEVIEW:
                 # set package objStore as obj, so that delete works
-                PackTreeViewItem(self.obj.objStore, objName=attr, **kwargs)
+                PackTreeViewItem(self.obj.objStore, name=attr, **kwargs)
         elif isIterable(self.obj):
             self._populateIterable(self.obj, **kwargs)
 

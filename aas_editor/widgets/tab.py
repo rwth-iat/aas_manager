@@ -392,7 +392,9 @@ class Tab(QWidget):
         self.packItem = QPersistentModelIndex(packItem.siblingAtColumn(0))
         self.pathLine.setText(getTreeItemPath(self.packItem))
         self.descrLabel.setText("")
-        self.setWindowIcon(self.packItem.data(Qt.DecorationRole))
+        icon = self.packItem.data(Qt.DecorationRole)
+        if icon:
+            self.setWindowIcon(icon)
         self.setWindowTitle(self.packItem.data(Qt.DisplayRole))
         self.attrsTreeView.newPackItem(self.packItem)
         self.attrsTreeView.selectionModel().currentChanged.connect(self.showDetailInfoItemDoc)

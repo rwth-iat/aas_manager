@@ -7,18 +7,23 @@ from PyQt5.QtCore import QObject, QVariant
 from aas_editor.settings import *
 from aas_editor.settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
     VALUE_COLUMN, IS_LINK_ROLE
-from aas_editor.util import getDescription, getAttrDoc, simplifyInfo, getTypeName
+from aas_editor.util import getDescription, getAttrDoc, simplifyInfo, getTypeName, getAttrTypeHint, \
+    isIterableType, issubtype
 from PyQt5.QtCore import Qt
 
 
 class StandardItem(QObject):
-    def __init__(self, obj, name=None, parent=None, new=True):
+    def __init__(self, obj, name=None, parent=None, new=True, typehint=None):
         super().__init__(parent)
         self.obj = obj
         self.objName = name
         self.new = new
         self.changed = False
         self.bg = QBrush(QColor(0, 0, 0, 0))
+        if typehint:
+            self.typehint = typehint
+        else:
+            self.typehint = self.getTypeHint()
 
     @property
     def obj(self):
@@ -69,6 +74,11 @@ class StandardItem(QObject):
                 return self.objectName
             if column == VALUE_COLUMN:
                 return simplifyInfo(self.obj, self.objectName)
+            if column == TYPE_COLUMN:
+                return getTypeName(type(self.obj))
+            if column == TYPE_HINT_COLUMN:
+                return str(self.typehint)
+
         if role == Qt.EditRole:
             if column == ATTRIBUTE_COLUMN:
                 return self.objectName
@@ -122,3 +132,32 @@ class StandardItem(QObject):
             return self.parent().children().index(self)
         else:
             return 0
+
+    def getTypeHint(self):
+        attrType = None
+
+        attr = self.data(NAME_ROLE)
+        try:
+            parentAttr = self.parent().data(NAME_ROLE)
+        except AttributeError:
+            return attrType
+
+        try:
+            attrType = getAttrTypeHint(type(self.parentObj), attr)
+            return attrType
+        except KeyError:
+            print("Typehint could not be gotten")
+
+        if isIterableType(type(self.parentObj)):
+            grandParentObj = self.parent().data(PARENT_OBJ_ROLE)
+            try:
+                parentAttrType = getAttrTypeHint(type(grandParentObj), parentAttr)
+                if issubtype(parentAttrType, dict):
+                    DictItem._field_types["key"] = parentAttrType.__args__[0]
+                    DictItem._field_types["value"] = parentAttrType.__args__[1]
+                    attrType = DictItem
+                else:
+                    attrType = parentAttrType.__args__
+            except KeyError:
+                print("Typehint could not be gotten")
+        return attrType

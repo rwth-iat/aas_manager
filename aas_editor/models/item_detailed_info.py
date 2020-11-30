@@ -9,8 +9,8 @@ from aas_editor.util_classes import Package, DictItem
 
 
 class DetailedInfoItem(StandardItem):
-    def __init__(self, obj, name, parent=None, package: Package = None, new=True):
-        super().__init__(obj, name, parent, new=new)
+    def __init__(self, obj, name, parent=None, package: Package = None, **kwargs):
+        super().__init__(obj, name, parent, **kwargs)
         if parent and not package:
             self.package = parent.data(PACKAGE_ROLE)
         else:

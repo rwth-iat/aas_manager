@@ -16,7 +16,7 @@ class DetailedInfoTable(StandardTable):
         self.packItem = QPersistentModelIndex(packItem)
         self.mainObj = packItem.data(OBJECT_ROLE)
         self.package = packItem.data(PACKAGE_ROLE)
-        root = DetailedInfoItem(self.mainObj, packItem.data(NAME_ROLE),
+        root = DetailedInfoItem(self.mainObj, name=packItem.data(NAME_ROLE),
                                 package=self.package, new=False)
         super(DetailedInfoTable, self).__init__(COLUMNS_IN_DETAILED_INFO, root)
 
