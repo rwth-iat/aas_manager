@@ -10,6 +10,8 @@ from aas.model import *
 #     SubmodelElementCollectionUnordered, SubmodelElementCollectionOrdered, Entity, Capability, \
 #     Property
 
+COMPLEX_ITERABLE_TYPES = (Namespace,)
+
 AAS_CREATOR = "PyI40AAS Testing Framework"
 
 ATTR_COLUMN_WIDTH = 200

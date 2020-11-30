@@ -14,7 +14,7 @@ from aas.model.submodel import *
 
 from aas_editor.settings import DEFAULT_ATTRS_TO_HIDE
 from aas_editor.util import issubtype, inheritors, getTypeName, isoftype, isIterableType, \
-    getReqParams4init, getParams4init
+    getReqParams4init, getParams4init, isSimpleIterableType
 from aas_editor.util_classes import DictItem
 from aas_editor.widgets.combobox import CompleterComboBox
 
@@ -71,7 +71,7 @@ def getInputWidget(objType, rmDefParams=True, title="", attrsToHide: dict = None
     if isabstract(objType) and not isIterableType(objType):
         objTypes = inheritors(objType)
         widget = TypeOptionObjGroupBox(objTypes, **kwargs)
-    elif isIterableType(objType):
+    elif isSimpleIterableType(objType):
         widget = IterableGroupBox(objType, **kwargs)
     elif issubtype(objType, Union):
         objTypes = objType.__args__

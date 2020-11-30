@@ -229,7 +229,7 @@ class TreeView(BasicTreeView):
 
         # if no req. attrs, paste data without dialog
         if not reqAttrsDict:
-            if isIterable(index.parent().data(OBJECT_ROLE)) and not isIterable(obj2paste):
+            if isIterable(index.parent().data(OBJECT_ROLE)) and not isIterable(obj2paste): # FIXME
                 self.model().setData(index.parent(), obj2paste, ADD_ITEM_ROLE)
             else:
                 self.model().setData(index, obj2paste, Qt.EditRole)

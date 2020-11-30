@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QApplication
 
 from aas_editor.util_classes import DictItem
 from aas_editor.settings import ATTR_ORDER, PREFERED_LANGS_ORDER, ATTRS_NOT_IN_DETAILED_INFO, \
-    ATTR_INFOS_TO_SIMPLIFY, NAME_ROLE, OBJECT_ROLE, PARENT_OBJ_ROLE
+    ATTR_INFOS_TO_SIMPLIFY, NAME_ROLE, OBJECT_ROLE, PARENT_OBJ_ROLE, COMPLEX_ITERABLE_TYPES
 
 
 def nameIsSpecial(method_name):
@@ -145,7 +145,7 @@ def getReqParams4init(objType: Type, rmDefParams: bool=True,
     return params
 
 
-def delAASParents(aasObj):
+def delAASParents(aasObj): #TODO change if aas changes
     params, defaults = getParams4init(type(aasObj))
 
     if hasattr(aasObj, "parent"):
@@ -302,6 +302,17 @@ def _isoftype(obj, typ) -> bool:
 #     if hasattr(typ, "_gorg"):
 #         return issubclass(typ._gorg, types)
 #     return issubclass(typ, types)
+
+
+def isSimpleIterableType(objType):
+    if not issubtype(objType, COMPLEX_ITERABLE_TYPES):
+        return isIterableType(objType)
+    else:
+        return False
+
+
+def isSimpleIterable(obj):
+    return isSimpleIterableType(type(obj))
 
 
 def isIterableType(objType):
