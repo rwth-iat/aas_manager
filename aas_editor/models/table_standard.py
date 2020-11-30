@@ -108,6 +108,7 @@ class StandardTable(QAbstractItemModel):
 
     def addItem(self, obj: Union[Package, SubmodelElement, Iterable],
                 parent: QModelIndex = QModelIndex()):
+        parent = parent.siblingAtColumn(0)
         parentObj = self.objByIndex(parent).data(OBJECT_ROLE)
 
         self.beginInsertRows(parent, self.rowCount(parent), self.rowCount(parent))
