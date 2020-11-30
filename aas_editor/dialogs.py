@@ -11,7 +11,7 @@ from aas.model.concept import *
 from aas.model.provider import *
 from aas.model.submodel import *
 
-
+from aas_editor.defaults import DEFAULTS
 from aas_editor.settings import DEFAULT_ATTRS_TO_HIDE
 from aas_editor.util import issubtype, inheritors, getTypeName, isoftype, isIterableType, \
     getReqParams4init, getParams4init, isSimpleIterableType
@@ -199,7 +199,7 @@ class ObjGroupBox(GroupBox):
         if reqAttrsDict:
             for attr, attrType in reqAttrsDict.items():
                 # TODO delete when right _ will be deleted in aas models
-                val = getattr(self.objVal, attr.rstrip("_"), None)
+                val = getattr(self.objVal, attr.rstrip("_"), DEFAULTS.get(objType, {}).get(attr))
                 widgetLayout = self._getInputWidgetLayout(attr, attrType, val)
                 self.layout().addLayout(widgetLayout)
         # else: # TODO check if it works ok

@@ -2,12 +2,10 @@ Add properties isNew, isEdited to mark new or edited items (green, blue)
 finish changed and new properties
 Refactor open/save/close for handling pack as QModelIndex not Package
 
-Add typehint to model item (for copy/paste)
 Red color if value doesn't fit to TypeHint
 
 paste/isPasteOk/pasteHandler
 
-implement defaultobj for typeoptionbox
 cancel last action
 choose from for references
 
@@ -23,6 +21,9 @@ Repository with scratch packages to copy from
 integrate validator
 
 Done:
+Add typehint to model item (for copy/paste)
+Default values
+implement defaultobj for typeoptionbox
 Speed view tab
 populate SubmodelCollection elements in left tree
 Active address
