@@ -175,11 +175,11 @@ AUTOSCROLL_FROM_SRC_ICON = qta.icon("mdi.package-up")
 
 # CHARS4=[{'offset': (-0.48, 0)}, {'offset': (-0.16, 0)},
 #         {'offset': (0.15, 0)}, {'offset': (0.46, 0)}]
-CHARS1_3=[{'offset': (-0.48, 0)}, {'offset': (-0.13, 0)},
-         {'offset': (0.18, 0)}, {'offset': (0.48, 0)}]
+CHARS1_3 = [{'offset': (-0.48, 0)}, {'offset': (-0.13, 0)},
+            {'offset': (0.18, 0)}, {'offset': (0.48, 0)}]
 # CHARS3=[{'offset': (-0.3, 0)}, {'offset': (0, 0)}, {'offset': (0.3, 0)}]
-CHARS3=[{'offset': (-0.36, 0)}, {'offset': (0, 0)}, {'offset': (0.36, 0)}]
-CHARS4=[{'offset': (-0.48, 0)}, {'offset': (-0.15, 0)},
+CHARS3 = [{'offset': (-0.36, 0)}, {'offset': (0, 0)}, {'offset': (0.36, 0)}]
+CHARS4 = [{'offset': (-0.48, 0)}, {'offset': (-0.15, 0)},
         {'offset': (0.15, 0)}, {'offset': (0.48, 0)}]
 CHARS1_3=CHARS4
 
