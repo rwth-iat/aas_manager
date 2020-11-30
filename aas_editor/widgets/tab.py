@@ -389,12 +389,12 @@ class Tab(QWidget):
             self._openItem(QModelIndex(nextItem))
 
     def _openItem(self, packItem: QModelIndex):
-        self.packItem = QPersistentModelIndex(packItem)
-        self.pathLine.setText(getTreeItemPath(packItem))
+        self.packItem = QPersistentModelIndex(packItem.siblingAtColumn(0))
+        self.pathLine.setText(getTreeItemPath(self.packItem))
         self.descrLabel.setText("")
         self.setWindowIcon(self.packItem.data(Qt.DecorationRole))
         self.setWindowTitle(self.packItem.data(Qt.DisplayRole))
-        self.attrsTreeView.newPackItem(packItem)
+        self.attrsTreeView.newPackItem(self.packItem)
         self.attrsTreeView.selectionModel().currentChanged.connect(self.showDetailInfoItemDoc)
         self.currItemChanged.emit(QModelIndex(self.packItem))
 
