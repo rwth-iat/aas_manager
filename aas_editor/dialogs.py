@@ -60,31 +60,34 @@ def getInputWidget(objType, rmDefParams=True, title="", attrsToHide: dict = None
         raise TypeError("Given object type does not match to real object type:", objType, objVal)
 
     attrsToHide = attrsToHide if attrsToHide else DEFAULT_ATTRS_TO_HIDE.copy()
+    kwargs = {
+        "rmDefParams": rmDefParams,
+        "title": title,
+        "attrsToHide": attrsToHide,
+        "parent": parent,
+        "objVal": objVal,
+    }
+
     if isabstract(objType) and not isIterableType(objType):
         objTypes = inheritors(objType)
-        widget = TypeOptionObjGroupBox(objTypes, attrsToHide=attrsToHide,
-                                       rmDefParams=rmDefParams, title=title,
-                                       parent=parent, objVal=objVal)
+        widget = TypeOptionObjGroupBox(objTypes, **kwargs)
     elif isIterableType(objType):
-        widget = IterableGroupBox(objType, rmDefParams=rmDefParams, parent=parent, objVal=objVal)
+        widget = IterableGroupBox(objType, **kwargs)
     elif issubtype(objType, Union):
         objTypes = objType.__args__
-        widget = TypeOptionObjGroupBox(objTypes, attrsToHide=attrsToHide, rmDefParams=rmDefParams,
-                                       title=title, parent=parent)
+        widget = TypeOptionObjGroupBox(objTypes, **kwargs)
     elif issubtype(objType, AASReference):
         try:
             if objType.__args__:
                 type_ = objType.__args__[0]
-                attrsToHide["type_"] = type_
+                kwargs["attrsToHide"]["type_"] = type_ # TODO delete if aas changes
         except AttributeError:
             pass
-        widget = ObjGroupBox(objType, attrsToHide=attrsToHide, rmDefParams=rmDefParams,
-                             title=title, parent=parent, objVal=objVal)
-    elif issubtype(objType, (bool, str, int, float, Enum, Type)):
-        widget = StandardInputWidget(objType, parent=parent, objVal=objVal)
+        widget = ObjGroupBox(objType, **kwargs)
+    elif issubtype(objType, StandardInputWidget.types):
+        widget = StandardInputWidget(objType, **kwargs)
     else:
-        widget = ObjGroupBox(objType, rmDefParams=rmDefParams, attrsToHide=attrsToHide,
-                             title=title, parent=parent, objVal=objVal)
+        widget = ObjGroupBox(objType, **kwargs)
     return widget
 
 
@@ -302,12 +305,14 @@ class IterableGroupBox(GroupBox):
 
 
 class StandardInputWidget(QtWidgets.QWidget):
-    def __init__(self, attrType, parent=None, objVal=None):
+    types = (bool, str, int, float, Enum, Type)
+
+    def __init__(self, attrType, parent=None, objVal=None, **kwargs):
         super(StandardInputWidget, self).__init__(parent)
         self.attrType = attrType
         self.widget = self._initWidget(objVal)
         widgetLayout = QtWidgets.QVBoxLayout(self)
-        widgetLayout.setContentsMargins(1,1,1,1)
+        widgetLayout.setContentsMargins(1, 1, 1, 1)
         widgetLayout.addWidget(self.widget)
         self.setLayout(widgetLayout)
 
