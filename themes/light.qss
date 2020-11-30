@@ -888,6 +888,7 @@ QTabBar::tab:top
     color: #31363B;
     border: 0.2ex transparent black;
     border-left: 0.2ex solid #BAB9B8;
+    border-right: 0.2ex solid #BAB9B8;
     border-top: 0.2ex solid #BAB9B8;
     background-color: #EFF0F1;
     padding: 0.5ex;
@@ -903,13 +904,8 @@ QTabBar::tab:top:selected
 
 QTabBar::tab:top:!selected
 {
-    color: #31363B;
     background-color: #D9D8D7;
-    border: 0.2ex transparent black;
-    border-left: 0.2ex solid #BAB9B8;
     border-bottom: 1.5ex solid #D9D8D7;
-    border-top-left-radius: 0.2ex;
-    border-top-right-radius: 0.2ex;
 }
 
 QTabBar::tab:top:!selected:hover
