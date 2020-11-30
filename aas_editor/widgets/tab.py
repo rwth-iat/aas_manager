@@ -278,8 +278,8 @@ class TabWidget(QTabWidget):
         return tabIndex
 
     def newTab(self, widget: QWidget, afterCurrent: bool = False) -> int:
-        icon = widget.windowIcon()
-        label = widget.windowTitle()
+        icon = widget.windowIcon() if widget.windowIcon() else QIcon()
+        label = widget.windowTitle() if widget.windowTitle() else ""
         if afterCurrent:
             tabIndex = self.insertTab(self.currentIndex()+1, widget, icon, label)
         else:

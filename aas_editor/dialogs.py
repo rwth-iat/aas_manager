@@ -35,6 +35,7 @@ class AddDialog(QDialog):
         layout.setContentsMargins(2,2,2,2)
         layout.addWidget(self.buttonBox)
         self.setLayout(layout)
+        self.setMinimumWidth(400)
 
     def getObj2add(self):
         pass
