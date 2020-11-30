@@ -59,7 +59,7 @@ class StandardTable(QAbstractItemModel):
         if not index.isValid():
             return Qt.NoItemFlags
 
-        if (index.column() == ATTRIBUTE_COLUMN
+        if (index.column() != VALUE_COLUMN
             and not isinstance(index.data(OBJECT_ROLE), DictItem)) \
                 or self.hasChildren(index):
             return Qt.ItemIsEnabled | Qt.ItemIsSelectable

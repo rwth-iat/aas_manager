@@ -138,9 +138,6 @@ ICON_DEFAULTS = {'scale_factor': 1.2,
                                         255),
                  'color_disabled': QColor(LIGHT_BLUE.red(), LIGHT_BLUE.green(), LIGHT_BLUE.blue(),
                                           50), }
-ELEM_ICON_DEFAULTS = {'scale_factor': 1.6,
-                      'color': QColor(LIGHT_BLUE.red(), LIGHT_BLUE.green(), LIGHT_BLUE.blue(), 255)}
-
 qta.set_defaults(**ICON_DEFAULTS)
 
 EXIT_ICON = qta.icon("mdi.exit-to-app")
@@ -181,9 +178,9 @@ AUTOSCROLL_FROM_SRC_ICON = qta.icon("mdi.package-up")
 CHARS1_3=[{'offset': (-0.48, 0)}, {'offset': (-0.13, 0)},
          {'offset': (0.18, 0)}, {'offset': (0.48, 0)}]
 # CHARS3=[{'offset': (-0.3, 0)}, {'offset': (0, 0)}, {'offset': (0.3, 0)}]
-CHARS3=[{'offset': (-0.48, 0)}, {'offset': (0, 0)}, {'offset': (0.48, 0)}]
-CHARS4=[{'offset': (-0.54, 0)}, {'offset': (-0.18, 0)},
-        {'offset': (0.18, 0)}, {'offset': (0.54, 0)}]
+CHARS3=[{'offset': (-0.36, 0)}, {'offset': (0, 0)}, {'offset': (0.36, 0)}]
+CHARS4=[{'offset': (-0.48, 0)}, {'offset': (-0.15, 0)},
+        {'offset': (0.15, 0)}, {'offset': (0.48, 0)}]
 CHARS1_3=CHARS4
 
 
@@ -200,22 +197,25 @@ def getCharsIcon(chars: str):
     return qta.icon(*args, options=options)
 
 # element icons
+ELEM_ICON_DEFAULTS = {'scale_factor': 1.6,
+                      'color': QColor(LIGHT_BLUE.red(), LIGHT_BLUE.green(), LIGHT_BLUE.blue(), 255),
+                      }
 qta.set_defaults(**ELEM_ICON_DEFAULTS)
 TYPE_ICON_DICT = {
-    AssetAdministrationShell: getCharsIcon("shel"),  # qta.icon("mdi.wallet") #  mdi.tab mdi.shredder folder-outline wallet
-    Asset: getCharsIcon("asst"),  # qta.icon("mdi.mini-sd") # mdi.toy-brick
-    ConceptDescription: getCharsIcon("conc"),  # qta.icon("mdi.text-box")
+    AssetAdministrationShell: getCharsIcon("shl"),  # qta.icon("mdi.wallet") #  mdi.tab mdi.shredder folder-outline wallet
+    Asset: getCharsIcon("ast"),  # qta.icon("mdi.mini-sd") # mdi.toy-brick
+    ConceptDescription: getCharsIcon("cnc"),  # qta.icon("mdi.text-box")
     Submodel: getCharsIcon("sub"),
 
-    Property: getCharsIcon("prop"),
+    Property: getCharsIcon("prp"),
     Entity: getCharsIcon("ent"),
     Capability: getCharsIcon("cap"),
     Event: getCharsIcon("evnt"),  # qta.icon("mdi.timeline-clock")  # mdi.timer mdi.bell
-    Operation: getCharsIcon("oper"),  # qta.icon("mdi.cog")
+    Operation: getCharsIcon("opr"),  # qta.icon("mdi.cog")
     RelationshipElement: getCharsIcon("rel"),
-    AnnotatedRelationshipElement: getCharsIcon("arel"), # qta.icon("mdi.arrow-left-right")  # mdi.relation-one-to-one
-    SubmodelElementCollectionUnordered: getCharsIcon("ucol"),
-    SubmodelElementCollectionOrdered: getCharsIcon("ocol"),  # qta.icon("mdi.package")
+    AnnotatedRelationshipElement: getCharsIcon("rel"), # qta.icon("mdi.arrow-left-right")  # mdi.relation-one-to-one
+    SubmodelElementCollectionUnordered: getCharsIcon("col"),
+    SubmodelElementCollectionOrdered: getCharsIcon("col"),  # qta.icon("mdi.package")
 
     Range: getCharsIcon("rnge"),
     Blob: getCharsIcon("blob"),
