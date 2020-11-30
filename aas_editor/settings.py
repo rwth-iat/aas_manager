@@ -93,9 +93,12 @@ ADD_ITEM_ROLE = 1011
 CLEAR_ROW_ROLE = 1012
 DATA_CHANGE_FAILED_ROLE = 1013
 
-COLUMNS_IN_DETAILED_INFO = ("attribute", "value")
+COLUMNS_IN_DETAILED_INFO = ("attribute", "value", "type", "typehint")
+COLUMNS_IN_PACKS_TABLE = ("attribute", "value", "type")
 ATTRIBUTE_COLUMN = 0
 VALUE_COLUMN = 1
+TYPE_COLUMN = 2
+TYPE_HINT_COLUMN = 3
 
 NOT_GIVEN = "NotGivenValueAASEditor"
 
