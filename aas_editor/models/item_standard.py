@@ -8,7 +8,7 @@ from aas_editor.settings import *
 from aas_editor.settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
     VALUE_COLUMN, IS_LINK_ROLE
 from aas_editor.util import getDescription, getAttrDoc, simplifyInfo, getTypeName, getAttrTypeHint, \
-    isIterableType, issubtype
+    isIterableType, issubtype, getTypeHintName
 from PyQt5.QtCore import Qt
 
 
@@ -79,7 +79,7 @@ class StandardItem(QObject):
             if column == TYPE_COLUMN:
                 return getTypeName(type(self.obj))
             if column == TYPE_HINT_COLUMN:
-                return str(self.typehint)
+                return getTypeHintName(self.typehint)
 
         if role == Qt.EditRole:
             if column == ATTRIBUTE_COLUMN:
