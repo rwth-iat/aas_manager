@@ -92,6 +92,7 @@ OPENED_FILES_ROLE = 1009
 ADD_ITEM_ROLE = 1011
 CLEAR_ROW_ROLE = 1012
 DATA_CHANGE_FAILED_ROLE = 1013
+TYPE_HINT_ROLE = 1014
 
 COLUMNS_IN_DETAILED_INFO = ("attribute", "value", "type", "typehint")
 COLUMNS_IN_PACKS_TABLE = ("attribute", "value", "type")

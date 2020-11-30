@@ -8,8 +8,8 @@ from PyQt5.QtWidgets import QAction, QAbstractScrollArea, QAbstractItemView
 from aas_editor.models import DetailedInfoTable
 from aas_editor.edit_delegate import EditDelegate
 from aas_editor.settings import ATTR_COLUMN_WIDTH, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
-    VALUE_COLUMN, LINKED_ITEM_ROLE, IS_LINK_ROLE, PARENT_OBJ_ROLE
-from aas_editor.util import getAttrTypeHint, isoftype, getDefaultVal, getTypeHint
+    VALUE_COLUMN, LINKED_ITEM_ROLE, IS_LINK_ROLE, PARENT_OBJ_ROLE, TYPE_HINT_ROLE
+from aas_editor.util import getAttrTypeHint, isoftype, getDefaultVal
 from aas_editor.widgets.treeview import TreeView
 
 
@@ -118,7 +118,7 @@ class AttrsTreeView(TreeView):
         else:
             obj2paste = self.treeObjClipboard[0]
 
-        attrType = getTypeHint(index)
+        attrType = index.data(TYPE_HINT_ROLE)
         attrName = index.data(NAME_ROLE)
 
         try:

@@ -55,6 +55,8 @@ class StandardItem(QObject):
             return self.objectName
         if role == OBJECT_ROLE:
             return self.obj
+        if role == TYPE_HINT_ROLE:
+            return self.typehint
         if role == PARENT_OBJ_ROLE:
             return self.parentObj
         if role == PACKAGE_ROLE:

@@ -334,33 +334,6 @@ def getAttrTypeHint(objType, attr):
     return typeHint
 
 
-def getTypeHint(index: QModelIndex):
-    attr = index.data(NAME_ROLE)
-    parentObj = index.data(PARENT_OBJ_ROLE)
-    parentAttr = index.parent().data(NAME_ROLE)
-
-    if index.parent().isValid() and isIterableType(type(parentObj)):
-        grandParentObj = index.parent().data(PARENT_OBJ_ROLE)
-        try:
-            parentAttrType = getAttrTypeHint(type(grandParentObj), parentAttr)
-            if issubtype(parentAttrType, dict):
-                DictItem._field_types["key"] = parentAttrType.__args__[0]
-                DictItem._field_types["value"] = parentAttrType.__args__[1]
-                attrType = DictItem
-            else:
-                attrType = parentAttrType.__args__
-        except KeyError:
-            print("Typehint could not be gotten")
-            attrType = type(index.data(OBJECT_ROLE))
-    else:
-        try:
-            attrType = getAttrTypeHint(type(parentObj), attr)
-        except KeyError:
-            print("Typehint could not be gotten")
-            attrType = type(index.data(OBJECT_ROLE))
-    return attrType
-
-
 def getAttrDoc(attr: str, doc: str) -> str:
     """
     Returns doc of specified parameter
