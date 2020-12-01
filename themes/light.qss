@@ -1475,7 +1475,7 @@ QStatusBar::item
 
 QSplitter::handle
 {
-    border: 0.2ex dashed #BAB9B8;
+    border: none;
 }
 
 QSplitter::handle:hover

@@ -1503,7 +1503,7 @@ QFrame[width="3"]
 
 QSplitter::handle
 {
-    border: 0.2ex dashed #76797c;
+    border: none;
 }
 
 QSplitter::handle:hover
