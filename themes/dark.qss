@@ -832,7 +832,6 @@ QLabel
 QTabWidget::pane
 {
     padding: 0.5ex;
-    margin: 0.2ex;
 }
 
 QTabWidget::pane:top
