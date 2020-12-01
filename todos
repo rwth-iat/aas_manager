@@ -19,6 +19,7 @@ find usages func
 Autocomplete (id_shorts)
 Repository with scratch packages to copy from
 integrate validator
+handle files
 
 Done:
 Add typehint to model item (for copy/paste)

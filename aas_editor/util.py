@@ -141,8 +141,8 @@ def getParams4init(objType: Type):
     return params, defaults
 
 
-def getReqParams4init(objType: Type, rmDefParams: bool=True,
-                      attrsToHide: dict = None) -> Dict[str, Type]:
+def getReqParams4init(objType: Type, rmDefParams=True,
+                      attrsToHide: dict = None, delOptional=True) -> Dict[str, Type]:
     """Return required params for init with their type"""
     params, defaults = getParams4init(objType)
 
@@ -150,11 +150,12 @@ def getReqParams4init(objType: Type, rmDefParams: bool=True,
         for i in range(len(defaults)):
             params.popitem()
 
-    for param in params:
-        if isOptional(params[param]):
-            args = list(params[param].__args__)
-            args.remove(None.__class__)
-            params[param] = args[0]
+    if delOptional:
+        for param in params:
+            if isOptional(params[param]):
+                args = list(params[param].__args__)
+                args.remove(None.__class__)
+                params[param] = args[0]
 
     if attrsToHide:
         for attr in attrsToHide:
@@ -344,8 +345,8 @@ def isIterable(obj):
     return isIterableType(type(obj))
 
 
-def getAttrTypeHint(objType, attr):
-    params = getReqParams4init(objType, rmDefParams=False)
+def getAttrTypeHint(objType, attr, delOptional=True):
+    params = getReqParams4init(objType, rmDefParams=False, delOptional=delOptional)
     try:
         typeHint = params[attr]
     except KeyError:

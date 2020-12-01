@@ -145,7 +145,7 @@ class StandardItem(QObject):
             return attrType
 
         try:
-            attrType = getAttrTypeHint(type(self.parentObj), attr)
+            attrType = getAttrTypeHint(type(self.parentObj), attr, delOptional=False)
             return attrType
         except KeyError:
             print("Typehint could not be gotten")
@@ -153,13 +153,16 @@ class StandardItem(QObject):
         if isIterableType(type(self.parentObj)):
             grandParentObj = self.parent().data(PARENT_OBJ_ROLE)
             try:
-                parentAttrType = getAttrTypeHint(type(grandParentObj), parentAttr)
+                parentAttrType = getAttrTypeHint(type(grandParentObj), parentAttr, delOptional=True)
                 if issubtype(parentAttrType, dict):
                     DictItem._field_types["key"] = parentAttrType.__args__[0]
                     DictItem._field_types["value"] = parentAttrType.__args__[1]
                     attrType = DictItem
                 else:
-                    attrType = parentAttrType.__args__
+                    attrTypes = parentAttrType.__args__
+                    if len(attrTypes) > 1:
+                        raise KeyError("Typehint of iterable has more then one attribute:", attrTypes)
+                    attrType = attrTypes[0]
             except KeyError:
                 print("Typehint could not be gotten")
         return attrType
