@@ -333,7 +333,7 @@ QAbstractItemView
     alternate-background-color: #EFF0F1;
     color: #31363B;
     border: 0.2ex solid 3A3939;
-    border-radius: 0.2ex;
+    border-radius: 1ex;
 }
 
 QWidget:focus,
@@ -356,14 +356,14 @@ QLineEdit
     padding: 0.5ex;
     border-style: solid;
     border: 0.2ex solid #FCFCFC;
-    border-radius: 0.2ex;
+    border-radius: 1ex;
     color: #31363B;
 }
 
 QGroupBox
 {
     border: 0.2ex solid rgba(186, 185, 184, 0.5);
-    border-radius: 0.2ex;
+    border-radius: 1ex;
     padding-top: 1ex;
     margin-top: 1ex;
 }
@@ -379,7 +379,7 @@ QGroupBox::title
 
 QAbstractScrollArea
 {
-    border-radius: 0.2ex;
+    border-radius: 1ex;
     border: 0.2ex solid #BAB9B8;
     background-color: transparent;
 }
@@ -532,7 +532,7 @@ QPlainTextEdit
 {
     background-color: #EFF0F1;
     color: #31363B;
-    border-radius: 0.2ex;
+    border-radius: 1ex;
     border: 0.2ex solid #BAB9B8;
 }
 
@@ -642,7 +642,7 @@ QPushButton
     border-color: rgba(186, 185, 184, 0.5);
     border-style: solid;
     padding: 1.5ex;
-    border-radius: 0.2ex;
+    border-radius: 1ex;
     outline: none;
 }
 
@@ -656,7 +656,7 @@ QPushButton:disabled
     padding-bottom: 0.5ex;
     padding-left: 1ex;
     padding-right: 1ex;
-    border-radius: 0.2ex;
+    border-radius: 1ex;
     color: #b4b4b4;
 }
 
@@ -671,7 +671,7 @@ QComboBox
     selection-background-color: #33A4DF;
     border-style: solid;
     border: 0.2ex solid #FCFCFC;
-    border-radius: 0.2ex;
+    border-radius: 1ex;
     padding: 0.5ex;
     min-width: 7.5ex;
 }
@@ -716,7 +716,7 @@ QComboBox:on
 QComboBox QAbstractItemView
 {
     background-color: #FCFCFC;
-    border-radius: 0.2ex;
+    border-radius: 1ex;
     border: 0.2ex solid #BAB9B8;
     selection-background-color: #33A4DF;
 }
@@ -756,7 +756,7 @@ QAbstractSpinBox
     border: 0.2ex solid #BAB9B8;
     background-color: #D9D8D7;
     color: #31363B;
-    border-radius: 0.2ex;
+    border-radius: 1ex;
     min-width: 7.5ex;
 }
 
@@ -1113,7 +1113,7 @@ QDockWidget::close-button,
 QDockWidget::float-button
 {
     border: 0.2ex solid transparent;
-    border-radius: 0.2ex;
+    border-radius: 1ex;
     background: transparent;
 }
 
@@ -1203,7 +1203,7 @@ QSlider::groove:horizontal
     height: 0.4ex;
     background: #9CA0A4;
     margin: 0px;
-    border-radius: 0.2ex;
+    border-radius: 1ex;
 }
 
 QSlider::handle:horizontal
@@ -1265,7 +1265,7 @@ QToolButton
 {
     background-color: transparent;
     border: none;
-    border-radius: 0.2ex;
+    border-radius: 1ex;
     margin: 0.3ex;
     padding: 0.5ex;
 }
@@ -1283,23 +1283,21 @@ QToolButton[popupMode="2"] /* only for InstantPopup */
 QToolButton::menu-indicator
 {
     border-image: url(themes/light/down_arrow.svg);
-    top: -0.7ex; left: -0.2ex; /* shift it a bit */
-    width = 0.9ex;
-    height = 0.6ex;
+    top: -0.7ex;
+    left: -0.2ex; /* shift it a bit */
 }
 
 QToolButton::menu-arrow
 {
-    border-image: url(themes/light/down_arrow.svg);
-    width = 0.9ex;
-    height = 0.6ex;
+    border-image: none;
+    image: url(themes/light/down_arrow.svg);
 }
 
 QToolButton:hover,
 QToolButton::menu-button:hover
 {
-    background-color: transparent;
-    border: 0.2ex solid #33A4DF;
+    background-color: rgba(61, 173, 232, 0.1);
+    border: none;
 }
 
 QToolButton:checked,
