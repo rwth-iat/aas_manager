@@ -123,7 +123,7 @@ class TreeView(BasicTreeView):
                                           statusTip="Open selected item in new window",
                                           enabled=False)
 
-        self.zoomInAct = QAction(qta.icon("mdi.magnify-plus"), "Zoom in", self,
+        self.zoomInAct = QAction(ZOOM_IN_ICON, "Zoom in", self,
                                  shortcut=SC_ZOOM_IN,
                                  shortcutContext=Qt.WidgetShortcut,
                                  statusTip="Zoom in",

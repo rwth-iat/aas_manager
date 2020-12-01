@@ -18,11 +18,9 @@ class TestUi(TestCase):
     def setUp(self) -> None:
         self.app = QApplication(sys.argv)
 
-        obj_store = create_full_example()
-
         self.window = EditorApp()
         from aas_editor.models import Package
-        self.window.packTreeModel.addItem(Package("aas_files/TestPackage.aasx"))
+        self.window.packTreeView.openPack("aas_files/TestPackage.aasx")
         self.window.show()
 
         self.packTreeView: PackTreeView = self.window.packTreeView
@@ -117,6 +115,7 @@ class TestUi(TestCase):
 
     def _nextItemInLeftTree(self):
         pack_index = next(self.itemsGenerator)
+        print(pack_index.data(NAME_ROLE))
         self.packTreeView.setCurrentIndex(pack_index)
         self.attrsGenerator = self.attrsTreeView.model().iterItems()
 

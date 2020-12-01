@@ -29,10 +29,12 @@ class PackTreeView(TreeView):
         self.autoScrollToSrcBtn = QToolButton(self, icon=AUTOSCROLL_TO_SRC_ICON,
                                               toolTip="Autoscroll to source",
                                               statusTip="Autoscroll to source", checkable=True)
+        self.autoScrollToSrcBtn.toggle()
         self.autoScrollToSrcBtn.setAutoRaise(True)
         self.autoScrollFromSrcBtn = QToolButton(self, icon=AUTOSCROLL_FROM_SRC_ICON,
                                                 toolTip="Autoscroll from source",
                                                 statusTip="Autoscroll from source", checkable=True)
+        self.autoScrollFromSrcBtn.toggle()
         self.autoScrollFromSrcBtn.setAutoRaise(True)
 
     # noinspection PyArgumentList
