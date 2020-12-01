@@ -317,10 +317,10 @@ class Tab(QWidget):
         self.icon = QIcon()
         self.initActions()
 
-        self.toolBar = QToolBar(self)
-        self.toolBar.setMaximumHeight(30)
-        self.toolBar.addAction(self.backAct)
-        self.toolBar.addAction(self.forwardAct)
+        self.pathToolBar = QToolBar(self)
+        self.pathToolBar.setMaximumHeight(30)
+        self.pathToolBar.addAction(self.backAct)
+        self.pathToolBar.addAction(self.forwardAct)
 
         self.pathLine: AddressLine = AddressLine(self)
 
@@ -331,6 +331,19 @@ class Tab(QWidget):
         self.attrsTreeView = AttrsTreeView(self)
         self.attrsTreeView.setFrameShape(QFrame.NoFrame)
 
+        self.toolBar = QToolBar(self)
+        self.toolBar.setMaximumHeight(30)
+        self.toolBar.addAction(self.attrsTreeView.zoomInAct)
+        self.toolBar.addAction(self.attrsTreeView.zoomOutAct)
+        self.toolBar.addAction(self.attrsTreeView.collapseAllAct)
+        self.toolBar.addAction(self.attrsTreeView.expandAllAct)
+        self.toolBar.addSeparator()
+        self.toolBar.addAction(self.attrsTreeView.copyAct)
+        self.toolBar.addAction(self.attrsTreeView.cutAct)
+        self.toolBar.addAction(self.attrsTreeView.pasteAct)
+        self.toolBar.addAction(self.attrsTreeView.delClearAct)
+        self.toolBar.addAction(self.attrsTreeView.editAct)
+        self.toolBar.addAction(self.attrsTreeView.addAct)
         self.searchBar = SearchBar(self.attrsTreeView, parent=self,
                                    filterColumns=[ATTRIBUTE_COLUMN, VALUE_COLUMN], closable=True)
         self.searchBar.hide()
@@ -413,13 +426,21 @@ class Tab(QWidget):
     def _initLayout(self):
         layout = QVBoxLayout(self)
         layout.setObjectName("tabLayout")
+
         pathWidget = QWidget(self)
         pathLayout = QHBoxLayout(pathWidget)
         pathLayout.setContentsMargins(0, 0, 0, 0)
-        pathLayout.addWidget(self.toolBar)
+        pathLayout.addWidget(self.pathToolBar)
         pathLayout.addWidget(self.pathLine)
+
+        toolBarWidget = QWidget(self)
+        toolBarLayout = QHBoxLayout(toolBarWidget)
+        toolBarLayout.setContentsMargins(0, 0, 0, 0)
+        toolBarLayout.addWidget(self.toolBar)
+        toolBarLayout.addWidget(self.searchBar)
+
         layout.addWidget(pathWidget)
-        layout.addWidget(self.searchBar)
+        layout.addWidget(toolBarWidget)
         layout.addWidget(self.attrsTreeView)
         layout.addWidget(self.descrLabel)
         layout.setSpacing(2)

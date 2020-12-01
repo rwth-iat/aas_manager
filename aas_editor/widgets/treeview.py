@@ -178,6 +178,7 @@ class TreeView(BasicTreeView):
         model.rowsInserted.connect(lambda parent, first, last:
                                    self.setCurrentIndex(parent.child(last, 0)))
         self.selectionModel().currentChanged.connect(self.updateMenu)
+        self.setCurrentIndex(self.rootIndex())
 
     def zoomIn(self):
         self.zoom(delta=+2)
@@ -186,18 +187,21 @@ class TreeView(BasicTreeView):
         self.zoom(delta=-2)
 
     def zoom(self, pointSize: int = DEFAULT_FONT.pointSize(), delta: int = 0):
-        font = QFont(self.model().data(QModelIndex(), Qt.FontRole))
-        if delta > 0:
-            fontSize = min(font.pointSize() + 2, MAX_FONT_SIZE)
-        elif delta < 0:
-            fontSize = max(font.pointSize() - 2, MIN_FONT_SIZE)
-        elif MIN_FONT_SIZE < pointSize < MAX_FONT_SIZE:
-            fontSize = pointSize
+        if self.model():
+            font = QFont(self.model().data(QModelIndex(), Qt.FontRole))
+            if delta > 0:
+                fontSize = min(font.pointSize() + 2, MAX_FONT_SIZE)
+            elif delta < 0:
+                fontSize = max(font.pointSize() - 2, MIN_FONT_SIZE)
+            elif MIN_FONT_SIZE < pointSize < MAX_FONT_SIZE:
+                fontSize = pointSize
+            else:
+                return
+            font.setPointSize(fontSize)
+            self.model().setData(QModelIndex(), font, Qt.FontRole)
+            self.setFont(font)
         else:
-            return
-        font.setPointSize(fontSize)
-        self.model().setData(QModelIndex(), font, Qt.FontRole)
-        self.setFont(font)
+            print("zoom pressed with no model")
 
     def _delClearHandler(self):
         index = self.currentIndex()

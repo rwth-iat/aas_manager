@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QAction, QAbstractScrollArea, QAbstractItemView
 from aas_editor.models import DetailedInfoTable
 from aas_editor.edit_delegate import EditDelegate
 from aas_editor.settings import ATTR_COLUMN_WIDTH, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
-    VALUE_COLUMN, LINKED_ITEM_ROLE, IS_LINK_ROLE, PARENT_OBJ_ROLE, TYPE_HINT_ROLE
+    VALUE_COLUMN, LINKED_ITEM_ROLE, IS_LINK_ROLE, PARENT_OBJ_ROLE, TYPE_HINT_ROLE, EDIT_ICON
 from aas_editor.util import getAttrTypeHint, isoftype, getDefaultVal
 from aas_editor.widgets.treeview import TreeView
 
@@ -50,6 +50,7 @@ class AttrsTreeView(TreeView):
         self.addAction(self.editCreateAct)
 
         self.editAct = QAction("&Edit", self,
+                               icon=EDIT_ICON,
                                statusTip="Edit selected item",
                                shortcut=Qt.Key_Enter,
                                triggered=lambda: self.edit(self.currentIndex()),
@@ -113,7 +114,7 @@ class AttrsTreeView(TreeView):
             self.openInNewWindowAct.setVisible(False)
 
     def _isPasteOk(self, index: QModelIndex) -> bool:
-        if not self.treeObjClipboard:
+        if not self.treeObjClipboard or not index.isValid():
             return False
         else:
             obj2paste = self.treeObjClipboard[0]
@@ -125,7 +126,7 @@ class AttrsTreeView(TreeView):
             if isoftype(obj2paste, attrType) or obj2paste == getDefaultVal(attrName, attrType):
                 return True
             return False
-        except AttributeError:
+        except (AttributeError, TypeError):
             return False
 
     def _addHandler(self, objVal=None):

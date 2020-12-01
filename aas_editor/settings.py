@@ -151,6 +151,7 @@ PASTE_ICON = qta.icon("mdi.content-paste")
 CUT_ICON = qta.icon("mdi.content-cut")
 ADD_ICON = qta.icon("mdi.plus-circle")
 DEL_ICON = qta.icon("mdi.delete")
+EDIT_ICON = qta.icon("mdi.playlist-edit")
 
 FORWARD_ICON = qta.icon("fa5s.arrow-circle-right")
 BACK_ICON = qta.icon("fa5s.arrow-circle-left")
