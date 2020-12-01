@@ -909,9 +909,9 @@ QTabBar::tab:top:!selected
 
 QTabBar::tab:top:!selected:hover
 {
-    background-color: rgba(61, 173, 232, 0.1);
-    border: 0.2ex rgba(61, 173, 232, 0.1);
-    border-bottom: 1.5ex solid rgba(61, 173, 232, 0.1);
+    background-color: rgba(61, 173, 232, 0.2);
+    border: 0.2ex rgba(61, 173, 232, 0.2);
+    border-bottom: 1.5ex solid rgba(61, 173, 232, 0.2);
     border-left: 0.2ex solid #BAB9B8;
 }
 
@@ -965,15 +965,15 @@ QTabBar::tab:bottom:first:!selected
 
 QTabBar::tab:bottom:!selected:hover
 {
-    background-color: rgba(61, 173, 232, 0.1);
-    border: 0.2ex rgba(61, 173, 232, 0.1);
+    background-color: rgba(61, 173, 232, 0.2);
+    border: 0.2ex rgba(61, 173, 232, 0.2);
     border-left: 0.2ex solid #BAB9B8;
 }
 
 QTabBar::tab:bottom:!selected:first:hover
 {
-    background-color: rgba(61, 173, 232, 0.1);
-    border: 0.2ex rgba(61, 173, 232, 0.1);
+    background-color: rgba(61, 173, 232, 0.2);
+    border: 0.2ex rgba(61, 173, 232, 0.2);
 }
 
 /* LEFT TABS */
@@ -1017,15 +1017,15 @@ QTabBar::tab:left:!selected
 
 QTabBar::tab:left:!selected:hover
 {
-    background-color: rgba(61, 173, 232, 0.1);
-    border: 0.2ex rgba(61, 173, 232, 0.1);
+    background-color: rgba(61, 173, 232, 0.2);
+    border: 0.2ex rgba(61, 173, 232, 0.2);
     border-top: 0.2ex solid #BAB9B8;
 }
 
 QTabBar::tab:left:!selected:first:hover
 {
-    background-color: rgba(61, 173, 232, 0.1);
-    border: 0.2ex rgba(61, 173, 232, 0.1);
+    background-color: rgba(61, 173, 232, 0.2);
+    border: 0.2ex rgba(61, 173, 232, 0.2);
 }
 
 /* RIGHT TABS */
@@ -1069,15 +1069,15 @@ QTabBar::tab:right:!selected
 
 QTabBar::tab:right:!selected:hover
 {
-    background-color: rgba(61, 173, 232, 0.1);
-    border: 0.2ex rgba(61, 173, 232, 0.1);
+    background-color: rgba(61, 173, 232, 0.2);
+    border: 0.2ex rgba(61, 173, 232, 0.2);
     border-top: 0.2ex solid #BAB9B8;
 }
 
 QTabBar::tab:right:!selected:first:hover
 {
-    background-color: rgba(61, 173, 232, 0.1);
-    border: 0.2ex rgba(61, 173, 232, 0.1);
+    background-color: rgba(61, 173, 232, 0.2);
+    border: 0.2ex rgba(61, 173, 232, 0.2);
 }
 
 QTabBar QToolButton::right-arrow:enabled
@@ -1190,7 +1190,7 @@ QTableView::item:!selected:hover,
 QListView::item:!selected:hover,
 QTreeView::item:!selected:hover
 {
-    background-color: rgba(61, 173, 232, 0.1);
+    background-color: rgba(61, 173, 232, 0.2);
     outline: 0;
     color: #31363B;
     padding: 0.3ex;
@@ -1295,7 +1295,7 @@ QToolButton::menu-arrow
 QToolButton:hover,
 QToolButton::menu-button:hover
 {
-    background-color: rgba(61, 173, 232, 0.1);
+    background-color: rgba(61, 173, 232, 0.2);
     border: none;
 }
 
@@ -1303,7 +1303,7 @@ QToolButton:checked,
 QToolButton:pressed,
 QToolButton::menu-button:pressed
 {
-    border: 0.2ex solid #47b8fc;
+    background-color: rgba(61, 173, 232, 0.2);
     padding: 0.5ex;
 }
 
