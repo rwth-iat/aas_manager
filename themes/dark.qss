@@ -1342,7 +1342,6 @@ QToolButton:checked,
 QToolButton:pressed,
 QToolButton::menu-button:pressed
 {
-    background-color: #3daee9;
     border: 0.2ex solid #3daee9;
     padding: 0.5ex;
 }
