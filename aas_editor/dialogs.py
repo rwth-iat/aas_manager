@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIntValidator, QDoubleValidator, QPaintEvent
 from PyQt5.QtWidgets import QLineEdit, QLabel, QPushButton, QDialog, QDialogButtonBox, \
-    QGroupBox, QCheckBox, QWidget
+    QGroupBox, QCheckBox, QWidget, QCompleter, QComboBox
 
 from aas.model.base import *
 from aas.model.concept import *
@@ -333,7 +333,6 @@ class StandardInputWidget(QtWidgets.QWidget):
             widget.setValidator(QDoubleValidator())
             widget.setText(objVal) if objVal is not None else ""
         elif issubtype(self.attrType, (Enum, Type)):
-            widget = CompleterComboBox(self)
             if issubtype(self.attrType, Enum):
                 # add enum types to types
                 types = [member for member in self.attrType]
@@ -346,6 +345,11 @@ class StandardInputWidget(QtWidgets.QWidget):
                 else:
                     # add Union Type attrs to types
                     types = union.__args__
+
+            if len(types) <= 6:
+                widget = QComboBox(self)
+            else:
+                widget = CompleterComboBox(self)
 
             for typ in types:
                 widget.addItem(getTypeName(typ), typ)
