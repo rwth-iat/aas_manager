@@ -318,7 +318,7 @@ class Tab(QWidget):
         self.initActions()
 
         self.pathToolBar = QToolBar(self)
-        self.pathToolBar.setMaximumHeight(30)
+        self.pathToolBar.setMaximumHeight(TOOLBARS_HEIGHT)
         self.pathToolBar.addAction(self.backAct)
         self.pathToolBar.addAction(self.forwardAct)
 
@@ -332,7 +332,7 @@ class Tab(QWidget):
         self.attrsTreeView.setFrameShape(QFrame.NoFrame)
 
         self.toolBar = QToolBar(self)
-        self.toolBar.setMaximumHeight(30)
+        self.toolBar.setMaximumHeight(TOOLBARS_HEIGHT)
         self.toolBar.addAction(self.attrsTreeView.zoomInAct)
         self.toolBar.addAction(self.attrsTreeView.zoomOutAct)
         self.toolBar.addAction(self.attrsTreeView.collapseAllAct)

@@ -88,7 +88,7 @@ class AttrsTreeView(TreeView):
             self.addAct.setEnabled(False)
 
         # update open actions
-        indexIsLink = index.data(IS_LINK_ROLE)
+        indexIsLink = bool(index.data(IS_LINK_ROLE))
         self.openInCurrTabAct.setEnabled(indexIsLink)
         self.openInBackgroundAct.setEnabled(indexIsLink)
         self.openInNewTabAct.setEnabled(indexIsLink)

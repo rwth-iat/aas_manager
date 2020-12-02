@@ -11,7 +11,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QFrame
 
-from aas_editor.settings import APPLICATION_NAME
+from aas_editor.settings import APPLICATION_NAME, TOOLBARS_HEIGHT
 from aas_editor.widgets.treeview_pack import PackTreeView
 from aas_editor.widgets.tab import TabWidget
 
@@ -36,15 +36,16 @@ class Ui_MainWindow(object):
         self.leftVerticalLayout = QtWidgets.QVBoxLayout(self.leftLayoutWidget)
         self.leftVerticalLayout.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
         self.leftVerticalLayout.setContentsMargins(0, 0, 0, 0)
+        self.leftVerticalLayout.setSpacing(5)
         self.leftVerticalLayout.setObjectName("verticalLayout")
 
         self.toolBar = QtWidgets.QToolBar(self.leftLayoutWidget)
-        self.toolBar.setMaximumHeight(30)
+        self.toolBar.setMaximumHeight(TOOLBARS_HEIGHT)
         self.toolBar.setObjectName("toolBar")
         self.leftVerticalLayout.addWidget(self.toolBar)
 
         self.packToolBar = QtWidgets.QToolBar(self.leftLayoutWidget)
-        self.packToolBar.setMaximumHeight(30)
+        self.packToolBar.setMaximumHeight(TOOLBARS_HEIGHT)
         self.leftVerticalLayout.addWidget(self.packToolBar)
 
         self.packTreeView = PackTreeView(self.leftLayoutWidget)

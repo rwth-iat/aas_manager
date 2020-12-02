@@ -14,6 +14,7 @@ COMPLEX_ITERABLE_TYPES = (Namespace,)
 
 AAS_CREATOR = "PyI40AAS Testing Framework"
 
+TOOLBARS_HEIGHT = 30
 ATTR_COLUMN_WIDTH = 200
 
 DEFAULT_MAINWINDOW_SIZE = QSize(1194, 624)
@@ -141,10 +142,12 @@ ICON_DEFAULTS = {'scale_factor': 1.2,
 qta.set_defaults(**ICON_DEFAULTS)
 
 EXIT_ICON = qta.icon("mdi.exit-to-app")
+NEW_PACK_ICON = qta.icon("mdi.folder-plus")
 OPEN_ICON = qta.icon("mdi.folder-open")
 OPEN_DRAG_ICON = qta.icon("mdi.open-in-app")
 SAVE_ICON = qta.icon("mdi.content-save")
 SAVE_ALL_ICON = qta.icon("mdi.content-save-all")
+SETTINGS_ICON = qta.icon("mdi.cog")
 
 COPY_ICON = qta.icon("mdi.content-copy")
 PASTE_ICON = qta.icon("mdi.content-paste")

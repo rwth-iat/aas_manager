@@ -114,13 +114,26 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.toolBar.addAction(self.packTreeView.saveAllAct)
         self.toolBar.addAction(self.packTreeView.saveAct)
         self.toolBar.addAction(self.packTreeView.openPackAct)
-        self.toolBar.addSeparator()
-        self.toolBar.addAction(self.packTreeView.addAct)
+        self.toolBar.addAction(self.packTreeView.newPackAct)
 
+        settingsBtn = QToolButton(icon=SETTINGS_ICON)
+        settingsBtn.setPopupMode(QToolButton.InstantPopup)
+        menuSettings = QMenu("Settings")
+        menuSettings.addAction(self.packTreeView.zoomInAct)
+        menuSettings.addAction(self.packTreeView.zoomOutAct)
+        menuSettings.addAction(self.packTreeView.autoScrollToSrcAct)
+        menuSettings.addAction(self.packTreeView.autoScrollFromSrcAct)
+        settingsBtn.setMenu(menuSettings)
+
+        self.packToolBar.addWidget(settingsBtn)
         self.packToolBar.addAction(self.packTreeView.collapseAllAct)
         self.packToolBar.addAction(self.packTreeView.expandAllAct)
-        self.packToolBar.addWidget(self.packTreeView.autoScrollFromSrcBtn)
-        self.packToolBar.addWidget(self.packTreeView.autoScrollToSrcBtn)
+        self.packToolBar.addSeparator()
+        self.packToolBar.addAction(self.packTreeView.copyAct)
+        self.packToolBar.addAction(self.packTreeView.cutAct)
+        self.packToolBar.addAction(self.packTreeView.pasteAct)
+        self.packToolBar.addAction(self.packTreeView.delClearAct)
+        self.packToolBar.addAction(self.packTreeView.addAct)
 
     @staticmethod
     def iterItems(root):
@@ -149,15 +162,15 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.packTreeModel.rowsRemoved.connect(self.mainTabWidget.removePackTab)
 
     def onCurrTabItemChanged(self, item: QModelIndex):
-        if self.packTreeView.autoScrollFromSrcBtn.isChecked():
+        if self.packTreeView.autoScrollFromSrcAct.isChecked():
             self.packTreeView.setCurrentIndex(item)
 
     def onSelectedPackItemChanged(self, item: QModelIndex):
-        if self.packTreeView.autoScrollToSrcBtn.isChecked():
+        if self.packTreeView.autoScrollToSrcAct.isChecked():
             self.mainTabWidget.openItem(item)
 
     def onDoubleClicked(self, item: QModelIndex):
-        if not self.packTreeView.autoScrollToSrcBtn.isChecked():
+        if not self.packTreeView.autoScrollToSrcAct.isChecked():
             self.mainTabWidget.openItemInNewTab(item)
 
     def removeTabsOfClosedRows(self, parent: QModelIndex, first: int, last: int):

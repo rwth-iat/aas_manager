@@ -9,7 +9,7 @@ from aas_editor.models import Package, ConceptDescription
 from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ATTRS, SC_SAVE_ALL, SC_OPEN, \
     PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, APPLICATION_NAME, ADD_ICON, OPEN_ICON, SAVE_ICON, \
     SAVE_ALL_ICON, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, OPEN_DRAG_ICON, \
-    AUTOSCROLL_TO_SRC_ICON, CASE_ICON, AUTOSCROLL_FROM_SRC_ICON
+    AUTOSCROLL_TO_SRC_ICON, CASE_ICON, AUTOSCROLL_FROM_SRC_ICON, NEW_PACK_ICON
 from aas_editor.widgets.treeview import TreeView
 
 EMPTY_VIEW_MSG = "Drop AAS files here"
@@ -26,24 +26,13 @@ class PackTreeView(TreeView):
         self.setAcceptDrops(True)
         self.setExpandsOnDoubleClick(False)
 
-        self.autoScrollToSrcBtn = QToolButton(self, icon=AUTOSCROLL_TO_SRC_ICON,
-                                              toolTip="Autoscroll to source",
-                                              statusTip="Autoscroll to source", checkable=True)
-        self.autoScrollToSrcBtn.toggle()
-        self.autoScrollToSrcBtn.setAutoRaise(True)
-        self.autoScrollFromSrcBtn = QToolButton(self, icon=AUTOSCROLL_FROM_SRC_ICON,
-                                                toolTip="Autoscroll from source",
-                                                statusTip="Autoscroll from source", checkable=True)
-        self.autoScrollFromSrcBtn.toggle()
-        self.autoScrollFromSrcBtn.setAutoRaise(True)
-
     # noinspection PyArgumentList
     def initActions(self):
         super(PackTreeView, self).initActions()
         self.addAct.setText("Add package")
         self.addAct.setEnabled(True)
 
-        self.newPackAct = QAction(ADD_ICON, "&New AAS file", self,
+        self.newPackAct = QAction(NEW_PACK_ICON, "&New AAS file", self,
                                   statusTip="Create new AAS file",
                                   triggered=self.newPackWithDialog,
                                   enabled=True)
@@ -88,6 +77,19 @@ class PackTreeView(TreeView):
                                    statusTip="Close all files",
                                    triggered=self.closeAllFilesWithDialog,
                                    enabled=False)
+
+        self.autoScrollToSrcAct = QAction("Autoscroll to source", self,
+                                          # icon=AUTOSCROLL_TO_SRC_ICON,
+                                          toolTip="Autoscroll to source",
+                                          statusTip="Autoscroll to source",
+                                          checkable=True)
+        self.autoScrollToSrcAct.toggle()
+        self.autoScrollFromSrcAct = QAction("Autoscroll from source", self,
+                                            # icon=AUTOSCROLL_FROM_SRC_ICON,
+                                            toolTip="Autoscroll from source",
+                                            statusTip="Autoscroll from source",
+                                            checkable=True)
+        self.autoScrollFromSrcAct.toggle()
 
     # noinspection PyUnresolvedReferences
     def initMenu(self):
