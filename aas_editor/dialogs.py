@@ -54,7 +54,7 @@ def checkIfAccepted(func):
 
 
 def getInputWidget(objType, rmDefParams=True, title="", attrsToHide: dict = None,
-                   parent=None, objVal=None) -> QtWidgets.QWidget:
+                   parent=None, objVal=None, **kwargs) -> QtWidgets.QWidget:
     print(objType, objType.__str__, objType.__repr__, objType.__class__)
 
     if objVal and not isoftype(objVal, objType):
@@ -67,6 +67,7 @@ def getInputWidget(objType, rmDefParams=True, title="", attrsToHide: dict = None
         "attrsToHide": attrsToHide,
         "parent": parent,
         "objVal": objVal,
+        **kwargs
     }
 
     if isabstract(objType) and not isIterableType(objType):
@@ -143,7 +144,7 @@ class GroupBoxType(Enum):
 class GroupBox(QGroupBox):
     """Groupbox which also can be closable groupbox"""
     def __init__(self, objType, parent=None, title="", attrsToHide: dict = None, rmDefParams=True,
-                 objVal=None):
+                 objVal=None, **kwargs):
         super().__init__(parent)
         if title:
             self.setTitle(title)
@@ -207,10 +208,10 @@ class ObjGroupBox(GroupBox):
         #     widgetLayout = self._getInputWidgetLayout(objName, objType, rmDefParams, objVal)
         #     self.layout().addLayout(widgetLayout)
 
-    def _getInputWidgetLayout(self, attr: str, attrType, val) -> QtWidgets.QHBoxLayout:
+    def _getInputWidgetLayout(self, attr: str, attrType, val, **kwargs) -> QtWidgets.QHBoxLayout:
         print(f"Getting widget for attr: {attr} of type: {attrType}")
         layout = QtWidgets.QHBoxLayout()
-        widget = getInputWidget(attrType, rmDefParams=self.rmDefParams, objVal=val)
+        widget = getInputWidget(attrType, rmDefParams=self.rmDefParams, objVal=val, **kwargs)
         self.attrWidgetDict[attr] = widget
         if isinstance(widget, QGroupBox):
             widget.setTitle(f"{attr}:")
@@ -311,13 +312,13 @@ class StandardInputWidget(QtWidgets.QWidget):
     def __init__(self, attrType, parent=None, objVal=None, **kwargs):
         super(StandardInputWidget, self).__init__(parent)
         self.attrType = attrType
-        self.widget = self._initWidget(objVal)
+        self.widget = self._initWidget(objVal, **kwargs)
         widgetLayout = QtWidgets.QVBoxLayout(self)
         widgetLayout.setContentsMargins(1, 1, 1, 1)
         widgetLayout.addWidget(self.widget)
         self.setLayout(widgetLayout)
 
-    def _initWidget(self, objVal):
+    def _initWidget(self, objVal, **kwargs):
         if issubtype(self.attrType, bool):
             widget = QCheckBox(self)
             widget.setChecked(bool(objVal))
