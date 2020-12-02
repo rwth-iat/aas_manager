@@ -218,8 +218,8 @@ TYPE_ICON_DICT = {
     SubmodelElementCollectionUnordered: getCharsIcon("col"),
     SubmodelElementCollectionOrdered: getCharsIcon("col"),  # qta.icon("mdi.package")
 
-    Range: getCharsIcon("rnge"),
-    Blob: getCharsIcon("blob"),
+    Range: getCharsIcon("rng"),
+    Blob: getCharsIcon("blb"),
     File: getCharsIcon("file"),
     ReferenceElement: getCharsIcon("ref"),
     DataElement: getCharsIcon("data"),
