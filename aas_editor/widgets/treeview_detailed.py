@@ -67,7 +67,9 @@ class AttrsTreeView(TreeView):
         self.openInNewWindowAct.triggered.connect(
             lambda: self._openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), newWindow=True))
 
-    def updateMenu(self, index: QModelIndex):
+    def updateActions(self, index: QModelIndex):
+        super(AttrsTreeView, self).updateActions(index)
+
         # update edit action
         if index.flags() & Qt.ItemIsEditable:
             self.editAct.setEnabled(True)
@@ -85,33 +87,17 @@ class AttrsTreeView(TreeView):
         else:
             self.addAct.setEnabled(False)
 
-        # update paste action
-        if self._isPasteOk(index):
-            self.pasteAct.setEnabled(True)
-        else:
-            self.pasteAct.setEnabled(False)
-
         # update open actions
-        if index.data(IS_LINK_ROLE):
-            self.openInCurrTabAct.setEnabled(True)
-            self.openInBackgroundAct.setEnabled(True)
-            self.openInNewTabAct.setEnabled(True)
-            self.openInNewWindowAct.setEnabled(True)
+        indexIsLink = index.data(IS_LINK_ROLE)
+        self.openInCurrTabAct.setEnabled(indexIsLink)
+        self.openInBackgroundAct.setEnabled(indexIsLink)
+        self.openInNewTabAct.setEnabled(indexIsLink)
+        self.openInNewWindowAct.setEnabled(indexIsLink)
 
-            self.openInCurrTabAct.setVisible(True)
-            self.openInBackgroundAct.setVisible(True)
-            self.openInNewTabAct.setVisible(True)
-            self.openInNewWindowAct.setVisible(True)
-        else:
-            self.openInCurrTabAct.setEnabled(False)
-            self.openInBackgroundAct.setEnabled(False)
-            self.openInNewTabAct.setEnabled(False)
-            self.openInNewWindowAct.setEnabled(False)
-
-            self.openInCurrTabAct.setVisible(False)
-            self.openInBackgroundAct.setVisible(False)
-            self.openInNewTabAct.setVisible(False)
-            self.openInNewWindowAct.setVisible(False)
+        self.openInCurrTabAct.setVisible(indexIsLink)
+        self.openInBackgroundAct.setVisible(indexIsLink)
+        self.openInNewTabAct.setVisible(indexIsLink)
+        self.openInNewWindowAct.setVisible(indexIsLink)
 
     def _isPasteOk(self, index: QModelIndex) -> bool:
         if not self.treeObjClipboard or not index.isValid():

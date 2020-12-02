@@ -32,7 +32,7 @@ class TreeView(BasicTreeView):
                                shortcut=SC_COPY,
                                shortcutContext=Qt.WidgetWithChildrenShortcut,
                                triggered=self._copyHandler,
-                               enabled=True)
+                               enabled=False)
         self.addAction(self.copyAct)
 
         self.pasteAct = QAction(PASTE_ICON, "Paste", self,
@@ -40,7 +40,7 @@ class TreeView(BasicTreeView):
                                 shortcut=SC_PASTE,
                                 shortcutContext=Qt.WidgetWithChildrenShortcut,
                                 triggered=self._pasteHandler,
-                                enabled=True)
+                                enabled=False)
         self.addAction(self.pasteAct)
 
         self.cutAct = QAction(CUT_ICON, "Cut", self,
@@ -48,7 +48,7 @@ class TreeView(BasicTreeView):
                               shortcut=SC_CUT,
                               shortcutContext=Qt.WidgetWithChildrenShortcut,
                               triggered=self._cutHandler,
-                              enabled=True)
+                              enabled=False)
         self.addAction(self.cutAct)
 
         self.addAct = QAction(ADD_ICON, "&Add", self,
@@ -64,7 +64,7 @@ class TreeView(BasicTreeView):
                                    shortcut=SC_DELETE,
                                    shortcutContext=Qt.WidgetWithChildrenShortcut,
                                    triggered=self._delClearHandler,
-                                   enabled=True)
+                                   enabled=False)
         self.addAction(self.delClearAct)
 
         self.collapseAct = QAction("Collapse", self,
@@ -166,8 +166,20 @@ class TreeView(BasicTreeView):
     def openMenu(self, point):
         self.attrsMenu.exec_(self.viewport().mapToGlobal(point))
 
-    def updateMenu(self, index: QModelIndex):
-        pass
+    def updateActions(self, index: QModelIndex):
+        # update paste action
+        self.pasteAct.setEnabled(self._isPasteOk(index))
+
+        # update copy/cut/delete actions
+        if index.isValid():
+            self.copyAct.setEnabled(True)
+            self.cutAct.setEnabled(True)
+            self.delClearAct.setEnabled(True)
+        else:
+            self.copyAct.setEnabled(False)
+            self.cutAct.setEnabled(False)
+            self.delClearAct.setEnabled(False)
+
 
     def buildHandlers(self):
         self.customContextMenuRequested.connect(self.openMenu)
@@ -177,7 +189,7 @@ class TreeView(BasicTreeView):
     def onModelChanged(self, model):
         model.rowsInserted.connect(lambda parent, first, last:
                                    self.setCurrentIndex(parent.child(last, 0)))
-        self.selectionModel().currentChanged.connect(self.updateMenu)
+        self.selectionModel().currentChanged.connect(self.updateActions)
         self.setCurrentIndex(self.rootIndex())
 
     def zoomIn(self):

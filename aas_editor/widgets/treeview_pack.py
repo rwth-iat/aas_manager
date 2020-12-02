@@ -109,7 +109,9 @@ class PackTreeView(TreeView):
         self.openInNewWindowAct.triggered.connect(
             lambda: self.openInNewWindowClicked.emit(self.currentIndex()))
 
-    def updateMenu(self, index: QModelIndex):
+    def updateActions(self, index: QModelIndex):
+        super(PackTreeView, self).updateActions(index)
+
         if index.isValid():
             self.openInCurrTabAct.setEnabled(True)
             self.openInNewTabAct.setEnabled(True)
@@ -128,9 +130,6 @@ class PackTreeView(TreeView):
         # update add action
         obj = index.data(OBJECT_ROLE)
         name = index.data(NAME_ROLE)
-
-        # update paste action
-        self.pasteAct.setEnabled(self._isPasteOk(index))
 
         self.addAct.setEnabled(True)
         if isinstance(obj, Package) or not index.isValid():
