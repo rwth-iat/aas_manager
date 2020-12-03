@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import QWidget, QLineEdit, QLabel, QMessageBox, QGridLayout
 from aas_editor.settings import *
 from aas_editor.widgets.address_line import AddressLine
 from aas_editor.widgets.search import SearchBar
+from aas_editor.widgets.toolBar import ToolBar
 from aas_editor.widgets.treeview_detailed import AttrsTreeView
 from aas_editor.util import getTreeItemPath
 
@@ -317,8 +318,7 @@ class Tab(QWidget):
         self.icon = QIcon()
         self.initActions()
 
-        self.pathToolBar = QToolBar(self)
-        self.pathToolBar.setMaximumHeight(TOOLBARS_HEIGHT)
+        self.pathToolBar = ToolBar(self)
         self.pathToolBar.addAction(self.backAct)
         self.pathToolBar.addAction(self.forwardAct)
 
@@ -331,8 +331,7 @@ class Tab(QWidget):
         self.attrsTreeView = AttrsTreeView(self)
         self.attrsTreeView.setFrameShape(QFrame.NoFrame)
 
-        self.toolBar = QToolBar(self)
-        self.toolBar.setMaximumHeight(TOOLBARS_HEIGHT)
+        self.toolBar = ToolBar(self)
         self.toolBar.addAction(self.attrsTreeView.zoomInAct)
         self.toolBar.addAction(self.attrsTreeView.zoomOutAct)
         self.toolBar.addAction(self.attrsTreeView.collapseAllAct)

@@ -6,11 +6,12 @@ from PyQt5.QtWidgets import QLineEdit, QWidget, QHBoxLayout, QToolButton, QActio
 
 from aas_editor.models.search_proxy_model import SearchProxyModel
 from aas_editor.settings import REGEX_ICON, CASE_ICON, NEXT_ICON, PREV_ICON, FILTER_ICON, \
-    NAME_ROLE, ATTRIBUTE_COLUMN, CLOSE_ICON
+    NAME_ROLE, CLOSE_ICON
 from aas_editor.util import absRow
+from aas_editor.widgets.toolBar import ToolBar
 
 
-class SearchBar(QWidget):
+class SearchBar(ToolBar):
     def __init__(self, view: QTreeView, filterColumns: List[int], parent: QWidget, closable=False):
         super(SearchBar, self).__init__(parent)
         self.view = view
@@ -122,4 +123,6 @@ class SearchBar(QWidget):
         pathLayout.addWidget(self.caseBtn)
         pathLayout.addWidget(self.regexBtn)
         pathLayout.addWidget(self.closeBtn)
-        self.setLayout(pathLayout)
+        searchBtns = QWidget(self)
+        searchBtns.setLayout(pathLayout)
+        self.addWidget(searchBtns)
