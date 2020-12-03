@@ -122,3 +122,4 @@ class SearchBar(QWidget):
         pathLayout.addWidget(self.caseBtn)
         pathLayout.addWidget(self.regexBtn)
         pathLayout.addWidget(self.closeBtn)
+        self.setLayout(pathLayout)
