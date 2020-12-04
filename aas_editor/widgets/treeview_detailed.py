@@ -6,7 +6,7 @@ from PyQt5.QtGui import QMouseEvent, QKeyEvent
 from PyQt5.QtWidgets import QAction, QAbstractScrollArea, QAbstractItemView
 
 from aas_editor.models import DetailedInfoTable
-from aas_editor.edit_delegate import EditDelegate
+from aas_editor.delegates import EditDelegate
 from aas_editor.settings import ATTR_COLUMN_WIDTH, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
     VALUE_COLUMN, LINKED_ITEM_ROLE, IS_LINK_ROLE, PARENT_OBJ_ROLE, TYPE_HINT_ROLE, EDIT_ICON
 from aas_editor.util import getAttrTypeHint, isoftype, getDefaultVal

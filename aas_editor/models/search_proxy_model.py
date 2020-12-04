@@ -15,13 +15,13 @@ class SearchProxyModel(QSortFilterProxyModel):
         else:
             return super(SearchProxyModel, self).match(start, role, value, hits, flags)
 
-    def setHighLightFilter(self, pattern: str,
-                           filterColumns: List[int],
-                           regExp: bool = True,
-                           filter: bool = False,
-                           matchCase: bool = False) -> List[QPersistentModelIndex]:
+    def search(self, pattern: str,
+               filterColumns: List[int],
+               regExp: bool = True,
+               filter: bool = False,
+               matchCase: bool = False) -> List[QPersistentModelIndex]:
         for index in self.iterItems():
-            self.setData(index, QBrush(QColor(0,0,0,0)), Qt.BackgroundRole)
+            self.setData(index, QBrush(QColor(0, 0, 0, 0)), Qt.BackgroundRole)
 
         foundItems = []
         if not pattern:
@@ -40,15 +40,16 @@ class SearchProxyModel(QSortFilterProxyModel):
         for column in filterColumns:
             self.setFilterKeyColumn(column)
 
-            # paint Background of found items
+            # save found items in column
             for index in self.iterItems():
-                self.setData(index, QBrush(HIGHLIGHT_YELLOW), Qt.BackgroundRole)
-                foundItems.append(self.mapToSource(index))
+                srcIndex = self.mapToSource(index.siblingAtColumn(column))
+                foundItems.append(QPersistentModelIndex(srcIndex))
 
         if not filter:
             # show all items
             self.setFilterRegExp("")
-        foundItems = [QPersistentModelIndex(self.mapFromSource(i)) for i in foundItems]
+
+        foundItems = [QPersistentModelIndex(self.mapFromSource(QModelIndex(i))) for i in foundItems]
         return foundItems
 
     def iterItems(self, parent: QModelIndex = QModelIndex()) -> QModelIndex:

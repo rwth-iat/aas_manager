@@ -2,11 +2,12 @@ from typing import List
 
 from PyQt5.QtCore import QModelIndex, QPersistentModelIndex
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QBrush
 from PyQt5.QtWidgets import QLineEdit, QWidget, QHBoxLayout, QToolButton, QAction, QTreeView
 
 from aas_editor.models.search_proxy_model import SearchProxyModel
 from aas_editor.settings import REGEX_ICON, CASE_ICON, NEXT_ICON, PREV_ICON, FILTER_ICON, \
-    NAME_ROLE, CLOSE_ICON
+    NAME_ROLE, CLOSE_ICON, HIGHLIGHT_YELLOW
 from aas_editor.util import absRow
 from aas_editor.widgets.toolBar import ToolBar
 
@@ -70,13 +71,16 @@ class SearchBar(ToolBar):
         self.model.setRecursiveFilteringEnabled(True)
 
     def search(self):
-        self.foundItems = self.model.setHighLightFilter(self.searchLine.text(),
-                                                        filterColumns=self.filterColumns,
-                                                        regExp=self.regexBtn.isChecked(),
-                                                        filter=self.filterBtn.isChecked(),
-                                                        matchCase=self.caseBtn.isChecked())
+        self.view.itemDelegate().clearBgColors()
+        self.foundItems = self.model.search(self.searchLine.text(),
+                                            filterColumns=self.filterColumns,
+                                            regExp=self.regexBtn.isChecked(),
+                                            filter=self.filterBtn.isChecked(),
+                                            matchCase=self.caseBtn.isChecked())
         if self.foundItems:
             self.view.setCurrentIndex(QModelIndex(self.foundItems[0]))
+            for item in self.foundItems:
+                self.view.itemDelegate().setBgColor(QModelIndex(item), QBrush(HIGHLIGHT_YELLOW))
 
     def next(self):
         items = [QModelIndex(i) for i in self.foundItems]
