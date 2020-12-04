@@ -652,10 +652,6 @@ QPushButton:disabled
     border-width: 0.2ex;
     border-color: #b4b4b4;
     border-style: solid;
-    padding-top: 0.5ex;
-    padding-bottom: 0.5ex;
-    padding-left: 1ex;
-    padding-right: 1ex;
     border-radius: 1ex;
     color: #b4b4b4;
 }

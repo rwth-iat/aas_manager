@@ -648,10 +648,6 @@ QPushButton:disabled
     border-width: 0.2ex;
     border-color: #454545;
     border-style: solid;
-    padding-top: 0.5ex;
-    padding-bottom: 0.5ex;
-    padding-left: 1ex;
-    padding-right: 1ex;
     border-radius: 1ex;
     color: #454545;
 }
@@ -664,8 +660,6 @@ QPushButton:focus
 QPushButton:pressed
 {
     background-color: #31363b;
-    padding-top: -1.5ex;
-    padding-bottom: -1.7ex;
 }
 
 QComboBox
