@@ -1,13 +1,18 @@
-from typing import List, Union, Any
+from typing import List, Union, Any, Optional
 
 from PyQt5.QtCore import QAbstractProxyModel, QSortFilterProxyModel, QModelIndex, Qt, \
-    QPersistentModelIndex
+    QPersistentModelIndex, QObject, QAbstractItemModel
 from PyQt5.QtGui import QBrush, QColor
 
 from aas_editor.settings import HIGHLIGHT_YELLOW, ATTRIBUTE_COLUMN, VALUE_COLUMN, OBJECT_ROLE
 
 
 class SearchProxyModel(QSortFilterProxyModel):
+    def __init__(self, sourceModel: QAbstractItemModel = None, parent: Optional[QObject] = None):
+        super(SearchProxyModel, self).__init__(parent)
+        if sourceModel:
+            self.setSourceModel(sourceModel)
+
     def match(self, start: QModelIndex, role: int, value: Any, hits: int = ..., flags: Union[Qt.MatchFlags, Qt.MatchFlag] = ...) -> List[QModelIndex]:
         if role == OBJECT_ROLE:
             items = self.sourceModel().match(start, role, value, hits, flags)
