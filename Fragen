@@ -1,15 +1,11 @@
 Needs:
-    For TypeOptionGroupBox: - Abstract classes must be really abstract!
-                            - Some datatypes must be implemented (Time, Duration etc.)!
+    For TypeOptionGroupBox: - Some datatypes must be implemented (Time, Duration etc.)!
     For testing Open/Save: - read_aas_json_file() doesn't work for str files
                               with open(file, "r") as f:
                                 self.objStore = aasx.read_aas_json_file(f)
-    - fileStore is not iterable
 
 Suggestions:
-    - Make Submodel iterable which consists of submodel elements.
-        Represeation of Submodel in left TreeView is not real.
-        SubmodelElement should be element of Submodel but it is Element of list submodel_element
+- target_type parameter in init of AASReference must have same name as class attribute
 
 Fragen:
 - _kind in Submodel, warum mit Unterstrich vorne?

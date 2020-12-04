@@ -1,22 +1,25 @@
-from inspect import isabstract
-
-from PyQt5.QtCore import Qt
-from PyQt5 import QtWidgets
-from PyQt5.QtGui import QIntValidator, QDoubleValidator, QPaintEvent
-from PyQt5.QtWidgets import QLineEdit, QLabel, QPushButton, QDialog, QDialogButtonBox, \
-    QGroupBox, QCheckBox, QWidget, QCompleter, QComboBox
-
 from aas.model.base import *
 from aas.model.concept import *
 from aas.model.provider import *
 from aas.model.submodel import *
 
-from aas_editor.defaults import DEFAULTS
-from aas_editor.settings import DEFAULT_ATTRS_TO_HIDE
+from enum import Enum, unique
+from inspect import isabstract
+from typing import Union, List, Dict, Optional
+
+from PyQt5.QtCore import Qt
+from PyQt5 import QtWidgets
+from PyQt5.QtGui import QIntValidator, QDoubleValidator, QPaintEvent
+from PyQt5.QtWidgets import QLineEdit, QLabel, QPushButton, QDialog, QDialogButtonBox, \
+    QGroupBox, QCheckBox, QWidget, QCompleter, QComboBox, QTreeView, QToolBar
+
+from aas_editor.defaults import DEFAULTS, DEFAULT_COMPLETIONS
+from aas_editor.delegates import ColorDelegate
+from aas_editor.settings import DEFAULT_ATTRS_TO_HIDE, ATTRIBUTE_COLUMN, OBJECT_ROLE
 from aas_editor.util import issubtype, inheritors, getTypeName, isoftype, isIterableType, \
-    getReqParams4init, getParams4init, isSimpleIterableType
+    getReqParams4init, getParams4init, isSimpleIterableType, isIterable
 from aas_editor.util_classes import DictItem
-from aas_editor.widgets.combobox import CompleterComboBox
+from aas_editor.widgets import *
 
 
 class AddDialog(QDialog):
@@ -32,7 +35,7 @@ class AddDialog(QDialog):
         self.buttonOk = self.buttonBox.button(QDialogButtonBox.Ok)
         self.buttonOk.setDisabled(True)
         layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(2,2,2,2)
+        layout.setContentsMargins(2, 2, 2, 2)
         layout.addWidget(self.buttonBox)
         self.setLayout(layout)
         self.setMinimumWidth(400)
@@ -79,13 +82,7 @@ def getInputWidget(objType, rmDefParams=True, title="", attrsToHide: dict = None
         objTypes = objType.__args__
         widget = TypeOptionObjGroupBox(objTypes, **kwargs)
     elif issubtype(objType, AASReference):
-        try:
-            if objType.__args__:
-                type_ = objType.__args__[0]
-                kwargs["attrsToHide"]["type_"] = type_ # TODO delete if aas changes
-        except AttributeError:
-            pass
-        widget = ObjGroupBox(objType, **kwargs)
+        widget = AASReferenceGroupBox(objType, **kwargs)
     elif issubtype(objType, StandardInputWidget.types):
         widget = StandardInputWidget(objType, **kwargs)
     else:
@@ -94,11 +91,18 @@ def getInputWidget(objType, rmDefParams=True, title="", attrsToHide: dict = None
 
 
 class AddObjDialog(AddDialog):
-    def __init__(self, objType, parent=None, title="", rmDefParams=True,
-                 objVal=None):
+    def __init__(self, objType, parent: 'TreeView', title="", rmDefParams=True, objVal=None):
         title = title if title else f"Add {getTypeName(objType)}"
         AddDialog.__init__(self, parent, title=title)
         self.buttonOk.setEnabled(True)
+
+        kwargs = {
+            "rmDefParams": rmDefParams,
+            "objVal": objVal,
+            "parentView": parent,
+            "parent": self,
+        }
+
         # if obj is given and rmDefParams = True, save all init params of obj in attrsToHide
         # and show user only required params to set
         if objVal and rmDefParams:
@@ -118,10 +122,9 @@ class AddObjDialog(AddDialog):
                 except KeyError:
                     attrsToHide.pop(key)
 
-            self.inputWidget = getInputWidget(objType, rmDefParams=rmDefParams,
-                                              attrsToHide=attrsToHide, objVal=objVal)
+            self.inputWidget = getInputWidget(objType, attrsToHide=attrsToHide, **kwargs)
         else:
-            self.inputWidget = getInputWidget(objType, rmDefParams=rmDefParams, objVal=objVal)
+            self.inputWidget = getInputWidget(objType, **kwargs)
         self.inputWidget.setObjectName("mainBox")
         self.inputWidget.setStyleSheet("#mainBox{border:0;}") #FIXME
         self.layout().insertWidget(0, self.inputWidget)
@@ -189,37 +192,49 @@ class GroupBox(QGroupBox):
     def isAddable(self) -> bool:
         return self.isCheckable() and self.type is GroupBoxType.ADDABLE
 
+    def setVal(self, val):
+        pass
 
 class ObjGroupBox(GroupBox):
     def __init__(self, objType, **kwargs):
         super().__init__(objType, **kwargs)
 
-        self.attrWidgetDict = {}
+        self.inputWidgets: List[QWidget] = []
+        self.attrWidgetDict: Dict[str, QWidget] = {}
 
-        reqAttrsDict = getReqParams4init(self.objType, self.rmDefParams, self.attrsToHide)
+        self.reqAttrsDict = getReqParams4init(self.objType, self.rmDefParams, self.attrsToHide)
+        self.initLayout()
 
-        if reqAttrsDict:
-            for attr, attrType in reqAttrsDict.items():
+    def initLayout(self):
+        if self.reqAttrsDict:
+            for attr, attrType in self.reqAttrsDict.items():
                 # TODO delete when right _ will be deleted in aas models
-                val = getattr(self.objVal, attr.rstrip("_"), DEFAULTS.get(objType, {}).get(attr))
-                widgetLayout = self._getInputWidgetLayout(attr, attrType, val)
-                self.layout().addLayout(widgetLayout)
+                val = getattr(self.objVal, attr.rstrip("_"), DEFAULTS.get(self.objType, {}).get(attr))
+                completions = DEFAULT_COMPLETIONS.get(self.objType, {}).get(attr, [])
+                inputWidget = self.getInputWidget(attr, attrType, val, completions=completions)
+                self.inputWidgets.append(inputWidget)
+                self.layout().addWidget(inputWidget)
         # else: # TODO check if it works ok
-        #     widgetLayout = self._getInputWidgetLayout(objName, objType, rmDefParams, objVal)
-        #     self.layout().addLayout(widgetLayout)
+        #     inputWidget = self.getInputWidget(objName, objType, rmDefParams, objVal)
+        #     self.layout().addWidget(inputWidget)
 
-    def _getInputWidgetLayout(self, attr: str, attrType, val, **kwargs) -> QtWidgets.QHBoxLayout:
+    def getInputWidget(self, attr: str, attrType, val, **kwargs) -> QtWidgets.QHBoxLayout:
         print(f"Getting widget for attr: {attr} of type: {attrType}")
-        layout = QtWidgets.QHBoxLayout()
         widget = getInputWidget(attrType, rmDefParams=self.rmDefParams, objVal=val, **kwargs)
         self.attrWidgetDict[attr] = widget
+
         if isinstance(widget, QGroupBox):
             widget.setTitle(f"{attr}:")
+            return widget
         else:
             label = QLabel(f"{attr}:")
+            layoutWidget = QWidget()
+            layout = QtWidgets.QHBoxLayout(layoutWidget)
+            layout.setContentsMargins(0, 0, 0, 0)
+            layout.setSpacing(0)
             layout.addWidget(label)
-        layout.addWidget(widget)
-        return layout
+            layout.addWidget(widget)
+            return layoutWidget
 
     def getObj2add(self):
         """Return resulting obj due to user input data"""
@@ -239,6 +254,27 @@ class ObjGroupBox(GroupBox):
             obj = self.objType(**attrValueDict)
         return obj
 
+    def delInputWidget(self, widget: QWidget):
+        self.layout().removeWidget(widget)
+        widget.close()
+        self.inputWidgets.remove(widget)
+
+        self.adjustSize()
+        self.window().adjustSize()
+
+    def setVal4attr(self, attr: str, val):
+        attrWidget = self.attrWidgetDict[attr]
+        attrWidget.setVal(val)
+
+    def setVal(self, val):
+        if val and isoftype(val, self.objType):
+            self.objVal = val
+            for widget in reversed(self.inputWidgets):
+                self.delInputWidget(widget)
+            self.initLayout()
+        else:
+            print("Value does not fit to req obj type", type(val), self.objType)
+
 
 class IterableGroupBox(GroupBox):
     def __init__(self, objType, **kwargs):
@@ -247,13 +283,7 @@ class IterableGroupBox(GroupBox):
         plusButton = QPushButton(f"+ Element", self, clicked=self._addInputWidget)
         self.layout().addWidget(plusButton)
         self.inputWidgets = []
-        if self.objVal:
-            if isinstance(self.objVal, dict):
-                self.objVal = [DictItem(key, value) for key, value in self.objVal.items()]
-            for val in self.objVal:
-                self._addInputWidget(val)
-        else:
-            self._addInputWidget()
+        self.setVal(self.objVal)
 
     def _addInputWidget(self, objVal=None):
         if ... in self.argTypes:
@@ -276,11 +306,11 @@ class IterableGroupBox(GroupBox):
                                 title=f"{getTypeName(argType)} {len(self.inputWidgets)}",
                                 rmDefParams=self.rmDefParams, objVal=objVal)
         widget.setClosable(True)
-        widget.toggled.connect(lambda: self._delInputWidget(widget))
+        widget.toggled.connect(lambda: self.delInputWidget(widget))
         self.inputWidgets.append(widget)
         self.layout().insertWidget(self.layout().count()-1, widget)
 
-    def _delInputWidget(self, widget: QWidget):
+    def delInputWidget(self, widget: QWidget):
         self.layout().removeWidget(widget)
         widget.close()
         self.inputWidgets.remove(widget)
@@ -305,40 +335,54 @@ class IterableGroupBox(GroupBox):
             obj = list(listObj)
         return obj
 
+    def setVal(self, val):
+        if isinstance(val, dict):
+            val = [DictItem(key, value) for key, value in val.items()]
+
+        if val and isIterable(val):
+            for widget in reversed(self.inputWidgets):
+                self.delInputWidget(widget)
+            self.objVal = val
+            for val in self.objVal:
+                self._addInputWidget(val)
+        else:
+            print("Value is not iterable")
+            self._addInputWidget()
+
 
 class StandardInputWidget(QtWidgets.QWidget):
     types = (bool, str, int, float, Enum, Type)
 
     def __init__(self, attrType, parent=None, objVal=None, **kwargs):
         super(StandardInputWidget, self).__init__(parent)
-        self.attrType = attrType
-        self.widget = self._initWidget(objVal, **kwargs)
+        self.objType = attrType
+        self.widget = self._initWidget(**kwargs)
+        self.setVal(objVal)
         widgetLayout = QtWidgets.QVBoxLayout(self)
         widgetLayout.setContentsMargins(1, 1, 1, 1)
         widgetLayout.addWidget(self.widget)
         self.setLayout(widgetLayout)
 
-    def _initWidget(self, objVal, **kwargs):
-        if issubtype(self.attrType, bool):
+    def _initWidget(self, **kwargs):
+        if issubtype(self.objType, bool):
             widget = QCheckBox(self)
-            widget.setChecked(bool(objVal))
-        elif issubtype(self.attrType, str):
+        elif issubtype(self.objType, str):
             widget = QLineEdit(self)
-            widget.setText(objVal) if objVal else ""
-        elif issubtype(self.attrType, int):
+            if kwargs.get("completions"):
+                completer = QCompleter(kwargs["completions"], self)
+                widget.setCompleter(completer)
+        elif issubtype(self.objType, int):
             widget = QLineEdit(self)
             widget.setValidator(QIntValidator())
-            widget.setText(objVal) if objVal is not None else ""
-        elif issubtype(self.attrType, float):
+        elif issubtype(self.objType, float):
             widget = QLineEdit(self)
             widget.setValidator(QDoubleValidator())
-            widget.setText(objVal) if objVal is not None else ""
-        elif issubtype(self.attrType, (Enum, Type)):
-            if issubtype(self.attrType, Enum):
+        elif issubtype(self.objType, (Enum, Type)):
+            if issubtype(self.objType, Enum):
                 # add enum types to types
-                types = [member for member in self.attrType]
+                types = [member for member in self.objType]
             else:  # Type
-                union = self.attrType.__args__[0]
+                union = self.objType.__args__[0]
                 if type(union) == TypeVar:
                     # add Type inheritors to types
                     baseType = union.__bound__
@@ -355,24 +399,35 @@ class StandardInputWidget(QtWidgets.QWidget):
             for typ in types:
                 widget.addItem(getTypeName(typ), typ)
             widget.model().sort(0, Qt.AscendingOrder)
-            if objVal:
-                widget.setCurrentIndex(widget.findData(objVal))
 
         return widget
 
     def getObj2add(self):
         """Return resulting obj due to user input data"""
-        if issubtype(self.attrType, bool):
+        if issubtype(self.objType, bool):
             obj = self.widget.isChecked()
-        elif issubtype(self.attrType, str):
+        elif issubtype(self.objType, str):
             obj = self.widget.text()
-        elif issubtype(self.attrType, int):
+        elif issubtype(self.objType, int):
             obj = int(self.widget.text())
-        elif issubtype(self.attrType, float):
+        elif issubtype(self.objType, float):
             obj = float(self.widget.text())
-        elif issubtype(self.attrType, (Enum, Type)):
+        elif issubtype(self.objType, (Enum, Type)):
             obj = self.widget.currentData()
         return obj
+
+    def setVal(self, val):
+        if val is not None:
+            if issubtype(self.objType, bool) and type(val) is bool:
+                self.widget.setChecked(bool(val))
+            elif issubtype(self.objType, str) and type(val) is str:
+                self.widget.setText(val)
+            elif issubtype(self.objType, int) and type(val) is int:
+                self.widget.setText(val)
+            elif issubtype(self.objType, float) and type(val) in (int, float):
+                self.widget.setText(val)
+            elif issubtype(self.objType, (Enum, Type)):
+                self.widget.setCurrentIndex(self.widget.findData(val))
 
 
 class TypeOptionObjGroupBox(GroupBox):
@@ -388,7 +443,7 @@ class TypeOptionObjGroupBox(GroupBox):
 
         # change input widget for new type if type in combobox changed
         self.typeComboBox.currentIndexChanged.connect(
-            lambda i: self._replGroupBox(self.typeComboBox.itemData(i)))
+            lambda i: self.replaceGroupBoxWidget(self.typeComboBox.itemData(i)))
 
     def _initTypeComboBox(self):
         """Init func for ComboBox where desired Type of input data will be chosen"""
@@ -402,10 +457,10 @@ class TypeOptionObjGroupBox(GroupBox):
             self.typeComboBox.setCurrentIndex(0)
         self.layout().insertWidget(0, self.typeComboBox)
 
-    def _replGroupBox(self, chosenType):
-        """Changes input GroupBox due to chosenType structure"""
-        newWidget = getInputWidget(chosenType, self.rmDefParams,
-                                   attrsToHide=self.attrsToHide, parent=self)
+    def replaceGroupBoxWidget(self, objType):
+        """Changes input GroupBox due to objType structure"""
+        newWidget = getInputWidget(objType, self.rmDefParams,
+                                   attrsToHide=self.attrsToHide, parent=self, objVal=self.objVal)
         self.layout().replaceWidget(self.widget, newWidget)
         self.widget.close()
         newWidget.showMinimized()
@@ -415,5 +470,82 @@ class TypeOptionObjGroupBox(GroupBox):
     def getObj2add(self):
         """Return resulting obj due to user input data"""
         return self.widget.getObj2add()
+
+    def setVal(self, val):
+        if val and type(val) in self.objType:
+            self.objVal = val
+            self.typeComboBox.setCurrentIndex(self.typeComboBox.findData(type(self.objVal)))
+
+
+class ChooseItemDialog(AddDialog):
+    def __init__(self, view: 'TreeView', columnsToShow=[ATTRIBUTE_COLUMN],
+                 validator=lambda chosenIndex: chosenIndex.isValid(),
+                 parent: Optional[QWidget] = None, title: str = ""):
+        super(ChooseItemDialog, self).__init__(parent, title)
+        self.setFixedHeight(500)
+        self.validator = validator
+        self.view = view
+        self.view.setParent(self)
+        self.view.setItemDelegate(ColorDelegate())
+        self.view.setModelWithProxy(self.view.sourceModel())
+        self.view.expandAll()
+        self.view.setHeaderHidden(True)
+
+        for column in range(self.view.model().columnCount()):
+            if column not in columnsToShow:
+                self.view.hideColumn(column)
+
+        self.searchBar = SearchBar(self.view, parent=self, filterColumns=columnsToShow)
+        self.toolBar = ToolBar(self)
+        self.toolBar.addAction(self.view.collapseAllAct)
+        self.toolBar.addAction(self.view.expandAllAct)
+        self.toolBar.addWidget(self.searchBar)
+
+        self.layout().insertWidget(0, self.toolBar)
+        self.layout().insertWidget(1, self.view)
+        self.buildHandlers()
+
+    def buildHandlers(self):
+        self.view.selectionModel().currentChanged.connect(self.validate)
+
+    def validate(self):
+        chosenIndex = self.view.currentIndex()
+        if chosenIndex.isValid() and self.validator(chosenIndex):
+            self.buttonOk.setEnabled(True)
+        else:
+            self.buttonOk.setDisabled(True)
+
+    def getObj2add(self):
+        return self.view.currentIndex()
+
+    def getChosenItem(self):
+        return self.getObj2add()
+
+
+class AASReferenceGroupBox(ObjGroupBox):
+    def __init__(self, objType, parentView, **kwargs):
+        super(AASReferenceGroupBox, self).__init__(objType, **kwargs)
+        plusButton = QPushButton(f"Choose from local", self, clicked=self.chooseFromLocal)
+        self.layout().insertWidget(0, plusButton)
+        self.parentView: 'TreeView' = parentView
+
+    def chooseFromLocal(self):
+        sourceModel = self.parentView.sourceModel()
+        tree = PackTreeView()
+        tree.setModel(sourceModel)
+
+        dialog = ChooseItemDialog(
+            view=tree, parent=self, title="Choose item for reference",
+            validator=lambda chosenIndex: isinstance(chosenIndex.data(OBJECT_ROLE), Referable))
+
+        if dialog.exec_() == QDialog.Accepted:
+            print("Item adding accepted")
+            item = dialog.getChosenItem()
+            referable = item.data(OBJECT_ROLE)
+            reference = AASReference.from_referable(referable)
+            self.setVal(reference)
+        else:
+            print("Item adding cancelled")
+        dialog.deleteLater()
 
 # todo reimplement when Datatypes Data, Duration, etc. are ready
