@@ -245,7 +245,8 @@ class PackTreeView(TreeView):
             self.removeFromRecentFiles(file)
             QMessageBox.critical(self, "Error", f"Package {file} couldn't be opened: {e}")
         else:
-            if Path(file).absolute() in self.model().data(QModelIndex(), OPENED_FILES_ROLE):
+            openedFiles = self.model().data(QModelIndex(), OPENED_FILES_ROLE)
+            if Path(file).absolute() in openedFiles:
                 QMessageBox.critical(self, "Error", f"Package {file} is already opened")
             else:
                 self.model().setData(QModelIndex(), pack, ADD_ITEM_ROLE)
