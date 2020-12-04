@@ -17,25 +17,25 @@ class ColorDelegate(QStyledItemDelegate):
         self.indexColors: Dict[QModelIndex, QBrush] = {}
 
     def paint(self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex):
-        if index.isValid() and index.siblingAtColumn(0) in self.indexColors:
+        if index.isValid() and index in self.indexColors:
             self.initStyleOption(option, index)
-            option.backgroundBrush = self.indexColors[index.siblingAtColumn(0)]
+            option.backgroundBrush = self.indexColors[index]
             widget = option.widget
             style = widget.style()
             style.drawControl(QStyle.CE_ItemViewItem, option, painter, widget)
         else:
             super(ColorDelegate, self).paint(painter, option, index)
 
-    def setColorForRow(self, index: QModelIndex, val: QBrush):
+    def setBgColor(self, index: QModelIndex, val: QBrush):
         self.indexColors[index] = val
 
-    def colorForRow(self, index: QModelIndex):
+    def bgColor(self, index: QModelIndex):
         return self.indexColors[index]
 
-    def removeColorForRow(self, index: QModelIndex):
+    def removeBgColor(self, index: QModelIndex):
         self.indexColors.pop(index)
 
-    def clearRowColors(self):
+    def clearBgColors(self):
         self.indexColors.clear()
 
 
