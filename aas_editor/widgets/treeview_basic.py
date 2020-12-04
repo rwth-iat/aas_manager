@@ -30,6 +30,12 @@ class BasicTreeView(QTreeView):
         proxyModel.setSourceModel(model)
         self.setModel(proxyModel)
 
+    def sourceModel(self):
+        try:
+            return self.model().sourceModel()
+        except AttributeError:
+            return self.model()
+
     def collapse(self, index: QtCore.QModelIndex) -> None:
         newIndex = index.siblingAtColumn(0)
         super(BasicTreeView, self).collapse(newIndex)
