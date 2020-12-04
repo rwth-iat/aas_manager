@@ -2,6 +2,7 @@ from PyQt5.QtCore import pyqtSignal, Qt, QModelIndex
 from PyQt5.QtGui import QClipboard
 from PyQt5.QtWidgets import QAction, QMenu, QApplication, QDialog
 
+from aas_editor.delegates import ColorDelegate
 from aas_editor.dialogs import AddObjDialog
 from aas_editor.settings import *
 from aas_editor.util import getDefaultVal, isIterable, getReqParams4init, delAASParents
@@ -25,6 +26,7 @@ class TreeView(BasicTreeView):
         self.initMenu()
         self.setUniformRowHeights(True)
         self.buildHandlers()
+        self.setItemDelegate(ColorDelegate())  # set ColorDelegate as standard delegate
 
     def initActions(self):
         self.copyAct = QAction(COPY_ICON, "Copy", self,
