@@ -24,7 +24,7 @@ class ColorDelegate(QStyledItemDelegate):
             style = widget.style()
             style.drawControl(QStyle.CE_ItemViewItem, option, painter, widget)
         else:
-            super(EditDelegate, self).paint(painter, option, index)
+            super(ColorDelegate, self).paint(painter, option, index)
 
     def setColorForRow(self, index: QModelIndex, val: QBrush):
         self.indexColors[index] = val
