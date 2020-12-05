@@ -38,7 +38,7 @@
 QToolTip
 {
     background-color: black;
-    color: white;
+    color: black;
     padding: 0.5ex;
 }
 
