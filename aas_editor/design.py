@@ -12,9 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QFrame
 
 from aas_editor.settings import APPLICATION_NAME, TOOLBARS_HEIGHT
-from aas_editor.widgets.toolBar import ToolBar
-from aas_editor.widgets.treeview_pack import PackTreeView
-from aas_editor.widgets.tab import TabWidget
+from aas_editor.widgets import ToolBar, PackTreeView, TabWidget
 
 
 class Ui_MainWindow(object):

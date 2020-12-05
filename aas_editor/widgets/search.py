@@ -9,7 +9,7 @@ from aas_editor.models.search_proxy_model import SearchProxyModel
 from aas_editor.settings import REGEX_ICON, CASE_ICON, NEXT_ICON, PREV_ICON, FILTER_ICON, \
     NAME_ROLE, CLOSE_ICON, HIGHLIGHT_YELLOW
 from aas_editor.util import absRow
-from aas_editor.widgets.toolBar import ToolBar
+from aas_editor.widgets import ToolBar
 
 
 class SearchBar(ToolBar):

@@ -1,7 +1,6 @@
 from PyQt5.QtCore import Qt, QModelIndex, QSettings
 
-from aas_editor.widgets.address_line import AddressLine
-from aas_editor.widgets.search import SearchBar
+from aas_editor.widgets import SearchBar, AddressLine
 from . import design
 
 from PyQt5.QtGui import *

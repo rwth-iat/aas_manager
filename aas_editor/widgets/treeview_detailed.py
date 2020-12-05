@@ -10,7 +10,7 @@ from aas_editor.delegates import EditDelegate
 from aas_editor.settings import ATTR_COLUMN_WIDTH, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
     VALUE_COLUMN, LINKED_ITEM_ROLE, IS_LINK_ROLE, PARENT_OBJ_ROLE, TYPE_HINT_ROLE, EDIT_ICON
 from aas_editor.util import getAttrTypeHint, isoftype, getDefaultVal
-from aas_editor.widgets.treeview import TreeView
+from aas_editor.widgets import TreeView
 
 
 class AttrsTreeView(TreeView):

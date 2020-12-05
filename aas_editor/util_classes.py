@@ -5,9 +5,10 @@ import pyecma376_2
 from aas.adapter import aasx
 from aas.adapter.aasx import DictSupplementaryFileContainer
 from aas.model import DictObjectStore, AssetAdministrationShell, Asset, Submodel, \
-    ConceptDescription
+    ConceptDescription, Key, AASReference
 from pathlib import Path
 
+from aas_editor.defaults import DEFAULT_COMPLETIONS
 from aas_editor.settings import AAS_CREATOR
 
 
