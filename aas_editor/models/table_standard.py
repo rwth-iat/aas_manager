@@ -1,8 +1,8 @@
 from enum import Enum
 from typing import Any, Iterable, Union, AbstractSet, List
 
-from PyQt5.QtCore import QAbstractItemModel, QVariant, QModelIndex, Qt, pyqtSignal, QItemSelection, \
-    QSize
+from PyQt5.QtCore import QAbstractItemModel, QVariant, QModelIndex, Qt, pyqtSignal, \
+    QItemSelection, QSize
 from PyQt5.QtGui import QFont
 
 from aas_editor.models import Package, DetailedInfoItem, StandardItem, PackTreeViewItem
@@ -106,7 +106,7 @@ class StandardTable(QAbstractItemModel):
         else:
             return super(StandardTable, self).match(start, role, value, hits, flags)
 
-    def addItem(self, obj: Union[Package, SubmodelElement, Iterable],
+    def addItem(self, obj: Union[Package, 'SubmodelElement', Iterable],
                 parent: QModelIndex = QModelIndex()):
         parent = parent.siblingAtColumn(0)
         parentObj = self.objByIndex(parent).data(OBJECT_ROLE)
@@ -260,7 +260,7 @@ class StandardTable(QAbstractItemModel):
 
         # if parentObj is Submodel and the parentObj is not rootItem
         # set submodel_element as parentObj
-        if isinstance(parentObj, Submodel) and parent.isValid():
+        if isinstance(parentObj, Submodel) and parent.isValid(): #FIXME delete if Namespace.discard() works
             parentObj = parentObj.submodel_element
 
         for n in range(row+count-1, row-1, -1):

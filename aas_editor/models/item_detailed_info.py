@@ -1,7 +1,3 @@
-from typing import AbstractSet
-
-from aas.model import AssetAdministrationShell, Submodel
-
 from aas_editor.models import StandardItem
 from aas_editor.settings import TYPES_NOT_TO_POPULATE, PACKAGE_ROLE
 from aas_editor.util import getAttrs4detailInfo, getTypeName, isSimpleIterable

@@ -8,10 +8,9 @@ from inspect import isabstract
 from typing import Union, List, Dict, Optional
 
 from PyQt5.QtCore import Qt
-from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIntValidator, QDoubleValidator, QPaintEvent
 from PyQt5.QtWidgets import QLineEdit, QLabel, QPushButton, QDialog, QDialogButtonBox, \
-    QGroupBox, QCheckBox, QWidget, QCompleter, QComboBox, QTreeView, QToolBar
+    QGroupBox, QCheckBox, QWidget, QCompleter, QComboBox, QVBoxLayout, QHBoxLayout
 
 from aas_editor.defaults import DEFAULTS, DEFAULT_COMPLETIONS
 from aas_editor.delegates import ColorDelegate
@@ -34,7 +33,7 @@ class AddDialog(QDialog):
         self.buttonBox.rejected.connect(self.reject)
         self.buttonOk = self.buttonBox.button(QDialogButtonBox.Ok)
         self.buttonOk.setDisabled(True)
-        layout = QtWidgets.QVBoxLayout(self)
+        layout = QVBoxLayout(self)
         layout.setContentsMargins(2, 2, 2, 2)
         layout.addWidget(self.buttonBox)
         self.setLayout(layout)
@@ -57,7 +56,7 @@ def checkIfAccepted(func):
 
 
 def getInputWidget(objType, rmDefParams=True, title="", attrsToHide: dict = None,
-                   parent=None, objVal=None, **kwargs) -> QtWidgets.QWidget:
+                   parent=None, objVal=None, **kwargs) -> QWidget:
     print(objType, objType.__str__, objType.__repr__, objType.__class__)
 
     if objVal and not isoftype(objVal, objType):
@@ -158,7 +157,7 @@ class GroupBox(QGroupBox):
         self.objVal = objVal
 
         self.setAlignment(Qt.AlignLeft)
-        layout = QtWidgets.QVBoxLayout(self)
+        layout = QVBoxLayout(self)
         self.setLayout(layout)
         self.type = GroupBoxType.SIMPLE
 
@@ -218,7 +217,7 @@ class ObjGroupBox(GroupBox):
         #     inputWidget = self.getInputWidget(objName, objType, rmDefParams, objVal)
         #     self.layout().addWidget(inputWidget)
 
-    def getInputWidget(self, attr: str, attrType, val, **kwargs) -> QtWidgets.QHBoxLayout:
+    def getInputWidget(self, attr: str, attrType, val, **kwargs) -> QHBoxLayout:
         print(f"Getting widget for attr: {attr} of type: {attrType}")
         widget = getInputWidget(attrType, rmDefParams=self.rmDefParams, objVal=val, **kwargs)
         self.attrWidgetDict[attr] = widget
@@ -229,7 +228,7 @@ class ObjGroupBox(GroupBox):
         else:
             label = QLabel(f"{attr}:")
             layoutWidget = QWidget()
-            layout = QtWidgets.QHBoxLayout(layoutWidget)
+            layout = QHBoxLayout(layoutWidget)
             layout.setContentsMargins(0, 0, 0, 0)
             layout.setSpacing(0)
             layout.addWidget(label)
@@ -350,7 +349,7 @@ class IterableGroupBox(GroupBox):
             self._addInputWidget()
 
 
-class StandardInputWidget(QtWidgets.QWidget):
+class StandardInputWidget(QWidget):
     types = (bool, str, int, float, Enum, Type)
 
     def __init__(self, attrType, parent=None, objVal=None, **kwargs):
@@ -358,7 +357,7 @@ class StandardInputWidget(QtWidgets.QWidget):
         self.objType = attrType
         self.widget = self._initWidget(**kwargs)
         self.setVal(objVal)
-        widgetLayout = QtWidgets.QVBoxLayout(self)
+        widgetLayout = QVBoxLayout(self)
         widgetLayout.setContentsMargins(1, 1, 1, 1)
         widgetLayout.addWidget(self.widget)
         self.setLayout(widgetLayout)

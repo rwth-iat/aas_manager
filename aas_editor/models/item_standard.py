@@ -1,15 +1,17 @@
-from PyQt5.QtGui import QBrush, QIcon
 from aas.model import AASReference, ConceptDescription, Event, RelationshipElement, Operation, \
     SubmodelElementCollection
 from aas.model import *
+from PyQt5.QtGui import QBrush, QIcon, QColor
 from PyQt5.QtCore import QObject, QVariant
 
-from aas_editor.settings import *
 from aas_editor.settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
-    VALUE_COLUMN, IS_LINK_ROLE
-from aas_editor.util import getDescription, getAttrDoc, simplifyInfo, getTypeName, getAttrTypeHint, \
-    isIterableType, issubtype, getTypeHintName
+    VALUE_COLUMN, IS_LINK_ROLE, TYPE_HINT_ROLE, PARENT_OBJ_ROLE, TYPE_ICON_DICT, TYPE_COLUMN, \
+    TYPE_HINT_COLUMN
+from aas_editor.util import getDescription, getAttrDoc, simplifyInfo, getTypeName, \
+    getAttrTypeHint, isIterableType, issubtype, getTypeHintName
 from PyQt5.QtCore import Qt
+
+from aas_editor.util_classes import DictItem
 
 
 class StandardItem(QObject):

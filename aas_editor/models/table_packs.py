@@ -4,8 +4,7 @@ from PyQt5.QtCore import QModelIndex, QVariant, Qt
 from PyQt5.QtGui import QFont
 
 from aas_editor.models import Package, StandardTable, QColor
-from aas_editor.settings import PACKAGE_ROLE, NAME_ROLE, DEFAULT_FONT, OPENED_PACKS_ROLE, \
-    OPENED_FILES_ROLE
+from aas_editor.settings import PACKAGE_ROLE, DEFAULT_FONT, OPENED_PACKS_ROLE, OPENED_FILES_ROLE
 
 
 class PacksTable(StandardTable):

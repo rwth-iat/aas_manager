@@ -1,10 +1,10 @@
 from typing import List, Union, Any, Optional
 
-from PyQt5.QtCore import QAbstractProxyModel, QSortFilterProxyModel, QModelIndex, Qt, \
+from PyQt5.QtCore import QSortFilterProxyModel, QModelIndex, Qt, \
     QPersistentModelIndex, QObject, QAbstractItemModel
 from PyQt5.QtGui import QBrush, QColor
 
-from aas_editor.settings import HIGHLIGHT_YELLOW, ATTRIBUTE_COLUMN, VALUE_COLUMN, OBJECT_ROLE
+from aas_editor.settings import OBJECT_ROLE
 
 
 class SearchProxyModel(QSortFilterProxyModel):
