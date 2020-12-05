@@ -159,8 +159,8 @@ EDIT_ICON = qta.icon("mdi.playlist-edit")
 FORWARD_ICON = qta.icon("fa5s.arrow-circle-right")
 BACK_ICON = qta.icon("fa5s.arrow-circle-left")
 
-SPLIT_VERT_ICON = qta.icon("mdi.arrow-split-horizontal")
-SPLIT_HORIZ_ICON = qta.icon("mdi.arrow-split-vertical")
+SPLIT_VERT_ICON = qta.icon("mdi.arrow-split-vertical")
+SPLIT_HORIZ_ICON = qta.icon("mdi.arrow-split-horizontal")
 
 ZOOM_IN_ICON = qta.icon("mdi.magnify-plus")
 ZOOM_OUT_ICON = qta.icon("mdi.magnify-minus")

@@ -119,6 +119,11 @@ class TabBar(QTabBar):
                                        statusTip="Close all tabs to the left",
                                        triggered=self.closeAllLeft)
 
+        self.splitVerticallyAct = QAction(SPLIT_VERT_ICON,
+                                          "Split vertically", self,
+                                          statusTip="Split editor area into 2 tab groups",
+                                          triggered=self.splitVertically)
+
         self.splitHorizontallyAct = QAction(SPLIT_HORIZ_ICON, "Split horizontally", self,
                                             statusTip="Split editor area into 2 tab groups",
                                             triggered=self.splitHorizontally)
@@ -144,10 +149,10 @@ class TabBar(QTabBar):
                 self.tabCloseRequested.emit(i)
 
     def splitHorizontally(self):
-        self.addTabWidget(orientation=Qt.Horizontal)
+        self.addTabWidget(orientation=Qt.Vertical)
 
     def splitVertically(self):
-        self.addTabWidget(orientation=Qt.Vertical)
+        self.addTabWidget(orientation=Qt.Horizontal)
 
     def addTabWidget(self, orientation=Qt.Horizontal):
         tabWidget: TabWidget = self.parentWidget()
@@ -173,6 +178,7 @@ class TabBar(QTabBar):
         self.menu.addAction(self.closeAllRightAct)
         self.menu.addAction(self.closeAllLeftAct)
         self.menu.addSeparator()
+        self.menu.addAction(self.splitVerticallyAct)
         self.menu.addAction(self.splitHorizontallyAct)
         self.menu.addAction(self.splitVerticallyAct)
 
