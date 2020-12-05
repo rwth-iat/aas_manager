@@ -85,9 +85,6 @@ def getTypeHintName(typehint) -> str:
         return typ
 
 
-
-
-
 def getDescription(descriptions: dict) -> str:
     if descriptions:
         for lang in PREFERED_LANGS_ORDER:

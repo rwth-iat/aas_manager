@@ -19,6 +19,7 @@ from aas_editor.util import issubtype, inheritors, getTypeName, isoftype, isIter
     getReqParams4init, getParams4init, isSimpleIterableType, isIterable
 from aas_editor.util_classes import DictItem
 from aas_editor.widgets import *
+from aas_editor import widgets
 
 
 class AddDialog(QDialog):
@@ -194,6 +195,7 @@ class GroupBox(QGroupBox):
     def setVal(self, val):
         pass
 
+
 class ObjGroupBox(GroupBox):
     def __init__(self, objType, **kwargs):
         super().__init__(objType, **kwargs)
@@ -202,6 +204,8 @@ class ObjGroupBox(GroupBox):
         self.attrWidgetDict: Dict[str, QWidget] = {}
 
         self.reqAttrsDict = getReqParams4init(self.objType, self.rmDefParams, self.attrsToHide)
+        self.kwargs = kwargs if kwargs else {}
+        self.kwargs.pop("objVal", None)
         self.initLayout()
 
     def initLayout(self):
@@ -209,8 +213,8 @@ class ObjGroupBox(GroupBox):
             for attr, attrType in self.reqAttrsDict.items():
                 # TODO delete when right _ will be deleted in aas models
                 val = getattr(self.objVal, attr.rstrip("_"), DEFAULTS.get(self.objType, {}).get(attr))
-                completions = DEFAULT_COMPLETIONS.get(self.objType, {}).get(attr, [])
-                inputWidget = self.getInputWidget(attr, attrType, val, completions=completions)
+                self.kwargs["completions"] = DEFAULT_COMPLETIONS.get(self.objType, {}).get(attr, [])
+                inputWidget = self.getInputWidget(attr, attrType, val, **self.kwargs)
                 self.inputWidgets.append(inputWidget)
                 self.layout().addWidget(inputWidget)
         # else: # TODO check if it works ok
@@ -219,7 +223,7 @@ class ObjGroupBox(GroupBox):
 
     def getInputWidget(self, attr: str, attrType, val, **kwargs) -> QHBoxLayout:
         print(f"Getting widget for attr: {attr} of type: {attrType}")
-        widget = getInputWidget(attrType, rmDefParams=self.rmDefParams, objVal=val, **kwargs)
+        widget = getInputWidget(attrType, objVal=val, **kwargs)
         self.attrWidgetDict[attr] = widget
 
         if isinstance(widget, QGroupBox):
@@ -522,7 +526,7 @@ class ChooseItemDialog(AddDialog):
 
 
 class AASReferenceGroupBox(ObjGroupBox):
-    def __init__(self, objType, parentView, **kwargs):
+    def __init__(self, objType, parentView=None, **kwargs):
         super(AASReferenceGroupBox, self).__init__(objType, **kwargs)
         plusButton = QPushButton(f"Choose from local", self, clicked=self.chooseFromLocal)
         self.layout().insertWidget(0, plusButton)
@@ -530,7 +534,7 @@ class AASReferenceGroupBox(ObjGroupBox):
 
     def chooseFromLocal(self):
         sourceModel = self.parentView.sourceModel()
-        tree = PackTreeView()
+        tree = widgets.PackTreeView()
         tree.setModel(sourceModel)
 
         dialog = ChooseItemDialog(
