@@ -128,10 +128,6 @@ class TabBar(QTabBar):
                                             statusTip="Split editor area into 2 tab groups",
                                             triggered=self.splitHorizontally)
 
-        self.splitVerticallyAct = QAction(SPLIT_VERT_ICON,
-                                          "Split vertically", self,
-                                          statusTip="Split editor area into 2 tab groups",
-                                          triggered=self.splitVertically)
 
     def closeOthers(self):
         for i in range(self.count()-1, -1, -1):
@@ -180,7 +176,6 @@ class TabBar(QTabBar):
         self.menu.addSeparator()
         self.menu.addAction(self.splitVerticallyAct)
         self.menu.addAction(self.splitHorizontallyAct)
-        self.menu.addAction(self.splitVerticallyAct)
 
     def openMenu(self, point):
         self.menu.exec_(self.mapToGlobal(point))
