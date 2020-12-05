@@ -1,9 +1,8 @@
-from PyQt5.QtCore import pyqtSignal, QModelIndex, Qt, QPersistentModelIndex, QPoint, QMimeData, \
-    QSize
-from PyQt5.QtGui import QIcon, QKeySequence, QPixmap, QRegion, QDrag, QCursor, QMouseEvent, \
+from PyQt5.QtCore import pyqtSignal, QModelIndex, Qt, QPersistentModelIndex, QPoint, QMimeData
+from PyQt5.QtGui import QIcon, QPixmap, QRegion, QDrag, QCursor, QMouseEvent, \
     QDragEnterEvent, QDragLeaveEvent, QDropEvent, QCloseEvent
-from PyQt5.QtWidgets import QWidget, QLineEdit, QLabel, QMessageBox, QGridLayout, QVBoxLayout, \
-    QTabWidget, QAction, QToolBar, QHBoxLayout, QFrame, QTabBar, QMenu, QSplitter, QShortcut
+from PyQt5.QtWidgets import QWidget, QLabel, QMessageBox, QVBoxLayout, \
+    QTabWidget, QAction, QHBoxLayout, QFrame, QTabBar, QMenu, QSplitter, QShortcut
 
 from aas_editor.settings import *
 from aas_editor.widgets import AddressLine, SearchBar, ToolBar, AttrsTreeView
@@ -15,8 +14,8 @@ import qtawesome as qta
 class TabBar(QTabBar):
     indexTabToDrag = -1
 
-    def __init__(self):
-        super(TabBar, self).__init__()
+    def __init__(self, parent=None):
+        super(TabBar, self).__init__(parent)
         self.menuIndexTab = None
 
         self.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -164,8 +163,9 @@ class TabBar(QTabBar):
 
         tab: Tab = tabWidget.widget(self.menuIndexTab)
         packItem = QModelIndex(tab.packItem)
-        newTabWidget = TabWidget(splitter)
+        newTabWidget = TabWidget()
         newTabWidget.openItem(packItem)
+        splitter.insertWidget(splitter.indexOf(tabWidget)+1, newTabWidget)
 
     def initMenu(self) -> None:
         self.menu = QMenu(self)
@@ -193,7 +193,7 @@ class TabWidget(QTabWidget):
         self.initActions()
         self.buildHandlers()
 
-        self.setTabBar(TabBar())
+        self.setTabBar(TabBar(self))
         self.setAcceptDrops(True)
         self.setStyleSheet("QTabBar::tab { height: 25px; width: 200px}")
         self.setCurrentIndex(-1)
