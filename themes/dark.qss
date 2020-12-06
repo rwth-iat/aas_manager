@@ -358,7 +358,6 @@ QGroupBox
     border-radius: 1ex;
     padding-top: 1ex;
     margin-top: 1ex;
-    background-color: rgba(35, 38, 41, 0.2);
 }
 
 QGroupBox:flat
