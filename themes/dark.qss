@@ -358,6 +358,13 @@ QGroupBox
     border-radius: 1ex;
     padding-top: 1ex;
     margin-top: 1ex;
+    background-color: rgba(35, 38, 41, 0.2);
+}
+
+QGroupBox:flat
+{
+    border: none;
+    border-top: 0.2ex solid rgba(118, 121, 124, 0.5);
 }
 
 QGroupBox::title
@@ -581,12 +588,10 @@ QFrame[frameShape="5"],  /* QFrame::VLine == 0x0005 */
 QFrame[frameShape="6"]  /* QFrame::StyledPanel == 0x0006 */
 {
     border: 0.5ex white;
-    border-width: 0.5ex;
+    border-width: 0.2ex;
     padding: 1ex;
     border-style: solid;
-    border-color: #31363b;
-    background-color: #76797c;
-    border-radius: 5ex;
+    border-color: rgba(118, 121, 124, 0.5);
 }
 
 QStackedWidget

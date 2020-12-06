@@ -368,6 +368,12 @@ QGroupBox
     margin-top: 1ex;
 }
 
+QGroupBox:flat
+{
+    border: none;
+    border-top: 0.2ex solid rgba(186, 185, 184, 0.5);
+}
+
 QGroupBox::title
 {
     subcontrol-origin: margin;
