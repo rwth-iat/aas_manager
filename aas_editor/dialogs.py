@@ -440,13 +440,15 @@ class TypeOptionObjGroupBox(GroupBox):
         self._initTypeComboBox()
         currObjType = self.typeComboBox.currentData()
 
-        self.widget = getInputWidget(currObjType, self.rmDefParams, attrsToHide=self.attrsToHide,
-                                     parent=self, objVal=self.objVal)
+        kwargs["parent"] = self
+        self.widget = getInputWidget(currObjType, **kwargs)
+        if isinstance(self.widget, QGroupBox):
+            self.widget.setFlat(True)
         self.layout().addWidget(self.widget)
 
         # change input widget for new type if type in combobox changed
         self.typeComboBox.currentIndexChanged.connect(
-            lambda i: self.replaceGroupBoxWidget(self.typeComboBox.itemData(i)))
+            lambda i: self.replaceGroupBoxWidget(self.typeComboBox.itemData(i), **kwargs))
 
     def _initTypeComboBox(self):
         """Init func for ComboBox where desired Type of input data will be chosen"""
@@ -460,10 +462,10 @@ class TypeOptionObjGroupBox(GroupBox):
             self.typeComboBox.setCurrentIndex(0)
         self.layout().insertWidget(0, self.typeComboBox)
 
-    def replaceGroupBoxWidget(self, objType):
+    def replaceGroupBoxWidget(self, objType, **kwargs):
         """Changes input GroupBox due to objType structure"""
-        newWidget = getInputWidget(objType, self.rmDefParams,
-                                   attrsToHide=self.attrsToHide, parent=self, objVal=self.objVal)
+        kwargs["objVal"] = self.objVal
+        newWidget = getInputWidget(objType, **kwargs)
         self.layout().replaceWidget(self.widget, newWidget)
         self.widget.close()
         newWidget.showMinimized()
@@ -526,7 +528,7 @@ class ChooseItemDialog(AddDialog):
 
 
 class AASReferenceGroupBox(ObjGroupBox):
-    def __init__(self, objType, parentView=None, **kwargs):
+    def __init__(self, objType, parentView, **kwargs):
         super(AASReferenceGroupBox, self).__init__(objType, **kwargs)
         plusButton = QPushButton(f"Choose from local", self, clicked=self.chooseFromLocal)
         self.layout().insertWidget(0, plusButton)
