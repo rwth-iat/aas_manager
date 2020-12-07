@@ -39,6 +39,7 @@ class AddDialog(QDialog):
         layout.addWidget(self.buttonBox)
         self.setLayout(layout)
         self.setMinimumWidth(400)
+        self.setMaximumHeight(900)
 
     def getObj2add(self):
         pass
@@ -437,7 +438,7 @@ class TypeOptionObjGroupBox(GroupBox):
     def __init__(self, objTypes, **kwargs):
         super(TypeOptionObjGroupBox, self).__init__(objTypes, **kwargs)
 
-        self._initTypeComboBox()
+        self.initTypeComboBox()
         currObjType = self.typeComboBox.currentData()
 
         kwargs["parent"] = self
@@ -450,7 +451,7 @@ class TypeOptionObjGroupBox(GroupBox):
         self.typeComboBox.currentIndexChanged.connect(
             lambda i: self.replaceGroupBoxWidget(self.typeComboBox.itemData(i), **kwargs))
 
-    def _initTypeComboBox(self):
+    def initTypeComboBox(self):
         """Init func for ComboBox where desired Type of input data will be chosen"""
         self.typeComboBox = CompleterComboBox(self)
         for typ in self.objType:
