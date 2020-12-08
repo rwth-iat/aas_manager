@@ -284,7 +284,9 @@ class IterableGroupBox(GroupBox):
     def __init__(self, objType, **kwargs):
         super().__init__(objType, **kwargs)
         self.argTypes = list(self.objType.__args__)
-        plusButton = QPushButton(f"+ Element", self, clicked=self._addInputWidget)
+        plusButton = QPushButton(f"+ Element", self,
+                                 toolTip="Add element",
+                                 clicked=self._addInputWidget)
         self.layout().addWidget(plusButton)
         self.inputWidgets = []
         self.setVal(self.objVal)
@@ -531,7 +533,9 @@ class ChooseItemDialog(AddDialog):
 class AASReferenceGroupBox(ObjGroupBox):
     def __init__(self, objType, parentView, **kwargs):
         super(AASReferenceGroupBox, self).__init__(objType, **kwargs)
-        plusButton = QPushButton(f"Choose from local", self, clicked=self.chooseFromLocal)
+        plusButton = QPushButton(f"Choose from local", self,
+                                 toolTip="Choose element for reference",
+                                 clicked=self.chooseFromLocal)
         self.layout().insertWidget(0, plusButton)
         self.parentView: 'TreeView' = parentView
 
