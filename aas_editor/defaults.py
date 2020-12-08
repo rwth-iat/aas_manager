@@ -13,3 +13,9 @@ DEFAULTS = {
         "kind": AssetKind.INSTANCE,
     }
 }
+
+DEFAULT_COMPLETIONS = {
+    Key: {
+        "value": []
+    }
+}
