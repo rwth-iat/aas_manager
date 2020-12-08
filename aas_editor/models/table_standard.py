@@ -111,7 +111,6 @@ class StandardTable(QAbstractItemModel):
         parent = parent.siblingAtColumn(0)
         parentObj = self.objByIndex(parent).data(OBJECT_ROLE)
 
-        self.beginInsertRows(parent, self.rowCount(parent), self.rowCount(parent))
         if isinstance(obj, Package):
             item = PackTreeViewItem(obj, new=False, parent=self._rootItem)
         elif parent.data(NAME_ROLE) in PACKAGE_ATTRS:
@@ -131,9 +130,9 @@ class StandardTable(QAbstractItemModel):
             parentObj[obj.key] = obj.value
             item = DetailedInfoItem(obj, name=obj.key, parent=self.objByIndex(parent))
         else:
-            self.endInsertRows()
             raise AttributeError(
                 f"Object couldn't be added: parent obj type is not appendable: {type(parentObj)}")
+        self.beginInsertRows(parent, self.rowCount(parent)-1, self.rowCount(parent)-1)
         self.endInsertRows()
         return self.index(item.row(), 0, parent)
 
@@ -173,12 +172,6 @@ class StandardTable(QAbstractItemModel):
     def setData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
         if not index.isValid() and role not in (Qt.FontRole, ADD_ITEM_ROLE):
             return QVariant()
-        elif role == ADD_ITEM_ROLE:
-            self.addItem(value, index)
-            return True
-        elif role == CLEAR_ROW_ROLE:
-            self.clearRow(index.row(), index.parent(), value)
-            return True
         elif role == Qt.BackgroundRole:
             item = self.objByIndex(index)
             res = item.setData(value, role, index.column())
@@ -191,6 +184,23 @@ class StandardTable(QAbstractItemModel):
                 self.dataChanged.emit(self.index(0), self.index(self.rowCount()))
                 return True
             return False
+        elif role == ADD_ITEM_ROLE:
+            try:
+                self.addItem(value, index)
+                return True
+            except AttributeError as e:
+                self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
+                # noinspection PyUnresolvedReferences
+                print(f"Error occurred while adding item '{value}' to {index.data(NAME_ROLE)}: {e}")
+                return False
+        elif role == CLEAR_ROW_ROLE:
+            try:
+                self.clearRow(index.row(), index.parent(), value)
+                return True
+            except TypeError as e:
+                self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
+                print(f"{index.data(NAME_ROLE)} could not be deleted or set to default: {e}")
+                return False
         elif role == Qt.EditRole:
             try:
                 value = None if str(value) == "None" else value
@@ -214,10 +224,6 @@ class StandardTable(QAbstractItemModel):
                     item.obj = getattr(item.parentObj, item.objName)
                 self.setChanged(index)
                 self.update(index)
-                # item.populate()
-                # self.rowsInserted.emit(index, self.rowCount(index), self.columnCount(index))
-                # self.dataChanged.emit(index,
-                #                       index.child(self.rowCount(index), self.columnCount(index)))
                 return True
             except (ValueError, AttributeError) as e:
                 self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
@@ -263,32 +269,29 @@ class StandardTable(QAbstractItemModel):
         if isinstance(parentObj, Submodel) and parent.isValid(): #FIXME delete if Namespace.discard() works
             parentObj = parentObj.submodel_element
 
-        for n in range(row+count-1, row-1, -1):
-            child = parentItem.children()[n]
+        for currRow in range(row+count-1, row-1, -1):
+            child = parentItem.children()[currRow]
             if isinstance(parentObj, list):
-                parentObj.pop[n]
-                self.removeRows(row, count, parent)
-                return True
+                parentObj.pop[currRow]
+                self.removeRow(currRow, parent)
             elif isinstance(parentObj, dict):
                 parentObj.pop(child.objectName)
-                self.removeRows(row, count, parent)
-                return True
+                self.removeRow(currRow, parent)
             elif isinstance(parentObj, AbstractSet):
                 parentObj.discard(child.obj)
-                self.removeRows(row, count, parent)
-                return True
+                self.removeRow(currRow, parent)
             elif parent.data(NAME_ROLE) in PACKAGE_ATTRS:
                 parent.data(PACKAGE_ROLE).discard(child.obj)
-                self.removeRows(row, count, parent)
-                return True
+                self.removeRow(currRow, parent)
             else:
                 if not defaultVal == NOT_GIVEN:
-                    self.setData(self.index(n, 0, parent), defaultVal, Qt.EditRole)
-                    return True
+                    self.setData(self.index(currRow, 0, parent), defaultVal, Qt.EditRole)
                 else:
-                    self.dataChanged.emit(parent, parent, [DATA_CHANGE_FAILED_ROLE])
-                    print(f"{child.objectName} could not be deleted or set to default")
-                    return False
+                    raise TypeError(
+                        f"Unknown parent object type: "
+                        f"object could not be deleted or set to default: "
+                        f"{type(parentObj)}")
+        return True
 
     def clearRow(self, row: int, parent: QModelIndex = ..., defaultVal=NOT_GIVEN) -> bool:
         """Delete row if it is child of Iterable else set to Default"""
