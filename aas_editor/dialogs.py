@@ -473,6 +473,8 @@ class TypeOptionObjGroupBox(GroupBox):
         self.widget.close()
         newWidget.showMinimized()
         self.widget = newWidget
+        if isinstance(self.widget, QGroupBox):
+            self.widget.setFlat(True)
         self.window().adjustSize()
 
     def getObj2add(self):
