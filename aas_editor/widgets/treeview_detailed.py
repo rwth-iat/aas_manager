@@ -9,7 +9,7 @@ from aas_editor.models import DetailedInfoTable
 from aas_editor.delegates import EditDelegate
 from aas_editor.settings import ATTR_COLUMN_WIDTH, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
     VALUE_COLUMN, LINKED_ITEM_ROLE, IS_LINK_ROLE, PARENT_OBJ_ROLE, TYPE_HINT_ROLE, EDIT_ICON
-from aas_editor.util import getAttrTypeHint, isoftype, getDefaultVal
+from aas_editor.util import getAttrTypeHint, isoftype, getDefaultVal, checkType
 from aas_editor.widgets import TreeView
 
 
@@ -105,11 +105,11 @@ class AttrsTreeView(TreeView):
         else:
             obj2paste = self.treeObjClipboard[0]
 
-        attrType = index.data(TYPE_HINT_ROLE)
+        attrTypeHint = index.data(TYPE_HINT_ROLE)
         attrName = index.data(NAME_ROLE)
 
         try:
-            if isoftype(obj2paste, attrType) or obj2paste == getDefaultVal(attrName, attrType):
+            if checkType(obj2paste, attrTypeHint) or obj2paste == getDefaultVal(attrName, attrTypeHint):
                 return True
             return False
         except (AttributeError, TypeError):
