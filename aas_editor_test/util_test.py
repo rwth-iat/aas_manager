@@ -71,9 +71,9 @@ class TestUtilFuncs(TestCase):
     def test_checkType(self):
         Nonetype = type(None)
         test_set={
-            str:str,
-            Nonetype:Union[str, Nonetype],
-            dict:Union[Dict[str, str], Nonetype]
+            "dsgf":str,
+            None:Union[str, Nonetype],
+            {2:3}:Union[Dict[str, str], Nonetype]
         }
         for typ in test_set:
             typeHint = test_set[typ]

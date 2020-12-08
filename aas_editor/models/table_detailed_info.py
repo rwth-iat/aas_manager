@@ -6,7 +6,8 @@ from PyQt5.QtGui import QFont, QBrush
 from aas_editor.models import DetailedInfoItem, StandardTable
 from aas_editor.settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, \
     COLUMNS_IN_DETAILED_INFO, ATTRIBUTE_COLUMN, VALUE_COLUMN, PACK_ITEM_ROLE, LIGHT_BLUE, \
-    LINK_BLUE, CHANGED_BLUE, NEW_GREEN, DEFAULT_FONT, LINKED_ITEM_ROLE, IS_LINK_ROLE
+    LINK_BLUE, CHANGED_BLUE, NEW_GREEN, DEFAULT_FONT, LINKED_ITEM_ROLE, IS_LINK_ROLE, \
+    TYPE_CHECK_ROLE, TYPE_COLUMN, RED
 
 
 class DetailedInfoTable(StandardTable):
@@ -24,6 +25,9 @@ class DetailedInfoTable(StandardTable):
         if role == Qt.BackgroundRole:
             return self._getBgColor(index)
         if role == Qt.ForegroundRole:
+            # color fg in red if obj type and typehint don't fit
+            if index.column() == TYPE_COLUMN and not index.data(TYPE_CHECK_ROLE):
+                return RED
             return self._getFgColor(index)
         if role == Qt.FontRole:
             return self._getFont(index)
@@ -38,7 +42,6 @@ class DetailedInfoTable(StandardTable):
         bg = self.objByIndex(index).data(Qt.BackgroundRole)
         if isinstance(bg, QBrush) and bg.color().alpha():
             return bg.color()
-
         color = LIGHT_BLUE
         if index.parent().isValid():
             if index.row() == 0:

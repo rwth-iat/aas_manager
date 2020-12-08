@@ -1,23 +1,67 @@
 import inspect
 import re
 from enum import Enum
-from typing import List, Tuple, Union, Dict, Type, Iterable
+from typing import List, Tuple, Union, Dict, Type, Iterable, ForwardRef
+from collections import abc
 
 from PyQt5.QtCore import Qt, QFile, QTextStream, QModelIndex
 from PyQt5.QtWidgets import QApplication
+from aas.model import AASReference
 
 from aas_editor.util_classes import DictItem
 from aas_editor.settings import ATTR_ORDER, PREFERED_LANGS_ORDER, ATTRS_NOT_IN_DETAILED_INFO, \
     ATTR_INFOS_TO_SIMPLIFY, NAME_ROLE, OBJECT_ROLE, PARENT_OBJ_ROLE, COMPLEX_ITERABLE_TYPES
 
 
-def checkType(typ, typeHint):
+def checkType(obj, typeHint):
+    if typeHint is None:
+        return True
+
+    if isUnion(typeHint):
+        for typHint in typeHint.__args__:
+            if checkType(obj, typHint):
+                return True
+        else:
+            return False
+
+    typ = type(obj)
+
+    try:
+        origin = typeHint.__origin__
+    except AttributeError:
+        origin = typeHint
+
+    try:
+        args = typeHint.__args__
+    except AttributeError:
+        args = tuple()
+
     if typ == typeHint:
         return True
-    if isUnion(typeHint) and typ in typeHint.__args__:
+
+    if isinstance(obj, AASReference):
+        if origin == AASReference:
+            if args:
+                if isinstance(args[0], ForwardRef):
+                    arg = args[0].__forward_arg__
+                    return getTypeName(obj.type) == arg
+                try:
+                    return issubclass(obj.type, args)
+                except TypeError as e:
+                    print(f"Error occured while checking: {obj.type} and {args}", e)
+                    return False
+            else:
+                return True
+        else:
+            return False
+
+    if isIterableType(origin) and typ is origin:
         return True
-    else:
-        return False
+
+    if origin is abc.Iterable:
+        return isIterableType(typ)
+
+    return isinstance(obj, origin)
 
 
 def nameIsSpecial(method_name):
@@ -194,6 +238,7 @@ def delAASParents(aasObj): #TODO change if aas changes
                 if hasattr(item, "parent"):
                     item.parent = None
 
+
 def isOptional(typeHint):
     if isUnion(typeHint):
         if type(None) in typeHint.__args__:
@@ -254,6 +299,9 @@ def _issubtype(typ1, typ2: type) -> bool:
         typ1 = typ1.__origin__
     if hasattr(typ2, "__args__") and typ2.__args__:
         typ2 = typ2.__origin__
+
+    if type(None) in (typ1, typ2):
+        return (typ1 == typ2)
 
     try:
         return issubclass(typ1, typ2)

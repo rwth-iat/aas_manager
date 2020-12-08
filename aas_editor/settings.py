@@ -56,6 +56,7 @@ LIGHT_BLUE = QColor(132, 185, 255)
 LINK_BLUE = QColor(26, 13, 171)
 CHANGED_BLUE = QColor(83, 148, 236, 255)
 HIGHLIGHT_YELLOW = QColor(255, 255, 0, 130)
+RED = QColor("red")
 NEW_GREEN = QColor("green")
 
 PACKAGE_ATTRS = ("shells", "assets", "submodels", "concept_descriptions", "others", "files")
@@ -96,6 +97,7 @@ ADD_ITEM_ROLE = 1011
 CLEAR_ROW_ROLE = 1012
 DATA_CHANGE_FAILED_ROLE = 1013
 TYPE_HINT_ROLE = 1014
+TYPE_CHECK_ROLE = 1015
 
 COLUMNS_IN_DETAILED_INFO = ("attribute", "value", "type", "typehint")
 COLUMNS_IN_PACKS_TABLE = ("attribute", "value", "type")

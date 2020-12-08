@@ -6,9 +6,9 @@ from PyQt5.QtCore import QObject, QVariant
 
 from aas_editor.settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
     VALUE_COLUMN, IS_LINK_ROLE, TYPE_HINT_ROLE, PARENT_OBJ_ROLE, TYPE_ICON_DICT, TYPE_COLUMN, \
-    TYPE_HINT_COLUMN
+    TYPE_HINT_COLUMN, TYPE_CHECK_ROLE
 from aas_editor.util import getDescription, getAttrDoc, simplifyInfo, getTypeName, \
-    getAttrTypeHint, isIterableType, issubtype, getTypeHintName
+    getAttrTypeHint, isIterableType, issubtype, getTypeHintName, checkType
 from PyQt5.QtCore import Qt
 
 from aas_editor.util_classes import DictItem
@@ -59,6 +59,8 @@ class StandardItem(QObject):
             return self.obj
         if role == TYPE_HINT_ROLE:
             return self.typehint
+        if role == TYPE_CHECK_ROLE:
+            return checkType(self.obj, self.typehint)
         if role == PARENT_OBJ_ROLE:
             return self.parentObj
         if role == PACKAGE_ROLE:
@@ -82,7 +84,6 @@ class StandardItem(QObject):
                 return getTypeName(type(self.obj))
             if column == TYPE_HINT_COLUMN:
                 return getTypeHintName(self.typehint)
-
         if role == Qt.EditRole:
             if column == ATTRIBUTE_COLUMN:
                 return self.objectName
