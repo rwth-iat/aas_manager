@@ -1,3 +1,6 @@
+generate identifier
+show error before closing add dialog, so that dialog with input data stays
+
 Add properties isNew, isEdited to mark new or edited items (green, blue)
 finish changed and new properties
 Refactor open/save/close for handling pack as QModelIndex not Package
@@ -7,7 +10,6 @@ Red color if value doesn't fit to TypeHint
 paste/isPasteOk/pasteHandler
 
 cancel last action
-choose from for references
 
 drag&drop features
 
@@ -18,10 +20,11 @@ find usages func
 
 Autocomplete (id_shorts)
 Repository with scratch packages to copy from
-integrate validator
 handle files
 
 Done:
+same width if split
+choose from for references
 Add typehint to model item (for copy/paste)
 Default values
 implement defaultobj for typeoptionbox

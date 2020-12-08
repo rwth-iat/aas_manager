@@ -11,6 +11,15 @@ from aas_editor.settings import ATTR_ORDER, PREFERED_LANGS_ORDER, ATTRS_NOT_IN_D
     ATTR_INFOS_TO_SIMPLIFY, NAME_ROLE, OBJECT_ROLE, PARENT_OBJ_ROLE, COMPLEX_ITERABLE_TYPES
 
 
+def checkType(typ, typeHint):
+    if typ == typeHint:
+        return True
+    if isUnion(typeHint) and typ in typeHint.__args__:
+        return True
+    else:
+        return False
+
+
 def nameIsSpecial(method_name):
     """Returns true if the method name starts with underscore"""
     return method_name.startswith('_')
@@ -220,8 +229,8 @@ def issubtype(typ, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:
 
 def _issubtype(typ1, typ2: type) -> bool:
     if isOptional(typ1):
-        typ1, typ2 = typ1.__args__
-        typ1 = typ1 if typ2 is type(None) else typ2
+        typA, typB = typ1.__args__
+        typ1 = typA if typB is type(None) else typB
 
     if isUnion(typ1):
         if isUnion(typ2):
@@ -276,7 +285,10 @@ def _isoftype(obj, typ) -> bool:
 
     if getTypeName(typ) == "Type" and hasattr(typ, "__args__") and typ.__args__:
         args = typ.__args__ if not isUnion(typ.__args__[0]) else typ.__args__[0].__args__
-        return issubtype(obj, args)
+        if type(obj) is type:
+            return issubtype(obj, args)
+        else:
+            return False
 
     #  TypeVar
     if hasattr(typ, "__bound__"):
@@ -382,6 +394,13 @@ def getAttrDoc(attr: str, doc: str) -> str:
             doc = f"{attr}: {doc}"
             return doc
     return ""
+
+
+def richText(text: str):
+    if text:
+        return f"<html><head/><body><p>{text}</p></body></html>"
+    else:
+        return ""
 
 
 def inheritors(klass) -> set:

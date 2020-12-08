@@ -9,7 +9,7 @@ import aas
 import dateutil
 from aas.model import AASReference, Reference, Submodel, IdentifierType, Referable
 
-from aas_editor.util import issubtype, isoftype
+from aas_editor.util import issubtype, isoftype, checkType
 
 
 class TestUtilFuncs(TestCase):
@@ -58,10 +58,24 @@ class TestUtilFuncs(TestCase):
         self.assertTrue(isoftype([1,2], List[int]))
         self.assertTrue(isoftype({1:2}, Dict[int, str]))
         self.assertTrue(isoftype({1:2}, Dict))
-        self.assertTrue(isoftype("xsdgvfdv", Type[str]))
-        self.assertTrue(isoftype(45.3, Type[Union[int, float, str]]))
+        self.assertTrue(isoftype(str, Type[str]))
+        self.assertTrue(isoftype(float, Type[Union[int, float, str]]))
         _RT = TypeVar('_RT', bound=Referable)
         self.assertTrue(isoftype(Submodel, _RT))
 
         self.assertFalse(isoftype("gfvds", Set[str]))
         self.assertFalse(isoftype({1,2}, Union[int, float, str]))
+        self.assertFalse(isoftype("xsdgvfdv", Type[str]))
+        self.assertFalse(isoftype(45.3, Type[Union[int, float, str]]))
+
+    def test_checkType(self):
+        Nonetype = type(None)
+        test_set={
+            str:str,
+            Nonetype:Union[str, Nonetype],
+            dict:Union[Dict[str, str], Nonetype]
+        }
+        for typ in test_set:
+            typeHint = test_set[typ]
+            print("Check", typeHint, type)
+            self.assertTrue(checkType(typ, typeHint))
