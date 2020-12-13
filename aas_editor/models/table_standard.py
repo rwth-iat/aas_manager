@@ -206,11 +206,13 @@ class StandardTable(QAbstractItemModel):
                 value = None if str(value) == "None" else value
                 item = self.objByIndex(index)
                 if isinstance(index.parent().data(OBJECT_ROLE), list):
-                    item.parentObj[index.row()] = value
-                    item.obj = index.parent().data(OBJECT_ROLE)[index.row()]
+                    parentList: List = item.parentObj
+                    parentList[parentList.index(item.obj)] = value
+                    item.obj = value
                 elif isinstance(index.parent().data(OBJECT_ROLE), AbstractSet):
-                    item.parentObj.remove(item.obj)
-                    item.parentObj.add(value)
+                    parentSet: AbstractSet = item.parentObj
+                    parentSet.remove(item.obj)
+                    parentSet.add(value)
                     item.obj = value
                 elif isinstance(index.data(OBJECT_ROLE), DictItem):
                     if index.column() == VALUE_COLUMN:
