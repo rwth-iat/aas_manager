@@ -138,6 +138,15 @@ def getTypeHintName(typehint) -> str:
         return typ
 
 
+def removeOptional(typehint):
+    """Remove Nonetype from typehint if typehint is Optional[...]"""
+    if isOptional(typehint):
+        args = list(typehint.__args__)
+        args.remove(type(None))
+        typehint = args[0]
+    return typehint
+
+
 def getDescription(descriptions: dict) -> str:
     if descriptions:
         for lang in PREFERED_LANGS_ORDER:
@@ -202,10 +211,8 @@ def getReqParams4init(objType: Type, rmDefParams=True,
 
     if delOptional:
         for param in params:
-            if isOptional(params[param]):
-                args = list(params[param].__args__)
-                args.remove(None.__class__)
-                params[param] = args[0]
+            typeHint = params[param]
+            params[param] = removeOptional(typeHint)
 
     if attrsToHide:
         for attr in attrsToHide:
@@ -422,6 +429,22 @@ def getAttrTypeHint(objType, attr, delOptional=True):
         pass
 
     return typeHint
+
+
+def getIterItemTypeHint(iterableTypehint):
+    """Return typehint for item which shoulb be in iterable"""
+    iterableTypehint = removeOptional(iterableTypehint)
+
+    if issubtype(iterableTypehint, dict):
+        DictItem._field_types["key"] = iterableTypehint.__args__[0]
+        DictItem._field_types["value"] = iterableTypehint.__args__[1]
+        attrType = DictItem
+    else:
+        attrTypes = iterableTypehint.__args__
+        if len(attrTypes) > 1:
+            raise KeyError("Typehint of iterable has more then one attribute:", attrTypes)
+        attrType = attrTypes[0]
+    return attrType
 
 
 def getAttrDoc(attr: str, doc: str) -> str:
