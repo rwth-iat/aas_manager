@@ -4,6 +4,7 @@ from pathlib import Path
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QKeySequence, QColor, QFont
 from aas.model import *
+from aas_editor import util_classes
 # from aas.model import AdministrativeInformation, Identifier, Submodel, AASReference, Asset, \
 #     SubmodelElement, AssetAdministrationShell, ConceptDescription, AbstractObjectStore, Event, \
 #     AnnotatedRelationshipElement, RelationshipElement, Operation, \
@@ -69,9 +70,8 @@ ATTRS_NOT_IN_DETAILED_INFO = ("gi_code",
                               "security", #TODO delete when implemented in aas
                               "submodel_element") + PACKAGE_ATTRS
 
-from aas_editor.util_classes import DictItem
 TYPES_NOT_TO_POPULATE = (
-    AbstractObjectStore, str, int, float, bool, Enum, Path, DictItem)  # '+ TYPES_IN_ONE_ROW
+    AbstractObjectStore, str, int, float, bool, Enum, Path, util_classes.DictItem)  # '+ TYPES_IN_ONE_ROW
 ATTRS_IN_PACKAGE_TREEVIEW = PACKAGE_ATTRS
 ATTR_INFOS_TO_SIMPLIFY = (AdministrativeInformation, Identifier,)
 LINK_TYPES = (
