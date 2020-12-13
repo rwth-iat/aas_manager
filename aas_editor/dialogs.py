@@ -198,8 +198,8 @@ class GroupBox(QGroupBox):
 
 
 class ObjGroupBox(GroupBox):
-    def __init__(self, objType, **kwargs):
-        super().__init__(objType, **kwargs)
+    def __init__(self, objType, parent=None, attrsToHide: dict = None, objVal=None, **kwargs):
+        super().__init__(objType, objVal=objVal, parent=parent, attrsToHide=attrsToHide, **kwargs)
 
         self.inputWidgets: List[QWidget] = []
         self.attrWidgetDict: Dict[str, QWidget] = {}
