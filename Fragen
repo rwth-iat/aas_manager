@@ -6,9 +6,10 @@ Needs:
 
 Suggestions:
 - target_type parameter in init of AASReference must have same name as class attribute
+- make Submodel subscriptable to do smth like Iterable[Submodel[SubmodelElement]]
+    now: TypeError: 'ABCMeta' object is not subscriptable
 
 Fragen:
-- _kind in Submodel, warum mit Unterstrich vorne?
 - will keys 'type_' and 'local' stay in Key? (Bug bei add item, because of Type[~RT]
 
 Bugs:
