@@ -8,7 +8,7 @@ from aas_editor.settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_
     VALUE_COLUMN, IS_LINK_ROLE, TYPE_HINT_ROLE, PARENT_OBJ_ROLE, TYPE_ICON_DICT, TYPE_COLUMN, \
     TYPE_HINT_COLUMN, TYPE_CHECK_ROLE
 from aas_editor.util import getDescription, getAttrDoc, simplifyInfo, getTypeName, \
-    getAttrTypeHint, isIterableType, issubtype, getTypeHintName, checkType
+    getAttrTypeHint, isIterableType, getTypeHintName, checkType, getIterItemTypeHint
 from PyQt5.QtCore import Qt
 
 from aas_editor.util_classes import DictItem
@@ -156,16 +156,8 @@ class StandardItem(QObject):
         if isIterableType(type(self.parentObj)):
             grandParentObj = self.parent().data(PARENT_OBJ_ROLE)
             try:
-                parentAttrType = getAttrTypeHint(type(grandParentObj), parentAttr, delOptional=True)
-                if issubtype(parentAttrType, dict):
-                    DictItem._field_types["key"] = parentAttrType.__args__[0]
-                    DictItem._field_types["value"] = parentAttrType.__args__[1]
-                    attrType = DictItem
-                else:
-                    attrTypes = parentAttrType.__args__
-                    if len(attrTypes) > 1:
-                        raise KeyError("Typehint of iterable has more then one attribute:", attrTypes)
-                    attrType = attrTypes[0]
+                iterableTypeHint = getAttrTypeHint(type(grandParentObj), parentAttr, delOptional=True)
+                attrType = getIterItemTypeHint(iterableTypeHint)
             except KeyError:
                 print("Typehint could not be gotten")
         return attrType
