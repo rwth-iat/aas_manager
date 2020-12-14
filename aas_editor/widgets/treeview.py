@@ -189,10 +189,13 @@ class TreeView(BasicTreeView):
         self.ctrlWheelScrolled.connect(lambda delta: self.zoom(delta=delta))
 
     def onModelChanged(self, model):
-        model.rowsInserted.connect(lambda parent, first, last:
-                                   self.setCurrentIndex(parent.child(last, 0)))
+        model.rowsInserted.connect(self.onRowsInserted)
         self.selectionModel().currentChanged.connect(self.updateActions)
         self.setCurrentIndex(self.rootIndex())
+
+    def onRowsInserted(self, parent, first, last):
+        index = parent.child(last, 0)
+        self.setCurrentIndex(index)
 
     def zoomIn(self):
         self.zoom(delta=+2)
