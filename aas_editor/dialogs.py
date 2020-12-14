@@ -537,6 +537,8 @@ class ChooseItemDialog(AddDialog):
 
 
 class AASReferenceGroupBox(ObjGroupBox):
+    # use CHOOSE_FRM_VIEW if no chooseFrmView is given
+    # can be changed outside of class
     CHOOSE_FRM_VIEW = None
 
     def __init__(self, objType, chooseFrmView=None, **kwargs):
