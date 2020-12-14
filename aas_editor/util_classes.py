@@ -1,15 +1,14 @@
 from datetime import datetime
-from typing import NamedTuple, Any, Union, IO
+from typing import NamedTuple, Any, Union, Iterable
 
 import pyecma376_2
 from aas.adapter import aasx
 from aas.adapter.aasx import DictSupplementaryFileContainer
 from aas.model import DictObjectStore, AssetAdministrationShell, Asset, Submodel, \
-    ConceptDescription, Key, AASReference
+    ConceptDescription, Key, AASReference, SubmodelElement
 from pathlib import Path
 
 from aas_editor.defaults import DEFAULT_COMPLETIONS
-from aas_editor.settings import AAS_CREATOR
 
 
 class Package:
@@ -19,6 +18,8 @@ class Package:
         self.file = file
         if file:
             self._read()
+        for obj in self.objStore:
+            DEFAULT_COMPLETIONS[Key]["value"].append(obj.identification.id)
         self._changed = False
 
     @property
@@ -66,6 +67,7 @@ class Package:
                 # Create OPC/AASX core properties
                 cp = pyecma376_2.OPCCoreProperties()
                 cp.created = datetime.now()
+                from aas_editor.settings import AAS_CREATOR
                 cp.creator = AAS_CREATOR
                 writer.write_core_properties(cp)
         else:
@@ -80,25 +82,25 @@ class Package:
         self.file = self.file.parent.joinpath(name)
 
     @property
-    def shells(self):
+    def shells(self) -> Iterable[AssetAdministrationShell]:
         for obj in self.objStore:
             if isinstance(obj, AssetAdministrationShell):
                 yield obj
 
     @property
-    def assets(self):
+    def assets(self) -> Iterable[Asset]:
         for obj in self.objStore:
             if isinstance(obj, Asset):
                 yield obj
 
     @property
-    def submodels(self):
+    def submodels(self) -> Iterable[Submodel]:
         for obj in self.objStore:
             if isinstance(obj, Submodel):
                 yield obj
 
     @property
-    def concept_descriptions(self):
+    def concept_descriptions(self) -> Iterable[ConceptDescription]:
         for obj in self.objStore:
             if isinstance(obj, ConceptDescription):
                 yield obj
@@ -122,19 +124,19 @@ class Package:
         self.objStore.discard(obj)
 
     @property
-    def numOfShells(self):
+    def numOfShells(self) -> int:
         return len(tuple(self.shells))
 
     @property
-    def numOfAssets(self):
+    def numOfAssets(self) -> int:
         return len(tuple(self.assets))
 
     @property
-    def numOfSubmodels(self):
+    def numOfSubmodels(self) -> int:
         return len(tuple(self.submodels))
 
     @property
-    def numOfConceptDescriptions(self):
+    def numOfConceptDescriptions(self) -> int:
         return len(tuple(self.concept_descriptions))
 
 
