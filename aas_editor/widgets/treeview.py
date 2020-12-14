@@ -3,7 +3,7 @@ from PyQt5.QtGui import QClipboard
 from PyQt5.QtWidgets import QAction, QMenu, QApplication, QDialog
 
 from aas_editor.delegates import ColorDelegate
-from aas_editor.dialogs import AddObjDialog
+from aas_editor import dialogs
 from aas_editor.settings import *
 from aas_editor.util import getDefaultVal, isIterable, getReqParams4init, delAASParents
 import qtawesome as qta
@@ -264,7 +264,7 @@ class TreeView(BasicTreeView):
 
     def addItemWithDialog(self, parent: QModelIndex, objType, objVal=None,
                           title="", rmDefParams=False):
-        dialog = AddObjDialog(objType, self, rmDefParams=rmDefParams,
+        dialog = dialogs.AddObjDialog(objType, self, rmDefParams=rmDefParams,
                               objVal=objVal, title=title)
         if dialog.exec_() == QDialog.Accepted:
             obj = dialog.getObj2add()

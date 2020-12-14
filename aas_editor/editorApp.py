@@ -1,5 +1,6 @@
 from PyQt5.QtCore import Qt, QModelIndex, QSettings
 
+from aas_editor import dialogs
 from aas_editor.widgets import SearchBar, AddressLine
 from . import design
 
@@ -23,6 +24,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.packTreeModel = PacksTable(COLUMNS_IN_PACKS_TABLE)
         self.packTreeView.setModelWithProxy(self.packTreeModel)
         self.packTreeView.hideColumn(VALUE_COLUMN)
+        dialogs.AASReferenceGroupBox.CHOOSE_FRM_VIEW = self.packTreeView
 
         AddressLine.setModel(self.packTreeView.model())
 

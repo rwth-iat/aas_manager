@@ -100,7 +100,6 @@ class AddObjDialog(AddDialog):
         kwargs = {
             "rmDefParams": rmDefParams,
             "objVal": objVal,
-            "parentView": parent,
             "parent": self,
         }
 
@@ -205,7 +204,7 @@ class ObjGroupBox(GroupBox):
         self.attrWidgetDict: Dict[str, QWidget] = {}
 
         self.reqAttrsDict = getReqParams4init(self.objType, self.rmDefParams, self.attrsToHide)
-        self.kwargs = kwargs if kwargs else {}
+        self.kwargs = kwargs.copy() if kwargs else {}
         self.kwargs.pop("objVal", None)
         self.initLayout()
 
@@ -284,6 +283,7 @@ class IterableGroupBox(GroupBox):
     def __init__(self, objType, **kwargs):
         super().__init__(objType, **kwargs)
         self.argTypes = list(self.objType.__args__)
+        self.kwargs = kwargs.copy() if kwargs else {}
         plusButton = QPushButton(f"+ Element", self,
                                  toolTip="Add element",
                                  clicked=self._addInputWidget)
@@ -308,9 +308,13 @@ class IterableGroupBox(GroupBox):
             else:
                 raise TypeError(f"expected 2 arguments, got {len(self.argTypes)}", self.argTypes)
 
-        widget = getInputWidget(argType,
-                                title=f"{getTypeName(argType)} {len(self.inputWidgets)}",
-                                rmDefParams=self.rmDefParams, objVal=objVal)
+        self.kwargs.update({
+            "objType": argType,
+            "title": f"{getTypeName(argType)} {len(self.inputWidgets)}",
+            "rmDefParams": self.rmDefParams,
+            "objVal": objVal
+        })
+        widget = getInputWidget(**self.kwargs)
         widget.setClosable(True)
         widget.toggled.connect(lambda: self.delInputWidget(widget))
         self.inputWidgets.append(widget)
@@ -533,17 +537,20 @@ class ChooseItemDialog(AddDialog):
 
 
 class AASReferenceGroupBox(ObjGroupBox):
-    def __init__(self, objType, parentView, **kwargs):
+    CHOOSE_FRM_VIEW = None
+
+    def __init__(self, objType, chooseFrmView=None, **kwargs):
         super(AASReferenceGroupBox, self).__init__(objType, **kwargs)
-        plusButton = QPushButton(f"Choose from local", self,
-                                 toolTip="Choose element for reference",
-                                 clicked=self.chooseFromLocal)
-        self.layout().insertWidget(0, plusButton)
-        self.parentView: 'TreeView' = parentView
+        self.chooseFrmView: 'TreeView' = chooseFrmView if chooseFrmView else self.CHOOSE_FRM_VIEW
+        if self.chooseFrmView:
+            plusButton = QPushButton(f"Choose from local", self,
+                                     toolTip="Choose element for reference",
+                                     clicked=self.chooseFromLocal)
+            self.layout().insertWidget(0, plusButton)
 
     def chooseFromLocal(self):
-        sourceModel = self.parentView.sourceModel()
         tree = widgets.PackTreeView()
+        sourceModel = self.chooseFrmView.sourceModel()
         tree.setModel(sourceModel)
 
         dialog = ChooseItemDialog(
