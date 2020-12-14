@@ -1,6 +1,7 @@
 import inspect
 import re
 import typing
+from abc import ABCMeta
 from enum import Enum
 from typing import List, Tuple, Union, Dict, Type, Iterable, ForwardRef
 from collections import abc
@@ -271,6 +272,10 @@ def issubtype(typ, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:
     except TypeError:
         pass
 
+    if type(types) == typing.TypeVar:
+        types = types.__bound__
+        return issubtype(typ, types)
+
     try:
         for tp in types:
             if issubtype(typ, tp):
@@ -341,7 +346,7 @@ def _isoftype(obj, typ) -> bool:
 
     if getTypeName(typ) == "Type" and hasattr(typ, "__args__") and typ.__args__:
         args = typ.__args__ if not isUnion(typ.__args__[0]) else typ.__args__[0].__args__
-        if type(obj) is type:
+        if type(obj) in (type, ABCMeta):
             return issubtype(obj, args)
         else:
             return False
