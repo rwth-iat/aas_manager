@@ -27,6 +27,9 @@ class StandardItem(QObject):
         else:
             self.typehint = self.getTypeHint()
 
+    def __str__(self):
+        return f"{getTypeName(type(self))}: {self.data(Qt.DisplayRole)}"
+
     @property
     def obj(self):
         try:
