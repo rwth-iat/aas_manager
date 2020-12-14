@@ -8,6 +8,7 @@ class PackTreeViewItem(StandardItem):
     def __init__(self, obj, parent, **kwargs):
         super().__init__(obj, parent=parent, **kwargs)
         if isinstance(obj, Package):
+            self.typehint = Package
             self.package = obj
         else:
             self.package = parent.data(PACKAGE_ROLE)
