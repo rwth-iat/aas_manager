@@ -36,11 +36,3 @@ class PacksTable(StandardTable):
         else:
             return super(PacksTable, self).data(index, role)
 
-    def _getFgColor(self, index: QModelIndex):
-        if self.objByIndex(index).new:
-            color = QColor("green")
-            return color
-        elif self.objByIndex(index).changed:
-            color = QColor(83, 148, 236, 255)  # blue
-            return color
-        return QVariant()

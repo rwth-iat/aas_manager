@@ -1,13 +1,11 @@
 from typing import Any
 
-from PyQt5.QtCore import QModelIndex, QVariant, Qt, QPersistentModelIndex
+from PyQt5.QtCore import QModelIndex, Qt, QPersistentModelIndex
 from PyQt5.QtGui import QFont, QBrush
 
 from aas_editor.models import DetailedInfoItem, StandardTable
-from aas_editor.settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, \
-    COLUMNS_IN_DETAILED_INFO, ATTRIBUTE_COLUMN, VALUE_COLUMN, PACK_ITEM_ROLE, LIGHT_BLUE, \
-    LINK_BLUE, CHANGED_BLUE, NEW_GREEN, DEFAULT_FONT, LINKED_ITEM_ROLE, IS_LINK_ROLE, \
-    TYPE_CHECK_ROLE, TYPE_COLUMN, RED
+from aas_editor.settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, COLUMNS_IN_DETAILED_INFO,\
+    ATTRIBUTE_COLUMN, PACK_ITEM_ROLE, LIGHT_BLUE, DEFAULT_FONT, LINKED_ITEM_ROLE, IS_LINK_ROLE
 
 
 class DetailedInfoTable(StandardTable):
@@ -22,15 +20,6 @@ class DetailedInfoTable(StandardTable):
         super(DetailedInfoTable, self).__init__(COLUMNS_IN_DETAILED_INFO, root)
 
     def data(self, index: QModelIndex, role: int = ...) -> Any:
-        if role == Qt.BackgroundRole:
-            return self._getBgColor(index)
-        if role == Qt.ForegroundRole:
-            # color fg in red if obj type and typehint don't fit
-            if index.column() == TYPE_COLUMN and not index.data(TYPE_CHECK_ROLE):
-                return RED
-            return self._getFgColor(index)
-        if role == Qt.FontRole:
-            return self._getFont(index)
         if role == PACK_ITEM_ROLE:
             return QModelIndex(self.packItem)
         if role == LINKED_ITEM_ROLE:
@@ -39,7 +28,7 @@ class DetailedInfoTable(StandardTable):
             return super(DetailedInfoTable, self).data(index, role)
 
     def _getBgColor(self, index: QModelIndex):
-        bg = self.objByIndex(index).data(Qt.BackgroundRole)
+        bg = super(DetailedInfoTable, self)._getBgColor(index)
         if isinstance(bg, QBrush) and bg.color().alpha():
             return bg.color()
         color = LIGHT_BLUE
@@ -56,29 +45,11 @@ class DetailedInfoTable(StandardTable):
                 color.setAlpha(110)
         return color
 
-    def _getFgColor(self, index: QModelIndex):
-        if index.column() == VALUE_COLUMN:
-            if index.data(IS_LINK_ROLE):
-                return LINK_BLUE
-        elif index.column() == ATTRIBUTE_COLUMN:
-            if self.objByIndex(index).new:
-                color = NEW_GREEN
-                return color
-            elif self.objByIndex(index).changed:
-                color = CHANGED_BLUE
-                return color
-            return QVariant()
-        return QVariant()
-
     def _getFont(self, index: QModelIndex):
-        font = QFont(self.defaultFont)
+        font = super(DetailedInfoTable, self)._getFont(index)
         if index.column() == ATTRIBUTE_COLUMN:
             if not isinstance(index.parent().data(OBJECT_ROLE), dict):
                 font.setBold(True)
-        elif index.column() == VALUE_COLUMN:
-            if index.data(IS_LINK_ROLE):
-                font.setUnderline(True)
-
         return font
 
     def getLinkedItem(self, index: QModelIndex) -> QModelIndex:

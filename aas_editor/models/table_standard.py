@@ -8,7 +8,8 @@ from PyQt5.QtGui import QFont
 from aas_editor.models import Package, DetailedInfoItem, StandardItem, PackTreeViewItem
 from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, VALUE_COLUMN, NOT_GIVEN, \
     PACKAGE_ROLE, PACK_ITEM_ROLE, PACKAGE_ATTRS, DEFAULT_FONT, ADD_ITEM_ROLE, CLEAR_ROW_ROLE, \
-    DATA_CHANGE_FAILED_ROLE
+    DATA_CHANGE_FAILED_ROLE, IS_LINK_ROLE, LINK_BLUE, NEW_GREEN, CHANGED_BLUE, RED, TYPE_COLUMN, \
+    TYPE_CHECK_ROLE
 
 from aas.model import Submodel, SubmodelElement
 
@@ -158,16 +159,43 @@ class StandardTable(QAbstractItemModel):
         return True
 
     def data(self, index: QModelIndex, role: int = ...) -> Any:
+        if role == Qt.BackgroundRole:
+            return self._getBgColor(index)
+        if role == Qt.ForegroundRole:
+            return self._getFgColor(index)
         if role == Qt.FontRole:
-            return QFont(self.defaultFont)
-        elif role == Qt.SizeHintRole:
+            return self._getFont(index)
+        if role == Qt.SizeHintRole:
             fontSize = self.defaultFont.pointSize()
             return QSize(-1, fontSize*1.7)
-        elif role == Qt.TextAlignmentRole:
+        if role == Qt.TextAlignmentRole:
             return Qt.AlignLeft | Qt.AlignBottom
         else:
             item = self.objByIndex(index)
             return item.data(role, index.column())
+
+    def _getBgColor(self, index: QModelIndex):
+        return self.objByIndex(index).data(Qt.BackgroundRole)
+
+    def _getFgColor(self, index: QModelIndex):
+        column = index.column()
+        # color fg in red if obj type and typehint don't fit
+        if column == TYPE_COLUMN and not index.data(TYPE_CHECK_ROLE):
+            return RED
+        elif column == VALUE_COLUMN and index.data(IS_LINK_ROLE):
+            return LINK_BLUE
+        elif column == ATTRIBUTE_COLUMN:
+            if self.objByIndex(index).new:
+                return NEW_GREEN
+            elif self.objByIndex(index).changed:
+                return CHANGED_BLUE
+        return QVariant()
+
+    def _getFont(self, index: QModelIndex) -> QFont:
+        font = QFont(self.defaultFont)
+        if index.column() == VALUE_COLUMN and index.data(IS_LINK_ROLE):
+            font.setUnderline(True)
+        return font
 
     def setData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
         if not index.isValid() and role not in (Qt.FontRole, ADD_ITEM_ROLE):
