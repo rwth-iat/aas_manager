@@ -390,18 +390,32 @@ QAbstractScrollArea
     background-color: transparent;
 }
 
+QScrollBar
+{
+    background: none;
+    background-color: transparent;
+    border-radius: 0.4ex;
+    border: 0.2ex transparent #2A2929;
+}
+
+QScrollBar::handle
+{
+    background-color: rgba(186, 185, 184, 0.5);
+}
+
+QScrollBar::handle:hover
+{
+    background-color: rgba(186, 185, 184, 1);
+}
+
 QScrollBar:horizontal
 {
-    height: 3.5ex;
+    height: 5ex;
     margin: 0.3ex 1.5ex 0.3ex 1.5ex;
-    border: 0.2ex transparent #2A2929;
-    border-radius: 0.4ex;
-    background-color: #2A2929;
 }
 
 QScrollBar::handle:horizontal
 {
-    background-color: #605F5F;
     min-width: 0.5ex;
     border-radius: 0.4ex;
 }
@@ -458,16 +472,12 @@ QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal
 
 QScrollBar:vertical
 {
-    background-color: #2A2929;
-    width: 3.5ex;
+    width: 5ex;
     margin: 1.5ex 0.3ex 1.5ex 0.3ex;
-    border: 0.2ex transparent #2A2929;
-    border-radius: 0.4ex;
 }
 
 QScrollBar::handle:vertical
 {
-    background-color: #605F5F;
     min-height: 0.5ex;
     border-radius: 0.4ex;
 }
