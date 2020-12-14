@@ -1,16 +1,13 @@
-Needs:
-    For TypeOptionGroupBox: - Some datatypes must be implemented (Time, Duration etc.)!
-    For testing Open/Save: - read_aas_json_file() doesn't work for str files
-                              with open(file, "r") as f:
-                                self.objStore = aasx.read_aas_json_file(f)
-
 Suggestions:
 - target_type parameter in init of AASReference must have same name as class attribute
 - make Submodel subscriptable to do smth like Iterable[Submodel[SubmodelElement]]
     now: TypeError: 'ABCMeta' object is not subscriptable
 
-Fragen:
-- will keys 'type_' and 'local' stay in Key? (Bug bei add item, because of Type[~RT]
+Needs:
+    For TypeOptionGroupBox: - Some datatypes must be implemented (Time, Duration etc.)!
+    For testing Open/Save: - read_aas_json_file() doesn't work for str files
+                              with open(file, "r") as f:
+                                self.objStore = aasx.read_aas_json_file(f)
 
 Bugs:
     Repr in AASReference wants to get __name__, but type is sometimes ForwardRef
