@@ -5,8 +5,8 @@ from PyQt5.QtWidgets import QAction, QMenu, QApplication, QDialog
 from aas_editor.delegates import ColorDelegate
 from aas_editor import dialogs
 from aas_editor.settings import *
-from aas_editor.util import getDefaultVal, isIterable, getReqParams4init, delAASParents
-import qtawesome as qta
+from aas_editor.util import getDefaultVal, isIterable, getReqParams4init, delAASParents, checkType, \
+    getIterItemTypeHint, isSimpleIterable
 
 from aas_editor.util_classes import DictItem
 from aas_editor.widgets.treeview_basic import BasicTreeView
@@ -28,6 +28,7 @@ class TreeView(BasicTreeView):
         self.buildHandlers()
         self.setItemDelegate(ColorDelegate())  # set ColorDelegate as standard delegate
 
+    # noinspection PyArgumentList
     def initActions(self):
         self.copyAct = QAction(COPY_ICON, "Copy", self,
                                statusTip="Copy selected item",
@@ -182,7 +183,6 @@ class TreeView(BasicTreeView):
             self.cutAct.setEnabled(False)
             self.delClearAct.setEnabled(False)
 
-
     def buildHandlers(self):
         self.customContextMenuRequested.connect(self.openMenu)
         self.modelChanged.connect(self.onModelChanged)
@@ -271,7 +271,7 @@ class TreeView(BasicTreeView):
             if isinstance(obj, dict):
                 for key, value in obj.items():
                     self.model().setData(parent, DictItem(key, value), ADD_ITEM_ROLE)
-            elif isIterable(obj):
+            elif isSimpleIterable(obj):
                 for i in obj:
                     self.model().setData(parent, i, ADD_ITEM_ROLE)
             else:
@@ -283,7 +283,7 @@ class TreeView(BasicTreeView):
 
     def replItemWithDialog(self, index, objType, objVal=None, title="", rmDefParams=False):
         title = title if title else f"Edit {index.data(NAME_ROLE)}"
-        dialog = AddObjDialog(objType, self, rmDefParams=rmDefParams, objVal=objVal, title=title)
+        dialog = dialogs.AddObjDialog(objType, self, rmDefParams=rmDefParams, objVal=objVal, title=title)
         if dialog.exec_() == QDialog.Accepted:
             obj = dialog.getObj2add()
             self.model().setData(index, obj, Qt.EditRole)
