@@ -1,5 +1,6 @@
 import inspect
 import re
+import typing
 from enum import Enum
 from typing import List, Tuple, Union, Dict, Type, Iterable, ForwardRef
 from collections import abc
@@ -411,10 +412,21 @@ def isIterable(obj):
 
 def getAttrTypeHint(objType, attr, delOptional=True):
     params = getReqParams4init(objType, rmDefParams=False, delOptional=delOptional)
-    try:
-        typeHint = params[attr]
-    except KeyError:
-        typeHint = params[f"{attr}_"]  # TODO fix if aas changes
+    if attr in params or f"{attr}_" in params:
+        try:
+            typeHint = params[attr]
+        except KeyError:
+            typeHint = params[f"{attr}_"]  # TODO fix if aas changes
+    else:
+        try:
+            # get typehint of property
+            func = getattr(objType, attr)
+            typehints = typing.get_type_hints(func.fget)
+            typeHint = typehints["return"]
+        except Exception as e:
+            print(e)
+            raise KeyError
+
 
     try:
         if typeHint.__args__:
