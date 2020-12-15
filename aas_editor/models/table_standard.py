@@ -12,8 +12,6 @@ from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, VALUE_
     DATA_CHANGE_FAILED_ROLE, IS_LINK_ROLE, LINK_BLUE, NEW_GREEN, CHANGED_BLUE, RED, TYPE_COLUMN, \
     TYPE_CHECK_ROLE
 
-from aas.model import Submodel, SubmodelElement
-
 from aas_editor.util_classes import DictItem
 
 
@@ -118,9 +116,9 @@ class StandardTable(QAbstractItemModel):
         elif parent.data(NAME_ROLE) in Package.ATTRS:
             parent.data(PACKAGE_ROLE).add(obj)
             item = PackTreeViewItem(obj, parent=self.objByIndex(parent))
-        elif isinstance(parent.data(OBJECT_ROLE), Submodel):
-            # TODO change if they make Submodel iterable
-            parentObj.submodel_element.add(obj)
+        elif isinstance(parentObj, tuple(AAS_REF_PARENT_OBJECTS)):
+            parentObj = getattr(parentObj, AAS_REF_PARENT_OBJECTS[type(parentObj)])
+            parentObj.add(obj)
             item = PackTreeViewItem(obj, parent=self.objByIndex(parent))
         elif isinstance(parentObj, AbstractSet):
             parentObj.add(obj)
