@@ -199,7 +199,7 @@ class ClassesInfo:
         for typ in s.CLASSES_INFO:
             if issubclass(cls, typ):
                 try:
-                    res.update(s.CLASSES_INFO[typ][s.ATTRS_NOT_IN_DETAILED_INFO])
+                    res.update(s.CLASSES_INFO[typ][s.HIDDEN_ATTRS])
                 except KeyError:
                     continue
         return tuple(res)

@@ -50,17 +50,38 @@ ATTR_ORDER = (
 )
 PREFERED_LANGS_ORDER = ("en-us", "en", "de")
 
-AAS_REF_PARENT_OBJECTS = {
-    Submodel: "submodel_element",
-    AnnotatedRelationshipElement: "annotation",
-    SubmodelElementCollection: "value",
-    Entity: "statement"
-}
+HIDDEN_ATTRS = "attrs_not_in_detailed_info"
+CHANGED_PARENT_OBJ = "changed_parent_obj"
+ADD_ACT_AAS_TXT = "add_act_aas_txt"
 
-CLS_ATTRS_NOT_IN_DETAILED_INFO = {
-    object: ("namespace_element_sets", "parent", "security"),#TODO delete when implemented in aas
-    util_classes.Package: ("ATTRS", *util_classes.Package.ATTRS),
-    **AAS_REF_PARENT_OBJECTS
+CLASSES_INFO = {
+    object: {
+        HIDDEN_ATTRS: ("namespace_element_sets", "parent", "security")
+    },
+    util_classes.Package: {
+        HIDDEN_ATTRS: ("ATTRS", *util_classes.Package.ATTRS),
+        ADD_ACT_AAS_TXT: "Add package",
+    },
+    Submodel: {
+        HIDDEN_ATTRS: ("submodel_element",),
+        CHANGED_PARENT_OBJ: "submodel_element",
+        ADD_ACT_AAS_TXT: "Add submodel element",
+    },
+    AnnotatedRelationshipElement: {
+        HIDDEN_ATTRS: ("annotation",),
+        CHANGED_PARENT_OBJ: "annotation",
+        ADD_ACT_AAS_TXT: "Add annotation",
+    },
+    SubmodelElementCollection: {
+        HIDDEN_ATTRS: ("value",),
+        CHANGED_PARENT_OBJ: "value",
+        ADD_ACT_AAS_TXT: "Add collection submodel element",
+    },
+    Entity: {
+        HIDDEN_ATTRS: ("statement",),
+        CHANGED_PARENT_OBJ: "statement",
+        ADD_ACT_AAS_TXT: "Add statement",
+    },
 }
 
 

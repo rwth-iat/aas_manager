@@ -4,14 +4,13 @@ from typing import Any, Iterable, Union, AbstractSet, List
 from PyQt5.QtCore import QAbstractItemModel, QVariant, QModelIndex, Qt, QItemSelection, QSize
 from PyQt5.QtGui import QFont
 
-from aas_editor.settings.aas_settings import AAS_REF_PARENT_OBJECTS
 from aas_editor.models import Package, DetailedInfoItem, StandardItem, PackTreeViewItem
 from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, VALUE_COLUMN, NOT_GIVEN, \
     PACKAGE_ROLE, PACK_ITEM_ROLE, DEFAULT_FONT, ADD_ITEM_ROLE, CLEAR_ROW_ROLE, \
     DATA_CHANGE_FAILED_ROLE, IS_LINK_ROLE, LINK_BLUE, NEW_GREEN, CHANGED_BLUE, RED, TYPE_COLUMN, \
     TYPE_CHECK_ROLE
 
-from aas_editor.util_classes import DictItem
+from aas_editor.util_classes import DictItem, ClassesInfo
 
 
 class StandardTable(QAbstractItemModel):
@@ -115,8 +114,8 @@ class StandardTable(QAbstractItemModel):
         elif parent.data(NAME_ROLE) in Package.ATTRS:
             parent.data(PACKAGE_ROLE).add(obj)
             item = PackTreeViewItem(obj, parent=self.objByIndex(parent))
-        elif isinstance(parentObj, tuple(AAS_REF_PARENT_OBJECTS)):
-            parentObj = getattr(parentObj, AAS_REF_PARENT_OBJECTS[type(parentObj)])
+        elif ClassesInfo.changedParentObject(parentObj):
+            parentObj = getattr(parentObj, ClassesInfo.changedParentObject(parentObj))
             parentObj.add(obj)
             item = PackTreeViewItem(obj, parent=self.objByIndex(parent))
         elif isinstance(parentObj, AbstractSet):
@@ -296,7 +295,7 @@ class StandardTable(QAbstractItemModel):
         # set submodel_element as parentObj
         if parent.isValid():
             try:
-                parentAttr = AAS_REF_PARENT_OBJECTS[type(parentObj)] #FIXME delete if Namespace.discard() works
+                parentAttr = ClassesInfo.changedParentObject(type(parentObj)) #FIXME delete if Namespace.discard() works
                 parentObj = getattr(parentObj, parentAttr)
             except KeyError:
                 pass
