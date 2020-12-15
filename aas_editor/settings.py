@@ -1,19 +1,11 @@
-from enum import Enum
-from pathlib import Path
-
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QKeySequence, QColor, QFont
-from aas.model import *
-from aas_editor import util_classes
-# from aas.model import AdministrativeInformation, Identifier, Submodel, AASReference, Asset, \
-#     SubmodelElement, AssetAdministrationShell, ConceptDescription, AbstractObjectStore, Event, \
-#     AnnotatedRelationshipElement, RelationshipElement, Operation, \
-#     SubmodelElementCollectionUnordered, SubmodelElementCollectionOrdered, Entity, Capability, \
-#     Property
-
-COMPLEX_ITERABLE_TYPES = (Namespace,)
 
 AAS_CREATOR = "PyI40AAS Testing Framework"
+APPLICATION_NAME = "AAS Editor"
+ACPLT = "ACPLT"
+
+NOT_GIVEN = "NotGivenValueAASEditor"
 
 TOOLBARS_HEIGHT = 30
 ATTR_COLUMN_WIDTH = 200
@@ -24,66 +16,9 @@ MIN_FONT_SIZE = 6
 DEFAULT_FONT = QFont()
 DEFAULT_FONT.setPointSize(12)
 
-# Themes
-DEFAULT_THEME = "dark"
-DARK_THEME_PATH = "themes/dark.qss"
-LIGHT_THEME_PATH = "themes/light.qss"
-THEMES = {"dark": DARK_THEME_PATH, "light": LIGHT_THEME_PATH, "standard": ""}
-
-APPLICATION_NAME = "AAS Editor"
-ACPLT = "ACPLT"
-
 MAX_RECENT_FILES = 4
 
-PREFERED_LANGS_ORDER = ("en-us", "en", "de")
-
-ATTR_ORDER = (
-    "id_short",
-    "category",
-    "value",
-    "in_output_variable",
-    "input_variable",
-    "output_variable",
-    "first",
-    "second",
-    "kind",
-    "entity_type",
-    "description",
-    "administration",
-    "identification",
-)
-
-LIGHT_BLUE = QColor(132, 185, 255)
-LINK_BLUE = QColor(26, 13, 171)
-CHANGED_BLUE = QColor(83, 148, 236, 255)
-HIGHLIGHT_YELLOW = QColor(255, 255, 0, 130)
-RED = QColor("red")
-NEW_GREEN = QColor("green")
-
-PACKAGE_ATTRS = ("shells", "assets", "submodels", "concept_descriptions", "others", "files")
-ATTRS_NOT_IN_DETAILED_INFO = ("gi_code",
-                              "gi_frame",
-                              "gi_running",
-                              "gi_yieldfrom",
-                              "namespace_element_sets",
-                              "parent",
-                              "security", #TODO delete when implemented in aas
-                              "submodel_element") + PACKAGE_ATTRS
-
-TYPES_NOT_TO_POPULATE = (
-    AbstractObjectStore, str, int, float, bool, Enum, Path, util_classes.DictItem)  # '+ TYPES_IN_ONE_ROW
-ATTRS_IN_PACKAGE_TREEVIEW = PACKAGE_ATTRS
-ATTR_INFOS_TO_SIMPLIFY = (AdministrativeInformation, Identifier,)
-LINK_TYPES = (
-    AASReference,
-    Submodel,
-    Asset,
-    SubmodelElement,
-    AssetAdministrationShell,
-    ConceptDescription,
-)
-
-DEFAULT_ATTRS_TO_HIDE = {"parent": None}
+# Custom roles
 PACKAGE_ROLE = 1001
 NAME_ROLE = 1002
 OBJECT_ROLE = 1003
@@ -99,6 +34,7 @@ DATA_CHANGE_FAILED_ROLE = 1013
 TYPE_HINT_ROLE = 1014
 TYPE_CHECK_ROLE = 1015
 
+# Columns
 COLUMNS_IN_DETAILED_INFO = ("attribute", "value", "type", "typehint")
 COLUMNS_IN_PACKS_TABLE = ("attribute", "value", "type", "typehint")
 ATTRIBUTE_COLUMN = 0
@@ -106,33 +42,21 @@ VALUE_COLUMN = 1
 TYPE_COLUMN = 2
 TYPE_HINT_COLUMN = 3
 
-NOT_GIVEN = "NotGivenValueAASEditor"
+# Themes
+DEFAULT_THEME = "dark"
+DARK_THEME_PATH = "themes/dark.qss"
+LIGHT_THEME_PATH = "themes/light.qss"
+THEMES = {"dark": DARK_THEME_PATH, "light": LIGHT_THEME_PATH, "standard": ""}
 
-# Shortcuts
-SC_COPY = QKeySequence.Copy
-SC_CUT = QKeySequence.Cut
-SC_PASTE = QKeySequence.Paste
-SC_DELETE = QKeySequence.Delete
-SC_NEW = QKeySequence.New
+# Colors
+LIGHT_BLUE = QColor(132, 185, 255)
+LINK_BLUE = QColor(26, 13, 171)
+CHANGED_BLUE = QColor(83, 148, 236, 255)
+HIGHLIGHT_YELLOW = QColor(255, 255, 0, 130)
+RED = QColor("red")
+NEW_GREEN = QColor("green")
 
-SC_ZOOM_IN = QKeySequence(Qt.CTRL + Qt.Key_Plus)
-SC_ZOOM_OUT = QKeySequence(Qt.CTRL + Qt.Key_Minus)
-
-SC_EXPAND_RECURS = QKeySequence(Qt.CTRL + Qt.ALT + Qt.Key_Plus)
-SC_EXPAND_ALL = QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_Plus)
-SC_COLLAPSE_RECURS = QKeySequence(Qt.CTRL + Qt.ALT + Qt.Key_Minus)
-SC_COLLAPSE_ALL = QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_Minus)
-
-SC_OPEN = QKeySequence(Qt.CTRL + Qt.Key_O)
-SC_SAVE_ALL = QKeySequence(Qt.CTRL + Qt.Key_S)
-SC_BACK = QKeySequence.Back
-SC_FORWARD = QKeySequence.Forward
-
-SC_SEARCH = QKeySequence(Qt.CTRL + Qt.Key_F)
-
-SC_FOCUS2RIGTH_TREE = QKeySequence(Qt.CTRL + Qt.RightArrow)
-SC_FOCUS2LEFT_TREE = QKeySequence(Qt.CTRL + Qt.LeftArrow)
-
+# ICONS
 import qtawesome as qta
 
 ICON_DEFAULTS = {'scale_factor': 1.2,
@@ -207,25 +131,28 @@ ELEM_ICON_DEFAULTS = {'scale_factor': 1.6,
                       'color': QColor(LIGHT_BLUE.red(), LIGHT_BLUE.green(), LIGHT_BLUE.blue(), 255),
                       }
 qta.set_defaults(**ELEM_ICON_DEFAULTS)
-TYPE_ICON_DICT = {
-    AssetAdministrationShell: getCharsIcon("shl"),  # qta.icon("mdi.wallet") #  mdi.tab mdi.shredder folder-outline wallet
-    Asset: getCharsIcon("ast"),  # qta.icon("mdi.mini-sd") # mdi.toy-brick
-    ConceptDescription: getCharsIcon("cnc"),  # qta.icon("mdi.text-box")
-    Submodel: getCharsIcon("sub"),
 
-    Property: getCharsIcon("prp"),
-    Entity: getCharsIcon("ent"),
-    Capability: getCharsIcon("cap"),
-    Event: getCharsIcon("evnt"),  # qta.icon("mdi.timeline-clock")  # mdi.timer mdi.bell
-    Operation: getCharsIcon("opr"),  # qta.icon("mdi.cog")
-    RelationshipElement: getCharsIcon("rel"),
-    AnnotatedRelationshipElement: getCharsIcon("rel"), # qta.icon("mdi.arrow-left-right")  # mdi.relation-one-to-one
-    SubmodelElementCollectionUnordered: getCharsIcon("col"),
-    SubmodelElementCollectionOrdered: getCharsIcon("col"),  # qta.icon("mdi.package")
+# Shortcuts
+SC_COPY = QKeySequence.Copy
+SC_CUT = QKeySequence.Cut
+SC_PASTE = QKeySequence.Paste
+SC_DELETE = QKeySequence.Delete
+SC_NEW = QKeySequence.New
 
-    Range: getCharsIcon("rng"),
-    Blob: getCharsIcon("blb"),
-    File: getCharsIcon("file"),
-    ReferenceElement: getCharsIcon("ref"),
-    DataElement: getCharsIcon("data"),
-}
+SC_ZOOM_IN = QKeySequence(Qt.CTRL + Qt.Key_Plus)
+SC_ZOOM_OUT = QKeySequence(Qt.CTRL + Qt.Key_Minus)
+
+SC_EXPAND_RECURS = QKeySequence(Qt.CTRL + Qt.ALT + Qt.Key_Plus)
+SC_EXPAND_ALL = QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_Plus)
+SC_COLLAPSE_RECURS = QKeySequence(Qt.CTRL + Qt.ALT + Qt.Key_Minus)
+SC_COLLAPSE_ALL = QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_Minus)
+
+SC_OPEN = QKeySequence(Qt.CTRL + Qt.Key_O)
+SC_SAVE_ALL = QKeySequence(Qt.CTRL + Qt.Key_S)
+SC_BACK = QKeySequence.Back
+SC_FORWARD = QKeySequence.Forward
+
+SC_SEARCH = QKeySequence(Qt.CTRL + Qt.Key_F)
+
+SC_FOCUS2RIGTH_TREE = QKeySequence(Qt.CTRL + Qt.RightArrow)
+SC_FOCUS2LEFT_TREE = QKeySequence(Qt.CTRL + Qt.LeftArrow)

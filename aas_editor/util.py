@@ -11,8 +11,9 @@ from PyQt5.QtWidgets import QApplication
 from aas.model import AASReference
 
 from aas_editor.util_classes import DictItem
-from aas_editor.settings import ATTR_ORDER, PREFERED_LANGS_ORDER, ATTRS_NOT_IN_DETAILED_INFO, \
-    ATTR_INFOS_TO_SIMPLIFY, NAME_ROLE, OBJECT_ROLE, PARENT_OBJ_ROLE, COMPLEX_ITERABLE_TYPES
+from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, PARENT_OBJ_ROLE
+from aas_editor.aas_settings import ATTR_ORDER, PREFERED_LANGS_ORDER, \
+    ATTR_INFOS_TO_SIMPLIFY, COMPLEX_ITERABLE_TYPES, CLS_ATTRS_NOT_IN_DETAILED_INFO
 
 
 def checkType(obj, typeHint):
@@ -71,7 +72,7 @@ def nameIsSpecial(method_name):
     return method_name.startswith('_')
 
 
-def getAttrs(obj, exclSpecial=True, exclCallable=True):
+def getAttrs(obj, exclSpecial=True, exclCallable=True) -> List[str]:
     attrs = dir(obj)
     if exclSpecial:
         attrs[:] = [attr for attr in attrs if not nameIsSpecial(attr)]
@@ -88,7 +89,13 @@ def attrOrder(attr):
 
 def getAttrs4detailInfo(obj, exclSpecial: bool = True, exclCallable: bool = True) -> List[str]:
     attrs = getAttrs(obj, exclSpecial, exclCallable)
-    attrs[:] = [attr for attr in attrs if attr not in ATTRS_NOT_IN_DETAILED_INFO]
+    for cls in CLS_ATTRS_NOT_IN_DETAILED_INFO:
+        if isinstance(obj, cls):
+            for attr in CLS_ATTRS_NOT_IN_DETAILED_INFO[cls]:
+                try:
+                    attrs.remove(attr)
+                except ValueError:
+                    continue
     attrs.sort(key=attrOrder)
     return attrs
 

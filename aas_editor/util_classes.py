@@ -12,6 +12,8 @@ from aas_editor.defaults import DEFAULT_COMPLETIONS
 
 
 class Package:
+    ATTRS = ("shells", "assets", "submodels", "concept_descriptions", "others", "files")
+
     def __init__(self, file: Union[str, Path] = ""):
         self.objStore = DictObjectStore()
         self.fileStore = DictSupplementaryFileContainer()

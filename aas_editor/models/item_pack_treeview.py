@@ -1,5 +1,5 @@
-from aas_editor.models import StandardItem
-from aas_editor.settings import ATTRS_IN_PACKAGE_TREEVIEW, PACKAGE_ROLE
+from aas_editor.models import StandardItem, Submodel, SubmodelElement
+from aas_editor.settings import PACKAGE_ROLE
 from aas_editor.util import isIterable
 from aas_editor.util_classes import Package
 
@@ -20,9 +20,10 @@ class PackTreeViewItem(StandardItem):
             "new": self.new,
         }
         if isinstance(self.obj, Package):
-            for attr in ATTRS_IN_PACKAGE_TREEVIEW:
+            for attr in Package.ATTRS:
                 # set package objStore as obj, so that delete works
-                PackTreeViewItem(self.obj.objStore, name=attr, **kwargs)
+                packItem = PackTreeViewItem(getattr(self.obj, attr), name=attr, **kwargs)
+                packItem.obj = self.obj.objStore
         elif isIterable(self.obj):
             self._populateIterable(self.obj, **kwargs)
 

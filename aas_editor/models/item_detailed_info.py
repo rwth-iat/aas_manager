@@ -1,5 +1,6 @@
 from aas_editor.models import StandardItem
-from aas_editor.settings import TYPES_NOT_TO_POPULATE, PACKAGE_ROLE
+from aas_editor.settings import PACKAGE_ROLE
+from aas_editor.aas_settings import TYPES_NOT_TO_POPULATE
 from aas_editor.util import getAttrs4detailInfo, getTypeName, isSimpleIterable
 from aas_editor.util_classes import Package, DictItem
 

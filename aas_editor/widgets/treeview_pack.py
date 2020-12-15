@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QToolButton, QToo
 from aas.model import Submodel, AssetAdministrationShell, Asset, SubmodelElement
 
 from aas_editor.models import Package, ConceptDescription
-from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ATTRS, SC_SAVE_ALL, SC_OPEN, \
+from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, SC_SAVE_ALL, SC_OPEN, \
     PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, APPLICATION_NAME, ADD_ICON, OPEN_ICON, SAVE_ICON, \
     SAVE_ALL_ICON, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, OPEN_DRAG_ICON, \
     AUTOSCROLL_TO_SRC_ICON, CASE_ICON, AUTOSCROLL_FROM_SRC_ICON, NEW_PACK_ICON
@@ -136,7 +136,7 @@ class PackTreeView(TreeView):
         self.addAct.setEnabled(True)
         if isinstance(obj, Package) or not index.isValid():
             self.addAct.setText("Add package")
-        elif name in PACKAGE_ATTRS:
+        elif name in Package.ATTRS:
             self.addAct.setText(f"Add {name.rstrip('s')}")
         elif isinstance(obj, Submodel):
             self.addAct.setText(f"Add submodel element")

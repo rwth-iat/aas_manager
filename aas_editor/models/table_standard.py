@@ -7,7 +7,7 @@ from PyQt5.QtGui import QFont
 
 from aas_editor.models import Package, DetailedInfoItem, StandardItem, PackTreeViewItem
 from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, VALUE_COLUMN, NOT_GIVEN, \
-    PACKAGE_ROLE, PACK_ITEM_ROLE, PACKAGE_ATTRS, DEFAULT_FONT, ADD_ITEM_ROLE, CLEAR_ROW_ROLE, \
+    PACKAGE_ROLE, PACK_ITEM_ROLE, DEFAULT_FONT, ADD_ITEM_ROLE, CLEAR_ROW_ROLE, \
     DATA_CHANGE_FAILED_ROLE, IS_LINK_ROLE, LINK_BLUE, NEW_GREEN, CHANGED_BLUE, RED, TYPE_COLUMN, \
     TYPE_CHECK_ROLE
 
@@ -114,7 +114,7 @@ class StandardTable(QAbstractItemModel):
 
         if isinstance(obj, Package):
             item = PackTreeViewItem(obj, new=False, parent=self._rootItem)
-        elif parent.data(NAME_ROLE) in PACKAGE_ATTRS:
+        elif parent.data(NAME_ROLE) in Package.ATTRS:
             parent.data(PACKAGE_ROLE).add(obj)
             item = PackTreeViewItem(obj, parent=self.objByIndex(parent))
         elif isinstance(parent.data(OBJECT_ROLE), Submodel):
@@ -310,7 +310,7 @@ class StandardTable(QAbstractItemModel):
             elif isinstance(parentObj, AbstractSet):
                 parentObj.discard(child.obj)
                 self.removeRow(currRow, parent)
-            elif parent.data(NAME_ROLE) in PACKAGE_ATTRS:
+            elif parent.data(NAME_ROLE) in Package.ATTRS:
                 parent.data(PACKAGE_ROLE).discard(child.obj)
                 self.removeRow(currRow, parent)
             else:
