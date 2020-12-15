@@ -9,7 +9,7 @@ from aas_editor.models import DetailedInfoTable
 from aas_editor.delegates import EditDelegate
 from aas_editor.settings import ATTR_COLUMN_WIDTH, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
     VALUE_COLUMN, LINKED_ITEM_ROLE, IS_LINK_ROLE, PARENT_OBJ_ROLE, TYPE_HINT_ROLE, EDIT_ICON
-from aas_editor.util import getAttrTypeHint, isoftype, getDefaultVal, checkType
+from aas_editor.util import getAttrTypeHint, isIterable
 from aas_editor.widgets import TreeView
 
 
@@ -82,7 +82,7 @@ class AttrsTreeView(TreeView):
 
         # update add action
         obj = index.data(OBJECT_ROLE)
-        if isinstance(obj, Iterable) and not isinstance(obj, (str, bytes, tuple)):
+        if isIterable(obj):
             self.addAct.setEnabled(True)
         else:
             self.addAct.setEnabled(False)
