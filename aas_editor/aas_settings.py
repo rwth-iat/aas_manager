@@ -53,7 +53,7 @@ PREFERED_LANGS_ORDER = ("en-us", "en", "de")
 
 PACKAGE_ATTRS = ("shells", "assets", "submodels", "concept_descriptions", "others", "files")
 
-AAS_PARENT_OBJECTS = {
+AAS_REF_PARENT_OBJECTS = {
     Submodel: "submodel_element",
     AnnotatedRelationshipElement: "annotation",
     SubmodelElementCollection: "value",
@@ -63,7 +63,7 @@ AAS_PARENT_OBJECTS = {
 CLS_ATTRS_NOT_IN_DETAILED_INFO = {
     object: ("namespace_element_sets", "parent", "security"),#TODO delete when implemented in aas
     Package: ("ATTRS", *Package.ATTRS),
-    **AAS_PARENT_OBJECTS
+    **AAS_REF_PARENT_OBJECTS
 }
 
 
