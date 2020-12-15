@@ -311,9 +311,6 @@ class StandardTable(QAbstractItemModel):
             elif isinstance(parentObj, AbstractSet):
                 parentObj.discard(child.obj)
                 self.removeRow(currRow, parent)
-            elif parent.data(NAME_ROLE) in Package.ATTRS:
-                parent.data(PACKAGE_ROLE).discard(child.obj)
-                self.removeRow(currRow, parent)
             else:
                 if not defaultVal == NOT_GIVEN:
                     self.setData(self.index(currRow, 0, parent), defaultVal, Qt.EditRole)
