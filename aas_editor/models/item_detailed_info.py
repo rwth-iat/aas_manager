@@ -5,7 +5,7 @@ from aas_editor.util_classes import Package, DictItem
 
 
 class DetailedInfoItem(StandardItem):
-    def __init__(self, obj, name, parent=None, package: Package = None, **kwargs):
+    def __init__(self, obj, name="", parent=None, package: Package = None, **kwargs):
         super().__init__(obj, name, parent, **kwargs)
         if parent and not package:
             self.package = parent.data(PACKAGE_ROLE)
@@ -33,17 +33,15 @@ class DetailedInfoItem(StandardItem):
     @staticmethod
     def _populateDict(obj, **kwargs):
         for key, value in obj.items():
-            kwargs["name"] = ""
             DetailedInfoItem(DictItem(key, value), **kwargs)
 
     @staticmethod
     def _populateIterable(obj, **kwargs):
         for i, sub_item_obj in enumerate(obj):
-            kwargs["name"] = f"{getTypeName(sub_item_obj.__class__)} {i}"
-            DetailedInfoItem(sub_item_obj, **kwargs)
+            DetailedInfoItem(sub_item_obj,
+                             name=f"{getTypeName(sub_item_obj.__class__)} {i}", **kwargs)
 
     @staticmethod
     def _populateUnknown(obj, **kwargs):
         for attr in getAttrs4detailInfo(obj):
-            kwargs["name"] = attr
-            DetailedInfoItem(getattr(obj, attr), **kwargs)
+            DetailedInfoItem(getattr(obj, attr), name=attr, **kwargs)
