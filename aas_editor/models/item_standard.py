@@ -73,10 +73,14 @@ class StandardItem(QObject):
         if role == Qt.BackgroundRole:
             return self.bg
         if role == Qt.DecorationRole and column == 0:
-            for cls in TYPE_ICON_DICT:
-                if isinstance(self.obj, cls):
-                    icon = TYPE_ICON_DICT[cls]
-                    return QIcon(icon)
+            try:
+                icon = TYPE_ICON_DICT[type(self.obj)]
+                return QIcon(icon)
+            except KeyError:
+                for cls in TYPE_ICON_DICT:
+                    if isinstance(self.obj, cls):
+                        icon = TYPE_ICON_DICT[cls]
+                        return QIcon(icon)
             return QIcon()
         if role == Qt.DisplayRole:
             if column == ATTRIBUTE_COLUMN:
