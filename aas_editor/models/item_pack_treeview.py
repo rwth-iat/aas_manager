@@ -1,5 +1,5 @@
 from aas_editor.models import StandardItem, Submodel, SubmodelElement
-from aas_editor.settings import PACKAGE_ROLE
+from aas_editor.settings.app_settings import PACKAGE_ROLE
 from aas_editor.util import isIterable
 from aas_editor.util_classes import Package
 

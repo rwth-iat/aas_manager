@@ -1,5 +1,4 @@
 from aas.model.base import *
-from aas.model.concept import *
 from aas.model.provider import *
 from aas.model.submodel import *
 
@@ -12,10 +11,10 @@ from PyQt5.QtGui import QIntValidator, QDoubleValidator, QPaintEvent
 from PyQt5.QtWidgets import QLineEdit, QLabel, QPushButton, QDialog, QDialogButtonBox, \
     QGroupBox, QCheckBox, QWidget, QCompleter, QComboBox, QVBoxLayout, QHBoxLayout
 
-from aas_editor.defaults import DEFAULTS, DEFAULT_COMPLETIONS
+from aas_editor.settings.defaults import DEFAULTS, DEFAULT_COMPLETIONS
 from aas_editor.delegates import ColorDelegate
-from aas_editor.settings import ATTRIBUTE_COLUMN, OBJECT_ROLE
-from aas_editor.aas_settings import DEFAULT_ATTRS_TO_HIDE
+from aas_editor.settings.app_settings import ATTRIBUTE_COLUMN, OBJECT_ROLE
+from aas_editor.settings.aas_settings import DEFAULT_ATTRS_TO_HIDE
 from aas_editor.util import issubtype, inheritors, getTypeName, isoftype, isIterableType, \
     getReqParams4init, getParams4init, isSimpleIterableType, isIterable
 from aas_editor.util_classes import DictItem

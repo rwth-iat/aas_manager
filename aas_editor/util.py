@@ -10,10 +10,9 @@ from PyQt5.QtCore import Qt, QFile, QTextStream, QModelIndex
 from PyQt5.QtWidgets import QApplication
 from aas.model import AASReference
 
-from aas_editor.util_classes import DictItem
-from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, PARENT_OBJ_ROLE
-from aas_editor.aas_settings import ATTR_ORDER, PREFERED_LANGS_ORDER, \
-    ATTR_INFOS_TO_SIMPLIFY, COMPLEX_ITERABLE_TYPES, CLS_ATTRS_NOT_IN_DETAILED_INFO
+from aas_editor.util_classes import DictItem, ClassesInfo
+from aas_editor.settings.aas_settings import ATTR_ORDER, PREFERED_LANGS_ORDER, \
+    ATTR_INFOS_TO_SIMPLIFY, COMPLEX_ITERABLE_TYPES
 
 
 def checkType(obj, typeHint):
@@ -91,13 +90,11 @@ def attrOrder(attr):
 
 def getAttrs4detailInfo(obj, exclSpecial: bool = True, exclCallable: bool = True) -> List[str]:
     attrs = getAttrs(obj, exclSpecial, exclCallable)
-    for cls in CLS_ATTRS_NOT_IN_DETAILED_INFO:
-        if isinstance(obj, cls):
-            for attr in CLS_ATTRS_NOT_IN_DETAILED_INFO[cls]:
-                try:
-                    attrs.remove(attr)
-                except ValueError:
-                    continue
+    for attr in ClassesInfo.hiddenAttrs(type(obj)):
+        try:
+            attrs.remove(attr)
+        except ValueError:
+            continue
     attrs.sort(key=attrOrder)
     return attrs
 

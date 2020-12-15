@@ -1,14 +1,15 @@
 from datetime import datetime
-from typing import NamedTuple, Any, Union, Iterable
+from typing import NamedTuple, Any, Union, Iterable, List, Dict, Type, Tuple
 
 import pyecma376_2
 from aas.adapter import aasx
 from aas.adapter.aasx import DictSupplementaryFileContainer
 from aas.model import DictObjectStore, AssetAdministrationShell, Asset, Submodel, \
-    ConceptDescription, Key, AASReference, SubmodelElement
+    ConceptDescription, Key
 from pathlib import Path
 
-from aas_editor.defaults import DEFAULT_COMPLETIONS
+from aas_editor.settings import aas_settings as s
+from aas_editor.settings.defaults import DEFAULT_COMPLETIONS
 
 
 class Package:
@@ -69,7 +70,7 @@ class Package:
                 # Create OPC/AASX core properties
                 cp = pyecma376_2.OPCCoreProperties()
                 cp.created = datetime.now()
-                from aas_editor.settings import AAS_CREATOR
+                from aas_editor.settings.app_settings import AAS_CREATOR
                 cp.creator = AAS_CREATOR
                 writer.write_core_properties(cp)
         else:
@@ -156,3 +157,61 @@ class DictItem(NamedTuple):
 
     def __repr__(self):
         return f"{self.key}: {self.value}"
+
+
+class ClassesInfo:
+    # @staticmethod
+    # @property
+    # def hiddenAttrs() -> Dict[Type, List[str]]:
+    #     res = {}
+    #     for typ in s.CLASSES_INFO:
+    #         try:
+    #             res[typ] = s.CLASSES_INFO[typ][s.ATTRS_NOT_IN_DETAILED_INFO]
+    #         except KeyError:
+    #             continue
+    #     return res
+    #
+    # @staticmethod
+    # @property
+    # def addActTexts() -> Dict[Type, List[str]]:
+    #     res = {}
+    #     for typ in s.CLASSES_INFO:
+    #         try:
+    #             res[typ] = s.CLASSES_INFO[typ][s.ADD_ACT_AAS_TXT]
+    #         except KeyError:
+    #             continue
+    #     return res
+    #
+    # @staticmethod
+    # @property
+    # def changedParentObjects() -> Dict[Type, List[str]]:
+    #     res = {}
+    #     for typ in s.CLASSES_INFO:
+    #         try:
+    #             res[typ] = s.CLASSES_INFO[typ][s.ADD_ACT_AAS_TXT]
+    #         except KeyError:
+    #             continue
+    #     return res
+
+    @staticmethod
+    def hiddenAttrs(cls) -> Tuple[str]:
+        res = set()
+        for typ in s.CLASSES_INFO:
+            if issubclass(cls, typ):
+                try:
+                    res.update(s.CLASSES_INFO[typ][s.ATTRS_NOT_IN_DETAILED_INFO])
+                except KeyError:
+                    continue
+        return tuple(res)
+
+    @staticmethod
+    def addActText(cls) -> str:
+        clsInfo = s.CLASSES_INFO.get(cls, {})
+        res = clsInfo.get(s.ADD_ACT_AAS_TXT, "")
+        return res
+
+    @staticmethod
+    def changedParentObject(cls) -> str:
+        clsInfo = s.CLASSES_INFO.get(cls, {})
+        res = clsInfo.get(s.CHANGED_PARENT_OBJ, "")
+        return res

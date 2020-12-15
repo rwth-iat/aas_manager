@@ -2,7 +2,7 @@ from typing import Optional
 
 from PyQt5.QtWidgets import QToolBar, QWidget
 
-from aas_editor.settings import TOOLBARS_HEIGHT
+from aas_editor.settings.app_settings import TOOLBARS_HEIGHT
 
 
 class ToolBar(QToolBar):

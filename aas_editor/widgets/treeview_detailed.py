@@ -1,5 +1,3 @@
-from typing import Iterable
-
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex
 from PyQt5.QtGui import QMouseEvent, QKeyEvent
@@ -7,9 +5,9 @@ from PyQt5.QtWidgets import QAction, QAbstractScrollArea, QAbstractItemView
 
 from aas_editor.models import DetailedInfoTable
 from aas_editor.delegates import EditDelegate
-from aas_editor.settings import ATTR_COLUMN_WIDTH, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
-    VALUE_COLUMN, LINKED_ITEM_ROLE, IS_LINK_ROLE, PARENT_OBJ_ROLE, TYPE_HINT_ROLE, EDIT_ICON
-from aas_editor.util import getAttrTypeHint, isIterable
+from aas_editor.settings.app_settings import ATTR_COLUMN_WIDTH, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
+    VALUE_COLUMN, LINKED_ITEM_ROLE, IS_LINK_ROLE, PARENT_OBJ_ROLE, EDIT_ICON
+from aas_editor.util import getAttrTypeHint
 from aas_editor.widgets import TreeView
 
 
@@ -80,13 +78,6 @@ class AttrsTreeView(TreeView):
         else:
             self.editAct.setEnabled(False)
 
-        # update add action
-        obj = index.data(OBJECT_ROLE)
-        if isIterable(obj):
-            self.addAct.setEnabled(True)
-        else:
-            self.addAct.setEnabled(False)
-
         # update open actions
         indexIsLink = bool(index.data(IS_LINK_ROLE))
         self.openInCurrTabAct.setEnabled(indexIsLink)
@@ -118,7 +109,7 @@ class AttrsTreeView(TreeView):
     def _addHandler(self, objVal=None):
         index = self.currentIndex()
         attribute = index.data(NAME_ROLE)
-        attrType = getAttrTypeHint(type(index.data(PARENT_OBJ_ROLE)), attribute)
+        attrType = getAttrTypeHint(type(index.data(PARENT_OBJ_ROLE)), attribute) #FIXME
         if objVal:
             self.addItemWithDialog(index, attrType, objVal=objVal, title=f"Add {attribute} element", rmDefParams=True)
         else:

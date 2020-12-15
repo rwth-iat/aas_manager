@@ -1,14 +1,16 @@
-from PyQt5.QtCore import pyqtSignal, Qt, QModelIndex
+from types import GeneratorType
+
+from PyQt5.QtCore import pyqtSignal, QModelIndex
 from PyQt5.QtGui import QClipboard
 from PyQt5.QtWidgets import QAction, QMenu, QApplication, QDialog
 
 from aas_editor.delegates import ColorDelegate
 from aas_editor import dialogs
-from aas_editor.settings import *
+from aas_editor.settings.app_settings import *
 from aas_editor.util import getDefaultVal, isIterable, getReqParams4init, delAASParents, checkType, \
     getIterItemTypeHint, isSimpleIterable
 
-from aas_editor.util_classes import DictItem
+from aas_editor.util_classes import DictItem, Package, ClassesInfo
 from aas_editor.widgets.treeview_basic import BasicTreeView
 
 
@@ -182,6 +184,26 @@ class TreeView(BasicTreeView):
             self.copyAct.setEnabled(False)
             self.cutAct.setEnabled(False)
             self.delClearAct.setEnabled(False)
+
+        # update add action
+        obj = index.data(OBJECT_ROLE)
+        objType = type(obj)
+        attrName = index.data(NAME_ROLE)
+
+        if ClassesInfo.addActText(objType):
+            addActText = ClassesInfo.addActText(objType)
+            enabled = True
+        elif isinstance(obj, GeneratorType) and attrName in Package.ATTRS:
+            addActText = f"Add {attrName.rstrip('s')}"
+            enabled = True
+        elif isIterable(obj):
+            addActText = f"Add {attrName} element"
+            enabled = True
+        else:
+            addActText = "Add"
+            enabled = False
+        self.addAct.setEnabled(enabled)
+        self.addAct.setText(addActText)
 
     def buildHandlers(self):
         self.customContextMenuRequested.connect(self.openMenu)

@@ -1,14 +1,12 @@
-from PyQt5.QtCore import pyqtSignal, QModelIndex, Qt, QPersistentModelIndex, QPoint, QMimeData
+from PyQt5.QtCore import pyqtSignal, QModelIndex, QPersistentModelIndex, QPoint, QMimeData
 from PyQt5.QtGui import QIcon, QPixmap, QRegion, QDrag, QCursor, QMouseEvent, \
     QDragEnterEvent, QDragLeaveEvent, QDropEvent, QCloseEvent
 from PyQt5.QtWidgets import QWidget, QLabel, QMessageBox, QVBoxLayout, \
     QTabWidget, QAction, QHBoxLayout, QFrame, QTabBar, QMenu, QSplitter, QShortcut
 
-from aas_editor.settings import *
+from aas_editor.settings.app_settings import *
 from aas_editor.widgets import AddressLine, SearchBar, ToolBar, AttrsTreeView
 from aas_editor.util import getTreeItemPath
-
-import qtawesome as qta
 
 
 class TabBar(QTabBar):

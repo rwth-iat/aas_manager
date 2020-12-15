@@ -1,15 +1,12 @@
 import sys
-from enum import Enum
 from time import sleep
 from unittest import TestCase
 
-from PyQt5.QtCore import QModelIndex, QThread, QEventLoop, QTimer
+from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QApplication
-from aas.examples.data.example_aas import create_full_example
-from aas.model import AASReference, Reference, Submodel, IdentifierType, Referable
 
 from aas_editor.editorApp import EditorApp
-from aas_editor.settings import DEFAULT_THEME, NAME_ROLE, VALUE_COLUMN
+from aas_editor.settings.app_settings import NAME_ROLE
 from aas_editor.widgets import Tab, PackTreeView
 
 
@@ -18,7 +15,6 @@ class TestUi(TestCase):
         self.app = QApplication(sys.argv)
 
         self.window = EditorApp()
-        from aas_editor.models import Package
         self.window.packTreeView.openPack("aas_files/TestPackage.aasx")
         self.window.show()
 

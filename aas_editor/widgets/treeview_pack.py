@@ -2,14 +2,14 @@ from pathlib import Path
 
 from PyQt5.QtCore import QModelIndex, QSettings
 from PyQt5.QtGui import QDropEvent, QDragEnterEvent
-from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QToolButton, QToolBar, QHBoxLayout
+from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog
 from aas.model import Submodel, AssetAdministrationShell, Asset, SubmodelElement
 
 from aas_editor.models import Package, ConceptDescription
-from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, SC_SAVE_ALL, SC_OPEN, \
-    PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, APPLICATION_NAME, ADD_ICON, OPEN_ICON, SAVE_ICON, \
+from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, SC_SAVE_ALL, SC_OPEN, \
+    PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, APPLICATION_NAME, OPEN_ICON, SAVE_ICON, \
     SAVE_ALL_ICON, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, OPEN_DRAG_ICON, \
-    AUTOSCROLL_TO_SRC_ICON, CASE_ICON, AUTOSCROLL_FROM_SRC_ICON, NEW_PACK_ICON
+    NEW_PACK_ICON
 from aas_editor.widgets import TreeView
 
 EMPTY_VIEW_MSG = "Drop AAS files here"
@@ -130,19 +130,9 @@ class PackTreeView(TreeView):
         self.closeAllAct.setEnabled(self._isCloseAllOk())
 
         # update add action
-        obj = index.data(OBJECT_ROLE)
-        name = index.data(NAME_ROLE)
-
-        self.addAct.setEnabled(True)
-        if isinstance(obj, Package) or not index.isValid():
+        if not index.isValid():
+            self.addAct.setEnabled(True)
             self.addAct.setText("Add package")
-        elif name in Package.ATTRS:
-            self.addAct.setText(f"Add {name.rstrip('s')}")
-        elif isinstance(obj, Submodel):
-            self.addAct.setText(f"Add submodel element")
-        else:
-            self.addAct.setText(f"Add")
-            self.addAct.setEnabled(False)
 
     def _isPasteOk(self, index: QModelIndex) -> bool:
         if not self.treeObjClipboard:

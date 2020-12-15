@@ -1,10 +1,10 @@
 from PyQt5 import QtCore
-from PyQt5.QtCore import pyqtSignal, Qt, QRect
-from PyQt5.QtGui import QMouseEvent, QPaintEvent, QPainter, QWheelEvent, QKeyEvent
-from PyQt5.QtWidgets import QTreeView, QAbstractItemView
+from PyQt5.QtCore import pyqtSignal, QRect
+from PyQt5.QtGui import QMouseEvent, QPaintEvent, QPainter, QWheelEvent
+from PyQt5.QtWidgets import QTreeView
 
 from aas_editor.models.search_proxy_model import SearchProxyModel
-from aas_editor.settings import *
+from aas_editor.settings.app_settings import *
 
 EMPTY_VIEW_MSG = "There are no elements in this view"
 EMPTY_VIEW_ICON = None

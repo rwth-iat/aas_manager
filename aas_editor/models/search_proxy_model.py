@@ -4,7 +4,7 @@ from PyQt5.QtCore import QSortFilterProxyModel, QModelIndex, Qt, \
     QPersistentModelIndex, QObject, QAbstractItemModel
 from PyQt5.QtGui import QBrush, QColor
 
-from aas_editor.settings import OBJECT_ROLE
+from aas_editor.settings.app_settings import OBJECT_ROLE
 
 
 class SearchProxyModel(QSortFilterProxyModel):

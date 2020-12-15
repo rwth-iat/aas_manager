@@ -8,8 +8,7 @@ from aas.model import AssetAdministrationShell, Asset, ConceptDescription, Submo
     Namespace, SubmodelElementCollection
 
 from aas_editor import util_classes
-from aas_editor.settings import getCharsIcon
-from aas_editor.util_classes import Package
+from aas_editor.settings.app_settings import getCharsIcon
 
 
 TYPE_ICON_DICT = {
@@ -51,8 +50,6 @@ ATTR_ORDER = (
 )
 PREFERED_LANGS_ORDER = ("en-us", "en", "de")
 
-PACKAGE_ATTRS = ("shells", "assets", "submodels", "concept_descriptions", "others", "files")
-
 AAS_REF_PARENT_OBJECTS = {
     Submodel: "submodel_element",
     AnnotatedRelationshipElement: "annotation",
@@ -62,7 +59,7 @@ AAS_REF_PARENT_OBJECTS = {
 
 CLS_ATTRS_NOT_IN_DETAILED_INFO = {
     object: ("namespace_element_sets", "parent", "security"),#TODO delete when implemented in aas
-    Package: ("ATTRS", *Package.ATTRS),
+    util_classes.Package: ("ATTRS", *util_classes.Package.ATTRS),
     **AAS_REF_PARENT_OBJECTS
 }
 

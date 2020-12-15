@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, QModelIndex, QSettings
+from PyQt5.QtCore import QModelIndex, QSettings
 
 from aas_editor import dialogs
 from aas_editor.widgets import SearchBar, AddressLine
@@ -11,7 +11,7 @@ from .models import DetailedInfoTable
 from .models.table_packs import PacksTable
 
 from .widgets.tab import Tab
-from .settings import *
+from aas_editor.settings.app_settings import *
 from .util import toggleStylesheet
 
 
