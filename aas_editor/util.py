@@ -73,11 +73,13 @@ def nameIsSpecial(method_name):
 
 
 def getAttrs(obj, exclSpecial=True, exclCallable=True) -> List[str]:
-    attrs = dir(obj)
+    attrs: List[str] = dir(obj)
     if exclSpecial:
         attrs[:] = [attr for attr in attrs if not nameIsSpecial(attr)]
     if exclCallable:
-        attrs[:] = [attr for attr in attrs if not callable(getattr(obj, attr))]
+        attrs[:] = [attr for attr in attrs
+                    if type(getattr(obj, attr)) in (type, ABCMeta)
+                    or not callable(getattr(obj, attr))]
     return attrs
 
 
