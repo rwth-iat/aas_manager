@@ -129,7 +129,7 @@ class StandardTable(QAbstractItemModel):
             item = DetailedInfoItem(obj, parent=self.objByIndex(parent))
         elif isinstance(parentObj, dict):
             parentObj[obj.key] = obj.value
-            item = DetailedInfoItem(obj, name=obj.key, parent=self.objByIndex(parent))
+            item = DetailedInfoItem(obj, parent=self.objByIndex(parent))
         else:
             raise AttributeError(
                 f"Object couldn't be added: parent obj type is not appendable: {type(parentObj)}")
