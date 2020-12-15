@@ -5,6 +5,7 @@ from PyQt5.QtCore import QAbstractItemModel, QVariant, QModelIndex, Qt, pyqtSign
     QItemSelection, QSize
 from PyQt5.QtGui import QFont
 
+from aas_editor.aas_settings import AAS_REF_PARENT_OBJECTS
 from aas_editor.models import Package, DetailedInfoItem, StandardItem, PackTreeViewItem
 from aas_editor.settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, VALUE_COLUMN, NOT_GIVEN, \
     PACKAGE_ROLE, PACK_ITEM_ROLE, DEFAULT_FONT, ADD_ITEM_ROLE, CLEAR_ROW_ROLE, \
@@ -296,8 +297,12 @@ class StandardTable(QAbstractItemModel):
 
         # if parentObj is Submodel and the parentObj is not rootItem
         # set submodel_element as parentObj
-        if isinstance(parentObj, Submodel) and parent.isValid(): #FIXME delete if Namespace.discard() works
-            parentObj = parentObj.submodel_element
+        if parent.isValid():
+            try:
+                parentAttr = AAS_REF_PARENT_OBJECTS[type(parentObj)] #FIXME delete if Namespace.discard() works
+                parentObj = getattr(parentObj, parentAttr)
+            except KeyError:
+                pass
 
         for currRow in range(row+count-1, row-1, -1):
             child = parentItem.children()[currRow]
