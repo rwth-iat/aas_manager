@@ -63,7 +63,8 @@ def getInputWidget(objType, rmDefParams=True, title="", attrsToHide: dict = None
     print(objType, objType.__str__, objType.__repr__, objType.__class__)
 
     if objVal and not isoftype(objVal, objType):
-        raise TypeError("Given object type does not match to real object type:", objType, objVal)
+        print("Given object type does not match to real object type:", objType, objVal)
+        objVal = None
 
     attrsToHide = attrsToHide if attrsToHide else DEFAULT_ATTRS_TO_HIDE.copy()
     kwargs = {
@@ -434,9 +435,9 @@ class StandardInputWidget(QWidget):
             elif issubtype(self.objType, str) and type(val) is str:
                 self.widget.setText(val)
             elif issubtype(self.objType, int) and type(val) is int:
-                self.widget.setText(val)
+                self.widget.setText(str(val))
             elif issubtype(self.objType, float) and type(val) in (int, float):
-                self.widget.setText(val)
+                self.widget.setText(str(val))
             elif issubtype(self.objType, (Enum, Type)):
                 self.widget.setCurrentIndex(self.widget.findData(val))
 
