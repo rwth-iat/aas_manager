@@ -3,9 +3,8 @@ from pathlib import Path
 from PyQt5.QtCore import QModelIndex, QSettings
 from PyQt5.QtGui import QDropEvent, QDragEnterEvent
 from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog
-from aas.model import Submodel, AssetAdministrationShell, Asset, SubmodelElement
 
-from aas_editor.models import Package, ConceptDescription
+from aas_editor.models import Package
 from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, SC_SAVE_ALL, SC_OPEN, \
     PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, APPLICATION_NAME, OPEN_ICON, SAVE_ICON, \
     SAVE_ALL_ICON, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, OPEN_DRAG_ICON, \
@@ -144,21 +143,10 @@ class PackTreeView(TreeView):
         attrName = index.data(NAME_ROLE)
         currObj = index.data(OBJECT_ROLE)
 
-        if isinstance(obj2paste, AssetAdministrationShell):
-            if isinstance(currObj, AssetAdministrationShell) or attrName == "shells":
-                return True
-        elif isinstance(obj2paste, Asset):
-            if isinstance(currObj, Asset) or attrName == "assets":
-                return True
-        elif isinstance(obj2paste, Submodel):
-            if isinstance(currObj, Submodel) or attrName == "submodels":
-                return True
-        elif isinstance(obj2paste, SubmodelElement):
-            if isinstance(currObj, SubmodelElement):
-                return True
-        elif isinstance(obj2paste, ConceptDescription):
-            if isinstance(currObj, ConceptDescription) or attrName == "concept_descriptions":
-                return True
+        if attrName in Package.addableAttrs() and isinstance(obj2paste, Package.addType(attrName)):
+            return True
+        elif isinstance(obj2paste, type(currObj)) or isinstance(currObj, type(obj2paste)):
+            return True
         return False
 
     def _isSaveOk(self):
@@ -190,14 +178,8 @@ class PackTreeView(TreeView):
 
         if not parent.isValid():
             self.newPackWithDialog()
-        elif name == "shells":
-            self.addItemWithDialog(objType=AssetAdministrationShell, **kwargs)
-        elif name == "assets":
-            self.addItemWithDialog(objType=Asset, **kwargs)
-        elif name == "submodels":
-            self.addItemWithDialog(objType=Submodel, **kwargs)
-        elif name == "concept_descriptions":
-            self.addItemWithDialog(objType=ConceptDescription, **kwargs)
+        elif name in Package.addableAttrs():
+            self.addItemWithDialog(objType=Package.addType(name), **kwargs)
         elif ClassesInfo.addType(type(parentObj)):
             self.addItemWithDialog(objType=ClassesInfo.addType(type(parentObj)), **kwargs)
         else:
