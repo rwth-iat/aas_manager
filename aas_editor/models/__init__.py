@@ -5,3 +5,4 @@ from .item_detailed_info import *
 from .item_pack_treeview import *
 from .table_standard import *
 from .table_detailed_info import *
+from .table_packs import *

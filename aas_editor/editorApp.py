@@ -1,18 +1,14 @@
 from PyQt5.QtCore import QModelIndex, QSettings
-
-from aas_editor import dialogs
-from aas_editor.widgets import SearchBar, AddressLine
-from . import design
-
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from .models import DetailedInfoTable
-from .models.table_packs import PacksTable
-
-from .widgets.tab import Tab
+from aas_editor import dialogs
 from aas_editor.settings.app_settings import *
-from .util import toggleStylesheet
+from aas_editor.widgets import SearchBar, AddressLine
+from aas_editor import design
+from aas_editor.models import DetailedInfoTable, PacksTable
+from aas_editor.util import toggleStylesheet
+from aas_editor.widgets.tab import Tab
 
 
 class EditorApp(QMainWindow, design.Ui_MainWindow):
