@@ -9,7 +9,8 @@ from aas.model import AssetAdministrationShell, Asset, ConceptDescription, Submo
 
 from aas_editor import util_classes
 from aas_editor.settings.app_settings import getCharsIcon
-
+from aas_editor.settings.util_constants import HIDDEN_ATTRS, CHANGED_PARENT_OBJ, ADD_ACT_AAS_TXT, \
+    ADD_TYPE
 
 TYPE_ICON_DICT = {
     AssetAdministrationShell: getCharsIcon("shl"),  # qta.icon("mdi.wallet") #  mdi.tab mdi.shredder folder-outline wallet
@@ -50,17 +51,12 @@ ATTR_ORDER = (
 )
 PREFERED_LANGS_ORDER = ("en-us", "en", "de")
 
-HIDDEN_ATTRS = "attrs_not_in_detailed_info"
-CHANGED_PARENT_OBJ = "changed_parent_obj"
-ADD_ACT_AAS_TXT = "add_act_aas_txt"
-ADD_TYPE = "add_type"
-
 CLASSES_INFO = {
     object: {
         HIDDEN_ATTRS: ("namespace_element_sets", "parent", "security")
     },
     util_classes.Package: {
-        HIDDEN_ATTRS: ("ATTRS", *util_classes.Package.ATTRS),
+        HIDDEN_ATTRS: ("ATTRS_INFO", *util_classes.Package.packViewAttrs()),
         ADD_ACT_AAS_TXT: "Add package",
         ADD_TYPE: util_classes.Package,
     },

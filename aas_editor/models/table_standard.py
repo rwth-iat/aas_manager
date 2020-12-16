@@ -108,11 +108,13 @@ class StandardTable(QAbstractItemModel):
                 parent: QModelIndex = QModelIndex()):
         parent = parent.siblingAtColumn(0)
         parentObj = self.objByIndex(parent).data(OBJECT_ROLE)
+        parentName = parent.data(NAME_ROLE)
 
         if isinstance(obj, Package):
             item = PackTreeViewItem(obj, new=False, parent=self._rootItem)
-        elif parent.data(NAME_ROLE) in Package.ATTRS:
-            parent.data(PACKAGE_ROLE).add(obj)
+        elif parentName in Package.addableAttrs():
+            package = parent.data(PACKAGE_ROLE)
+            package.add(obj)
             item = PackTreeViewItem(obj, parent=self.objByIndex(parent))
         elif ClassesInfo.changedParentObject(parentObj):
             parentObj = getattr(parentObj, ClassesInfo.changedParentObject(parentObj))

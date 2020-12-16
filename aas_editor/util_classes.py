@@ -8,12 +8,36 @@ from aas.model import DictObjectStore, AssetAdministrationShell, Asset, Submodel
     ConceptDescription, Key
 from pathlib import Path
 
+from aas_editor.settings.util_constants import *
 from aas_editor.settings import aas_settings as s
 from aas_editor.settings.defaults import DEFAULT_COMPLETIONS
 
 
 class Package:
-    ATTRS = ("shells", "assets", "submodels", "concept_descriptions", "others", "files")
+    ATTRS_INFO = {
+        "shells": {
+            ADD_ACT_AAS_TXT: "Add shell",
+            ADD_TYPE: AssetAdministrationShell,
+        },
+        "assets": {
+            ADD_ACT_AAS_TXT: "Add asset",
+            ADD_TYPE: Asset,
+        },
+        "submodels": {
+            ADD_ACT_AAS_TXT: "Add submodel",
+            ADD_TYPE: Submodel,
+        },
+        "concept_descriptions": {
+            ADD_ACT_AAS_TXT: "Add concept description",
+            ADD_TYPE: ConceptDescription,
+        },
+        "others": {
+            ADD_ACT_AAS_TXT: "",
+        },
+        "files": {
+            ADD_ACT_AAS_TXT: "Add file",
+        },
+    }
 
     def __init__(self, file: Union[str, Path] = ""):
         self.objStore = DictObjectStore()
@@ -24,6 +48,23 @@ class Package:
         for obj in self.objStore:
             DEFAULT_COMPLETIONS[Key]["value"].append(obj.identification.id)
         self._changed = False
+
+    @classmethod
+    def packViewAttrs(cls):
+        return tuple(cls.ATTRS_INFO.keys())
+
+    @classmethod
+    def addableAttrs(cls):
+        return tuple(cls.ATTRS_INFO.keys())
+
+    @classmethod
+    def addActText(cls, attrName: str) -> str:
+        return cls.ATTRS_INFO.get(attrName, {}).get(
+            ADD_ACT_AAS_TXT, "")
+
+    @classmethod
+    def addType(cls, attrName: str) -> Type:
+        return cls.ATTRS_INFO.get(attrName, {}).get(ADD_TYPE, None)
 
     @property
     def file(self):
@@ -199,7 +240,8 @@ class ClassesInfo:
         for typ in s.CLASSES_INFO:
             if issubclass(cls, typ):
                 try:
-                    res.update(s.CLASSES_INFO[typ][s.HIDDEN_ATTRS])
+                    res.update(s.CLASSES_INFO[typ][
+                                   HIDDEN_ATTRS])
                 except KeyError:
                     continue
         return tuple(res)
@@ -207,12 +249,13 @@ class ClassesInfo:
     @staticmethod
     def addActText(cls) -> str:
         clsInfo = s.CLASSES_INFO.get(cls, {})
-        res = clsInfo.get(s.ADD_ACT_AAS_TXT, "")
+        res = clsInfo.get(ADD_ACT_AAS_TXT, "")
         if not res:
             for typ in s.CLASSES_INFO:
                 if issubclass(cls, typ):
                     try:
-                        res = s.CLASSES_INFO[typ][s.ADD_ACT_AAS_TXT]
+                        res = s.CLASSES_INFO[typ][
+                            ADD_ACT_AAS_TXT]
                         return res
                     except KeyError:
                         continue
@@ -221,12 +264,13 @@ class ClassesInfo:
     @staticmethod
     def changedParentObject(cls) -> str:
         clsInfo = s.CLASSES_INFO.get(cls, {})
-        res = clsInfo.get(s.CHANGED_PARENT_OBJ, "")
+        res = clsInfo.get(CHANGED_PARENT_OBJ, "")
         if not res:
             for typ in s.CLASSES_INFO:
                 if issubclass(cls, typ):
                     try:
-                        res = s.CLASSES_INFO[typ][s.CHANGED_PARENT_OBJ]
+                        res = s.CLASSES_INFO[typ][
+                            CHANGED_PARENT_OBJ]
                         return res
                     except KeyError:
                         continue
@@ -235,12 +279,12 @@ class ClassesInfo:
     @staticmethod
     def addType(cls) -> Type:
         clsInfo = s.CLASSES_INFO.get(cls, {})
-        res = clsInfo.get(s.ADD_TYPE, None)
+        res = clsInfo.get(ADD_TYPE, None)
         if not res:
             for typ in s.CLASSES_INFO:
                 if issubclass(cls, typ):
                     try:
-                        res = s.CLASSES_INFO[typ][s.ADD_TYPE]
+                        res = s.CLASSES_INFO[typ][ADD_TYPE]
                         return res
                     except KeyError:
                         continue

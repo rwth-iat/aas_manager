@@ -20,7 +20,7 @@ class PackTreeViewItem(StandardItem):
             "new": self.new,
         }
         if isinstance(self.obj, Package):
-            for attr in Package.ATTRS:
+            for attr in Package.packViewAttrs():
                 # set package objStore as obj, so that delete works
                 packItem = PackTreeViewItem(getattr(self.obj, attr), name=attr, **kwargs)
                 packItem.obj = self.obj.objStore
