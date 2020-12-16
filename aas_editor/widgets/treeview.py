@@ -1,5 +1,3 @@
-from types import GeneratorType
-
 from PyQt5.QtCore import pyqtSignal, QModelIndex
 from PyQt5.QtGui import QClipboard
 from PyQt5.QtWidgets import QAction, QMenu, QApplication, QDialog
