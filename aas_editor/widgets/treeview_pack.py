@@ -10,6 +10,7 @@ from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, SC_SAVE_ALL
     PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, APPLICATION_NAME, OPEN_ICON, SAVE_ICON, \
     SAVE_ALL_ICON, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, OPEN_DRAG_ICON, \
     NEW_PACK_ICON
+from aas_editor.util_classes import ClassesInfo
 from aas_editor.widgets import TreeView
 
 EMPTY_VIEW_MSG = "Drop AAS files here"
@@ -177,6 +178,7 @@ class PackTreeView(TreeView):
     def _addHandler(self, objVal=None, parent: QModelIndex = None):
         parent = parent if parent else self.currentIndex()
         name = parent.data(NAME_ROLE)
+        parentObj = parent.data(OBJECT_ROLE)
 
         if objVal:
             kwargs = {"parent": parent,
@@ -186,7 +188,7 @@ class PackTreeView(TreeView):
             kwargs = {"parent": parent,
                       "rmDefParams": True}
 
-        if isinstance(parent.data(OBJECT_ROLE), Package) or not parent.isValid():
+        if not parent.isValid():
             self.newPackWithDialog()
         elif name == "shells":
             self.addItemWithDialog(objType=AssetAdministrationShell, **kwargs)
@@ -196,10 +198,17 @@ class PackTreeView(TreeView):
             self.addItemWithDialog(objType=Submodel, **kwargs)
         elif name == "concept_descriptions":
             self.addItemWithDialog(objType=ConceptDescription, **kwargs)
-        elif isinstance(parent.data(OBJECT_ROLE), Submodel):
-            self.addItemWithDialog(objType=SubmodelElement, **kwargs)
+        elif ClassesInfo.addType(type(parentObj)):
+            self.addItemWithDialog(objType=ClassesInfo.addType(type(parentObj)), **kwargs)
         else:
             raise TypeError("Parent type is not extendable:", type(parent.data(OBJECT_ROLE)))
+
+    def addItemWithDialog(self, parent: QModelIndex, objType, objVal=None,
+                          title="", rmDefParams=False):
+        if objType is Package:
+            self.newPackWithDialog()
+            return
+        super(PackTreeView, self).addItemWithDialog(parent, objType, objVal, title, rmDefParams)
 
     def newPackWithDialog(self):
         file = QFileDialog.getSaveFileName(self, 'Create new AAS File',

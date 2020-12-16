@@ -208,10 +208,40 @@ class ClassesInfo:
     def addActText(cls) -> str:
         clsInfo = s.CLASSES_INFO.get(cls, {})
         res = clsInfo.get(s.ADD_ACT_AAS_TXT, "")
+        if not res:
+            for typ in s.CLASSES_INFO:
+                if issubclass(cls, typ):
+                    try:
+                        res = s.CLASSES_INFO[typ][s.ADD_ACT_AAS_TXT]
+                        return res
+                    except KeyError:
+                        continue
         return res
 
     @staticmethod
     def changedParentObject(cls) -> str:
         clsInfo = s.CLASSES_INFO.get(cls, {})
         res = clsInfo.get(s.CHANGED_PARENT_OBJ, "")
+        if not res:
+            for typ in s.CLASSES_INFO:
+                if issubclass(cls, typ):
+                    try:
+                        res = s.CLASSES_INFO[typ][s.CHANGED_PARENT_OBJ]
+                        return res
+                    except KeyError:
+                        continue
+        return res
+
+    @staticmethod
+    def addType(cls) -> Type:
+        clsInfo = s.CLASSES_INFO.get(cls, {})
+        res = clsInfo.get(s.ADD_TYPE, None)
+        if not res:
+            for typ in s.CLASSES_INFO:
+                if issubclass(cls, typ):
+                    try:
+                        res = s.CLASSES_INFO[typ][s.ADD_TYPE]
+                        return res
+                    except KeyError:
+                        continue
         return res

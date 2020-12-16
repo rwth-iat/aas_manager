@@ -5,7 +5,7 @@ from aas.model import AssetAdministrationShell, Asset, ConceptDescription, Submo
     Entity, Capability, Event, Operation, RelationshipElement, AnnotatedRelationshipElement, \
     SubmodelElementCollectionUnordered, SubmodelElementCollectionOrdered, Range, Blob, File, \
     ReferenceElement, DataElement, AdministrativeInformation, Identifier, AbstractObjectStore, \
-    Namespace, SubmodelElementCollection
+    Namespace, SubmodelElementCollection, SubmodelElement
 
 from aas_editor import util_classes
 from aas_editor.settings.app_settings import getCharsIcon
@@ -53,6 +53,7 @@ PREFERED_LANGS_ORDER = ("en-us", "en", "de")
 HIDDEN_ATTRS = "attrs_not_in_detailed_info"
 CHANGED_PARENT_OBJ = "changed_parent_obj"
 ADD_ACT_AAS_TXT = "add_act_aas_txt"
+ADD_TYPE = "add_type"
 
 CLASSES_INFO = {
     object: {
@@ -61,26 +62,31 @@ CLASSES_INFO = {
     util_classes.Package: {
         HIDDEN_ATTRS: ("ATTRS", *util_classes.Package.ATTRS),
         ADD_ACT_AAS_TXT: "Add package",
+        ADD_TYPE: util_classes.Package,
     },
     Submodel: {
         HIDDEN_ATTRS: ("submodel_element",),
         CHANGED_PARENT_OBJ: "submodel_element",
         ADD_ACT_AAS_TXT: "Add submodel element",
+        ADD_TYPE: SubmodelElement,
     },
     AnnotatedRelationshipElement: {
         HIDDEN_ATTRS: ("annotation",),
         CHANGED_PARENT_OBJ: "annotation",
         ADD_ACT_AAS_TXT: "Add annotation",
+        ADD_TYPE: DataElement,
     },
     SubmodelElementCollection: {
         HIDDEN_ATTRS: ("value",),
         CHANGED_PARENT_OBJ: "value",
         ADD_ACT_AAS_TXT: "Add collection submodel element",
+        ADD_TYPE: SubmodelElement,
     },
     Entity: {
         HIDDEN_ATTRS: ("statement",),
         CHANGED_PARENT_OBJ: "statement",
         ADD_ACT_AAS_TXT: "Add statement",
+        ADD_TYPE: SubmodelElement,
     },
 }
 
