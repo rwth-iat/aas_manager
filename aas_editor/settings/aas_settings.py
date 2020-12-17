@@ -5,7 +5,7 @@ from aas.model import AssetAdministrationShell, Asset, ConceptDescription, Submo
     Entity, Capability, Event, Operation, RelationshipElement, AnnotatedRelationshipElement, \
     SubmodelElementCollectionUnordered, SubmodelElementCollectionOrdered, Range, Blob, File, \
     ReferenceElement, DataElement, AdministrativeInformation, Identifier, AbstractObjectStore, \
-    Namespace, SubmodelElementCollection, SubmodelElement, AASReference
+    Namespace, SubmodelElementCollection, SubmodelElement, AASReference, ConceptDictionary
 
 from aas_editor import util_classes
 from aas_editor.settings.app_settings import getCharsIcon
@@ -39,6 +39,11 @@ CLASSES_INFO = {
         HIDDEN_ATTRS: ("ATTRS_INFO", *util_classes.Package.packViewAttrs()),
         ADD_ACT_AAS_TXT: "Add package",
         ADD_TYPE: util_classes.Package,
+    },
+    AssetAdministrationShell: {
+        CHANGED_PARENT_OBJ: "concept_dictionary",
+        ADD_ACT_AAS_TXT: "Add concept dictionary",
+        ADD_TYPE: ConceptDictionary,
     },
     Submodel: {
         HIDDEN_ATTRS: ("submodel_element",),
