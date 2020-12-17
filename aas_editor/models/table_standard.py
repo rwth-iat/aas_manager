@@ -21,6 +21,7 @@ class StandardTable(QAbstractItemModel):
         super(StandardTable, self).__init__()
         self._rootItem = rootItem if rootItem else DetailedInfoItem(None) # FIXME
         self._columns = columns
+        self.lastErrorMsg = ""
 
     def index(self, row: int, column: int = 0, parent: QModelIndex = QModelIndex()) -> QModelIndex:
         if not self.hasIndex(row, column, parent):
@@ -172,6 +173,8 @@ class StandardTable(QAbstractItemModel):
             return QSize(-1, fontSize*1.7)
         if role == Qt.TextAlignmentRole:
             return Qt.AlignLeft | Qt.AlignBottom
+        if role == DATA_CHANGE_FAILED_ROLE:
+            return self.lastErrorMsg
         else:
             item = self.objByIndex(index)
             return item.data(role, index.column())
@@ -218,18 +221,17 @@ class StandardTable(QAbstractItemModel):
             try:
                 self.addItem(value, index)
                 return True
-            except AttributeError as e:
+            except (AttributeError, KeyError) as e:
+                self.lastErrorMsg = f"Error occurred while adding item to {index.data(NAME_ROLE)}: {e}"
                 self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
-                # noinspection PyUnresolvedReferences
-                print(f"Error occurred while adding item '{value}' to {index.data(NAME_ROLE)}: {e}")
                 return False
         elif role == CLEAR_ROW_ROLE:
             try:
                 self.clearRow(index.row(), index.parent(), value)
                 return True
             except TypeError as e:
+                self.lastErrorMsg = f"{index.data(NAME_ROLE)} could not be deleted or set to default: {e}"
                 self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
-                print(f"{index.data(NAME_ROLE)} could not be deleted or set to default: {e}")
                 return False
         elif role == Qt.EditRole:
             try:
@@ -258,9 +260,8 @@ class StandardTable(QAbstractItemModel):
                 self.update(index)
                 return True
             except (ValueError, AttributeError) as e:
+                self.lastErrorMsg = f"Error occurred while setting {self.objByIndex(index).objectName}: {e}"
                 self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
-                # noinspection PyUnresolvedReferences
-                print(f"Error occurred while setting {self.objByIndex(index).objectName}: {e}")
             return False
 
     def setChanged(self, topLeft: QModelIndex, bottomRight: QModelIndex = None):
