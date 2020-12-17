@@ -1,5 +1,8 @@
+from PyQt5.QtCore import Qt
+
 from aas_editor.models import StandardItem
-from aas_editor.settings.app_settings import PACKAGE_ROLE
+from aas_editor.settings.app_settings import PACKAGE_ROLE, ATTRIBUTE_COLUMN
+from aas_editor.utils.util import getDescription
 from aas_editor.utils.util_type import isIterable
 from aas_editor.package import Package
 
@@ -13,6 +16,14 @@ class PackTreeViewItem(StandardItem):
         else:
             self.package = parent.data(PACKAGE_ROLE)
         self.populate()
+
+    def data(self, role, column=ATTRIBUTE_COLUMN):
+        if role == Qt.ToolTipRole:
+            try:
+                return getDescription(self.obj.description)
+            except AttributeError:
+                pass
+        return super(PackTreeViewItem, self).data(role, column)
 
     def populate(self):
         kwargs = {

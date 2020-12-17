@@ -18,15 +18,34 @@ from aas_editor.utils.util_classes import DictItem, ClassesInfo
 class StandardItem(QObject):
     def __init__(self, obj, name=None, parent=None, new=True, typehint=None):
         super().__init__(parent)
-        self.obj = obj
-        self.objName = name
         self.new = new
         self.changed = False
         self.bg = QBrush(QColor(0, 0, 0, 0))
-        if typehint:
-            self.typehint = typehint
-        else:
-            self.typehint = self.getTypeHint()
+
+        # following attrs will be set during self.obj = obj
+        self.displayValue = None
+        self.typecheck = None
+        self.objectName = None
+        self.doc = None
+        self.icon = QIcon()
+
+        self._obj = obj
+        self.objTypeName = getTypeName(type(self.obj))
+        self.updateIcon()
+
+        self.objName = name
+        self.updateObjectName()
+        self.doc = getAttrDoc(self.objName, self.parentObj.__init__.__doc__)
+        self.displayValue = simplifyInfo(self.obj, self.objectName)
+
+        self.typehint = typehint if typehint else self.getTypeHint()
+        self.typecheck = checkType(self.obj, self.typehint)
+
+        try:
+            self.typehintName = getTypeHintName(self.typehint)
+        except TypeError as e:
+            print(e)
+            self.typehintName = str(self.typehint)
 
     def __str__(self):
         return f"{getTypeName(type(self))}: {self.data(Qt.DisplayRole)}"
@@ -44,6 +63,44 @@ class StandardItem(QObject):
     @obj.setter
     def obj(self, obj):
         self._obj = obj
+        try:
+            self.typecheck = checkType(self.obj, self.typehint)
+        except AttributeError:
+            pass
+        self.objTypeName = getTypeName(type(self.obj))
+        self.updateIcon()
+        self.updateObjectName()
+        self.doc = getAttrDoc(self.objName, self.parentObj.__init__.__doc__)
+        self.displayValue = simplifyInfo(self.obj, self.objectName)
+
+    @property
+    def objName(self) -> str:
+        return self._objName
+
+    @objName.setter
+    def objName(self, value):
+        self._objName = value
+        self.updateObjectName()
+        self.doc = getAttrDoc(self.objName, self.parentObj.__init__.__doc__)
+        self.displayValue = simplifyInfo(self.obj, self.objectName)
+
+    def updateObjectName(self):
+        if self.objName:
+            self.objectName = self.objName
+        elif hasattr(self.obj, "id_short") and self.obj.id_short:
+            self.objectName = self.obj.id_short
+        elif hasattr(self.obj, "name") and self.obj.name:
+            self.objectName = self.obj.name
+        else:
+            self.objectName = getTypeName(self.obj.__class__)
+
+    def updateIcon(self):
+        try:
+            self.icon = QIcon(TYPE_ICON_DICT[type(self.obj)])
+        except KeyError:
+            for cls in TYPE_ICON_DICT:
+                if isinstance(self.obj, cls):
+                    self.icon = QIcon(TYPE_ICON_DICT[cls])
 
     def setData(self, value, role, column=ATTRIBUTE_COLUMN):
         if role == Qt.BackgroundRole and isinstance(value, QBrush):
@@ -53,12 +110,7 @@ class StandardItem(QObject):
 
     def data(self, role, column=ATTRIBUTE_COLUMN):
         if role == Qt.WhatsThisRole:
-            return getAttrDoc(self.objName, self.parentObj.__init__.__doc__)
-        if role == Qt.ToolTipRole:
-            try:
-                return getDescription(self.obj.description)
-            except AttributeError:
-                pass
+            return self.doc
         if role == NAME_ROLE:
             return self.objectName
         if role == OBJECT_ROLE:
@@ -66,7 +118,7 @@ class StandardItem(QObject):
         if role == TYPE_HINT_ROLE:
             return self.typehint
         if role == TYPE_CHECK_ROLE:
-            return checkType(self.obj, self.typehint)
+            return self.typecheck
         if role == PARENT_OBJ_ROLE:
             return self.parentObj
         if role == PACKAGE_ROLE:
@@ -76,27 +128,16 @@ class StandardItem(QObject):
         if role == Qt.BackgroundRole:
             return self.bg
         if role == Qt.DecorationRole and column == 0:
-            try:
-                icon = TYPE_ICON_DICT[type(self.obj)]
-                return QIcon(icon)
-            except KeyError:
-                for cls in TYPE_ICON_DICT:
-                    if isinstance(self.obj, cls):
-                        icon = TYPE_ICON_DICT[cls]
-                        return QIcon(icon)
-            return QIcon()
-        if role == Qt.DisplayRole:
+            return self.icon
+        if role in (Qt.DisplayRole, Qt.ToolTipRole):
             if column == ATTRIBUTE_COLUMN:
                 return self.objectName
             if column == VALUE_COLUMN:
-                return simplifyInfo(self.obj, self.objectName)
+                return self.displayValue
             if column == TYPE_COLUMN:
-                return getTypeName(type(self.obj))
+                return self.objTypeName
             if column == TYPE_HINT_COLUMN:
-                try:
-                    return getTypeHintName(self.typehint)
-                except TypeError:
-                    return str(self.typehint)
+                return self.typehintName
         if role == Qt.EditRole:
             if column == ATTRIBUTE_COLUMN:
                 return self.objectName
@@ -115,17 +156,6 @@ class StandardItem(QObject):
                 self.package = a0.data(PACKAGE_ROLE)
             except AttributeError:
                 return
-
-    @property
-    def objectName(self):
-        if self.objName:
-            return self.objName
-        elif hasattr(self.obj, "id_short") and self.obj.id_short:
-            return self.obj.id_short
-        elif hasattr(self.obj, "name") and self.obj.name:
-            return self.obj.name
-        else:
-            return getTypeName(self.obj.__class__)
 
     @property
     def parentObj(self):
@@ -152,26 +182,21 @@ class StandardItem(QObject):
             return 0
 
     def getTypeHint(self):
-        attrType = None
-
-        attr = self.data(NAME_ROLE)
-        try:
-            parentAttr = self.parent().data(NAME_ROLE)
-        except AttributeError:
-            return attrType
+        attrTypehint = None
+        attrName = self.data(NAME_ROLE)
 
         try:
-            attrType = getAttrTypeHint(type(self.parentObj), attr, delOptional=False)
-            return attrType
+            attrTypehint = getAttrTypeHint(type(self.parentObj), attrName, delOptional=False)
+            return attrTypehint
         except KeyError:
             print("Typehint could not be gotten")
 
         if isIterable(self.parentObj):
-            attrType = ClassesInfo.addType(type(self.parentObj))
-            if not attrType and self.parent().data(TYPE_HINT_ROLE):
+            attrTypehint = ClassesInfo.addType(type(self.parentObj))
+            if not attrTypehint and self.parent().data(TYPE_HINT_ROLE):
                 parentTypehint = self.parent().data(TYPE_HINT_ROLE)
                 try:
-                    attrType = getIterItemTypeHint(parentTypehint)
+                    attrTypehint = getIterItemTypeHint(parentTypehint)
                 except KeyError:
                     print("Typehint could not be gotten")
-        return attrType
+        return attrTypehint
