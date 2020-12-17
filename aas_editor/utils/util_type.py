@@ -126,7 +126,7 @@ def getTypeName(objType) -> str:
         try:
             res = getattr(objType, nameAttr)
             if res:
-                return res
+                break
         except AttributeError:
             pass
     else:
@@ -142,15 +142,24 @@ def getTypeHintName(typehint) -> str:
     if not isTypehint(typehint):
         raise TypeError("Arg 1 must be type or typehint:", typehint)
 
+    optional = isOptional(typehint)
+    if optional:
+        typehint = removeOptional(typehint)
+        optional = True
+
     typ = getTypeName(typehint)
     try:
         args = []
         for arg in typehint.__args__:
              args.append(getTypeHintName(arg))
-        return f"{typ}{args}".replace("'", "")
+        res = f"{typ}{args}".replace("'", "")
     except AttributeError:
-        return typ
+        res = typ
 
+    if optional:
+        res = f"Optional[{res}]"
+
+    return res
 
 def issubtype(typ, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:
     """
@@ -331,15 +340,25 @@ def getAttrTypeHint(objType, attr, delOptional=True):
 
 def getIterItemTypeHint(iterableTypehint):
     """Return typehint for item which shoulb be in iterable"""
+    if not isTypehint(iterableTypehint):
+        raise TypeError("Arg 1 must be type or typehint:", iterableTypehint)
+
     iterableTypehint = removeOptional(iterableTypehint)
+    origin = getOrigin(iterableTypehint)
+    args = getArgs(iterableTypehint)
 
     if issubtype(iterableTypehint, dict):
         util_classes.DictItem._field_types["key"] = iterableTypehint.__args__[0]
         util_classes.DictItem._field_types["value"] = iterableTypehint.__args__[1]
         attrType = util_classes.DictItem
+    elif args:
+        if len(args) > 1:
+            raise KeyError("Typehint of iterable has more then one attribute:", args)
+        attrType = args[0]
     else:
-        attrTypes = iterableTypehint.__args__
-        if len(attrTypes) > 1:
-            raise KeyError("Typehint of iterable has more then one attribute:", attrTypes)
-        attrType = attrTypes[0]
+        attrType = util_classes.ClassesInfo.addType(origin)
+
+    if not isTypehint(attrType):
+        raise TypeError("Found value is not type or typehint:", attrType)
+
     return attrType
