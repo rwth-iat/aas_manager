@@ -7,7 +7,7 @@ from aas_editor.models import DetailedInfoTable
 from aas_editor.delegates import EditDelegate
 from aas_editor.settings.app_settings import ATTR_COLUMN_WIDTH, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
     VALUE_COLUMN, LINKED_ITEM_ROLE, IS_LINK_ROLE, PARENT_OBJ_ROLE, EDIT_ICON
-from aas_editor.util import getAttrTypeHint
+from aas_editor.util_type import getAttrTypeHint
 from aas_editor.widgets import TreeView
 
 
@@ -89,22 +89,6 @@ class AttrsTreeView(TreeView):
         self.openInBackgroundAct.setVisible(indexIsLink)
         self.openInNewTabAct.setVisible(indexIsLink)
         self.openInNewWindowAct.setVisible(indexIsLink)
-
-    def _isPasteOk(self, index: QModelIndex) -> bool:
-        if not self.treeObjClipboard or not index.isValid():
-            return False
-        else:
-            obj2paste = self.treeObjClipboard[0]
-
-        attrTypeHint = index.data(TYPE_HINT_ROLE)
-        attrName = index.data(NAME_ROLE)
-
-        try:
-            if checkType(obj2paste, attrTypeHint) or obj2paste == getDefaultVal(attrName, attrTypeHint):
-                return True
-            return False
-        except (AttributeError, TypeError):
-            return False
 
     def _addHandler(self, objVal=None):
         index = self.currentIndex()

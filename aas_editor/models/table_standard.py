@@ -107,7 +107,9 @@ class StandardTable(QAbstractItemModel):
     def addItem(self, obj: Union[Package, 'SubmodelElement', Iterable],
                 parent: QModelIndex = QModelIndex()):
         parent = parent.siblingAtColumn(0)
-        parentObj = self.objByIndex(parent).data(OBJECT_ROLE)
+        parentItem = self.objByIndex(parent)
+        parentObj = parentItem.data(OBJECT_ROLE)
+        parentObjCls = type(parentObj)
         parentName = parent.data(NAME_ROLE)
 
         if isinstance(obj, Package):
@@ -115,20 +117,20 @@ class StandardTable(QAbstractItemModel):
         elif parentName in Package.addableAttrs():
             package = parent.data(PACKAGE_ROLE)
             package.add(obj)
-            item = PackTreeViewItem(obj, parent=self.objByIndex(parent))
-        elif ClassesInfo.changedParentObject(parentObj):
-            parentObj = getattr(parentObj, ClassesInfo.changedParentObject(parentObj))
+            item = PackTreeViewItem(obj, parentItem)
+        elif ClassesInfo.changedParentObject(parentObjCls):
+            parentObj = getattr(parentObj, ClassesInfo.changedParentObject(parentObjCls))
             parentObj.add(obj)
-            item = PackTreeViewItem(obj, parent=self.objByIndex(parent))
+            item = PackTreeViewItem(obj, parentItem)
         elif isinstance(parentObj, AbstractSet):
             parentObj.add(obj)
-            item = DetailedInfoItem(obj, parent=self.objByIndex(parent))
+            item = DetailedInfoItem(obj, parentItem)
         elif isinstance(parentObj, list):
             parentObj.append(obj)
-            item = DetailedInfoItem(obj, parent=self.objByIndex(parent))
+            item = DetailedInfoItem(obj, parentItem)
         elif isinstance(parentObj, dict):
             parentObj[obj.key] = obj.value
-            item = DetailedInfoItem(obj, parent=self.objByIndex(parent))
+            item = DetailedInfoItem(obj, parentItem)
         else:
             raise AttributeError(
                 f"Object couldn't be added: parent obj type is not appendable: {type(parentObj)}")

@@ -7,11 +7,12 @@ from aas_editor.settings.app_settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROL
     VALUE_COLUMN, IS_LINK_ROLE, TYPE_HINT_ROLE, PARENT_OBJ_ROLE, TYPE_COLUMN, \
     TYPE_HINT_COLUMN, TYPE_CHECK_ROLE
 from aas_editor.settings.aas_settings import TYPE_ICON_DICT, LINK_TYPES
-from aas_editor.util import getDescription, getAttrDoc, simplifyInfo, getTypeName, \
-    getAttrTypeHint, isIterableType, getTypeHintName, checkType, getIterItemTypeHint
+from aas_editor.util import getDescription, getAttrDoc, simplifyInfo
+from aas_editor.util_type import checkType, getTypeName, getTypeHintName, isIterable, \
+    getAttrTypeHint, getIterItemTypeHint
 from PyQt5.QtCore import Qt
 
-from aas_editor.util_classes import DictItem
+from aas_editor.util_classes import DictItem, ClassesInfo
 
 
 class StandardItem(QObject):
@@ -162,11 +163,12 @@ class StandardItem(QObject):
         except KeyError:
             print("Typehint could not be gotten")
 
-        if isIterableType(type(self.parentObj)):
-            grandParentObj = self.parent().data(PARENT_OBJ_ROLE)
-            try:
-                iterableTypeHint = getAttrTypeHint(type(grandParentObj), parentAttr, delOptional=True)
-                attrType = getIterItemTypeHint(iterableTypeHint)
-            except KeyError:
-                print("Typehint could not be gotten")
+        if isIterable(self.parentObj):
+            attrType = ClassesInfo.addType(type(self.parentObj))
+            if not attrType and self.parent().data(TYPE_HINT_ROLE):
+                parentTypehint = self.parent().data(TYPE_HINT_ROLE)
+                try:
+                    attrType = getIterItemTypeHint(parentTypehint)
+                except KeyError:
+                    print("Typehint could not be gotten")
         return attrType

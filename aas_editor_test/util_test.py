@@ -9,7 +9,7 @@ import aas
 import dateutil
 from aas.model import AASReference, Reference, Submodel, IdentifierType, Referable
 
-from aas_editor.util import issubtype, isoftype, checkType
+from aas_editor.util_type import checkType, issubtype, isoftype
 
 
 class TestUtilFuncs(TestCase):

@@ -135,17 +135,16 @@ class PackTreeView(TreeView):
             self.addAct.setText("Add package")
 
     def _isPasteOk(self, index: QModelIndex) -> bool:
-        if not self.treeObjClipboard:
+        if not self.treeObjClipboard or not index.isValid():
             return False
-        else:
-            obj2paste = self.treeObjClipboard[0]
 
-        attrName = index.data(NAME_ROLE)
+        if super(PackTreeView, self)._isPasteOk(index):
+            return True
+
+        obj2paste = self.treeObjClipboard[0]
         currObj = index.data(OBJECT_ROLE)
 
-        if attrName in Package.addableAttrs() and isinstance(obj2paste, Package.addType(attrName)):
-            return True
-        elif isinstance(obj2paste, type(currObj)) or isinstance(currObj, type(obj2paste)):
+        if ClassesInfo.addType(type(currObj)) and isinstance(obj2paste, ClassesInfo.addType(type(currObj))):
             return True
         return False
 

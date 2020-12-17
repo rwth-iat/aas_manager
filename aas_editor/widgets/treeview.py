@@ -5,8 +5,8 @@ from PyQt5.QtWidgets import QAction, QMenu, QApplication, QDialog
 from aas_editor.delegates import ColorDelegate
 from aas_editor import dialogs
 from aas_editor.settings.app_settings import *
-from aas_editor.util import getDefaultVal, isIterable, getReqParams4init, delAASParents, checkType, \
-    getIterItemTypeHint, isSimpleIterable
+from aas_editor.util import getDefaultVal, getReqParams4init, delAASParents
+from aas_editor.util_type import checkType, isSimpleIterable, isIterable, getIterItemTypeHint
 
 from aas_editor.util_classes import DictItem, Package, ClassesInfo
 from aas_editor.widgets.treeview_basic import BasicTreeView
@@ -263,23 +263,54 @@ class TreeView(BasicTreeView):
         else:
             self.pasteAct.setEnabled(False)
 
+    def _isPasteOk(self, index: QModelIndex) -> bool:
+        if not self.treeObjClipboard or not index.isValid():
+            return False
+
+        obj2paste = self.treeObjClipboard[0]
+        targetTypeHint = index.data(TYPE_HINT_ROLE)
+
+        try:
+            if checkType(obj2paste, targetTypeHint):
+                return True
+            targetObj = index.data(OBJECT_ROLE)
+            if isIterable(targetObj):
+                return checkType(obj2paste, getIterItemTypeHint(targetTypeHint))
+        except (AttributeError, TypeError) as e:
+            print(e)
+        return False
+
     def _pasteHandler(self):
         obj2paste = self.treeObjClipboard[0]
         index = self.currentIndex()
+        targetParentObj = index.parent().data(OBJECT_ROLE)
+        targetObj = index.data(OBJECT_ROLE)
+        targetTypeHint = index.data(TYPE_HINT_ROLE)
         reqAttrsDict = getReqParams4init(type(obj2paste), rmDefParams=True)
 
         # if no req. attrs, paste data without dialog
-        if not reqAttrsDict:
-            if isIterable(index.parent().data(OBJECT_ROLE)) and not isIterable(obj2paste): # FIXME
-                self.model().setData(index.parent(), obj2paste, ADD_ITEM_ROLE)
+        # else paste data with dialog for asking to check req. attrs
+        if isIterable(targetObj) and checkType(obj2paste, getIterItemTypeHint(targetTypeHint)):
+            self._pasteHandlerAdd(index, obj2paste, withDialog=bool(reqAttrsDict))
+        elif checkType(obj2paste, targetTypeHint):
+            if isIterable(targetParentObj):
+                self._pasteHandlerAdd(index.parent(), obj2paste, withDialog=bool(reqAttrsDict))
             else:
-                self.model().setData(index, obj2paste, Qt.EditRole)
-        # if req. attrs, paste data with dialog for asking to check req. attrs
+                self._pasteHandlerReplace(index, obj2paste, withDialog=bool(reqAttrsDict))
+
+    def _pasteHandlerAdd(self, index, obj2paste, withDialog):
+        if withDialog:
+            self.addItemWithDialog(index, type(obj2paste), objVal=obj2paste,
+                                   title=f"Paste element", rmDefParams=True)
         else:
-            if isIterable(index.parent().data(OBJECT_ROLE)) and not isIterable(obj2paste):
-                self.addItemWithDialog(index.parent(), type(obj2paste), objVal=obj2paste, title=f"Paste element", rmDefParams=True)
-            else:
-                self.replItemWithDialog(index, type(obj2paste), objVal=obj2paste, title=f"Paste element", rmDefParams=True)
+            self.model().setData(index, obj2paste, ADD_ITEM_ROLE)
+
+    def _pasteHandlerReplace(self, index, obj2paste, withDialog):
+        if withDialog:
+            self.replItemWithDialog(index, type(obj2paste), objVal=obj2paste,
+                                    title=f"Paste element", rmDefParams=True)
+        else:
+            self.model().setData(index, obj2paste, Qt.EditRole)
 
     def _cutHandler(self):
         self._copyHandler()
