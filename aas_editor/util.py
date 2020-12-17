@@ -113,26 +113,20 @@ def simplifyInfo(obj, attrName: str = "") -> str:
 
 def getTypeName(objType) -> str:
     try:
-        if objType.__name__:
-            return objType.__name__
+        res = objType.__name__
     except AttributeError:
-        pass
-
-    try:
-        if objType._name:
-            return objType._name
-    except AttributeError:
-        pass
-
-    try:
-        if objType.name:
-            return objType.name
-    except AttributeError:
-        name = str(objType)
-        # delete args if exist
-        name = name.partition("[")[0]
-        # delete type parents and return only type name
-        return name.rpartition(".")[2]
+        try:
+            res = objType._name
+        except AttributeError:
+            try:
+                res = objType.name
+            except AttributeError:
+                name = str(objType)
+                # delete args if exist
+                name = name.partition("[")[0]
+                # delete type parents and return only type name
+                res = name.rpartition(".")[2]
+    return res
 
 
 def getTypeHintName(typehint) -> str:
