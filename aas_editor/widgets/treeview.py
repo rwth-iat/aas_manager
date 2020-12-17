@@ -332,7 +332,7 @@ class TreeView(BasicTreeView):
         while not result and dialog.exec_() == QDialog.Accepted:
             try:
                 obj = dialog.getObj2add()
-            except TypeError as e:
+            except Exception as e:
                 QMessageBox.critical(self, "Error", str(e))
                 continue
 
@@ -356,7 +356,7 @@ class TreeView(BasicTreeView):
         while not result and dialog.exec_() == QDialog.Accepted:
             try:
                 obj = dialog.getObj2add()
-            except TypeError as e:
+            except Exception as e:
                 QMessageBox.critical(self, "Error", str(e))
                 continue
 

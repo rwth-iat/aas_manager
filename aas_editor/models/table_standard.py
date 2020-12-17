@@ -221,7 +221,7 @@ class StandardTable(QAbstractItemModel):
             try:
                 self.addItem(value, index)
                 return True
-            except (AttributeError, KeyError) as e:
+            except Exception as e:
                 self.lastErrorMsg = f"Error occurred while adding item to {index.data(NAME_ROLE)}: {e}"
                 self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
                 return False
@@ -229,7 +229,7 @@ class StandardTable(QAbstractItemModel):
             try:
                 self.clearRow(index.row(), index.parent(), value)
                 return True
-            except TypeError as e:
+            except Exception as e:
                 self.lastErrorMsg = f"{index.data(NAME_ROLE)} could not be deleted or set to default: {e}"
                 self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
                 return False
@@ -259,7 +259,7 @@ class StandardTable(QAbstractItemModel):
                 self.setChanged(index)
                 self.update(index)
                 return True
-            except (ValueError, AttributeError) as e:
+            except Exception as e:
                 self.lastErrorMsg = f"Error occurred while setting {self.objByIndex(index).objectName}: {e}"
                 self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
             return False
