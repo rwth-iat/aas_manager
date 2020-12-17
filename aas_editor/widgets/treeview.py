@@ -1,6 +1,6 @@
 from PyQt5.QtCore import pyqtSignal, QModelIndex
 from PyQt5.QtGui import QClipboard
-from PyQt5.QtWidgets import QAction, QMenu, QApplication, QDialog
+from PyQt5.QtWidgets import QAction, QMenu, QApplication, QDialog, QMessageBox
 
 from aas_editor.delegates import ColorDelegate
 from aas_editor import dialogs
@@ -213,6 +213,7 @@ class TreeView(BasicTreeView):
         model.rowsInserted.connect(self.onRowsInserted)
         self.selectionModel().currentChanged.connect(self.updateActions)
         self.setCurrentIndex(self.rootIndex())
+        self.model().dataChanged.connect(self.itemDataChangeFailed)
 
     def onRowsInserted(self, parent, first, last):
         index = parent.child(last, 0)
@@ -291,9 +292,15 @@ class TreeView(BasicTreeView):
 
         # if no req. attrs, paste data without dialog
         # else paste data with dialog for asking to check req. attrs
-        if isIterable(targetObj) and checkType(obj2paste, getIterItemTypeHint(targetTypeHint)):
-            self._pasteHandlerAdd(index, obj2paste, withDialog=bool(reqAttrsDict))
-        elif checkType(obj2paste, targetTypeHint):
+        if isIterable(targetObj):
+            try:
+                iterItemTypehint = getIterItemTypeHint(targetTypeHint)
+            except TypeError:
+                iterItemTypehint = getIterItemTypeHint(type(targetObj))
+            if checkType(obj2paste, iterItemTypehint):
+                self._pasteHandlerAdd(index, obj2paste, withDialog=bool(reqAttrsDict))
+                return
+        if checkType(obj2paste, targetTypeHint):
             if isIterable(targetParentObj):
                 self._pasteHandlerAdd(index.parent(), obj2paste, withDialog=bool(reqAttrsDict))
             else:
@@ -320,30 +327,46 @@ class TreeView(BasicTreeView):
     def addItemWithDialog(self, parent: QModelIndex, objType, objVal=None,
                           title="", rmDefParams=False):
         dialog = dialogs.AddObjDialog(objType, self, rmDefParams=rmDefParams,
-                              objVal=objVal, title=title)
-        if dialog.exec_() == QDialog.Accepted:
-            obj = dialog.getObj2add()
+                                      objVal=objVal, title=title)
+        result = False
+        while not result and dialog.exec_() == QDialog.Accepted:
+            try:
+                obj = dialog.getObj2add()
+            except TypeError as e:
+                QMessageBox.critical(self, "Error", str(e))
+                continue
+
             if isinstance(obj, dict):
                 for key, value in obj.items():
-                    self.model().setData(parent, DictItem(key, value), ADD_ITEM_ROLE)
+                    result = self.model().setData(parent, DictItem(key, value), ADD_ITEM_ROLE)
             elif isSimpleIterable(obj):
                 for i in obj:
-                    self.model().setData(parent, i, ADD_ITEM_ROLE)
+                    result = self.model().setData(parent, i, ADD_ITEM_ROLE)
             else:
-                self.model().setData(parent, obj, ADD_ITEM_ROLE)
-            self.setFocus()
-        else:
+                result = self.model().setData(parent, obj, ADD_ITEM_ROLE)
+        if dialog.result() == QDialog.Rejected:
             print("Item adding cancelled")
         dialog.deleteLater()
+        self.setFocus()
 
     def replItemWithDialog(self, index, objType, objVal=None, title="", rmDefParams=False):
         title = title if title else f"Edit {index.data(NAME_ROLE)}"
         dialog = dialogs.AddObjDialog(objType, self, rmDefParams=rmDefParams, objVal=objVal, title=title)
-        if dialog.exec_() == QDialog.Accepted:
-            obj = dialog.getObj2add()
-            self.model().setData(index, obj, Qt.EditRole)
-            self.setFocus()
-            self.setCurrentIndex(index)
-        else:
+        result = False
+        while not result and dialog.exec_() == QDialog.Accepted:
+            try:
+                obj = dialog.getObj2add()
+            except TypeError as e:
+                QMessageBox.critical(self, "Error", str(e))
+                continue
+
+            result = self.model().setData(index, obj, Qt.EditRole)
+        if dialog.result() == QDialog.Rejected:
             print("Item editing cancelled")
         dialog.deleteLater()
+        self.setFocus()
+        self.setCurrentIndex(index)
+
+    def itemDataChangeFailed(self, topLeft, bottomRight, roles):
+        if DATA_CHANGE_FAILED_ROLE in roles:
+            QMessageBox.critical(self, "Error", self.model().data(topLeft, DATA_CHANGE_FAILED_ROLE))

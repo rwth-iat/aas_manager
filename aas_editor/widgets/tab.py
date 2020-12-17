@@ -414,10 +414,6 @@ class Tab(QWidget):
     def showDetailInfoItemDoc(self, detailInfoItem: QModelIndex):
         self.descrLabel.setText(detailInfoItem.data(Qt.WhatsThisRole))
 
-    def itemDataChangeFailed(self, topLeft, bottomRight, roles):
-        if DATA_CHANGE_FAILED_ROLE in roles:
-            QMessageBox.critical(self, "Error", "Data change failed")
-
     def _initLayout(self):
         layout = QVBoxLayout(self)
         layout.setObjectName("tabLayout")
