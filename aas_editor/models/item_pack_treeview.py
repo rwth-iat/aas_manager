@@ -1,8 +1,7 @@
-from aas.model import Submodel, SubmodelElement
 from aas_editor.models import StandardItem
 from aas_editor.settings.app_settings import PACKAGE_ROLE
-from aas_editor.util_type import isIterable
-from aas_editor.util_classes import Package
+from aas_editor.utils.util_type import isIterable
+from aas_editor.package import Package
 
 
 class PackTreeViewItem(StandardItem):

@@ -7,81 +7,141 @@ from typing import Union, Tuple, Iterable
 
 from aas.model import AASReference
 
-from aas_editor.settings.aas_settings import COMPLEX_ITERABLE_TYPES
-from aas_editor.util import getReqParams4init
-from aas_editor.util_classes import DictItem
+from aas_editor import settings
+from aas_editor.utils import util
+from aas_editor.utils import util_classes
+
+TYPING_TYPES = {typing.AbstractSet, typing.Callable, typing.Dict, typing.List, typing.NamedTuple,
+                typing.NoReturn, typing.Set, typing.Sequence, typing.Tuple, typing.Type,
+                typing.TypeVar, typing.Union}
+
+
+def getOrigin(obj) -> typing.Type:
+    """Return obj.__origin__ if it has it else return obj"""
+    if hasattr(obj, "__origin__"):
+        obj = obj.__origin__
+    return obj
+
+
+def getArgs(obj) -> typing.Tuple[typing.Type]:
+    try:
+        args = obj.__args__
+    except AttributeError:
+        args = tuple()
+    return args
+
+
+def isTypehint(obj) -> bool:
+    obj = getOrigin(obj)
+    if obj in TYPING_TYPES:
+        return True
+    return inspect.isclass(obj)
+
+
+def isUnion(typeHint):
+    typ = getOrigin(typeHint)
+    if typ == Union:
+        return True
+    return False
+
+
+def isOptional(typeHint):
+    if isUnion(typeHint):
+        args = getArgs(typeHint)
+        if type(None) in args:
+            if len(args) == 2:
+                return True
+    return False
+
+
+def removeOptional(typehint):
+    """Remove Nonetype from typehint if typehint is Optional[...], else return typehint"""
+    if isOptional(typehint):
+        args = list(getArgs(typehint))
+        args.remove(type(None))
+        typehint = args[0]
+    return typehint
 
 
 def checkType(obj, typeHint):
     if typeHint is None:
         return True
 
+    origin = getOrigin(typeHint)
+    args = getArgs(typeHint)
+    objType = type(obj)
+
+    if objType == typeHint:
+        return True
+
     if isUnion(typeHint):
-        for typHint in typeHint.__args__:
+        for typHint in args:
             if checkType(obj, typHint):
                 return True
         else:
             return False
 
-    typ = type(obj)
-
-    try:
-        origin = typeHint.__origin__
-    except AttributeError:
-        origin = typeHint
-
-    try:
-        args = typeHint.__args__
-    except AttributeError:
-        args = tuple()
-
-    if typ == typeHint:
-        return True
-
     if isinstance(obj, AASReference):
-        if origin == AASReference:
-            if args:
-                if isinstance(args[0], ForwardRef):
-                    arg = args[0].__forward_arg__
-                    return getTypeName(obj.type) == arg
-                try:
-                    return issubclass(obj.type, args)
-                except TypeError as e:
-                    print(f"Error occured while checking: {obj.type} and {args}", e)
-                    return False
-            else:
-                return True
-        else:
-            return False
+        return checkTypeAASRef(obj, typeHint)
 
-    if isIterableType(origin) and typ is origin:
+    if isIterableType(origin) and objType is origin:
         return True
 
     if origin is abc.Iterable:
-        return isIterableType(typ)
+        return isIterableType(objType)
 
     return isinstance(obj, origin)
 
 
-def getTypeName(objType) -> str:
-    try:
-        res = objType.__name__
-    except AttributeError:
-        try:
-            res = objType._name
-        except AttributeError:
+def checkTypeAASRef(aasref, typehint):
+    """Check if"""
+    if not isinstance(aasref, AASReference):
+        raise TypeError("arg 1 must be of type AASReference")
+
+    origin = getOrigin(typehint)
+    args = getArgs(typehint)
+
+    if origin is AASReference:
+        if args:
+            if isinstance(args[0], typing.ForwardRef):
+                arg = args[0].__forward_arg__
+                return getTypeName(aasref.type) == arg
             try:
-                res = objType.name
-            except AttributeError:
-                name = str(objType)
-                # delete args if exist
-                name = name.partition("[")[0]
-                # delete type parents and return only type name
-                res = name.rpartition(".")[2]
+                return issubclass(aasref.type, args)
+            except TypeError as e:
+                print(f"Error occured while checking: {aasref.type} and {args}", e)
+                return False
+        else:
+            return True
+    else:
+        return False
+
+
+def getTypeName(objType) -> str:
+    if not isTypehint(objType):
+        raise TypeError("Arg 1 must be type or typehint:", objType)
+
+    nameAttrs = ("__name__", "_name", "name")
+    for nameAttr in nameAttrs:
+        try:
+            res = getattr(objType, nameAttr)
+            if res:
+                return res
+        except AttributeError:
+            pass
+    else:
+        name = str(objType)
+        # delete args if exist
+        name = name.partition("[")[0]
+        # delete type parents and return only type name
+        res = name.rpartition(".")[2]
     return res
 
 
 def getTypeHintName(typehint) -> str:
+    if not isTypehint(typehint):
+        raise TypeError("Arg 1 must be type or typehint:", typehint)
+
     typ = getTypeName(typehint)
     try:
         args = []
@@ -92,31 +152,6 @@ def getTypeHintName(typehint) -> str:
         return typ
 
 
-def removeOptional(typehint):
-    """Remove Nonetype from typehint if typehint is Optional[...]"""
-    if isOptional(typehint):
-        args = list(typehint.__args__)
-        args.remove(type(None))
-        typehint = args[0]
-    return typehint
-
-
-def isOptional(typeHint):
-    if isUnion(typeHint):
-        if type(None) in typeHint.__args__:
-            if len(typeHint.__args__) == 2:
-                return True
-    return False
-
-
-def isUnion(typeHint):
-    if hasattr(typeHint, "__origin__"):
-        typeHint = typeHint.__origin__
-    if typeHint == Union:
-        return True
-    return False
-
-
 def issubtype(typ, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:
     """
     Return whether 'typ' is a derived from another class or is the same class.
@@ -125,6 +160,16 @@ def issubtype(typ, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:
     :param types: class or type annotation or tuple of classes or type annotations
     :raise TypeError if arg 1 or arg2 are not types or typehints:"
     """
+    if not isTypehint(typ):
+        raise TypeError("Arg 1 must be type or typehint:", typ)
+    try:
+        for tp in types:
+            if not isTypehint(tp):
+                raise TypeError("Arg 2 must be type, typehint or tuple of types/typehints:", types)
+    except TypeError:
+        if not isTypehint(types):
+            raise TypeError("Arg 2 must be type, typehint or tuple of types/typehints:", types)
+
     try:
         if issubclass(types, Enum):
             return _issubtype(typ, types)
@@ -175,11 +220,6 @@ def _issubtype(typ1, typ2: type) -> bool:
     if type(None) in (typ1, typ2):
         return (typ1 == typ2)
 
-    if not inspect.isclass(typ1):
-        raise TypeError("Arg 1 must be type or typehint:", typ1)
-    if not inspect.isclass(typ2):
-        raise TypeError("Arg 2 must be type or typehint:", typ2)
-
     try:
         return issubclass(typ1, typ2)
     except TypeError:
@@ -187,6 +227,14 @@ def _issubtype(typ1, typ2: type) -> bool:
 
 
 def isoftype(obj, types) -> bool:
+    try:
+        for tp in types:
+            if not isTypehint(tp):
+                raise TypeError("Arg 2 must be type, typehint or tuple of types/typehints:", types)
+    except TypeError:
+        if not isTypehint(types):
+            raise TypeError("Arg 2 must be type, typehint or tuple of types/typehints:", types)
+
     try:
         if issubclass(types, Enum):
             return _isoftype(obj, types)
@@ -227,7 +275,10 @@ def _isoftype(obj, typ) -> bool:
 
 
 def isSimpleIterableType(objType):
-    if not issubtype(objType, COMPLEX_ITERABLE_TYPES):
+    if not isTypehint(objType):
+        raise TypeError("Arg 1 must be type or typehint:", objType)
+
+    if not issubtype(objType, settings.COMPLEX_ITERABLE_TYPES):
         return isIterableType(objType)
     else:
         return False
@@ -238,7 +289,8 @@ def isSimpleIterable(obj):
 
 
 def isIterableType(objType):
-    return issubtype(objType, Iterable) and not issubtype(objType, (str, bytes, bytearray, DictItem))
+    return issubtype(objType, Iterable) \
+           and not issubtype(objType, (str, bytes, bytearray, util_classes.DictItem))
 
 
 def isIterable(obj):
@@ -246,7 +298,7 @@ def isIterable(obj):
 
 
 def getAttrTypeHint(objType, attr, delOptional=True):
-    params = getReqParams4init(objType, rmDefParams=False, delOptional=delOptional)
+    params = util.getReqParams4init(objType, rmDefParams=False, delOptional=delOptional)
     if attr in params or f"{attr}_" in params:
         try:
             typeHint = params[attr]
@@ -262,10 +314,9 @@ def getAttrTypeHint(objType, attr, delOptional=True):
             print(e)
             raise KeyError
 
-
     try:
-        if typeHint.__args__:
-            args = list(typeHint.__args__)
+        if getArgs(typeHint):
+            args = list(getArgs(typeHint))
             if ... in args:
                 args.remove(...)
                 typeHint.__args__ = args
@@ -283,48 +334,12 @@ def getIterItemTypeHint(iterableTypehint):
     iterableTypehint = removeOptional(iterableTypehint)
 
     if issubtype(iterableTypehint, dict):
-        DictItem._field_types["key"] = iterableTypehint.__args__[0]
-        DictItem._field_types["value"] = iterableTypehint.__args__[1]
-        attrType = DictItem
+        util_classes.DictItem._field_types["key"] = iterableTypehint.__args__[0]
+        util_classes.DictItem._field_types["value"] = iterableTypehint.__args__[1]
+        attrType = util_classes.DictItem
     else:
         attrTypes = iterableTypehint.__args__
         if len(attrTypes) > 1:
             raise KeyError("Typehint of iterable has more then one attribute:", attrTypes)
         attrType = attrTypes[0]
     return attrType
-
-
-TYPING_TYPES = set(
-    typing.AbstractSet,
-    typing.Callable,
-    typing.Dict,
-    typing.List,
-    typing.Literal,
-    typing.NamedTuple,
-    typing.NoReturn,
-    typing.Protocol,
-    typing.Set,
-    typing.Sequence,
-    typing.Tuple,
-    typing.Type,
-    typing.TypedDict,
-    typing.TypeVar,
-    typing.Union,
-)
-
-
-def isTypehint(obj):
-    if hasattr(obj, "__origin__"):
-        obj = obj.__origin__
-
-    if obj in TYPING_TYPES:
-        return True
-
-    return inspect.isclass(obj)
-
-
-def getOrigin(obj):
-    """Return obj.__origin__ if it has it else return obj"""
-    if hasattr(obj, "__origin__"):
-        obj = obj.__origin__
-    return obj

@@ -7,7 +7,7 @@ from aas_editor.models import DetailedInfoTable
 from aas_editor.delegates import EditDelegate
 from aas_editor.settings.app_settings import ATTR_COLUMN_WIDTH, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
     VALUE_COLUMN, LINKED_ITEM_ROLE, IS_LINK_ROLE, PARENT_OBJ_ROLE, EDIT_ICON
-from aas_editor.util_type import getAttrTypeHint
+from aas_editor.utils.util_type import getAttrTypeHint
 from aas_editor.widgets import TreeView
 
 

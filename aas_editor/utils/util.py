@@ -7,10 +7,10 @@ from typing import List, Dict, Type
 from PyQt5.QtCore import Qt, QFile, QTextStream, QModelIndex
 from PyQt5.QtWidgets import QApplication
 
-from aas_editor.util_classes import ClassesInfo
+from aas_editor.utils.util_classes import ClassesInfo
 from aas_editor.settings.aas_settings import ATTR_ORDER, PREFERED_LANGS_ORDER, \
     ATTR_INFOS_TO_SIMPLIFY
-from aas_editor.util_type import removeOptional, isIterable
+from aas_editor.utils.util_type import removeOptional, isIterable
 
 
 def nameIsSpecial(method_name):

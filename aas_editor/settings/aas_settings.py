@@ -7,10 +7,10 @@ from aas.model import AssetAdministrationShell, Asset, ConceptDescription, Submo
     ReferenceElement, DataElement, AdministrativeInformation, Identifier, AbstractObjectStore, \
     Namespace, SubmodelElementCollection, SubmodelElement, AASReference, ConceptDictionary
 
-from aas_editor import util_classes
-from aas_editor.settings.app_settings import getCharsIcon
-from aas_editor.settings.util_constants import HIDDEN_ATTRS, CHANGED_PARENT_OBJ, ADD_ACT_AAS_TXT, \
+import aas_editor.package
+from aas_editor.settings import getCharsIcon, HIDDEN_ATTRS, CHANGED_PARENT_OBJ, ADD_ACT_AAS_TXT, \
     ADD_TYPE
+from aas_editor.utils import util_classes
 
 LINK_TYPES = (AASReference, )
 
@@ -35,10 +35,10 @@ CLASSES_INFO = {
     object: {
         HIDDEN_ATTRS: ("namespace_element_sets", "parent", "security")
     },
-    util_classes.Package: {
-        HIDDEN_ATTRS: ("ATTRS_INFO", *util_classes.Package.packViewAttrs()),
+    aas_editor.package.Package: {
+        HIDDEN_ATTRS: ("ATTRS_INFO", *aas_editor.package.Package.packViewAttrs()),
         ADD_ACT_AAS_TXT: "Add package",
-        ADD_TYPE: util_classes.Package,
+        ADD_TYPE: aas_editor.package.Package,
     },
     AssetAdministrationShell: {
         CHANGED_PARENT_OBJ: "concept_dictionary",

@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QWidget, QLabel, QMessageBox, QVBoxLayout, \
 
 from aas_editor.settings.app_settings import *
 from aas_editor.widgets import AddressLine, SearchBar, ToolBar, AttrsTreeView
-from aas_editor.util import getTreeItemPath
+from aas_editor.utils.util import getTreeItemPath
 
 
 class TabBar(QTabBar):

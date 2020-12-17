@@ -7,12 +7,12 @@ from aas_editor.settings.app_settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROL
     VALUE_COLUMN, IS_LINK_ROLE, TYPE_HINT_ROLE, PARENT_OBJ_ROLE, TYPE_COLUMN, \
     TYPE_HINT_COLUMN, TYPE_CHECK_ROLE
 from aas_editor.settings.aas_settings import TYPE_ICON_DICT, LINK_TYPES
-from aas_editor.util import getDescription, getAttrDoc, simplifyInfo
-from aas_editor.util_type import checkType, getTypeName, getTypeHintName, isIterable, \
+from aas_editor.utils.util import getDescription, getAttrDoc, simplifyInfo
+from aas_editor.utils.util_type import checkType, getTypeName, getTypeHintName, isIterable, \
     getAttrTypeHint, getIterItemTypeHint
 from PyQt5.QtCore import Qt
 
-from aas_editor.util_classes import DictItem, ClassesInfo
+from aas_editor.utils.util_classes import DictItem, ClassesInfo
 
 
 class StandardItem(QObject):
@@ -93,7 +93,10 @@ class StandardItem(QObject):
             if column == TYPE_COLUMN:
                 return getTypeName(type(self.obj))
             if column == TYPE_HINT_COLUMN:
-                return getTypeHintName(self.typehint)
+                try:
+                    return getTypeHintName(self.typehint)
+                except TypeError:
+                    return str(self.typehint)
         if role == Qt.EditRole:
             if column == ATTRIBUTE_COLUMN:
                 return self.objectName

@@ -5,7 +5,7 @@ from PyQt5.QtCore import QModelIndex, Qt, QAbstractProxyModel, qDebug, \
 from PyQt5.QtWidgets import QMessageBox, QCompleter, QLineEdit, QStyledItemDelegate
 
 from aas_editor.models import StandardTable
-from aas_editor.util import getTreeItemPath
+from aas_editor.utils.util import getTreeItemPath
 
 COMPLETION_ROLE = Qt.DisplayRole
 CASE_SENSITIVITY = Qt.CaseInsensitive

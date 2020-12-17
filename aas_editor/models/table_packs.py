@@ -3,7 +3,8 @@ from typing import Any
 from PyQt5.QtCore import QModelIndex, Qt
 from PyQt5.QtGui import QFont
 
-from aas_editor.models import Package, StandardTable
+from aas_editor.models import StandardTable
+from aas_editor.package import Package
 from aas_editor.settings.app_settings import PACKAGE_ROLE, DEFAULT_FONT, OPENED_PACKS_ROLE, OPENED_FILES_ROLE
 
 

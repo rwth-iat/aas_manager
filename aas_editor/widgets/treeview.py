@@ -5,10 +5,11 @@ from PyQt5.QtWidgets import QAction, QMenu, QApplication, QDialog
 from aas_editor.delegates import ColorDelegate
 from aas_editor import dialogs
 from aas_editor.settings.app_settings import *
-from aas_editor.util import getDefaultVal, getReqParams4init, delAASParents
-from aas_editor.util_type import checkType, isSimpleIterable, isIterable, getIterItemTypeHint
+from aas_editor.utils.util import getDefaultVal, getReqParams4init, delAASParents
+from aas_editor.utils.util_type import checkType, isSimpleIterable, isIterable, getIterItemTypeHint
 
-from aas_editor.util_classes import DictItem, Package, ClassesInfo
+from aas_editor.utils.util_classes import DictItem, ClassesInfo
+from aas_editor.package import Package
 from aas_editor.widgets.treeview_basic import BasicTreeView
 
 

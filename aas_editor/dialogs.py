@@ -11,14 +11,13 @@ from PyQt5.QtGui import QIntValidator, QDoubleValidator, QPaintEvent
 from PyQt5.QtWidgets import QLineEdit, QLabel, QPushButton, QDialog, QDialogButtonBox, \
     QGroupBox, QCheckBox, QWidget, QCompleter, QComboBox, QVBoxLayout, QHBoxLayout
 
-from aas_editor.settings.defaults import DEFAULTS, DEFAULT_COMPLETIONS
+from aas_editor.settings import DEFAULTS, DEFAULT_COMPLETIONS, ATTRIBUTE_COLUMN, OBJECT_ROLE,\
+    DEFAULT_ATTRS_TO_HIDE
 from aas_editor.delegates import ColorDelegate
-from aas_editor.settings.app_settings import ATTRIBUTE_COLUMN, OBJECT_ROLE
-from aas_editor.settings.aas_settings import DEFAULT_ATTRS_TO_HIDE
-from aas_editor.util import inheritors, getReqParams4init, getParams4init
-from aas_editor.util_type import getTypeName, issubtype, isoftype, isSimpleIterableType, \
+from aas_editor.utils.util import inheritors, getReqParams4init, getParams4init
+from aas_editor.utils.util_type import getTypeName, issubtype, isoftype, isSimpleIterableType, \
     isIterableType, isIterable
-from aas_editor.util_classes import DictItem
+from aas_editor.utils.util_classes import DictItem
 from aas_editor.widgets import *
 from aas_editor import widgets
 
