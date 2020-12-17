@@ -272,6 +272,13 @@ def isUnion(typeHint):
 
 
 def issubtype(typ, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:
+    """
+    Return whether 'typ' is a derived from another class or is the same class.
+    The function also supports typehints. Checks whether typ is subtype of Typehint origin
+    :param typ: type to check
+    :param types: class or type annotation or tuple of classes or type annotations
+    :raise TypeError if arg 1 or arg2 are not types or typehints:"
+    """
     try:
         if issubclass(types, Enum):
             return _issubtype(typ, types)
@@ -321,6 +328,11 @@ def _issubtype(typ1, typ2: type) -> bool:
 
     if type(None) in (typ1, typ2):
         return (typ1 == typ2)
+
+    if not inspect.isclass(typ1):
+        raise TypeError("Arg 1 must be type or typehint:", typ1)
+    if not inspect.isclass(typ2):
+        raise TypeError("Arg 2 must be type or typehint:", typ2)
 
     try:
         return issubclass(typ1, typ2)
