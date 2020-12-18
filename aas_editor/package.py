@@ -38,6 +38,7 @@ class Package:
     }
 
     def __init__(self, file: Union[str, Path] = ""):
+        """:raise TypeError if file has wrong file type"""
         self.objStore = DictObjectStore()
         self.fileStore = DictSupplementaryFileContainer()
         self.file = file

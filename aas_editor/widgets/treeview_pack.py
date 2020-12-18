@@ -5,6 +5,7 @@ from PyQt5.QtGui import QDropEvent, QDragEnterEvent
 from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog
 
 from aas_editor.package import Package
+from aas_editor.settings import FILTER_AAS_FILES
 from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, SC_SAVE_ALL, SC_OPEN, \
     PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, APPLICATION_NAME, OPEN_ICON, SAVE_ICON, \
     SAVE_ALL_ICON, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, OPEN_DRAG_ICON, \
@@ -192,31 +193,39 @@ class PackTreeView(TreeView):
         super(PackTreeView, self).addItemWithDialog(parent, objType, objVal, title, rmDefParams)
 
     def newPackWithDialog(self):
-        file = QFileDialog.getSaveFileName(self, 'Create new AAS File',
-                                           filter="AAS files (*.aasx *.xml *.json);;"
-                                                  "AASX (*.aasx);; "
-                                                  "XML (*.xml);;"
-                                                  "JSON (*.json);; All files (*.*)",
-                                           options=QFileDialog.DontResolveSymlinks |
-                                                   QFileDialog.DontUseNativeDialog
-                                           )[0]
-        if file:
-            pack = Package()
-            self.savePack(pack, file)
-            self.model().setData(QModelIndex(), pack, ADD_ITEM_ROLE)
+        saved = False
+        file = 'new_aas_file.aasx'
+
+        while not saved:
+            file = QFileDialog.getSaveFileName(self, 'Create new AAS File', file,
+                                               filter=FILTER_AAS_FILES,
+                                               options=QFileDialog.DontResolveSymlinks |
+                                                       QFileDialog.DontUseNativeDialog
+                                               )[0]
+            if file:
+                pack = Package()
+                saved = self.savePack(pack, file)
+                if saved:
+                    self.model().setData(QModelIndex(), pack, ADD_ITEM_ROLE)
+            else:
+                # cancel pressed
+                return
 
     def openPackWithDialog(self):
-        file = QFileDialog.getOpenFileName(self, "Open AAS file",
-                                           filter="AAS files (*.aasx *.xml *.json);;"
-                                                  "AASX (*.aasx);; "
-                                                  "XML (*.xml);;"
-                                                  "JSON (*.json);; All files (*.*)",
-                                           options=QFileDialog.DontResolveSymlinks |
-                                                   QFileDialog.DontUseNativeDialog)[0]
-        if file:
-            self.openPack(file)
+        opened = False
+        file = ""
+        while not opened:
+            file = QFileDialog.getOpenFileName(self, "Open AAS file", file,
+                                               filter=FILTER_AAS_FILES,
+                                               options=QFileDialog.DontResolveSymlinks |
+                                                       QFileDialog.DontUseNativeDialog)[0]
+            if file:
+                opened = self.openPack(file)
+            else:
+                # cancel pressed
+                return
 
-    def openPack(self, file: str):
+    def openPack(self, file: str) -> bool:
         try:
             pack = Package(file)
             absFile = pack.file.absolute().as_posix()
@@ -230,32 +239,40 @@ class PackTreeView(TreeView):
                 QMessageBox.critical(self, "Error", f"Package {file} is already opened")
             else:
                 self.model().setData(QModelIndex(), pack, ADD_ITEM_ROLE)
+                return True
+        return False
 
-    def savePack(self, pack: Package = None, file: str = None):
+    def savePack(self, pack: Package = None, file: str = None) -> bool:
         pack = self.currentIndex().data(PACKAGE_ROLE) if pack is None else pack
         try:
             pack.write(file)
             self.updateRecentFiles(pack.file.absolute().as_posix())
+            return True
         except (TypeError, ValueError) as e:
             QMessageBox.critical(self, "Error", f"Package couldn't be saved: {file}: {e}")
         except AttributeError as e:
             QMessageBox.critical(self, "Error", f"No chosen package to save: {e}")
+        return False
 
-    def savePackAsWithDialog(self, pack: Package = None):
+    def savePackAsWithDialog(self, pack: Package = None) -> bool:
         pack = self.currentIndex().data(PACKAGE_ROLE) if pack is None else pack
-        try:
-            file = QFileDialog.getSaveFileName(self, 'Save AAS File', pack.file.as_posix(),
-                                               filter="AAS files (*.aasx *.xml *.json);;"
-                                                      "AASX (*.aasx);; "
-                                                      "XML (*.xml);;"
-                                                      "JSON (*.json);; All files (*.*)",
-                                               options=QFileDialog.DontResolveSymlinks |
-                                                       QFileDialog.DontUseNativeDialog
-                                               )[0]
-        except AttributeError as e:
-            QMessageBox.critical(self, "Error", f"No chosen package to save: {e}")
-        else:
-            self.savePack(pack, file)
+        saved = False
+        file = pack.file.as_posix()
+        while not saved:
+            try:
+                file = QFileDialog.getSaveFileName(self, 'Save AAS File', file,
+                                                   filter=FILTER_AAS_FILES,
+                                                   options=QFileDialog.DontResolveSymlinks |
+                                                           QFileDialog.DontUseNativeDialog
+                                                   )[0]
+            except AttributeError as e:
+                QMessageBox.critical(self, "Error", f"No chosen package to save: {e}")
+            else:
+                if file:
+                    saved = self.savePack(pack, file)
+                else:
+                    # cancel pressed
+                    return
 
     def saveAll(self):
         for pack in self.model().data(QModelIndex(), OPENED_PACKS_ROLE):

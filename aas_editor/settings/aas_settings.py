@@ -12,6 +12,12 @@ from aas_editor.settings import getCharsIcon, HIDDEN_ATTRS, CHANGED_PARENT_OBJ, 
     ADD_TYPE
 from aas_editor.utils import util_classes
 
+FILTER_AAS_FILES = """AAS files (*.aasx *.xml *.json);;
+                      AASX files(*.aasx);; 
+                      XML files(*.xml);;
+                      JSON files(*.json);; All files (*.*)"""
+
+
 LINK_TYPES = (AASReference, )
 
 ATTR_ORDER = (
