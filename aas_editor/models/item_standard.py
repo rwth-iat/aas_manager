@@ -41,12 +41,6 @@ class StandardItem(QObject):
         self.typehint = typehint if typehint else self.getTypeHint()
         self.typecheck = checkType(self.obj, self.typehint)
 
-        try:
-            self.typehintName = getTypeHintName(self.typehint)
-        except TypeError as e:
-            print(e)
-            self.typehintName = str(self.typehint)
-
     def __str__(self):
         return f"{getTypeName(type(self))}: {self.data(Qt.DisplayRole)}"
 
@@ -84,6 +78,16 @@ class StandardItem(QObject):
         self.doc = getAttrDoc(self.objName, self.parentObj.__init__.__doc__)
         self.displayValue = simplifyInfo(self.obj, self.objectName)
 
+    @property
+    def typehint(self) -> str:
+        return self._typehint
+
+    @typehint.setter
+    def typehint(self, value):
+        self._typehint = value
+        self.typecheck = checkType(self.obj, self.typehint)
+        self.updateTypehintName()
+
     def updateObjectName(self):
         if self.objName:
             self.objectName = self.objName
@@ -93,6 +97,13 @@ class StandardItem(QObject):
             self.objectName = self.obj.name
         else:
             self.objectName = getTypeName(self.obj.__class__)
+
+    def updateTypehintName(self):
+        try:
+            self.typehintName = getTypeHintName(self.typehint)
+        except TypeError as e:
+            print(e)
+            self.typehintName = str(self.typehint)
 
     def updateIcon(self):
         try:

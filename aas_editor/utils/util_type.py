@@ -118,7 +118,7 @@ def checkTypeAASRef(aasref, typehint):
 
 
 def getTypeName(objType) -> str:
-    if not isTypehint(objType):
+    if not isTypehint(objType) and not isoftype(objType, Enum):
         raise TypeError("Arg 1 must be type or typehint:", objType)
 
     nameAttrs = ("__name__", "_name", "name")
@@ -160,6 +160,7 @@ def getTypeHintName(typehint) -> str:
         res = f"Optional[{res}]"
 
     return res
+
 
 def issubtype(typ, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:
     """
