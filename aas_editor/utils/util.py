@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import QApplication
 from aas_editor.utils.util_classes import ClassesInfo
 from aas_editor.settings.aas_settings import ATTR_ORDER, PREFERED_LANGS_ORDER, \
     ATTR_INFOS_TO_SIMPLIFY
-from aas_editor.utils.util_type import removeOptional, isIterable
+from aas_editor.utils.util_type import removeOptional, isIterable, getTypeName
 
 
 def nameIsSpecial(method_name):
@@ -51,6 +51,8 @@ def simplifyInfo(obj, attrName: str = "") -> str:
     if isinstance(obj, ATTR_INFOS_TO_SIMPLIFY):
         res = re.sub("^[A-Z]\w*[(]", "", res)
         res = res.rstrip(")")
+    elif inspect.isclass(obj):
+        res = getTypeName(obj)
     elif isinstance(obj, Enum):
         res = obj.name
     elif isinstance(obj, dict) and attrName == "description":
