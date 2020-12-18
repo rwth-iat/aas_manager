@@ -114,31 +114,44 @@ class StandardTable(QAbstractItemModel):
         parentObjCls = type(parentObj)
         parentName = parent.data(NAME_ROLE)
 
+        kwargs = {
+            "obj": obj,
+            "parent": parentItem,
+        }
         if isinstance(obj, Package):
-            item = PackTreeViewItem(obj, new=False, parent=self._rootItem)
+            kwargs["parent"] = self._rootItem
+            kwargs["new"] = False
+            itemTyp = PackTreeViewItem
         elif parentName in Package.addableAttrs():
             package = parent.data(PACKAGE_ROLE)
             package.add(obj)
-            item = PackTreeViewItem(obj, parentItem)
+            itemTyp = PackTreeViewItem
         elif ClassesInfo.changedParentObject(parentObjCls):
             parentObj = getattr(parentObj, ClassesInfo.changedParentObject(parentObjCls))
             parentObj.add(obj)
-            item = PackTreeViewItem(obj, parentItem)
+            itemTyp = PackTreeViewItem
         elif isinstance(parentObj, AbstractSet):
             parentObj.add(obj)
-            item = DetailedInfoItem(obj, parentItem)
+            itemTyp = DetailedInfoItem
         elif isinstance(parentObj, list):
             parentObj.append(obj)
-            item = DetailedInfoItem(obj, parentItem)
+            itemTyp = DetailedInfoItem
         elif isinstance(parentObj, dict):
             parentObj[obj.key] = obj.value
-            item = DetailedInfoItem(obj, parentItem)
+            itemTyp = DetailedInfoItem
         else:
             raise AttributeError(
                 f"Object couldn't be added: parent obj type is not appendable: {type(parentObj)}")
-        self.beginInsertRows(parent, self.rowCount(parent)-1, self.rowCount(parent)-1)
+        self.beginInsertRows(parent, 0, 0)
+        item = itemTyp(**kwargs)
         self.endInsertRows()
+        # self.insertRow(max(self.rowCount(parent)-1, 0), parent)
         return self.index(item.row(), 0, parent)
+
+    def insertRows(self, row: int, count: int, parent: QModelIndex = ...) -> bool:
+        self.beginInsertRows(parent, row, row + count - 1)
+        self.endInsertRows()
+        return True
 
     def update(self, index: QModelIndex):
         if not index.isValid():
