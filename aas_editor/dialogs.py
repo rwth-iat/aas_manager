@@ -449,9 +449,9 @@ class TypeOptionObjGroupBox(GroupBox):
         currObjType = self.typeComboBox.currentData()
 
         kwargs["parent"] = self
-        self.widget = getInputWidget(currObjType, **kwargs)
-        if isinstance(self.widget, QGroupBox):
-            self.widget.setFlat(True)
+        kwargs["title"] = ""
+        self.widget = QWidget()
+        self.replaceGroupBoxWidget(currObjType, **kwargs)
         self.layout().addWidget(self.widget)
 
         # change input widget for new type if type in combobox changed
@@ -480,6 +480,8 @@ class TypeOptionObjGroupBox(GroupBox):
         self.widget = newWidget
         if isinstance(self.widget, QGroupBox):
             self.widget.setFlat(True)
+        if isinstance(self.widget, (ObjGroupBox, IterableGroupBox)) and not self.widget.inputWidgets:
+            self.widget.hide()
         self.window().adjustSize()
 
     def getObj2add(self):

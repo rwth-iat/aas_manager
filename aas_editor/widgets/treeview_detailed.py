@@ -126,7 +126,7 @@ class AttrsTreeView(TreeView):
 
     def mouseDoubleClickEvent(self, e: QMouseEvent) -> None:
         if e.button() == Qt.LeftButton:
-            self.handleEnterEvent()
+            self.handleDoubleClickEvent()
         else:
             super(TreeView, self).mouseDoubleClickEvent(e)
 
@@ -142,18 +142,30 @@ class AttrsTreeView(TreeView):
             super(TreeView, self).keyPressEvent(event)
 
     def handleEnterEvent(self):
-        index2edit = self.currentIndex()
+        index = self.currentIndex()
         # if we're not editing, check if editable and start editing or expand/collapse
-        if index2edit.flags() & Qt.ItemIsEditable:
-            self.edit(index2edit)
-        if index2edit.siblingAtColumn(VALUE_COLUMN).flags() & Qt.ItemIsEditable:
-            if not index2edit.data(OBJECT_ROLE):
+        if index.siblingAtColumn(VALUE_COLUMN).flags() & Qt.ItemIsEditable:
+            if not index.data(OBJECT_ROLE):
                 self._editCreateHandler()
             else:
-                self.edit(index2edit)
+                self.edit(index)
         else:
-            index2fold = self.currentIndex().siblingAtColumn(0)
-            if self.isExpanded(index2fold):
-                self.collapse(index2fold)
+            self.toggleFold(index)
+
+    def handleDoubleClickEvent(self):
+        index = self.currentIndex()
+        # if we're not editing, check if editable and start editing or expand/collapse
+        if index.flags() & Qt.ItemIsEditable:
+            if not index.data(OBJECT_ROLE):
+                self._editCreateHandler()
             else:
-                self.expand(index2fold)
+                self.edit(index)
+        else:
+            self.toggleFold(index)
+
+    def toggleFold(self, index: QModelIndex):
+        index = index.siblingAtColumn(0)
+        if self.isExpanded(index):
+            self.collapse(index)
+        else:
+            self.expand(index)

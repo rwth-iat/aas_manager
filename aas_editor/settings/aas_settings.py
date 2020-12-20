@@ -80,8 +80,10 @@ CLASSES_INFO = {
 
 
 ATTR_INFOS_TO_SIMPLIFY = (AdministrativeInformation, Identifier,)
-TYPES_NOT_TO_POPULATE = (
-    AbstractObjectStore, str, int, float, bool, Enum, ABCMeta, Path, util_classes.DictItem)  # '+ TYPES_IN_ONE_ROW
+
+TYPES_NOT_TO_POPULATE = (type, ABCMeta)
+TYPES_WITH_INSTANCES_NOT_TO_POPULATE = (
+    AbstractObjectStore, str, int, float, bool, Enum, Path, util_classes.DictItem)  # '+ TYPES_IN_ONE_ROW
 COMPLEX_ITERABLE_TYPES = (Namespace,)
 DEFAULT_ATTRS_TO_HIDE = {"parent": None}
 
