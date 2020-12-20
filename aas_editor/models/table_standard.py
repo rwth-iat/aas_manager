@@ -316,7 +316,7 @@ class StandardTable(QAbstractItemModel):
             try:
                 parentAttr = ClassesInfo.changedParentObject(type(parentObj)) #FIXME delete if Namespace.discard() works
                 parentObj = getattr(parentObj, parentAttr)
-            except KeyError:
+            except AttributeError:
                 pass
 
         for currRow in range(row+count-1, row-1, -1):

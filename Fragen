@@ -1,7 +1,10 @@
+Gibt es Unterschied zw. Reference und AASReference? Warum typehint of submodel.sematic_id ist Reference?
+
 Suggestions:
-- target_type parameter in init of AASReference must have same name as class attribute
+- delete target_type parameter in init of AASReference or it should have same name as class attribute
 - make Submodel subscriptable to do smth like Iterable[Submodel[SubmodelElement]]
     now: TypeError: 'ABCMeta' object is not subscriptable
+- SubmodelElementCollection, property 'ordered' add typehint
 
 Needs:
     For TypeOptionGroupBox: - Some datatypes must be implemented (Time, Duration etc.)!
