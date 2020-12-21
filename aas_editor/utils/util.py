@@ -7,6 +7,7 @@ from typing import List, Dict, Type
 from PyQt5.QtCore import Qt, QFile, QTextStream, QModelIndex
 from PyQt5.QtWidgets import QApplication
 
+from aas_editor.settings import NOT_GIVEN
 from aas_editor.utils.util_classes import ClassesInfo
 from aas_editor.settings.aas_settings import ATTR_ORDER, PREFERED_LANGS_ORDER, \
     ATTR_INFOS_TO_SIMPLIFY
@@ -68,21 +69,34 @@ def getDescription(descriptions: dict) -> str:
         return tuple(descriptions.values())[0]
 
 
-def getDefaultVal(param: str, objType: Type):
+def getDefaultVal(objType: Type, param: str, default=NOT_GIVEN):
+    """
+    :param objType: type
+    :param param: name of argument in __init__ or __new__
+    :param default: value to return if nothing found
+    :raise AttributeError if no default value found and default is not given
+    :return: default value for the given attribute for type init
+    """
     params, defaults = getParams4init(objType)
     if params and defaults:
         params = list(params.keys())
         revParams = reversed(params)
         revDefaults = list(reversed(defaults))
         for n, par in enumerate(revParams):
-            if par == param:
-                defValue = revDefaults[n]
-                return defValue
-            elif par.rstrip('_') == param:  # TODO change if aas changes
-                defValue = revDefaults[n]
-                return defValue
+            try:
+                if par == param:
+                    defValue = revDefaults[n]
+                    return defValue
+                elif par.rstrip('_') == param:  # TODO change if aas changes
+                    defValue = revDefaults[n]
+                    return defValue
+            except IndexError:
+                pass
 
-    raise AttributeError("No such default parameter found:", param)
+    if default == NOT_GIVEN:
+        raise AttributeError("No such default parameter found:", param)
+    else:
+        return default
 
 
 def getParams4init(objType: Type):
@@ -94,14 +108,17 @@ def getParams4init(objType: Type):
         # for NamedTuple
         params = objType._field_types.copy()
         defaults = objType._field_defaults if hasattr(objType, "_field_defaults") else {}
-    elif hasattr(objType, "__init__"):
-        g = inspect.getfullargspec(objType.__init__)
-        params = g.annotations.copy()
-        defaults = g.defaults
-    elif hasattr(objType, "__new__"):
-        g = inspect.getfullargspec(objType.__new__)
-        params = g.annotations.copy()
-        defaults = g.defaults
+    elif hasattr(objType, "__init__") or hasattr(objType, "__new__"):
+        if hasattr(objType, "__init__"):
+            g = inspect.getfullargspec(objType.__init__)
+            params = g.annotations.copy()
+            defaults = g.defaults
+        if not params and hasattr(objType, "__new__"):
+            g = inspect.getfullargspec(objType.__new__)
+            params = g.annotations.copy()
+            defaults = g.defaults
+        if g.kwonlydefaults:
+            defaults = defaults + tuple(g.kwonlydefaults.values())
     else:
         raise TypeError(f"no init or new func in objectType: {objType}")
 
