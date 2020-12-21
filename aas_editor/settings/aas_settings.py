@@ -18,6 +18,7 @@ FILTER_AAS_FILES = """AAS files (*.aasx *.xml *.json);;
                       XML files(*.xml);;
                       JSON files(*.json);; All files (*.*)"""
 
+EMPTY_VALUES = (None, tuple(), set(), list(), dict())
 
 LINK_TYPES = (AASReference, )
 
@@ -25,6 +26,7 @@ ATTR_ORDER = (
     "id_short",
     "category",
     "value",
+    "value_type",
     "in_output_variable",
     "input_variable",
     "output_variable",
