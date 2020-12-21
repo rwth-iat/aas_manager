@@ -1,7 +1,7 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex
 from PyQt5.QtGui import QMouseEvent, QKeyEvent
-from PyQt5.QtWidgets import QAction, QAbstractScrollArea, QAbstractItemView
+from PyQt5.QtWidgets import QAction, QAbstractScrollArea, QAbstractItemView, QMessageBox
 
 from aas_editor.models import DetailedInfoTable
 from aas_editor.delegates import EditDelegate
@@ -99,6 +99,10 @@ class AttrsTreeView(TreeView):
             self.addItemWithDialog(index, attrType, title=f"Add {attribute} element", rmDefParams=True)
 
     def _editCreateHandler(self, objVal=None):
+        """
+        :param objVal: value to set in dialog input widgets
+        :raise KeyError if no typehint found and no objVal was given
+        """
         index = self.currentIndex()
         if index.isValid():
             objVal = objVal if objVal else index.data(OBJECT_ROLE)
@@ -109,7 +113,7 @@ class AttrsTreeView(TreeView):
                 if objVal:
                     attrType = type(objVal)
                 else:
-                    raise KeyError(e)
+                    raise KeyError("No typehint found for the given item", index.data(NAME_ROLE))
             self.replItemWithDialog(index, attrType, title=f"Create {attribute}", objVal=objVal)
 
     def _openRef(self, detailInfoItem: QModelIndex, newTab=True, setCurrent=True, newWindow=False):
@@ -145,8 +149,12 @@ class AttrsTreeView(TreeView):
         index = self.currentIndex()
         # if we're not editing, check if editable and start editing or expand/collapse
         if index.siblingAtColumn(VALUE_COLUMN).flags() & Qt.ItemIsEditable:
-            if not index.data(OBJECT_ROLE):
-                self._editCreateHandler()
+            if index.data(OBJECT_ROLE) in (None, tuple()):
+                try:
+                    self._editCreateHandler()
+                except KeyError as e:
+                    print(e)
+                    QMessageBox.critical(self, "Error", str(e))
             else:
                 self.edit(index)
         else:
@@ -156,8 +164,12 @@ class AttrsTreeView(TreeView):
         index = self.currentIndex()
         # if we're not editing, check if editable and start editing or expand/collapse
         if index.flags() & Qt.ItemIsEditable:
-            if not index.data(OBJECT_ROLE):
-                self._editCreateHandler()
+            if index.data(OBJECT_ROLE) in (None, tuple()):
+                try:
+                    self._editCreateHandler()
+                except KeyError as e:
+                    print(e)
+                    QMessageBox.critical(self, "Error", str(e))
             else:
                 self.edit(index)
         else:
