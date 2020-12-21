@@ -247,7 +247,7 @@ class TreeView(BasicTreeView):
         attribute = index.data(NAME_ROLE)
         try:
             parentObjType = type(index.data(PARENT_OBJ_ROLE))
-            defaultVal = getDefaultVal(attribute, parentObjType)
+            defaultVal = getDefaultVal(parentObjType, attribute)
             self.model().setData(index, defaultVal, CLEAR_ROW_ROLE)
         except (AttributeError, IndexError):
             self.model().setData(index, NOT_GIVEN, CLEAR_ROW_ROLE)
