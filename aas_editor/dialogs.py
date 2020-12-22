@@ -1,20 +1,19 @@
 from aas.model.base import *
-from aas.model.provider import *
-from aas.model.submodel import *
 
 from enum import Enum, unique
 from inspect import isabstract
 from typing import Union, List, Dict, Optional
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIntValidator, QDoubleValidator, QPaintEvent
-from PyQt5.QtWidgets import QLineEdit, QLabel, QPushButton, QDialog, QDialogButtonBox, \
-    QGroupBox, QCheckBox, QWidget, QCompleter, QComboBox, QVBoxLayout, QHBoxLayout
+from PyQt5.QtGui import QPaintEvent
+from PyQt5.QtWidgets import QLabel, QPushButton, QDialog, QDialogButtonBox, \
+    QGroupBox, QWidget, QVBoxLayout, QHBoxLayout
 
+from aas_editor.editWidgets import StandardInputWidget, SpecialInputWidget
 from aas_editor.settings import DEFAULTS, DEFAULT_COMPLETIONS, ATTRIBUTE_COLUMN, OBJECT_ROLE,\
     DEFAULT_ATTRS_TO_HIDE
 from aas_editor.delegates import ColorDelegate
-from aas_editor.utils.util import inheritors, getReqParams4init, getParams4init
+from aas_editor.utils.util import inheritors, getReqParams4init, getParams4init, getDefaultVal
 from aas_editor.utils.util_type import getTypeName, issubtype, isoftype, isSimpleIterableType, \
     isIterableType, isIterable
 from aas_editor.utils.util_classes import DictItem
@@ -85,6 +84,8 @@ def getInputWidget(objType, rmDefParams=True, title="", attrsToHide: dict = None
         widget = TypeOptionObjGroupBox(objTypes, **kwargs)
     elif issubtype(objType, AASReference):
         widget = AASReferenceGroupBox(objType, **kwargs)
+    elif issubtype(objType, SpecialInputWidget.types):
+        widget = SpecialInputWidget(objType, **kwargs)
     elif issubtype(objType, StandardInputWidget.types):
         widget = StandardInputWidget(objType, **kwargs)
     else:
@@ -213,7 +214,8 @@ class ObjGroupBox(GroupBox):
         if self.reqAttrsDict:
             for attr, attrType in self.reqAttrsDict.items():
                 # TODO delete when right _ will be deleted in aas models
-                val = getattr(self.objVal, attr.rstrip("_"), DEFAULTS.get(self.objType, {}).get(attr))
+                val = getattr(self.objVal, attr.rstrip("_"),
+                              DEFAULTS.get(self.objType, {}).get(attr, getDefaultVal(self.objType, attr, None)))
                 self.kwargs["completions"] = DEFAULT_COMPLETIONS.get(self.objType, {}).get(attr, [])
                 inputWidget = self.getInputWidget(attr, attrType, val, **self.kwargs)
                 self.inputWidgets.append(inputWidget)
@@ -280,6 +282,20 @@ class ObjGroupBox(GroupBox):
             print("Value does not fit to req obj type", type(val), self.objType)
 
 
+class SingleWidgetGroupBox(GroupBox):
+    def __init__(self, widget: Union[StandardInputWidget, SpecialInputWidget], parent=None):
+        super(SingleWidgetGroupBox, self).__init__(widget.objType, parent)
+        self.inputWidget = widget
+        self.layout().addWidget(widget)
+
+    def getObj2add(self):
+        """Return resulting obj due to user input data"""
+        return self.inputWidget.getObj2add()
+
+    def setVal(self, val):
+        self.inputWidget.setVal(val)
+
+
 class IterableGroupBox(GroupBox):
     def __init__(self, objType, **kwargs):
         super().__init__(objType, **kwargs)
@@ -316,6 +332,8 @@ class IterableGroupBox(GroupBox):
             "objVal": objVal
         })
         widget = getInputWidget(**self.kwargs)
+        if not isinstance(widget, GroupBox):
+            widget = SingleWidgetGroupBox(widget)
         widget.setClosable(True)
         widget.toggled.connect(lambda: self.delInputWidget(widget))
         self.inputWidgets.append(widget)
@@ -359,86 +377,6 @@ class IterableGroupBox(GroupBox):
         else:
             print("Value is not iterable")
             self._addInputWidget()
-
-
-class StandardInputWidget(QWidget):
-    types = (bool, str, int, float, Enum, Type)
-
-    def __init__(self, attrType, parent=None, objVal=None, **kwargs):
-        super(StandardInputWidget, self).__init__(parent)
-        self.objType = attrType
-        self.widget = self._initWidget(**kwargs)
-        self.setVal(objVal)
-        widgetLayout = QVBoxLayout(self)
-        widgetLayout.setContentsMargins(1, 1, 1, 1)
-        widgetLayout.addWidget(self.widget)
-        self.setLayout(widgetLayout)
-
-    def _initWidget(self, **kwargs):
-        if issubtype(self.objType, bool):
-            widget = QCheckBox(self)
-        elif issubtype(self.objType, str):
-            widget = QLineEdit(self)
-            if kwargs.get("completions"):
-                completer = QCompleter(kwargs["completions"], self)
-                widget.setCompleter(completer)
-        elif issubtype(self.objType, int):
-            widget = QLineEdit(self)
-            widget.setValidator(QIntValidator())
-        elif issubtype(self.objType, float):
-            widget = QLineEdit(self)
-            widget.setValidator(QDoubleValidator())
-        elif issubtype(self.objType, (Enum, Type)):
-            if issubtype(self.objType, Enum):
-                # add enum types to types
-                types = [member for member in self.objType]
-            else:  # Type
-                union = self.objType.__args__[0]
-                if type(union) == TypeVar:
-                    # add Type inheritors to types
-                    baseType = union.__bound__
-                    types = inheritors(baseType)
-                else:
-                    # add Union Type attrs to types
-                    types = union.__args__
-
-            if len(types) <= 6:
-                widget = QComboBox(self)
-            else:
-                widget = CompleterComboBox(self)
-
-            for typ in types:
-                widget.addItem(getTypeName(typ), typ)
-            widget.model().sort(0, Qt.AscendingOrder)
-
-        return widget
-
-    def getObj2add(self):
-        """Return resulting obj due to user input data"""
-        if issubtype(self.objType, bool):
-            obj = self.widget.isChecked()
-        elif issubtype(self.objType, str):
-            obj = self.widget.text()
-        elif issubtype(self.objType, int):
-            obj = int(self.widget.text())
-        elif issubtype(self.objType, float):
-            obj = float(self.widget.text())
-        elif issubtype(self.objType, (Enum, Type)):
-            obj = self.widget.currentData()
-        return obj
-
-    def setVal(self, val):
-        if val is not None:
-            if issubtype(self.objType, bool) and type(val) is bool:
-                self.widget.setChecked(bool(val))
-            elif issubtype(self.objType, str) and type(val) is str:
-                self.widget.setText(val)
-            elif issubtype(self.objType, int) and type(val) is int:
-                self.widget.setText(str(val))
-            elif issubtype(self.objType, float) and type(val) in (int, float):
-                self.widget.setText(str(val))
-            elif issubtype(self.objType, (Enum, Type)):
-                self.widget.setCurrentIndex(self.widget.findData(val))
 
 
 class TypeOptionObjGroupBox(GroupBox):
