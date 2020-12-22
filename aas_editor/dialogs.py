@@ -335,6 +335,7 @@ class IterableGroupBox(GroupBox):
         if not isinstance(widget, GroupBox):
             widget = SingleWidgetGroupBox(widget)
         widget.setClosable(True)
+        widget.setFlat(True)
         widget.toggled.connect(lambda: self.delInputWidget(widget))
         self.inputWidgets.append(widget)
         self.layout().insertWidget(self.layout().count()-1, widget)

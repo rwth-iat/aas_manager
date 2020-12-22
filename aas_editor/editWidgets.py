@@ -219,6 +219,9 @@ class StandardInputWidget(QWidget):
                 widget.addItem(getTypeName(typ), typ)
             widget.model().sort(0, Qt.AscendingOrder)
 
+            if widget.count():
+                widget.setCurrentIndex(0)
+
         return widget
 
     def getObj2add(self):
@@ -236,17 +239,18 @@ class StandardInputWidget(QWidget):
         return obj
 
     def setVal(self, val):
-        if val is not None:
-            if issubtype(self.objType, bool) and isoftype(val, bool):
-                self.widget.setChecked(bool(val))
-            elif issubtype(self.objType, str) and isoftype(val, str):
-                self.widget.setText(val)
-            elif issubtype(self.objType, int) and isoftype(val, int):
-                self.widget.setText(str(val))
-            elif issubtype(self.objType, float) and isoftype(val, (int, float)):
-                self.widget.setText(str(val))
-            elif issubtype(self.objType, (Enum, Type)):
-                self.widget.setCurrentIndex(self.widget.findData(val))
+        if issubtype(self.objType, bool) and isoftype(val, bool):
+            self.widget.setChecked(bool(val))
+        elif issubtype(self.objType, str) and isoftype(val, str):
+            self.widget.setText(val)
+        elif issubtype(self.objType, int) and isoftype(val, int):
+            self.widget.setText(str(val))
+        elif issubtype(self.objType, float) and isoftype(val, (int, float)):
+            self.widget.setText(str(val))
+        elif issubtype(self.objType, (Enum, Type)):
+            index = self.widget.findData(val)
+            if index >= 0:
+                self.widget.setCurrentIndex(index)
 
 
 class SpecialInputWidget(StandardInputWidget):
