@@ -1,10 +1,13 @@
+from types import GeneratorType
+
 from PyQt5.QtCore import Qt
+from aas.adapter.aasx import DictSupplementaryFileContainer
 
 from aas_editor.models import StandardItem
 from aas_editor.settings.app_settings import PACKAGE_ROLE, ATTRIBUTE_COLUMN
 from aas_editor.utils.util import getDescription
 from aas_editor.utils.util_type import isIterable
-from aas_editor.package import Package
+from aas_editor.package import Package, StoredFile
 
 
 class PackTreeViewItem(StandardItem):
@@ -33,12 +36,24 @@ class PackTreeViewItem(StandardItem):
         if isinstance(self.obj, Package):
             for attr in Package.packViewAttrs():
                 # set package objStore as obj, so that delete works
-                packItem = PackTreeViewItem(getattr(self.obj, attr), name=attr, **kwargs)
-                packItem.obj = self.obj.objStore
+                itemObj = getattr(self.obj, attr)
+                packItem = PackTreeViewItem(itemObj, name=attr, **kwargs)
+                if isinstance(itemObj, GeneratorType):
+                    packItem.obj = self.obj.objStore
         elif isIterable(self.obj):
-            self._populateIterable(self.obj, **kwargs)
+            if isinstance(self.obj, DictSupplementaryFileContainer):
+                self._populateFileContainer(self.obj, **kwargs)
+            else:
+                self._populateIterable(self.obj, **kwargs)
 
     @staticmethod
     def _populateIterable(obj, **kwargs):
         for sub_item_obj in obj:
             PackTreeViewItem(sub_item_obj, **kwargs)
+
+    @staticmethod
+    def _populateFileContainer(fileContainer, **kwargs):
+        # populate file container
+        for name in fileContainer:
+            itemObj = StoredFile(name, fileContainer)
+            PackTreeViewItem(itemObj, **kwargs)
