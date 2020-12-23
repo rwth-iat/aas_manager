@@ -154,10 +154,10 @@ class TabBar(QTabBar):
                             type(tabWidget))
 
         splitter: QSplitter = tabWidget.parentWidget()
-        splitter.setOrientation(orientation)
         if not isinstance(splitter, QSplitter):
-            raise TypeError("Parent widget of TabWidget must be of tyep QSplitter",
+            raise TypeError("Parent widget of TabWidget must be of type QSplitter",
                             type(splitter))
+        splitter.setOrientation(orientation)
 
         tab: Tab = tabWidget.widget(self.menuIndexTab)
         packItem = QModelIndex(tab.packItem)
