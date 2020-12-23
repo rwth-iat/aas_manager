@@ -194,7 +194,7 @@ class StoredFile:
         return self._name
 
     @property
-    def contentType(self) -> str:
+    def mime_type(self) -> str:
         return self._fileStore.get_content_type(self.name)
 
     def fileContent(self) -> io.BytesIO:

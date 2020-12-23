@@ -105,7 +105,7 @@ AUTOSCROLL_TO_SRC_ICON = qta.icon("mdi.package-down")
 AUTOSCROLL_FROM_SRC_ICON = qta.icon("mdi.package-up")
 
 FILE_ICON = qta.icon("mdi.file")
-FILETYPE_ICON_DICT = {
+MIME_TYPE_ICON_DICT = {
     "application/pdf": qta.icon("mdi.file-pdf"),
     "image": qta.icon("mdi.file-image"),
     "text": qta.icon("mdi.file-document"),
