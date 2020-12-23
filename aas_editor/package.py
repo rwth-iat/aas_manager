@@ -197,7 +197,11 @@ class StoredFile:
     def mime_type(self) -> str:
         return self._fileStore.get_content_type(self.name)
 
-    def fileContent(self) -> io.BytesIO:
+    @property
+    def value(self) -> bytes:
+        return self.file().getvalue()
+
+    def file(self) -> io.BytesIO:
         file_content = io.BytesIO()
         self._fileStore.write_file(self.name, file_content)
         return file_content
