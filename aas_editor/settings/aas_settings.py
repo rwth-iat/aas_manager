@@ -43,7 +43,11 @@ PREFERED_LANGS_ORDER = ("en-us", "en", "de")
 
 CLASSES_INFO = {
     object: {
-        HIDDEN_ATTRS: ("namespace_element_sets", "parent", "security")
+        HIDDEN_ATTRS: (
+            "namespace_element_sets", "parent", "security")
+    },
+    datetime.datetime: {
+        HIDDEN_ATTRS: ("min", "max", "resolution"),
     },
     aas_editor.package.Package: {
         HIDDEN_ATTRS: ("ATTRS_INFO", *aas_editor.package.Package.packViewAttrs()),
