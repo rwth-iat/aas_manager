@@ -1,9 +1,12 @@
-from PyQt5.QtCore import pyqtSignal, QModelIndex, QPersistentModelIndex, QPoint, QMimeData
+from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineSettings
+from PyQt5.QtCore import pyqtSignal, QModelIndex, QPersistentModelIndex, QPoint, QMimeData, QUrl
 from PyQt5.QtGui import QIcon, QPixmap, QRegion, QDrag, QCursor, QMouseEvent, \
     QDragEnterEvent, QDragLeaveEvent, QDropEvent, QCloseEvent
-from PyQt5.QtWidgets import QWidget, QLabel, QMessageBox, QVBoxLayout, \
+from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, \
     QTabWidget, QAction, QHBoxLayout, QFrame, QTabBar, QMenu, QSplitter, QShortcut
+from aas.model import Blob, File
 
+from aas_editor.package import StoredFile
 from aas_editor.settings.app_settings import *
 from aas_editor.widgets import AddressLine, SearchBar, ToolBar, AttrsTreeView
 from aas_editor.utils.util import getTreeItemPath
@@ -336,6 +339,10 @@ class Tab(QWidget):
         self.descrLabel.setWordWrap(True)
         self.descrLabel.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
+        QWebEngineSettings.defaultSettings().setAttribute(QWebEngineSettings.PluginsEnabled, True)
+        self.mediaWidget = QWebEngineView()
+        self.mediaWidget.hide()
+
         self.attrsTreeView = AttrsTreeView(self)
         self.attrsTreeView.setFrameShape(QFrame.NoFrame)
 
@@ -412,6 +419,10 @@ class Tab(QWidget):
         self.packItem = QPersistentModelIndex(packItem.siblingAtColumn(0))
         self.pathLine.setText(getTreeItemPath(self.packItem))
         self.descrLabel.setText("")
+
+        self.packItemObj = self.packItem.data(OBJECT_ROLE)
+        self.updateMediaWidget()
+
         icon = self.packItem.data(Qt.DecorationRole)
         if icon:
             self.setWindowIcon(icon)
@@ -423,28 +434,72 @@ class Tab(QWidget):
         self.forwardAct.setEnabled(True) if self.nextItems else self.forwardAct.setDisabled(True)
         self.backAct.setEnabled(True) if self.prevItems else self.backAct.setDisabled(True)
 
+    def updateMediaWidget(self):
+        if isinstance(self.packItemObj, (StoredFile, Blob, File)):
+            self.mediaWidget.show()
+            if not self.mediaWidget.width():
+                # set equal sizes
+                oldSizes = self.splitter.sizes()
+                newSizes = [sum(oldSizes)/(len(oldSizes)) for size in oldSizes]
+                self.splitter.setSizes(newSizes)
+            mediaItem = self.packItemObj
+
+            try:
+                if isinstance(mediaItem.value, str):
+                    if mediaItem.value.startswith(("http", "www.")):
+                        self.mediaWidget.load(QUrl(mediaItem.value))
+                        self.mediaWidget.load(QUrl(mediaItem.value))
+                    else:
+                        name = mediaItem.value
+                        package = self.packItem.data(PACKAGE_ROLE)
+                        fileStore = package.fileStore
+                        if name in fileStore:
+                            mediaItem = StoredFile(name, fileStore)
+                if isinstance(mediaItem.value, bytes):
+                    self.mediaWidget.setContent(mediaItem.value, mediaItem.mime_type)
+            except Exception as e:
+                print(e)
+                self.mediaWidget.setContent("Could not load media")
+
+            self.mediaWidget.setZoomFactor(1.0)
+        else:
+            self.mediaWidget.hide()
+
     def showDetailInfoItemDoc(self, detailInfoItem: QModelIndex):
         self.descrLabel.setText(detailInfoItem.data(Qt.WhatsThisRole))
 
     def _initLayout(self):
-        layout = QVBoxLayout(self)
-        layout.setObjectName("tabLayout")
-
-        pathWidget = QWidget(self)
+        pathWidget = QWidget()
         pathLayout = QHBoxLayout(pathWidget)
         pathLayout.setContentsMargins(0, 0, 0, 0)
         pathLayout.addWidget(self.pathToolBar)
         pathLayout.addWidget(self.pathLine)
+        pathWidget.setFixedHeight(TOOLBARS_HEIGHT)
 
-        toolBarWidget = QWidget(self)
+        toolBarWidget = QWidget()
         toolBarLayout = QHBoxLayout(toolBarWidget)
         toolBarLayout.setContentsMargins(0, 0, 0, 0)
         toolBarLayout.addWidget(self.toolBar)
         toolBarLayout.addWidget(self.searchBar)
+        toolBarWidget.setFixedHeight(TOOLBARS_HEIGHT)
 
+        treeViewWidget = QWidget()
+        treeViewLayout = QVBoxLayout(treeViewWidget)
+        treeViewLayout.setContentsMargins(0, 0, 0, 0)
+        treeViewLayout.addWidget(pathWidget)
+        treeViewLayout.addWidget(self.attrsTreeView)
+        treeViewLayout.addWidget(self.descrLabel)
+
+        self.splitter = QSplitter()
+        self.splitter.setOrientation(Qt.Horizontal)
+        self.splitter.setContentsMargins(0, 0, 0, 0)
+        self.splitter.addWidget(treeViewWidget)
+        self.splitter.addWidget(self.mediaWidget)
+
+        layout = QVBoxLayout(self)
+        layout.setObjectName("tabLayout")
         layout.addWidget(pathWidget)
         layout.addWidget(toolBarWidget)
-        layout.addWidget(self.attrsTreeView)
-        layout.addWidget(self.descrLabel)
+        layout.addWidget(self.splitter)
         layout.setSpacing(2)
-        layout.setContentsMargins(0,2,0,2)
+        layout.setContentsMargins(0, 2, 0, 2)
