@@ -163,7 +163,19 @@ class TabBar(QTabBar):
         packItem = QModelIndex(tab.packItem)
         newTabWidget = TabWidget()
         newTabWidget.openItem(packItem)
-        splitter.insertWidget(splitter.indexOf(tabWidget)+1, newTabWidget)
+
+        if orientation == Qt.Horizontal:
+            size = int(tabWidget.width()/2)
+        else:
+            size = int(tabWidget.height()/2)
+
+        newTabWidgetIndex = splitter.indexOf(tabWidget) + 1
+        sizes = splitter.sizes()
+        sizes[splitter.indexOf(tabWidget)] = size
+        sizes.insert(newTabWidgetIndex, size)
+
+        splitter.insertWidget(newTabWidgetIndex, newTabWidget)
+        splitter.setSizes(sizes)
 
     def initMenu(self) -> None:
         self.menu = QMenu(self)
