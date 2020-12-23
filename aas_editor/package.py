@@ -1,3 +1,4 @@
+import io
 from datetime import datetime
 from pathlib import Path
 from typing import Union, Type, Iterable
@@ -32,7 +33,7 @@ class Package:
         "others": {
             ADD_ACT_AAS_TXT: "",
         },
-        "files": {
+        "fileStore": {
             ADD_ACT_AAS_TXT: "Add file",
         },
     }
@@ -181,3 +182,22 @@ class Package:
     @property
     def numOfConceptDescriptions(self) -> int:
         return len(tuple(self.concept_descriptions))
+
+
+class StoredFile:
+    def __init__(self, name: str, fileStore: DictSupplementaryFileContainer):
+        self._fileStore = fileStore
+        self._name = name
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def contentType(self) -> str:
+        return self._fileStore.get_content_type(self.name)
+
+    def fileContent(self) -> io.BytesIO:
+        file_content = io.BytesIO()
+        self._fileStore.write_file(self.name, file_content)
+        return file_content
