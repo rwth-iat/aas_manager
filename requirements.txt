@@ -1,3 +1,6 @@
 PyQt5
 pyi40aas
 qtawesome
+pytz
+qpageview
+PyQtWebEngine
