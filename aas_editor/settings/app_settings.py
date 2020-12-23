@@ -1,3 +1,4 @@
+import qtawesome
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QKeySequence, QColor, QFont
 
@@ -102,6 +103,13 @@ EXPAND_ALL_ICON = qta.icon("mdi.arrow-expand-vertical")
 COLLAPSE_ALL_ICON = qta.icon("mdi.arrow-collapse-vertical")
 AUTOSCROLL_TO_SRC_ICON = qta.icon("mdi.package-down")
 AUTOSCROLL_FROM_SRC_ICON = qta.icon("mdi.package-up")
+
+FILE_ICON = qta.icon("mdi.file")
+FILETYPE_ICON_DICT = {
+    "application/pdf": qta.icon("mdi.file-pdf"),
+    "image": qta.icon("mdi.file-image"),
+    "text": qta.icon("mdi.file-document"),
+}
 
 # CHARS4=[{'offset': (-0.48, 0)}, {'offset': (-0.16, 0)},
 #         {'offset': (0.15, 0)}, {'offset': (0.46, 0)}]
