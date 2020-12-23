@@ -179,7 +179,7 @@ class PackTreeView(TreeView):
         if not parent.isValid():
             self.newPackWithDialog()
         elif name in Package.addableAttrs():
-            self.addItemWithDialog(objType=Package.addType(name), **kwargs)
+            self.addItemWithDialog(objType=ClassesInfo.addType(Package, name), **kwargs)
         elif ClassesInfo.addType(type(parentObj)):
             self.addItemWithDialog(objType=ClassesInfo.addType(type(parentObj)), **kwargs)
         else:

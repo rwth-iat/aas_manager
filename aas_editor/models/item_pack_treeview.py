@@ -6,6 +6,7 @@ from aas.adapter.aasx import DictSupplementaryFileContainer
 from aas_editor.models import StandardItem
 from aas_editor.settings.app_settings import PACKAGE_ROLE, ATTRIBUTE_COLUMN
 from aas_editor.utils.util import getDescription
+from aas_editor.utils.util_classes import ClassesInfo
 from aas_editor.utils.util_type import isIterable
 from aas_editor.package import Package, StoredFile
 
@@ -33,8 +34,8 @@ class PackTreeViewItem(StandardItem):
             "parent": self,
             "new": self.new,
         }
-        if isinstance(self.obj, Package):
-            for attr in Package.packViewAttrs():
+        if ClassesInfo.hasPackViewAttrs(type(self.obj)):
+            for attr in ClassesInfo.packViewAttrs(type(self.obj)):
                 # set package objStore as obj, so that delete works
                 itemObj = getattr(self.obj, attr)
                 packItem = PackTreeViewItem(itemObj, name=attr, **kwargs)

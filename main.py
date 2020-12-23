@@ -1,5 +1,5 @@
 import sys
-
+from PyQt5.QtWebEngineWidgets import *
 from PyQt5 import QtWidgets
 
 

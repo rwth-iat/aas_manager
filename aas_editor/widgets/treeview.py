@@ -193,7 +193,7 @@ class TreeView(BasicTreeView):
             addActText = ClassesInfo.addActText(objType)
             enabled = True
         elif attrName in Package.addableAttrs():
-            addActText = Package.addActText(attrName)
+            addActText = ClassesInfo.addActText(Package, attrName)
             enabled = True
         elif isIterable(obj):
             addActText = f"Add {attrName} element"

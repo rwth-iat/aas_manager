@@ -1,7 +1,7 @@
 import io
 from datetime import datetime
 from pathlib import Path
-from typing import Union, Type, Iterable
+from typing import Union, Iterable
 
 import pyecma376_2
 from aas.adapter import aasx
@@ -9,35 +9,11 @@ from aas.adapter.aasx import DictSupplementaryFileContainer
 from aas.model import AssetAdministrationShell, Asset, Submodel, ConceptDescription, \
     DictObjectStore, Key
 
-from aas_editor.settings import ADD_ACT_AAS_TXT, ADD_TYPE, DEFAULT_COMPLETIONS
+from aas_editor.settings import DEFAULT_COMPLETIONS
+from aas_editor.utils.util_classes import ClassesInfo
 
 
 class Package:
-    ATTRS_INFO = {
-        "shells": {
-            ADD_ACT_AAS_TXT: "Add shell",
-            ADD_TYPE: AssetAdministrationShell,
-        },
-        "assets": {
-            ADD_ACT_AAS_TXT: "Add asset",
-            ADD_TYPE: Asset,
-        },
-        "submodels": {
-            ADD_ACT_AAS_TXT: "Add submodel",
-            ADD_TYPE: Submodel,
-        },
-        "concept_descriptions": {
-            ADD_ACT_AAS_TXT: "Add concept description",
-            ADD_TYPE: ConceptDescription,
-        },
-        "others": {
-            ADD_ACT_AAS_TXT: "",
-        },
-        "fileStore": {
-            ADD_ACT_AAS_TXT: "Add file",
-        },
-    }
-
     def __init__(self, file: Union[str, Path] = ""):
         """:raise TypeError if file has wrong file type"""
         self.objStore = DictObjectStore()
@@ -50,21 +26,8 @@ class Package:
         self._changed = False
 
     @classmethod
-    def packViewAttrs(cls):
-        return tuple(cls.ATTRS_INFO.keys())
-
-    @classmethod
     def addableAttrs(cls):
-        return tuple(cls.ATTRS_INFO.keys())
-
-    @classmethod
-    def addActText(cls, attrName: str) -> str:
-        return cls.ATTRS_INFO.get(attrName, {}).get(
-            ADD_ACT_AAS_TXT, "")
-
-    @classmethod
-    def addType(cls, attrName: str) -> Type:
-        return cls.ATTRS_INFO.get(attrName, {}).get(ADD_TYPE, None)
+        return ClassesInfo.packViewAttrs(cls)
 
     @property
     def file(self):

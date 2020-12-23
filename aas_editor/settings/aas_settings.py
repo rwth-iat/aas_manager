@@ -11,7 +11,7 @@ from aas.model import AssetAdministrationShell, Asset, ConceptDescription, Submo
 
 import aas_editor.package
 from aas_editor.settings import getCharsIcon, HIDDEN_ATTRS, CHANGED_PARENT_OBJ, ADD_ACT_AAS_TXT, \
-    ADD_TYPE
+    ADD_TYPE, PACKVIEW_ATTRS_INFO
 from aas_editor.utils import util_classes
 
 FILTER_AAS_FILES = """AAS files (*.aasx *.xml *.json);;
@@ -50,9 +50,33 @@ CLASSES_INFO = {
         HIDDEN_ATTRS: ("min", "max", "resolution"),
     },
     aas_editor.package.Package: {
-        HIDDEN_ATTRS: ("ATTRS_INFO", *aas_editor.package.Package.packViewAttrs()),
+        HIDDEN_ATTRS: ("ATTRS_INFO", "shells", "assets", "submodels", "concept_descriptions", "others", "fileStore"),
         ADD_ACT_AAS_TXT: "Add package",
         ADD_TYPE: aas_editor.package.Package,
+        PACKVIEW_ATTRS_INFO: {
+            "shells": {
+                ADD_ACT_AAS_TXT: "Add shell",
+                ADD_TYPE: AssetAdministrationShell,
+            },
+            "assets": {
+                ADD_ACT_AAS_TXT: "Add asset",
+                ADD_TYPE: Asset,
+            },
+            "submodels": {
+                ADD_ACT_AAS_TXT: "Add submodel",
+                ADD_TYPE: Submodel,
+            },
+            "concept_descriptions": {
+                ADD_ACT_AAS_TXT: "Add concept description",
+                ADD_TYPE: ConceptDescription,
+            },
+            "others": {
+                ADD_ACT_AAS_TXT: "",
+            },
+            "fileStore": {
+                ADD_ACT_AAS_TXT: "Add file",
+            },
+        }
     },
     AssetAdministrationShell: {
         CHANGED_PARENT_OBJ: "concept_dictionary",
