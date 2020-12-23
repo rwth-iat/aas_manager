@@ -3,10 +3,12 @@ from types import GeneratorType
 from PyQt5.QtGui import QBrush, QIcon, QColor
 from PyQt5.QtCore import QObject, QVariant
 
+from aas_editor.package import StoredFile
 from aas_editor.settings.app_settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
     VALUE_COLUMN, IS_LINK_ROLE, TYPE_HINT_ROLE, PARENT_OBJ_ROLE, TYPE_COLUMN, \
     TYPE_HINT_COLUMN, TYPE_CHECK_ROLE
 from aas_editor.settings.aas_settings import TYPE_ICON_DICT, LINK_TYPES
+from aas_editor.settings import FILE_ICON, FILETYPE_ICON_DICT
 from aas_editor.utils.util import getDescription, getAttrDoc, simplifyInfo
 from aas_editor.utils.util_type import checkType, getTypeName, getTypeHintName, isIterable, \
     getAttrTypeHint, getIterItemTypeHint
@@ -106,12 +108,21 @@ class StandardItem(QObject):
             self.typehintName = str(self.typehint)
 
     def updateIcon(self):
-        try:
-            self.icon = QIcon(TYPE_ICON_DICT[type(self.obj)])
-        except KeyError:
-            for cls in TYPE_ICON_DICT:
-                if isinstance(self.obj, cls):
-                    self.icon = QIcon(TYPE_ICON_DICT[cls])
+        if isinstance(self.obj, StoredFile):
+            try:
+                self.obj: StoredFile
+                contentType: str = self.obj.contentType
+                self.icon = QIcon(FILETYPE_ICON_DICT[contentType])
+            except KeyError:
+                contentType = contentType.rsplit("/")[0]
+                self.icon = QIcon(FILETYPE_ICON_DICT.get(contentType, FILE_ICON))
+        else:
+            try:
+                self.icon = QIcon(TYPE_ICON_DICT[type(self.obj)])
+            except KeyError:
+                for cls in TYPE_ICON_DICT:
+                    if isinstance(self.obj, cls):
+                        self.icon = QIcon(TYPE_ICON_DICT[cls])
 
     def setData(self, value, role, column=ATTRIBUTE_COLUMN):
         if role == Qt.BackgroundRole and isinstance(value, QBrush):
