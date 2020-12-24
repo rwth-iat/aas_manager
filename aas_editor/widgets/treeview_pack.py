@@ -230,7 +230,7 @@ class PackTreeView(TreeView):
             pack = Package(file)
             absFile = pack.file.absolute().as_posix()
             self.updateRecentFiles(absFile)
-        except (OSError, TypeError, ValueError) as e:
+        except Exception as e:
             self.removeFromRecentFiles(file)
             QMessageBox.critical(self, "Error", f"Package {file} couldn't be opened: {e}")
         else:

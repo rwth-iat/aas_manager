@@ -75,6 +75,7 @@ CLASSES_INFO = {
             },
             "fileStore": {
                 ADD_ACT_AAS_TXT: "Add file",
+                ADD_TYPE: aas_editor.package.StoredFile,
             },
         }
     },

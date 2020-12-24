@@ -123,7 +123,7 @@ class StandardTable(QAbstractItemModel):
             kwargs["new"] = False
             itemTyp = PackTreeViewItem
         elif parentName in Package.addableAttrs():
-            package = parent.data(PACKAGE_ROLE)
+            package: Package = parent.data(PACKAGE_ROLE)
             package.add(obj)
             itemTyp = PackTreeViewItem
         elif ClassesInfo.changedParentObject(parentObjCls):
