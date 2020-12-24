@@ -25,7 +25,6 @@ class StandardItem(QObject):
         self.bg = QBrush(QColor(0, 0, 0, 0))
 
         # following attrs will be set during self.obj = obj
-        self.displayValue = None
         self.typecheck = None
         self.objectName = None
         self.doc = None
@@ -38,13 +37,16 @@ class StandardItem(QObject):
         self.objName = name
         self.updateObjectName()
         self.doc = getAttrDoc(self.objName, self.parentObj.__init__.__doc__)
-        self.displayValue = simplifyInfo(self.obj, self.objectName)
 
         self.typehint = typehint if typehint else self.getTypeHint()
         self.typecheck = checkType(self.obj, self.typehint)
 
     def __str__(self):
         return f"{getTypeName(type(self))}: {self.data(Qt.DisplayRole)}"
+
+    @property
+    def displayValue(self):
+        return simplifyInfo(self.obj, self.objectName)
 
     @property
     def obj(self):
@@ -67,7 +69,6 @@ class StandardItem(QObject):
         self.updateIcon()
         self.updateObjectName()
         self.doc = getAttrDoc(self.objName, self.parentObj.__init__.__doc__)
-        self.displayValue = simplifyInfo(self.obj, self.objectName)
 
     @property
     def objName(self) -> str:
@@ -78,7 +79,6 @@ class StandardItem(QObject):
         self._objName = value
         self.updateObjectName()
         self.doc = getAttrDoc(self.objName, self.parentObj.__init__.__doc__)
-        self.displayValue = simplifyInfo(self.obj, self.objectName)
 
     @property
     def typehint(self) -> str:
