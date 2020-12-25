@@ -48,7 +48,9 @@ def getAttrs4detailInfo(obj, exclSpecial: bool = True, exclCallable: bool = True
 
 
 def simplifyInfo(obj, attrName: str = "") -> str:
-    res = str(obj)
+    res = str(obj)[0:150]
+    if len(res)>=150:
+        res = f"{res}..."
     if isinstance(obj, ATTR_INFOS_TO_SIMPLIFY):
         res = re.sub("^[A-Z]\w*[(]", "", res)
         res = res.rstrip(")")
