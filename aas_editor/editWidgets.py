@@ -10,13 +10,55 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIntValidator, QDoubleValidator
 
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QDateTimeEdit, QCheckBox, QLineEdit, QCompleter, \
-    QComboBox, QTimeEdit, QDateEdit, QSpinBox, QHBoxLayout, QPlainTextEdit
+    QComboBox, QDateEdit, QSpinBox, QHBoxLayout, QPlainTextEdit, QPushButton, \
+    QFileDialog
 from aas.model.datatypes import Date
 
 from aas_editor.utils.util import inheritors
 from aas_editor.utils.util_type import issubtype, getTypeName, isoftype
 from aas_editor.widgets import CompleterComboBox
 
+
+class BytesEdit(QWidget):
+    def __init__(self, parent=None):
+        super(BytesEdit, self).__init__(parent)
+        self._initLayout()
+
+        self.plainTextEdit = QPlainTextEdit("b''", self)
+        plusButton = QPushButton(f"Choose file", self,
+                                 toolTip="Choose file",
+                                 clicked=self.chooseFile)
+
+        self.layout().addWidget(self.plainTextEdit)
+        self.layout().addWidget(plusButton)
+
+    def chooseFile(self):
+        file = QFileDialog.getOpenFileName(self, "Open AAS file",
+                                           options=QFileDialog.DontResolveSymlinks |
+                                                   QFileDialog.DontUseNativeDialog)[0]
+        if file:
+            with open(file, "rb") as f:
+                self.plainTextEdit.setPlainText(str(f.read()))
+
+    def _initLayout(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addWidget(self)
+        self.setLayout(layout)
+
+    def getObj2add(self):
+        text = self.plainTextEdit.toPlainText()
+        if not text:
+            return None
+        elif text.startswith(("b'", 'b"')) and text.endswith(("'", '"')):
+            obj = eval(text)
+        else:
+            raise ValueError("Value must be of type: b'text'")
+        return obj
+
+    def setPlainText(self, text):
+        self.plainTextEdit.setPlainText(text)
 
 class WidgetWithTZinfo(QWidget):
     @abstractmethod
@@ -277,7 +319,7 @@ class SpecialInputWidget(StandardInputWidget):
             widget = QLineEdit(self)
             widget.setValidator(QDoubleValidator())
         elif issubtype(self.objType, bytes):
-            widget = QPlainTextEdit(self)
+            widget = BytesEdit(self)
         return widget
 
     def getObj2add(self):
@@ -299,8 +341,7 @@ class SpecialInputWidget(StandardInputWidget):
         elif issubtype(self.objType, decimal.Decimal):
             obj = decimal.Decimal.from_float(float(self.widget.text()))
         elif issubtype(self.objType, bytes):
-            text = self.widget.toPlainText()
-            obj = text.encode("utf-8")
+            obj = self.widget.getObj2add()
         elif issubtype(self.objType, bytearray):
             text = self.widget.toPlainText()
             obj = text.encode("utf-8")

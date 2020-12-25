@@ -510,5 +510,3 @@ class AASReferenceGroupBox(ObjGroupBox):
         else:
             print("Item adding cancelled")
         dialog.deleteLater()
-
-# todo reimplement when Datatypes Data, Duration, etc. are ready
