@@ -60,6 +60,7 @@ class BytesEdit(QWidget):
     def setPlainText(self, text):
         self.plainTextEdit.setPlainText(text)
 
+
 class WidgetWithTZinfo(QWidget):
     @abstractmethod
     def __init__(self, parent=None):
@@ -318,7 +319,7 @@ class SpecialInputWidget(StandardInputWidget):
         elif issubtype(self.objType, decimal.Decimal):
             widget = QLineEdit(self)
             widget.setValidator(QDoubleValidator())
-        elif issubtype(self.objType, bytes):
+        elif issubtype(self.objType, (bytes, bytearray)):
             widget = BytesEdit(self)
         return widget
 
@@ -343,8 +344,9 @@ class SpecialInputWidget(StandardInputWidget):
         elif issubtype(self.objType, bytes):
             obj = self.widget.getObj2add()
         elif issubtype(self.objType, bytearray):
-            text = self.widget.toPlainText()
-            obj = text.encode("utf-8")
+            obj = self.widget.getObj2add()
+            if obj is not None:
+                obj = bytearray(obj)
         return obj
 
     def setVal(self, val):
