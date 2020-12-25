@@ -236,6 +236,7 @@ class StandardTable(QAbstractItemModel):
                 return True
             except Exception as e:
                 self.lastErrorMsg = f"Error occurred while adding item to {index.data(NAME_ROLE)}: {e}"
+                print(self.lastErrorMsg)
                 self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
                 return False
         elif role == CLEAR_ROW_ROLE:
