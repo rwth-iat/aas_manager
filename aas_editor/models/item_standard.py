@@ -26,7 +26,6 @@ class StandardItem(QObject):
 
         # following attrs will be set during self.obj = obj
         self.typecheck = None
-        self.objectName = None
         self.doc = None
         self.icon = QIcon()
 
@@ -35,7 +34,6 @@ class StandardItem(QObject):
         self.updateIcon()
 
         self.objName = name
-        self.updateObjectName()
         self.doc = getAttrDoc(self.objName, self.parentObj.__init__.__doc__)
 
         self.typehint = typehint if typehint else self.getTypeHint()
@@ -67,7 +65,6 @@ class StandardItem(QObject):
             pass
         self.objTypeName = getTypeName(type(self.obj))
         self.updateIcon()
-        self.updateObjectName()
         self.doc = getAttrDoc(self.objName, self.parentObj.__init__.__doc__)
 
     @property
@@ -77,8 +74,18 @@ class StandardItem(QObject):
     @objName.setter
     def objName(self, value):
         self._objName = value
-        self.updateObjectName()
         self.doc = getAttrDoc(self.objName, self.parentObj.__init__.__doc__)
+
+    @property
+    def objectName(self) -> str:
+        if self.objName:
+            return self.objName
+        elif hasattr(self.obj, "id_short") and self.obj.id_short:
+            return self.obj.id_short
+        elif hasattr(self.obj, "name") and self.obj.name:
+            return self.obj.name
+        else:
+            return getTypeName(self.obj.__class__)
 
     @property
     def typehint(self) -> str:
@@ -89,16 +96,6 @@ class StandardItem(QObject):
         self._typehint = value
         self.typecheck = checkType(self.obj, self.typehint)
         self.updateTypehintName()
-
-    def updateObjectName(self):
-        if self.objName:
-            self.objectName = self.objName
-        elif hasattr(self.obj, "id_short") and self.obj.id_short:
-            self.objectName = self.obj.id_short
-        elif hasattr(self.obj, "name") and self.obj.name:
-            self.objectName = self.obj.name
-        else:
-            self.objectName = getTypeName(self.obj.__class__)
 
     def updateTypehintName(self):
         try:
