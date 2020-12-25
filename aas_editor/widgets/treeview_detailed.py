@@ -39,22 +39,22 @@ class AttrsTreeView(TreeView):
     # noinspection PyArgumentList
     def initMenu(self):
         super(AttrsTreeView, self).initMenu()
-        self.editCreateAct = QAction("E&dit/create in dialog", self,
-                                     statusTip="Edit/create selected item in dialog",
-                                     shortcut=Qt.CTRL+Qt.Key_E,
-                                     shortcutContext=Qt.WidgetWithChildrenShortcut,
-                                     triggered=self._editCreateHandler,
-                                     enabled=True)
-        self.addAction(self.editCreateAct)
+        self.editCreateInDialogAct = QAction("E&dit/create in dialog", self,
+                                             icon=EDIT_ICON,
+                                             statusTip="Edit/create selected item in dialog",
+                                             shortcut=Qt.CTRL+Qt.Key_E,
+                                             shortcutContext=Qt.WidgetWithChildrenShortcut,
+                                             triggered=self.editCreateInDialog,
+                                             enabled=True)
+        self.addAction(self.editCreateInDialogAct)
 
         self.editAct = QAction("&Edit", self,
-                               icon=EDIT_ICON,
                                statusTip="Edit selected item",
                                shortcut=Qt.Key_Enter,
                                triggered=lambda: self.edit(self.currentIndex()),
                                enabled=False)
 
-        self.attrsMenu.insertActions(self.addAct, (self.editAct, self.editCreateAct))
+        self.attrsMenu.insertActions(self.addAct, (self.editAct, self.editCreateInDialogAct))
 
         self.openInCurrTabAct.triggered.connect(
             lambda: self._openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), newTab=False))
@@ -98,6 +98,13 @@ class AttrsTreeView(TreeView):
             self.addItemWithDialog(index, attrType, objVal=objVal, title=f"Add {attribute} element", rmDefParams=True)
         else:
             self.addItemWithDialog(index, attrType, title=f"Add {attribute} element", rmDefParams=True)
+
+    def editCreateInDialog(self, objVal=None):
+        try:
+            self._editCreateHandler(objVal)
+        except Exception as e:
+            print(e)
+            QMessageBox.critical(self, "Error", str(e))
 
     def _editCreateHandler(self, objVal=None):
         """
@@ -151,11 +158,7 @@ class AttrsTreeView(TreeView):
         # if we're not editing, check if editable and start editing or expand/collapse
         if index.siblingAtColumn(VALUE_COLUMN).flags() & Qt.ItemIsEditable:
             if index.data(OBJECT_ROLE) in EMPTY_VALUES:
-                try:
-                    self._editCreateHandler()
-                except KeyError as e:
-                    print(e)
-                    QMessageBox.critical(self, "Error", str(e))
+                self.editCreateInDialog()
             else:
                 self.edit(index)
         else:
@@ -166,11 +169,7 @@ class AttrsTreeView(TreeView):
         # if we're not editing, check if editable and start editing or expand/collapse
         if index.flags() & Qt.ItemIsEditable:
             if index.data(OBJECT_ROLE) in EMPTY_VALUES:
-                try:
-                    self._editCreateHandler()
-                except KeyError as e:
-                    print(e)
-                    QMessageBox.critical(self, "Error", str(e))
+                self.editCreateInDialog()
             else:
                 self.edit(index)
         else:

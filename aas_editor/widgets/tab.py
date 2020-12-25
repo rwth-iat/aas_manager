@@ -356,7 +356,7 @@ class Tab(QWidget):
         self.toolBar.addAction(self.attrsTreeView.cutAct)
         self.toolBar.addAction(self.attrsTreeView.pasteAct)
         self.toolBar.addAction(self.attrsTreeView.delClearAct)
-        self.toolBar.addAction(self.attrsTreeView.editAct)
+        self.toolBar.addAction(self.attrsTreeView.editCreateInDialogAct)
         self.toolBar.addAction(self.attrsTreeView.addAct)
         self.searchBar = SearchBar(self.attrsTreeView, parent=self,
                                    filterColumns=[ATTRIBUTE_COLUMN, VALUE_COLUMN], closable=True)
