@@ -1,7 +1,8 @@
 import io
 from datetime import datetime
 from pathlib import Path
-from typing import Union, Iterable
+from typing import Union, Iterable, Optional
+import mimetypes
 
 import pyecma376_2
 from aas.adapter import aasx
@@ -70,7 +71,11 @@ class Package:
             #  writer.write_aas_objects("/aasx/data.json" if args.json else "/aasx/data.xml",
             #  [obj.identification for obj in self.objStore], self.objStore, self.fielSotre, write_json=args.json)
             with aasx.AASXWriter(self.file.as_posix()) as writer:
-                writer.write_aas(self.objStore, self.fileStore) #FIXME
+                for obj in self.objStore:
+                    if isinstance(obj, AssetAdministrationShell):
+                        aas_id = obj.identification
+                        break
+                writer.write_aas(aas_id, self.objStore, self.fileStore) #FIXME
                 # Create OPC/AASX core properties
                 cp = pyecma376_2.OPCCoreProperties()
                 cp.created = datetime.now()
@@ -125,7 +130,11 @@ class Package:
             yield file
 
     def add(self, obj):
-        self.objStore.add(obj)
+        if isinstance(obj, StoredFile):
+            newName = self.fileStore.add_file(name=obj.name, file=obj.file(), content_type=obj.mime_type)
+            obj.setFileStore(newName, self.fileStore)
+        else:
+            self.objStore.add(obj)
 
     def discard(self, obj):
         self.objStore.discard(obj)
@@ -148,23 +157,57 @@ class Package:
 
 
 class StoredFile:
-    def __init__(self, name: str, fileStore: DictSupplementaryFileContainer):
-        self._fileStore = fileStore
-        self._name = name
+    def __init__(self, name: Optional[str] = None, fileStore: Optional[DictSupplementaryFileContainer] = None,
+                 filePath: Optional[str] = None):
+        if filePath:
+            self._filePath = Path(filePath).absolute()
+            a = self._filePath.name
+        else:
+            self._filePath = filePath
+
+        self.setFileStore(name, fileStore)
+
+    def savedInStore(self) -> bool:
+        return True if isinstance(self._fileStore, DictSupplementaryFileContainer) else False
 
     @property
     def name(self):
-        return self._name
+        if self.savedInStore():
+            return self._name
+        else:
+            return f"/{self._filePath.name}"
 
     @property
     def mime_type(self) -> str:
-        return self._fileStore.get_content_type(self.name)
+        if self.savedInStore():
+            return self._fileStore.get_content_type(self.name)
+        else:
+            mimetypes.init()
+            mime_type = mimetypes.guess_type(self._filePath)[0]
+            if mime_type is None:
+                mime_type = "text/plain"
+            return mime_type
 
     @property
     def value(self) -> bytes:
         return self.file().getvalue()
 
     def file(self) -> io.BytesIO:
-        file_content = io.BytesIO()
-        self._fileStore.write_file(self.name, file_content)
+        if self.savedInStore():
+            file_content = io.BytesIO()
+            self._fileStore.write_file(self.name, file_content)
+        else:
+            with open(self._filePath, "rb") as f:
+                file_content = io.BytesIO(f.read())
         return file_content
+
+    def setFileStore(self, name: str, fileStore: DictSupplementaryFileContainer):
+        if name is None or isinstance(name, str):
+            self._name = name
+        else:
+            raise TypeError("arg 1 must be of type str or None")
+
+        if fileStore is None or isinstance(fileStore, DictSupplementaryFileContainer):
+            self._fileStore = fileStore
+        else:
+            raise TypeError("arg 2 must be of type DictSupplementaryFileContainer or None")

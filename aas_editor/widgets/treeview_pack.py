@@ -4,7 +4,7 @@ from PyQt5.QtCore import QModelIndex, QSettings
 from PyQt5.QtGui import QDropEvent, QDragEnterEvent
 from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog
 
-from aas_editor.package import Package
+from aas_editor.package import Package, StoredFile
 from aas_editor.settings import FILTER_AAS_FILES
 from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, SC_SAVE_ALL, SC_OPEN, \
     PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, APPLICATION_NAME, OPEN_ICON, SAVE_ICON, \
@@ -190,6 +190,9 @@ class PackTreeView(TreeView):
         if objType is Package:
             self.newPackWithDialog()
             return
+        elif objType is StoredFile:
+            self.addFileWithDialog(parent)
+            return
         super(PackTreeView, self).addItemWithDialog(parent, objType, objVal, title, rmDefParams)
 
     def newPackWithDialog(self):
@@ -221,6 +224,20 @@ class PackTreeView(TreeView):
                                                        QFileDialog.DontUseNativeDialog)[0]
             if file:
                 opened = self.openPack(file)
+            else:
+                # cancel pressed
+                return
+
+    def addFileWithDialog(self, parent: QModelIndex):
+        opened = False
+        file = ""
+        while not opened:
+            file = QFileDialog.getOpenFileName(self, "Add file", file,
+                                               options=QFileDialog.DontResolveSymlinks |
+                                                       QFileDialog.DontUseNativeDialog)[0]
+            if file:
+                storedFile = StoredFile(filePath=file)
+                opened = self.model().setData(parent, storedFile, ADD_ITEM_ROLE)
             else:
                 # cancel pressed
                 return
