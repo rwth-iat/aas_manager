@@ -65,7 +65,7 @@ PREFERED_LANGS_ORDER = ("en-us", "en", "de")
 CLASSES_INFO = {
     object: {
         HIDDEN_ATTRS: (
-            "namespace_element_sets", "parent", "security")
+            "namespace_element_sets", "parent", "security", "source")
     },
     datetime.datetime: {
         HIDDEN_ATTRS: ("min", "max", "resolution"),
