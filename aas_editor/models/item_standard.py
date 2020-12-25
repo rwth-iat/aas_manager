@@ -1,13 +1,16 @@
+import io
+from collections import namedtuple
 from types import GeneratorType
 
 from PyQt5.QtGui import QBrush, QIcon, QColor
 from PyQt5.QtCore import QObject, QVariant
 
 from aas_editor.package import StoredFile
-from aas_editor.settings.app_settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
+from aas_editor.settings.app_settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, \
+    ATTRIBUTE_COLUMN, \
     VALUE_COLUMN, IS_LINK_ROLE, TYPE_HINT_ROLE, PARENT_OBJ_ROLE, TYPE_COLUMN, \
-    TYPE_HINT_COLUMN, TYPE_CHECK_ROLE
-from aas_editor.settings.aas_settings import TYPE_ICON_DICT, LINK_TYPES
+    TYPE_HINT_COLUMN, TYPE_CHECK_ROLE, IS_MEDIA_ROLE, IS_URL_MEDIA_ROLE, MEDIA_CONTENT_ROLE
+from aas_editor.settings.aas_settings import TYPE_ICON_DICT, LINK_TYPES, MEDIA_TYPES
 from aas_editor.settings import FILE_ICON, MIME_TYPE_ICON_DICT
 from aas_editor.utils.util import getDescription, getAttrDoc, simplifyInfo
 from aas_editor.utils.util_type import checkType, getTypeName, getTypeHintName, isIterable, \
@@ -15,6 +18,8 @@ from aas_editor.utils.util_type import checkType, getTypeName, getTypeHintName, 
 from PyQt5.QtCore import Qt
 
 from aas_editor.utils.util_classes import DictItem, ClassesInfo
+
+MediaContent = namedtuple("MediaContent", ("value", "mime_type"))
 
 
 class StandardItem(QObject):
@@ -144,6 +149,21 @@ class StandardItem(QObject):
             return self.package
         if role == IS_LINK_ROLE:
             return self.isLink
+        if role == IS_MEDIA_ROLE:
+            return self.isMedia
+        if role == IS_URL_MEDIA_ROLE:
+            return self.isUrlMedia
+        if role == MEDIA_CONTENT_ROLE:
+            if self.isUrlMedia or isinstance(self.obj.value, bytes):
+                return MediaContent(self.obj.value, str(self.obj.mime_type))
+            elif isinstance(self.obj.value, str) and self.obj.value in self.package.fileStore:
+                file_content = io.BytesIO()
+                self.package.fileStore.write_file(self.obj.value, file_content)
+                return MediaContent(file_content.getvalue(), str(self.obj.mime_type))
+            elif not self.obj.value:
+                return MediaContent(b"Value is not given", "text/plain")
+            else:
+                return MediaContent(b"Media not found", "text/plain")
         if role == Qt.BackgroundRole:
             return self.bg
         if role == Qt.DecorationRole and column == 0:
@@ -193,6 +213,17 @@ class StandardItem(QObject):
                 print(e)
                 return False
         return False
+
+    @property
+    def isMedia(self) -> bool:
+        if self.obj and isinstance(self.obj, MEDIA_TYPES):
+            return True
+        return False
+
+    @property
+    def isUrlMedia(self) -> bool:
+        value = self.obj.value
+        return isinstance(value, str) and value.startswith(("http", "www."))
 
     def row(self):
         if self.parent():

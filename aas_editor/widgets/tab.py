@@ -435,32 +435,24 @@ class Tab(QWidget):
         self.backAct.setEnabled(True) if self.prevItems else self.backAct.setDisabled(True)
 
     def updateMediaWidget(self):
-        if isinstance(self.packItemObj, (StoredFile, Blob, File)):
+        if self.packItem.data(IS_MEDIA_ROLE):
+            self.mediaWidget.setContent(b"loading...")
             self.mediaWidget.show()
             if not self.mediaWidget.width():
                 # set equal sizes
                 oldSizes = self.splitter.sizes()
                 newSizes = [sum(oldSizes)/(len(oldSizes)) for size in oldSizes]
                 self.splitter.setSizes(newSizes)
-            mediaItem = self.packItemObj
 
             try:
-                if isinstance(mediaItem.value, str):
-                    if mediaItem.value.startswith(("http", "www.")):
-                        self.mediaWidget.load(QUrl(mediaItem.value))
-                        self.mediaWidget.load(QUrl(mediaItem.value))
-                    else:
-                        name = mediaItem.value
-                        package = self.packItem.data(PACKAGE_ROLE)
-                        fileStore = package.fileStore
-                        if name in fileStore:
-                            mediaItem = StoredFile(name, fileStore)
-                if isinstance(mediaItem.value, bytes):
-                    self.mediaWidget.setContent(mediaItem.value, mediaItem.mime_type)
+                mediaContent = self.packItem.data(MEDIA_CONTENT_ROLE)
+                if self.packItem.data(IS_URL_MEDIA_ROLE):
+                    self.mediaWidget.load(QUrl(mediaContent.value))
+                else:
+                    self.mediaWidget.setContent(mediaContent.value, mediaContent.mime_type)
             except Exception as e:
                 print(e)
-                self.mediaWidget.setContent("Could not load media")
-
+                self.mediaWidget.setContent(b"Error occurred while loading media")
             self.mediaWidget.setZoomFactor(1.0)
         else:
             self.mediaWidget.hide()

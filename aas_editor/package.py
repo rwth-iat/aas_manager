@@ -161,7 +161,6 @@ class StoredFile:
                  filePath: Optional[str] = None):
         if filePath:
             self._filePath = Path(filePath).absolute()
-            a = self._filePath.name
         else:
             self._filePath = filePath
 
