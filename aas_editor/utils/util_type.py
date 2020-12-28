@@ -33,8 +33,11 @@ def getArgs(obj) -> typing.Tuple[typing.Type]:
 
 def isTypehint(obj) -> bool:
     obj = getOrigin(obj)
-    if obj in TYPING_TYPES:
-        return True
+    try:
+        if obj in TYPING_TYPES:
+            return True
+    except TypeError as e:
+        print(e)
     return inspect.isclass(obj)
 
 
