@@ -336,7 +336,7 @@ class Tab(QWidget):
         self.pathToolBar.addAction(self.forwardAct)
 
         self.pathLine: AddressLine = AddressLine(self)
-        self.objTypeLine = LineEdit(self)
+        self.objTypeLine = LineEdit(self, placeholderText="Object Type")
         self.objTypeLine.setFixedWidth(168)
         self.objTypeLine.setReadOnly(True)
 

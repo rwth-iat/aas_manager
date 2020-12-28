@@ -96,6 +96,7 @@ class AddressLine(LineEdit):
             self.completer().activated[QModelIndex].connect(self.onReturnPressed)
             self.returnPressed.connect(self.onReturnPressed)
         AddressLine.signal.modelChanged.connect(self.onModelChanged)
+        self.setPlaceholderText("Address Line")
 
     @classmethod
     def setModel(cls, model: StandardTable):
