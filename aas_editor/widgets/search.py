@@ -2,13 +2,14 @@ from typing import List
 
 from PyQt5.QtCore import QModelIndex, QPersistentModelIndex
 from PyQt5.QtGui import QBrush
-from PyQt5.QtWidgets import QLineEdit, QWidget, QHBoxLayout, QToolButton, QAction, QTreeView
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QToolButton, QAction, QTreeView
 
 from aas_editor.models.search_proxy_model import SearchProxyModel
 from aas_editor.settings.app_settings import REGEX_ICON, CASE_ICON, NEXT_ICON, PREV_ICON, FILTER_ICON, \
     NAME_ROLE, CLOSE_ICON, HIGHLIGHT_YELLOW
 from aas_editor.utils.util import absRow
 from aas_editor.widgets import ToolBar
+from aas_editor.widgets.lineEdit import LineEdit
 
 
 class SearchBar(ToolBar):
@@ -18,7 +19,7 @@ class SearchBar(ToolBar):
         self.setModel(view.model())
         self.filterColumns = filterColumns
 
-        self.searchLine = QLineEdit(self)
+        self.searchLine = LineEdit(self)
         self.searchLine.setClearButtonEnabled(True)
         self.searchLine.setPlaceholderText("Search")
         self.filterBtn = QToolButton(self, icon=FILTER_ICON, toolTip="Filter",

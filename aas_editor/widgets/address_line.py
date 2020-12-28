@@ -2,10 +2,11 @@ from typing import List
 
 from PyQt5.QtCore import QModelIndex, Qt, QAbstractProxyModel, qDebug, \
     qCritical, pyqtSignal, QObject, QAbstractItemModel
-from PyQt5.QtWidgets import QMessageBox, QCompleter, QLineEdit, QStyledItemDelegate
+from PyQt5.QtWidgets import QMessageBox, QCompleter, QStyledItemDelegate
 
 from aas_editor.models import StandardTable
 from aas_editor.utils.util import getTreeItemPath
+from aas_editor.widgets.lineEdit import LineEdit
 
 COMPLETION_ROLE = Qt.DisplayRole
 CASE_SENSITIVITY = Qt.CaseInsensitive
@@ -78,7 +79,7 @@ class Signal(QObject):
 #         pathLayout.addWidget(self.addressLine)
 
 
-class AddressLine(QLineEdit):
+class AddressLine(LineEdit):
     """Class for address line used in tabs"""
     signal = Signal()
     _model: StandardTable = None

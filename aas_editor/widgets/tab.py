@@ -8,8 +8,10 @@ from aas.model import Blob, File
 
 from aas_editor.package import StoredFile
 from aas_editor.settings.app_settings import *
+from aas_editor.utils.util_type import getTypeName
 from aas_editor.widgets import AddressLine, SearchBar, ToolBar, AttrsTreeView
 from aas_editor.utils.util import getTreeItemPath
+from aas_editor.widgets.lineEdit import LineEdit
 
 
 class TabBar(QTabBar):
@@ -334,6 +336,9 @@ class Tab(QWidget):
         self.pathToolBar.addAction(self.forwardAct)
 
         self.pathLine: AddressLine = AddressLine(self)
+        self.objTypeLine = LineEdit(self)
+        self.objTypeLine.setFixedWidth(168)
+        self.objTypeLine.setReadOnly(True)
 
         self.descrLabel = QLabel(self)
         self.descrLabel.setWordWrap(True)
@@ -417,11 +422,12 @@ class Tab(QWidget):
 
     def _openItem(self, packItem: QModelIndex):
         self.packItem = QPersistentModelIndex(packItem.siblingAtColumn(0))
-        self.pathLine.setText(getTreeItemPath(self.packItem))
         self.descrLabel.setText("")
 
         self.packItemObj = self.packItem.data(OBJECT_ROLE)
         self.updateMediaWidget()
+        self.pathLine.setText(getTreeItemPath(self.packItem))
+        self.objTypeLine.setText(getTypeName(type(self.packItemObj)))
 
         icon = self.packItem.data(Qt.DecorationRole)
         if icon:
@@ -466,6 +472,7 @@ class Tab(QWidget):
         pathLayout.setContentsMargins(0, 0, 0, 0)
         pathLayout.addWidget(self.pathToolBar)
         pathLayout.addWidget(self.pathLine)
+        pathLayout.addWidget(self.objTypeLine)
         pathWidget.setFixedHeight(TOOLBARS_HEIGHT)
 
         toolBarWidget = QWidget()

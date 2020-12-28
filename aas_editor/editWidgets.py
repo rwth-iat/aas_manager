@@ -17,6 +17,7 @@ from aas.model.datatypes import Date
 from aas_editor.utils.util import inheritors
 from aas_editor.utils.util_type import issubtype, getTypeName, isoftype
 from aas_editor.widgets import CompleterComboBox
+from aas_editor.widgets.lineEdit import LineEdit
 
 
 class BytesEdit(QWidget):
@@ -229,15 +230,15 @@ class StandardInputWidget(QWidget):
         if issubtype(self.objType, bool):
             widget = QCheckBox(self)
         elif issubtype(self.objType, str):
-            widget = QLineEdit(self)
+            widget = LineEdit(self)
             if kwargs.get("completions"):
                 completer = QCompleter(kwargs["completions"], self)
                 widget.setCompleter(completer)
         elif issubtype(self.objType, int):
-            widget = QLineEdit(self)
+            widget = LineEdit(self)
             widget.setValidator(QIntValidator())
         elif issubtype(self.objType, float):
-            widget = QLineEdit(self)
+            widget = LineEdit(self)
             widget.setValidator(QDoubleValidator())
         elif issubtype(self.objType, (Enum, Type)):
             if issubtype(self.objType, Enum):
@@ -317,7 +318,7 @@ class SpecialInputWidget(StandardInputWidget):
         elif issubtype(self.objType, dateutil.relativedelta.relativedelta):
             widget = DurationEdit(self)
         elif issubtype(self.objType, decimal.Decimal):
-            widget = QLineEdit(self)
+            widget = LineEdit(self)
             widget.setValidator(QDoubleValidator())
         elif issubtype(self.objType, (bytes, bytearray)):
             widget = BytesEdit(self)
