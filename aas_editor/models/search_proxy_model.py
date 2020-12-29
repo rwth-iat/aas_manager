@@ -14,16 +14,8 @@ class SearchProxyModel(QSortFilterProxyModel):
             self.setSourceModel(sourceModel)
 
     def match(self, start: QModelIndex, role: int, value: Any, hits: int = ..., flags: Union[Qt.MatchFlags, Qt.MatchFlag] = ...) -> List[QModelIndex]:
-        if role == OBJECT_ROLE:
-            items = self.sourceModel().match(start, role, value, hits, flags)
-            return [self.mapFromSource(item) for item in items]
-        else:
-            kwargs = {}
-            if hits is not ...:
-                kwargs["hits"] = hits
-            if flags is not ...:
-                kwargs["flags"] = flags
-            return super(SearchProxyModel, self).match(start, role, value, **kwargs)
+        items = self.sourceModel().match(start, role, value, hits, flags)
+        return [self.mapFromSource(item) for item in items]
 
     def search(self, pattern: str,
                filterColumns: List[int],

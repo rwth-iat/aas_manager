@@ -6,10 +6,11 @@ from PyQt5.QtGui import QFont
 
 from aas_editor.models import DetailedInfoItem, StandardItem, PackTreeViewItem
 from aas_editor.package import Package
-from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, VALUE_COLUMN, NOT_GIVEN, \
+from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
+    VALUE_COLUMN, NOT_GIVEN, \
     PACKAGE_ROLE, PACK_ITEM_ROLE, DEFAULT_FONT, ADD_ITEM_ROLE, CLEAR_ROW_ROLE, \
     DATA_CHANGE_FAILED_ROLE, IS_LINK_ROLE, LINK_BLUE, NEW_GREEN, CHANGED_BLUE, RED, TYPE_COLUMN, \
-    TYPE_CHECK_ROLE
+    TYPE_CHECK_ROLE, TYPE_ROLE
 
 from aas_editor.utils.util_classes import DictItem, ClassesInfo
 
@@ -91,6 +92,12 @@ class StandardTable(QAbstractItemModel):
 
     def match(self, start: QModelIndex, role: int, value: Any, hits: int = ...,
               flags: Union[Qt.MatchFlags, Qt.MatchFlag] = ...) -> List[QModelIndex]:
+        kwargs = {}
+        if hits is not ...:
+            kwargs["hits"] = hits
+        if flags is not ...:
+            kwargs["flags"] = flags
+
         if role == OBJECT_ROLE and hits != 0:
             res = []
             for item in self.iterItems(start):
@@ -103,8 +110,32 @@ class StandardTable(QAbstractItemModel):
                 if hits == len(res):
                     break
             return res
+        elif role == TYPE_ROLE and hits != 0:
+            res = []
+            for item in self.iterItems(start):
+                print("match for:", item.data(NAME_ROLE))
+                try:
+                    if issubclass(value, item.data(TYPE_ROLE)):
+                        res.append(item)
+                except AttributeError:
+                    continue
+                if hits == len(res):
+                    break
+            return res
+        elif role == Qt.DisplayRole and hits != 0:
+            res = []
+            for item in self.iterItems(start):
+                print("match for:", item.data(NAME_ROLE))
+                try:
+                    if value == item.data(Qt.DisplayRole):
+                        res.append(item)
+                except AttributeError:
+                    continue
+                if hits == len(res):
+                    break
+            return res
         else:
-            return super(StandardTable, self).match(start, role, value, hits, flags)
+            return super(StandardTable, self).match(start, role, value, **kwargs)
 
     def addItem(self, obj: Union[Package, 'SubmodelElement', Iterable],
                 parent: QModelIndex = QModelIndex()):
