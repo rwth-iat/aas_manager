@@ -90,14 +90,18 @@ class AttrsTreeView(TreeView):
         self.openInNewTabAct.setVisible(indexIsLink)
         self.openInNewWindowAct.setVisible(indexIsLink)
 
-    def _addHandler(self, objVal=None):
-        index = self.currentIndex()
-        attribute = index.data(NAME_ROLE)
-        attrType = getAttrTypeHint(type(index.data(PARENT_OBJ_ROLE)), attribute) #FIXME
-        if objVal:
-            self.addItemWithDialog(index, attrType, objVal=objVal, title=f"Add {attribute} element", rmDefParams=True)
-        else:
-            self.addItemWithDialog(index, attrType, title=f"Add {attribute} element", rmDefParams=True)
+    def onAddAct(self, objVal=None):
+        try:
+            index = self.currentIndex()
+            attribute = index.data(NAME_ROLE)
+            attrType = getAttrTypeHint(type(index.data(PARENT_OBJ_ROLE)), attribute) #FIXME
+            if objVal:
+                self.addItemWithDialog(index, attrType, objVal=objVal, title=f"Add {attribute} element", rmDefParams=True)
+            else:
+                self.addItemWithDialog(index, attrType, title=f"Add {attribute} element", rmDefParams=True)
+        except Exception as e:
+            print(e)
+            QMessageBox.critical(self, "Error", str(e))
 
     def editCreateInDialog(self, objVal=None):
         try:

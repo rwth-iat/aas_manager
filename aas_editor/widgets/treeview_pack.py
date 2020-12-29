@@ -189,7 +189,7 @@ class PackTreeView(TreeView):
     def _isCloseAllOk(self):
         return True if self.model().data(QModelIndex(), OPENED_PACKS_ROLE) else False
 
-    def _addHandler(self, objVal=None, parent: QModelIndex = None):
+    def onAddAct(self, objVal=None, parent: QModelIndex = None):
         parent = parent if parent else self.currentIndex()
         name = parent.data(NAME_ROLE)
         parentObj = parent.data(OBJECT_ROLE)
@@ -202,14 +202,18 @@ class PackTreeView(TreeView):
             kwargs = {"parent": parent,
                       "rmDefParams": True}
 
-        if not parent.isValid():
-            self.newPackWithDialog()
-        elif name in Package.addableAttrs():
-            self.addItemWithDialog(objType=ClassesInfo.addType(Package, name), **kwargs)
-        elif ClassesInfo.addType(type(parentObj)):
-            self.addItemWithDialog(objType=ClassesInfo.addType(type(parentObj)), **kwargs)
-        else:
-            raise TypeError("Parent type is not extendable:", type(parent.data(OBJECT_ROLE)))
+        try:
+            if not parent.isValid():
+                self.newPackWithDialog()
+            elif name in Package.addableAttrs():
+                self.addItemWithDialog(objType=ClassesInfo.addType(Package, name), **kwargs)
+            elif ClassesInfo.addType(type(parentObj)):
+                self.addItemWithDialog(objType=ClassesInfo.addType(type(parentObj)), **kwargs)
+            else:
+                raise TypeError("Parent type is not extendable:", type(parent.data(OBJECT_ROLE)))
+        except Exception as e:
+            print(e)
+            QMessageBox.critical(self, "Error", str(e))
 
     def addItemWithDialog(self, parent: QModelIndex, objType, objVal=None,
                           title="", rmDefParams=False):

@@ -59,7 +59,7 @@ class TreeView(BasicTreeView):
                               statusTip="Add item to selected",
                               shortcut=SC_NEW,
                               shortcutContext=Qt.WidgetWithChildrenShortcut,
-                              triggered=self._addHandler,
+                              triggered=self.onAddAct,
                               enabled=False)
         self.addAction(self.addAct)
 
