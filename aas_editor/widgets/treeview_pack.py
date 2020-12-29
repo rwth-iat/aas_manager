@@ -161,6 +161,13 @@ class PackTreeView(TreeView):
             self.addAct.setEnabled(True)
             self.addAct.setText("Add package")
 
+    def _delClearHandler(self):
+        index = self.currentIndex()
+        if isinstance(index.data(OBJECT_ROLE), Package):
+            self.closeAct.trigger()
+        else:
+            super(PackTreeView, self)._delClearHandler()
+
     def _isPasteOk(self, index: QModelIndex) -> bool:
         if not self.treeObjClipboard or not index.isValid():
             return False
