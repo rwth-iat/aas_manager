@@ -18,7 +18,12 @@ class SearchProxyModel(QSortFilterProxyModel):
             items = self.sourceModel().match(start, role, value, hits, flags)
             return [self.mapFromSource(item) for item in items]
         else:
-            return super(SearchProxyModel, self).match(start, role, value, hits, flags)
+            kwargs = {}
+            if hits is not ...:
+                kwargs["hits"] = hits
+            if flags is not ...:
+                kwargs["flags"] = flags
+            return super(SearchProxyModel, self).match(start, role, value, **kwargs)
 
     def search(self, pattern: str,
                filterColumns: List[int],
