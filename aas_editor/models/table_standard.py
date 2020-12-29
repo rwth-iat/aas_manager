@@ -354,7 +354,7 @@ class StandardTable(QAbstractItemModel):
         for currRow in range(row+count-1, row-1, -1):
             child = parentItem.children()[currRow]
             if isinstance(parentObj, list):
-                parentObj.pop[currRow]
+                parentObj.pop(currRow)
                 self.removeRow(currRow, parent)
             elif isinstance(parentObj, dict):
                 parentObj.pop(child.objectName)
