@@ -132,6 +132,10 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.packToolBar.addAction(self.packTreeView.delClearAct)
         self.packToolBar.addAction(self.packTreeView.addAct)
 
+        self.packToolBar.addSeparator()
+        self.packToolBar.addAction(self.packTreeView.shellViewAct)
+
+
     @staticmethod
     def iterItems(root):
         def recurse(parent):

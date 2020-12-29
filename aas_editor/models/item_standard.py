@@ -54,12 +54,12 @@ class StandardItem(QObject):
 
     @property
     def obj(self):
-        try:
-            obj = getattr(self.parentObj, self.objName)
-            if not isinstance(obj, GeneratorType):
-                return obj
-        except (TypeError, AttributeError):
-            pass
+        # try:
+        #     obj = getattr(self.parentObj, self.objName)
+        #     if not isinstance(obj, GeneratorType):
+        #         return obj
+        # except (TypeError, AttributeError):
+        #     pass
         return self._obj
 
     @obj.setter

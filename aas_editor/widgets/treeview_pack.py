@@ -1,15 +1,16 @@
 from pathlib import Path
 
-from PyQt5.QtCore import QModelIndex, QSettings
+from PyQt5.QtCore import Qt, QModelIndex, QSettings
 from PyQt5.QtGui import QDropEvent, QDragEnterEvent
 from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog
+from aas.model import AssetAdministrationShell
 
 from aas_editor.package import Package, StoredFile
-from aas_editor.settings import FILTER_AAS_FILES
+from aas_editor.settings import FILTER_AAS_FILES, CLASSES_INFO, PACKVIEW_ATTRS_INFO
 from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, SC_SAVE_ALL, SC_OPEN, \
     PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, APPLICATION_NAME, OPEN_ICON, SAVE_ICON, \
     SAVE_ALL_ICON, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, OPEN_DRAG_ICON, \
-    NEW_PACK_ICON
+    NEW_PACK_ICON, TYPE_ROLE, VIEW_ICON
 from aas_editor.utils.util_classes import ClassesInfo
 from aas_editor.widgets import TreeView
 
@@ -91,6 +92,31 @@ class PackTreeView(TreeView):
                                             statusTip="Autoscroll from source",
                                             checkable=True)
         self.autoScrollFromSrcAct.toggle()
+
+        self.shellViewAct = QAction(VIEW_ICON, "Shell view", self,
+                                    toolTip="Shell view",
+                                    statusTip="Change to shell view",
+                                    triggered=self.onShellViewPushed,
+                                    checkable=True)
+
+    def onShellViewPushed(self):
+        checked = self.shellViewAct.isChecked()
+
+        packs = self.sourceModel().match(QModelIndex(), TYPE_ROLE, Package)
+        if checked:
+            for pack in packs:
+                CLASSES_INFO[AssetAdministrationShell][PACKVIEW_ATTRS_INFO] = {"asset": {}, "submodel": {}}
+                self.sourceModel().update(pack)
+
+            rowsToHide = []
+            for attr in ("submodels", "assets", "concept_descriptions", "others"):
+                rowsToHide.extend(self.model().match(QModelIndex(), Qt.DisplayRole, attr))
+            for row in rowsToHide:
+                self.setRowHidden(row.row(), row.parent(), True)
+        else:
+            CLASSES_INFO[AssetAdministrationShell][PACKVIEW_ATTRS_INFO] = {}
+            for pack in packs:
+                self.sourceModel().update(pack)
 
     # noinspection PyUnresolvedReferences
     def initMenu(self):
@@ -251,8 +277,8 @@ class PackTreeView(TreeView):
             self.removeFromRecentFiles(file)
             QMessageBox.critical(self, "Error", f"Package {file} couldn't be opened: {e}")
         else:
-            openedFiles = self.model().data(QModelIndex(), OPENED_FILES_ROLE)
-            if Path(file).absolute() in openedFiles:
+            openedPacks = self.model().data(QModelIndex(), OPENED_FILES_ROLE)
+            if Path(file).absolute() in openedPacks:
                 QMessageBox.critical(self, "Error", f"Package {file} is already opened")
             else:
                 self.model().setData(QModelIndex(), pack, ADD_ITEM_ROLE)

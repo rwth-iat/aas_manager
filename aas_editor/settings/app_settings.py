@@ -79,6 +79,7 @@ OPEN_DRAG_ICON = qta.icon("mdi.open-in-app")
 SAVE_ICON = qta.icon("mdi.content-save")
 SAVE_ALL_ICON = qta.icon("mdi.content-save-all")
 SETTINGS_ICON = qta.icon("mdi.cog")
+VIEW_ICON = qta.icon("mdi.view-list")
 
 COPY_ICON = qta.icon("mdi.content-copy")
 PASTE_ICON = qta.icon("mdi.content-paste")
