@@ -208,13 +208,10 @@ class TreeView(BasicTreeView):
         self.itemDataChangeFailed(topLeft, bottomRight, roles)
         # completion list will be hidden now; we will show it again after a delay
         QTimer.singleShot(100, self.updateUndoRedoActs)
-        a=topLeft.data(NAME_ROLE)
-        b=bottomRight.data(NAME_ROLE)
         self.setCurrentIndex(bottomRight)
 
     def onRowsInserted(self, parent: QModelIndex, first: int, last: int):
         index = parent.child(last, 0)
-        a=index.data(NAME_ROLE)
         self.setCurrentIndex(index)
 
     def onRowsRemoved(self, parent: QModelIndex, first: int, last: int):

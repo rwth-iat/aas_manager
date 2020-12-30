@@ -179,11 +179,12 @@ class StandardTable(QAbstractItemModel):
         else:
             raise AttributeError(
                 f"Object couldn't be added: parent obj type is not appendable: {type(parentObj)}")
-        self.beginInsertRows(parent, 0, 0)
+        children = len(self.objByIndex(parent).children())
+        self.beginInsertRows(parent, children, children)
         item = itemTyp(**kwargs)
         self.endInsertRows()
         itemIndex = self.index(item.row(), 0, parent)
-        self.undo.append(SetDataItem(index=itemIndex, value=NOT_GIVEN, role=CLEAR_ROW_ROLE))
+        self.undo.append(SetDataItem(index=QPersistentModelIndex(itemIndex), value=NOT_GIVEN, role=CLEAR_ROW_ROLE))
         # self.insertRow(max(self.rowCount(parent)-1, 0), parent)
         return itemIndex
 
@@ -259,6 +260,8 @@ class StandardTable(QAbstractItemModel):
         return font
 
     def setData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
+        if isinstance(index, QPersistentModelIndex):
+            index = QModelIndex(index)
         if not index.isValid() and role not in (Qt.FontRole, ADD_ITEM_ROLE, UNDO_ROLE, REDO_ROLE):
             return QVariant()
         elif role == Qt.BackgroundRole:
@@ -322,7 +325,7 @@ class StandardTable(QAbstractItemModel):
                     item.obj = getattr(item.parentObj, item.objName)
                 self.setChanged(index)
                 self.update(index)
-                self.undo.append(SetDataItem(index=index, value=oldValue, role=role))
+                self.undo.append(SetDataItem(index=QPersistentModelIndex(index), value=oldValue, role=role))
                 return True
             except Exception as e:
                 self.lastErrorMsg = f"Error occurred while setting {self.objByIndex(index).objectName}: {e}"
@@ -330,15 +333,15 @@ class StandardTable(QAbstractItemModel):
             return False
         elif role == UNDO_ROLE:
             if self.undo:
-                lastUndo = self.undo.pop()
+                lastUndo: SetDataItem = self.undo.pop()
                 if self.setData(*lastUndo):
                     self.redo.append(self.undo.pop())
             return True
         elif role == REDO_ROLE:
             if self.redo:
-                lastRedo = self.redo.pop()
+                lastRedo: SetDataItem = self.redo.pop()
                 if self.setData(*lastRedo):
-                    self.redo.append(self.undo.pop())
+                    self.undo.append(self.redo.pop())
             return True
 
     def setChanged(self, topLeft: QModelIndex, bottomRight: QModelIndex = None):
@@ -394,13 +397,13 @@ class StandardTable(QAbstractItemModel):
                     parentObj.discard(child.obj)
                     oldValue = child.obj
                 self.removeRow(currRow, parent)
-                self.undo.append(SetDataItem(index=parent, value=oldValue, role=ADD_ITEM_ROLE))
+                self.undo.append(SetDataItem(index=QPersistentModelIndex(parent), value=oldValue, role=ADD_ITEM_ROLE))
             else:
                 if not defaultVal == NOT_GIVEN:
                     index = self.index(currRow, 0, parent)
                     oldValue = self.data(index, Qt.EditRole)
                     self.setData(index, defaultVal, Qt.EditRole)
-                    self.undo.append(SetDataItem(index=index, value=oldValue, role=Qt.EditRole))
+                    self.undo.append(SetDataItem(index=QPersistentModelIndex(index), value=oldValue, role=Qt.EditRole))
                 else:
                     raise TypeError(
                         f"Unknown parent object type: "
