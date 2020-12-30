@@ -179,13 +179,11 @@ class StandardTable(QAbstractItemModel):
         else:
             raise AttributeError(
                 f"Object couldn't be added: parent obj type is not appendable: {type(parentObj)}")
-        children = len(self.objByIndex(parent).children())
-        self.beginInsertRows(parent, children, children)
+        self.beginInsertRows(parent, self.rowCount(parent), self.rowCount(parent))
         item = itemTyp(**kwargs)
         self.endInsertRows()
         itemIndex = self.index(item.row(), 0, parent)
         self.undo.append(SetDataItem(index=QPersistentModelIndex(itemIndex), value=NOT_GIVEN, role=CLEAR_ROW_ROLE))
-        # self.insertRow(max(self.rowCount(parent)-1, 0), parent)
         return itemIndex
 
     def insertRows(self, row: int, count: int, parent: QModelIndex = ...) -> bool:
