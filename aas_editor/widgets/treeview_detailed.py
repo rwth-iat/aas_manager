@@ -18,9 +18,9 @@ class AttrsTreeView(TreeView):
 
     # noinspection PyUnresolvedReferences
     def newPackItem(self, packItem):
-        self._initTreeView(packItem)
+        self.initTreeView(packItem)
 
-    def _initTreeView(self, packItem):
+    def initTreeView(self, packItem):
         self.setExpandsOnDoubleClick(False)
         self.setBaseSize(QtCore.QSize(429, 555))
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
@@ -33,8 +33,8 @@ class AttrsTreeView(TreeView):
     def buildHandlers(self):
         super(AttrsTreeView, self).buildHandlers()
         self.setItemDelegate(EditDelegate())
-        self.clicked.connect(self._openRef)
-        self.wheelClicked.connect(lambda refItem: self._openRef(refItem, setCurrent=False))
+        self.clicked.connect(self.openRef)
+        self.wheelClicked.connect(lambda refItem: self.openRef(refItem, setCurrent=False))
 
     # noinspection PyArgumentList
     def initMenu(self):
@@ -57,13 +57,13 @@ class AttrsTreeView(TreeView):
         self.attrsMenu.insertActions(self.addAct, (self.editAct, self.editCreateInDialogAct))
 
         self.openInCurrTabAct.triggered.connect(
-            lambda: self._openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), newTab=False))
+            lambda: self.openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), newTab=False))
         self.openInNewTabAct.triggered.connect(
-            lambda: self._openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN)))
+            lambda: self.openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN)))
         self.openInBackgroundAct.triggered.connect(
-            lambda: self._openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), setCurrent=False))
+            lambda: self.openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), setCurrent=False))
         self.openInNewWindowAct.triggered.connect(
-            lambda: self._openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), newWindow=True))
+            lambda: self.openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), newWindow=True))
 
     def updateActions(self, index: QModelIndex):
         super(AttrsTreeView, self).updateActions(index)
@@ -105,12 +105,12 @@ class AttrsTreeView(TreeView):
 
     def editCreateInDialog(self, objVal=None):
         try:
-            self._editCreateHandler(objVal)
+            self.onEditCreate(objVal)
         except Exception as e:
             print(e)
             QMessageBox.critical(self, "Error", str(e))
 
-    def _editCreateHandler(self, objVal=None):
+    def onEditCreate(self, objVal=None):
         """
         :param objVal: value to set in dialog input widgets
         :raise KeyError if no typehint found and no objVal was given
@@ -128,7 +128,8 @@ class AttrsTreeView(TreeView):
                     raise KeyError("No typehint found for the given item", index.data(NAME_ROLE))
             self.replItemWithDialog(index, attrType, title=f"Create {attribute}", objVal=objVal)
 
-    def _openRef(self, detailInfoItem: QModelIndex, newTab=True, setCurrent=True, newWindow=False):
+    def openRef(self, detailInfoItem: QModelIndex, newTab=True, setCurrent=True, newWindow=False):
+        """Open referenced item if clicked on Reference and item is saved locally"""
         if detailInfoItem.column() == VALUE_COLUMN and detailInfoItem.data(IS_LINK_ROLE):
             linkedPackItem = detailInfoItem.data(LINKED_ITEM_ROLE)
             if newWindow:
@@ -142,7 +143,7 @@ class AttrsTreeView(TreeView):
 
     def mouseDoubleClickEvent(self, e: QMouseEvent) -> None:
         if e.button() == Qt.LeftButton:
-            self.handleDoubleClickEvent()
+            self.onDoubleClickEvent()
         else:
             super(TreeView, self).mouseDoubleClickEvent(e)
 
@@ -152,12 +153,12 @@ class AttrsTreeView(TreeView):
                 # if we are editing, inform base
                 super(TreeView, self).keyPressEvent(event)
             else:
-                self.handleEnterEvent()
+                self.onEnterEvent()
         else:
             # any other key was pressed, inform base
             super(TreeView, self).keyPressEvent(event)
 
-    def handleEnterEvent(self):
+    def onEnterEvent(self):
         index = self.currentIndex()
         # if we're not editing, check if editable and start editing or expand/collapse
         if index.siblingAtColumn(VALUE_COLUMN).flags() & Qt.ItemIsEditable:
@@ -168,7 +169,7 @@ class AttrsTreeView(TreeView):
         else:
             self.toggleFold(index)
 
-    def handleDoubleClickEvent(self):
+    def onDoubleClickEvent(self):
         index = self.currentIndex()
         # if we're not editing, check if editable and start editing or expand/collapse
         if index.flags() & Qt.ItemIsEditable:

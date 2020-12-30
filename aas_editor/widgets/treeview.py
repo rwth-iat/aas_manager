@@ -1,9 +1,10 @@
-from PyQt5.QtCore import pyqtSignal, QModelIndex
+from PyQt5.QtCore import pyqtSignal, QModelIndex, QTimer
 from PyQt5.QtGui import QClipboard
 from PyQt5.QtWidgets import QAction, QMenu, QApplication, QDialog, QMessageBox
 
 from aas_editor.delegates import ColorDelegate
 from aas_editor import dialogs
+from aas_editor.models import StandardTable
 from aas_editor.settings.app_settings import *
 from aas_editor.utils.util import getDefaultVal, getReqParams4init, delAASParents
 from aas_editor.utils.util_type import checkType, isSimpleIterable, isIterable, getIterItemTypeHint
@@ -35,7 +36,7 @@ class TreeView(BasicTreeView):
                                statusTip="Copy selected item",
                                shortcut=SC_COPY,
                                shortcutContext=Qt.WidgetWithChildrenShortcut,
-                               triggered=self._copyHandler,
+                               triggered=self.onCopy,
                                enabled=False)
         self.addAction(self.copyAct)
 
@@ -43,7 +44,7 @@ class TreeView(BasicTreeView):
                                 statusTip="Paste from clipboard",
                                 shortcut=SC_PASTE,
                                 shortcutContext=Qt.WidgetWithChildrenShortcut,
-                                triggered=self._pasteHandler,
+                                triggered=self.onPaste,
                                 enabled=False)
         self.addAction(self.pasteAct)
 
@@ -51,7 +52,7 @@ class TreeView(BasicTreeView):
                               statusTip="Cut selected item",
                               shortcut=SC_CUT,
                               shortcutContext=Qt.WidgetWithChildrenShortcut,
-                              triggered=self._cutHandler,
+                              triggered=self.onCut,
                               enabled=False)
         self.addAction(self.cutAct)
 
@@ -67,7 +68,7 @@ class TreeView(BasicTreeView):
                                    statusTip="Delete/clear selected item",
                                    shortcut=SC_DELETE,
                                    shortcutContext=Qt.WidgetWithChildrenShortcut,
-                                   triggered=self._delClearHandler,
+                                   triggered=self.onDelClear,
                                    enabled=False)
         self.addAction(self.delClearAct)
 
@@ -75,7 +76,7 @@ class TreeView(BasicTreeView):
                                statusTip="Undo last edit action",
                                shortcut=SC_UNDO,
                                shortcutContext=Qt.WidgetWithChildrenShortcut,
-                               triggered=self._undoHandler,
+                               triggered=self.onUndo,
                                enabled=False)
         self.addAction(self.undoAct)
 
@@ -83,7 +84,7 @@ class TreeView(BasicTreeView):
                                statusTip="Redo last edit action",
                                shortcut=SC_REDO,
                                shortcutContext=Qt.WidgetWithChildrenShortcut,
-                               triggered=self._redoHandler,
+                               triggered=self.onRedo,
                                enabled=False)
         self.addAction(self.redoAct)
 
@@ -188,9 +189,40 @@ class TreeView(BasicTreeView):
     def openMenu(self, point):
         self.attrsMenu.exec_(self.viewport().mapToGlobal(point))
 
+    def buildHandlers(self):
+        self.customContextMenuRequested.connect(self.openMenu)
+        self.modelChanged.connect(self.onModelChanged)
+        self.ctrlWheelScrolled.connect(lambda delta: self.zoom(delta=delta))
+
+    def onModelChanged(self, model: StandardTable):
+        self.selectionModel().currentChanged.connect(self.onCurrentChanged)
+        self.setCurrentIndex(self.rootIndex())
+        self.model().dataChanged.connect(self.onDataChanged)
+        self.model().rowsInserted.connect(self.onRowsInserted)
+        self.model().rowsRemoved.connect(self.onRowsRemoved)
+
+    def onCurrentChanged(self, current: QModelIndex, previous: QModelIndex):
+        self.updateActions(current)
+
+    def onDataChanged(self, topLeft: QModelIndex, bottomRight: QModelIndex, roles):
+        self.itemDataChangeFailed(topLeft, bottomRight, roles)
+        # completion list will be hidden now; we will show it again after a delay
+        QTimer.singleShot(100, self.updateUndoRedoActs)
+        a=topLeft.data(NAME_ROLE)
+        b=bottomRight.data(NAME_ROLE)
+        self.setCurrentIndex(bottomRight)
+
+    def onRowsInserted(self, parent: QModelIndex, first: int, last: int):
+        index = parent.child(last, 0)
+        a=index.data(NAME_ROLE)
+        self.setCurrentIndex(index)
+
+    def onRowsRemoved(self, parent: QModelIndex, first: int, last: int):
+        self.setCurrentIndex(parent)
+
     def updateActions(self, index: QModelIndex):
         # update paste action
-        self.pasteAct.setEnabled(self._isPasteOk(index))
+        self.pasteAct.setEnabled(self.isPasteOk(index))
 
         # update copy/cut/delete actions
         if index.isValid():
@@ -229,22 +261,6 @@ class TreeView(BasicTreeView):
         redoEnabled = bool(self.model().data(QModelIndex(), REDO_ROLE))
         self.redoAct.setEnabled(redoEnabled)
 
-    def buildHandlers(self):
-        self.customContextMenuRequested.connect(self.openMenu)
-        self.modelChanged.connect(self.onModelChanged)
-        self.ctrlWheelScrolled.connect(lambda delta: self.zoom(delta=delta))
-
-    def onModelChanged(self, model):
-        model.rowsInserted.connect(self.onRowsInserted)
-        self.selectionModel().currentChanged.connect(self.updateActions)
-        self.setCurrentIndex(self.rootIndex())
-        self.model().dataChanged.connect(self.itemDataChangeFailed)
-        self.model().dataChanged.connect(self.updateUndoRedoActs)
-
-    def onRowsInserted(self, parent, first, last):
-        index = parent.child(last, 0)
-        self.setCurrentIndex(index)
-
     def zoomIn(self):
         self.zoom(delta=+2)
 
@@ -268,13 +284,13 @@ class TreeView(BasicTreeView):
         else:
             print("zoom pressed with no model")
 
-    def _undoHandler(self):
+    def onUndo(self):
         self.model().setData(QModelIndex(), None, UNDO_ROLE)
 
-    def _redoHandler(self):
+    def onRedo(self):
         self.model().setData(QModelIndex(), None, REDO_ROLE)
 
-    def _delClearHandler(self):
+    def onDelClear(self):
         index = self.currentIndex()
         attribute = index.data(NAME_ROLE)
         try:
@@ -284,7 +300,7 @@ class TreeView(BasicTreeView):
         except (AttributeError, IndexError):
             self.model().setData(index, NOT_GIVEN, CLEAR_ROW_ROLE)
 
-    def _copyHandler(self):
+    def onCopy(self):
         index = self.currentIndex()
         obj2copy = index.data(OBJECT_ROLE)
         delAASParents(obj2copy)  # TODO check if there is a better solution to del aas parents
@@ -292,12 +308,12 @@ class TreeView(BasicTreeView):
         self.treeObjClipboard.append(obj2copy)
         clipboard = QApplication.clipboard()
         clipboard.setText(index.data(Qt.DisplayRole), QClipboard.Clipboard)
-        if self._isPasteOk(index):
+        if self.isPasteOk(index):
             self.pasteAct.setEnabled(True)
         else:
             self.pasteAct.setEnabled(False)
 
-    def _isPasteOk(self, index: QModelIndex) -> bool:
+    def isPasteOk(self, index: QModelIndex) -> bool:
         if not self.treeObjClipboard or not index.isValid():
             return False
 
@@ -314,7 +330,7 @@ class TreeView(BasicTreeView):
             print(e)
         return False
 
-    def _pasteHandler(self):
+    def onPaste(self):
         obj2paste = self.treeObjClipboard[0]
         index = self.currentIndex()
         targetParentObj = index.parent().data(OBJECT_ROLE)
@@ -330,31 +346,31 @@ class TreeView(BasicTreeView):
             except TypeError:
                 iterItemTypehint = getIterItemTypeHint(type(targetObj))
             if checkType(obj2paste, iterItemTypehint):
-                self._pasteHandlerAdd(index, obj2paste, withDialog=bool(reqAttrsDict))
+                self._onPasteAdd(index, obj2paste, withDialog=bool(reqAttrsDict))
                 return
         if checkType(obj2paste, targetTypeHint):
             if isIterable(targetParentObj):
-                self._pasteHandlerAdd(index.parent(), obj2paste, withDialog=bool(reqAttrsDict))
+                self._onPasteAdd(index.parent(), obj2paste, withDialog=bool(reqAttrsDict))
             else:
-                self._pasteHandlerReplace(index, obj2paste, withDialog=bool(reqAttrsDict))
+                self._onPasteReplace(index, obj2paste, withDialog=bool(reqAttrsDict))
 
-    def _pasteHandlerAdd(self, index, obj2paste, withDialog):
+    def _onPasteAdd(self, index, obj2paste, withDialog):
         if withDialog:
             self.addItemWithDialog(index, type(obj2paste), objVal=obj2paste,
                                    title=f"Paste element", rmDefParams=True)
         else:
             self.model().setData(index, obj2paste, ADD_ITEM_ROLE)
 
-    def _pasteHandlerReplace(self, index, obj2paste, withDialog):
+    def _onPasteReplace(self, index, obj2paste, withDialog):
         if withDialog:
             self.replItemWithDialog(index, type(obj2paste), objVal=obj2paste,
                                     title=f"Paste element", rmDefParams=True)
         else:
             self.model().setData(index, obj2paste, Qt.EditRole)
 
-    def _cutHandler(self):
-        self._copyHandler()
-        self._delClearHandler()
+    def onCut(self):
+        self.onCopy()
+        self.onDelClear()
 
     def addItemWithDialog(self, parent: QModelIndex, objType, objVal=None,
                           title="", rmDefParams=False):
@@ -400,5 +416,6 @@ class TreeView(BasicTreeView):
         self.setCurrentIndex(index)
 
     def itemDataChangeFailed(self, topLeft, bottomRight, roles):
+        """Check dataChanged signal if data change failed and show Error dialog if failed"""
         if DATA_CHANGE_FAILED_ROLE in roles:
             QMessageBox.critical(self, "Error", self.model().data(topLeft, DATA_CHANGE_FAILED_ROLE))

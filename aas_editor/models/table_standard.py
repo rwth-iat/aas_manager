@@ -2,7 +2,8 @@ from collections import namedtuple
 from enum import Enum
 from typing import Any, Iterable, Union, AbstractSet, List
 
-from PyQt5.QtCore import QAbstractItemModel, QVariant, QModelIndex, Qt, QItemSelection, QSize
+from PyQt5.QtCore import QAbstractItemModel, QVariant, QModelIndex, Qt, QItemSelection, QSize, \
+    QPersistentModelIndex
 from PyQt5.QtGui import QFont
 
 from aas_editor.models import DetailedInfoItem, StandardItem, PackTreeViewItem
@@ -258,7 +259,7 @@ class StandardTable(QAbstractItemModel):
         return font
 
     def setData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
-        if not index.isValid() and role not in (Qt.FontRole, ADD_ITEM_ROLE, UNDO_ROLE):
+        if not index.isValid() and role not in (Qt.FontRole, ADD_ITEM_ROLE, UNDO_ROLE, REDO_ROLE):
             return QVariant()
         elif role == Qt.BackgroundRole:
             item = self.objByIndex(index)
@@ -274,8 +275,7 @@ class StandardTable(QAbstractItemModel):
             return False
         elif role == ADD_ITEM_ROLE:
             try:
-                itemIndex = self.addItem(value, index)
-                self.dataChanged.emit(index, itemIndex)
+                self.addItem(value, index)
                 return True
             except Exception as e:
                 self.lastErrorMsg = f"Error occurred while adding item to {index.data(NAME_ROLE)}: {e}"
@@ -333,14 +333,12 @@ class StandardTable(QAbstractItemModel):
                 lastUndo = self.undo.pop()
                 if self.setData(*lastUndo):
                     self.redo.append(self.undo.pop())
-                self.dataChanged.emit(lastUndo.index, lastUndo.index)
             return True
         elif role == REDO_ROLE:
             if self.redo:
                 lastRedo = self.redo.pop()
                 if self.setData(*lastRedo):
                     self.redo.append(self.undo.pop())
-                self.dataChanged.emit(lastRedo.index, lastRedo.index)
             return True
 
     def setChanged(self, topLeft: QModelIndex, bottomRight: QModelIndex = None):

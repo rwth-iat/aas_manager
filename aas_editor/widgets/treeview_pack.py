@@ -148,31 +148,31 @@ class PackTreeView(TreeView):
             self.openInNewWindowAct.setEnabled(True)
 
         # update save and close actions
-        self.saveAct.setEnabled(self._isSaveOk())
+        self.saveAct.setEnabled(self.isSaveOk())
         self.saveAct.setText(f"Save {index.data(PACKAGE_ROLE)}")
         self.saveAct.setToolTip(f"Save {index.data(PACKAGE_ROLE)}")
-        self.saveAsAct.setEnabled(self._isSaveOk())
-        self.saveAllAct.setEnabled(self._isSaveAllOk())
-        self.closeAct.setEnabled(self._isCloseOk())
-        self.closeAllAct.setEnabled(self._isCloseAllOk())
+        self.saveAsAct.setEnabled(self.isSaveOk())
+        self.saveAllAct.setEnabled(self.isSaveAllOk())
+        self.closeAct.setEnabled(self.isCloseOk())
+        self.closeAllAct.setEnabled(self.isCloseAllOk())
 
         # update add action
         if not index.isValid():
             self.addAct.setEnabled(True)
             self.addAct.setText("Add package")
 
-    def _delClearHandler(self):
+    def onDelClear(self):
         index = self.currentIndex()
         if isinstance(index.data(OBJECT_ROLE), Package):
             self.closeAct.trigger()
         else:
-            super(PackTreeView, self)._delClearHandler()
+            super(PackTreeView, self).onDelClear()
 
-    def _isPasteOk(self, index: QModelIndex) -> bool:
+    def isPasteOk(self, index: QModelIndex) -> bool:
         if not self.treeObjClipboard or not index.isValid():
             return False
 
-        if super(PackTreeView, self)._isPasteOk(index):
+        if super(PackTreeView, self).isPasteOk(index):
             return True
 
         obj2paste = self.treeObjClipboard[0]
@@ -182,18 +182,18 @@ class PackTreeView(TreeView):
             return True
         return False
 
-    def _isSaveOk(self):
+    def isSaveOk(self) -> bool:
         pack = self.currentIndex().data(PACKAGE_ROLE)
         return True if pack else False
 
-    def _isCloseOk(self):
+    def isCloseOk(self) -> bool:
         pack = self.currentIndex().data(PACKAGE_ROLE)
         return True if pack else False
 
-    def _isSaveAllOk(self):
+    def isSaveAllOk(self) -> bool:
         return True if self.model().data(QModelIndex(), OPENED_PACKS_ROLE) else False
 
-    def _isCloseAllOk(self):
+    def isCloseAllOk(self) -> bool:
         return True if self.model().data(QModelIndex(), OPENED_PACKS_ROLE) else False
 
     def onAddAct(self, objVal=None, parent: QModelIndex = None):
