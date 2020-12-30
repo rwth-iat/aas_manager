@@ -34,6 +34,8 @@ OPENED_PACKS_ROLE = 1009
 OPENED_FILES_ROLE = 1010
 ADD_ITEM_ROLE = 1011
 CLEAR_ROW_ROLE = 1012
+UNDO_ROLE = 1019
+REDO_ROLE = 1020
 DATA_CHANGE_FAILED_ROLE = 1013
 TYPE_ROLE = 1018
 TYPE_HINT_ROLE = 1014
@@ -87,6 +89,8 @@ CUT_ICON = qta.icon("mdi.content-cut")
 ADD_ICON = qta.icon("mdi.plus-circle")
 DEL_ICON = qta.icon("mdi.delete")
 EDIT_ICON = qta.icon("mdi.playlist-edit")
+UNDO_ICON = qta.icon("mdi.undo")
+REDO_ICON = qta.icon("mdi.redo")
 
 FORWARD_ICON = qta.icon("fa5s.arrow-circle-right")
 BACK_ICON = qta.icon("fa5s.arrow-circle-left")
@@ -151,6 +155,8 @@ SC_CUT = QKeySequence.Cut
 SC_PASTE = QKeySequence.Paste
 SC_DELETE = QKeySequence.Delete
 SC_NEW = QKeySequence.New
+SC_REDO = QKeySequence.Redo
+SC_UNDO = QKeySequence.Undo
 
 SC_ZOOM_IN = QKeySequence(Qt.CTRL + Qt.Key_Plus)
 SC_ZOOM_OUT = QKeySequence(Qt.CTRL + Qt.Key_Minus)

@@ -1,3 +1,4 @@
+from collections import namedtuple
 from enum import Enum
 from typing import Any, Iterable, Union, AbstractSet, List
 
@@ -10,9 +11,11 @@ from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_C
     VALUE_COLUMN, NOT_GIVEN, \
     PACKAGE_ROLE, PACK_ITEM_ROLE, DEFAULT_FONT, ADD_ITEM_ROLE, CLEAR_ROW_ROLE, \
     DATA_CHANGE_FAILED_ROLE, IS_LINK_ROLE, LINK_BLUE, NEW_GREEN, CHANGED_BLUE, RED, TYPE_COLUMN, \
-    TYPE_CHECK_ROLE, TYPE_ROLE
+    TYPE_CHECK_ROLE, TYPE_ROLE, UNDO_ROLE, REDO_ROLE
 
 from aas_editor.utils.util_classes import DictItem, ClassesInfo
+
+SetDataItem = namedtuple("SetDataItem", ("index", "value", "role"))
 
 
 class StandardTable(QAbstractItemModel):
@@ -23,6 +26,8 @@ class StandardTable(QAbstractItemModel):
         self._rootItem = rootItem if rootItem else DetailedInfoItem(None) # FIXME
         self._columns = columns
         self.lastErrorMsg = ""
+        self.undo: List[SetDataItem] = []
+        self.redo: List[SetDataItem] = []
 
     def index(self, row: int, column: int = 0, parent: QModelIndex = QModelIndex()) -> QModelIndex:
         if not self.hasIndex(row, column, parent):
@@ -176,8 +181,10 @@ class StandardTable(QAbstractItemModel):
         self.beginInsertRows(parent, 0, 0)
         item = itemTyp(**kwargs)
         self.endInsertRows()
+        itemIndex = self.index(item.row(), 0, parent)
+        self.undo.append(SetDataItem(index=itemIndex, value=NOT_GIVEN, role=CLEAR_ROW_ROLE))
         # self.insertRow(max(self.rowCount(parent)-1, 0), parent)
-        return self.index(item.row(), 0, parent)
+        return itemIndex
 
     def insertRows(self, row: int, count: int, parent: QModelIndex = ...) -> bool:
         self.beginInsertRows(parent, row, row + count - 1)
@@ -219,6 +226,10 @@ class StandardTable(QAbstractItemModel):
             return Qt.AlignLeft | Qt.AlignBottom
         if role == DATA_CHANGE_FAILED_ROLE:
             return self.lastErrorMsg
+        if role == UNDO_ROLE:
+            return self.undo
+        if role == REDO_ROLE:
+            return self.redo
         else:
             item = self.objByIndex(index)
             return item.data(role, index.column())
@@ -247,7 +258,7 @@ class StandardTable(QAbstractItemModel):
         return font
 
     def setData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
-        if not index.isValid() and role not in (Qt.FontRole, ADD_ITEM_ROLE):
+        if not index.isValid() and role not in (Qt.FontRole, ADD_ITEM_ROLE, UNDO_ROLE):
             return QVariant()
         elif role == Qt.BackgroundRole:
             item = self.objByIndex(index)
@@ -263,7 +274,8 @@ class StandardTable(QAbstractItemModel):
             return False
         elif role == ADD_ITEM_ROLE:
             try:
-                self.addItem(value, index)
+                itemIndex = self.addItem(value, index)
+                self.dataChanged.emit(index, itemIndex)
                 return True
             except Exception as e:
                 self.lastErrorMsg = f"Error occurred while adding item to {index.data(NAME_ROLE)}: {e}"
@@ -272,7 +284,9 @@ class StandardTable(QAbstractItemModel):
                 return False
         elif role == CLEAR_ROW_ROLE:
             try:
-                self.clearRow(index.row(), index.parent(), value)
+                parent = index.parent()
+                self.clearRow(index.row(), parent, value)
+                self.dataChanged.emit(parent, parent)
                 return True
             except Exception as e:
                 self.lastErrorMsg = f"{index.data(NAME_ROLE)} could not be deleted or set to default: {e}"
@@ -284,14 +298,18 @@ class StandardTable(QAbstractItemModel):
                 item = self.objByIndex(index)
                 if isinstance(index.parent().data(OBJECT_ROLE), list):
                     parentList: List = item.parentObj
-                    parentList[parentList.index(item.obj)] = value
+                    oldValue = item.obj
+                    objIndex = parentList.index(item.obj)
+                    parentList[objIndex] = value
                     item.obj = value
                 elif isinstance(index.parent().data(OBJECT_ROLE), AbstractSet):
                     parentSet: AbstractSet = item.parentObj
+                    oldValue = item.obj
                     parentSet.remove(item.obj)
                     parentSet.add(value)
                     item.obj = value
                 elif isinstance(index.data(OBJECT_ROLE), DictItem):
+                    oldValue = item.obj
                     if index.column() == VALUE_COLUMN:
                         item.obj = DictItem(item.obj.key, value)
                     elif index.column() == ATTRIBUTE_COLUMN:
@@ -299,15 +317,31 @@ class StandardTable(QAbstractItemModel):
                         item.obj = DictItem(value, item.obj.value)
                     item.parentObj.update([item.obj])
                 else:
+                    oldValue = getattr(item.parentObj, item.objName)
                     setattr(item.parentObj, item.objName, value)
                     item.obj = getattr(item.parentObj, item.objName)
                 self.setChanged(index)
                 self.update(index)
+                self.undo.append(SetDataItem(index=index, value=oldValue, role=role))
                 return True
             except Exception as e:
                 self.lastErrorMsg = f"Error occurred while setting {self.objByIndex(index).objectName}: {e}"
                 self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
             return False
+        elif role == UNDO_ROLE:
+            if self.undo:
+                lastUndo = self.undo.pop()
+                if self.setData(*lastUndo):
+                    self.redo.append(self.undo.pop())
+                self.dataChanged.emit(lastUndo.index, lastUndo.index)
+            return True
+        elif role == REDO_ROLE:
+            if self.redo:
+                lastRedo = self.redo.pop()
+                if self.setData(*lastRedo):
+                    self.redo.append(self.undo.pop())
+                self.dataChanged.emit(lastRedo.index, lastRedo.index)
+            return True
 
     def setChanged(self, topLeft: QModelIndex, bottomRight: QModelIndex = None):
         """Set the item and all parents as changed"""
@@ -332,8 +366,6 @@ class StandardTable(QAbstractItemModel):
             child.setParent(None)
             # child.deleteLater()
         self.endRemoveRows()
-        # self.dataChanged.emit(parent, parent)
-        # self.rowsRemoved.emit(parent, row, row-1+count)
         return True
 
     def clearRows(self, row: int, count: int,
@@ -353,18 +385,24 @@ class StandardTable(QAbstractItemModel):
 
         for currRow in range(row+count-1, row-1, -1):
             child = parentItem.children()[currRow]
-            if isinstance(parentObj, list):
-                parentObj.pop(currRow)
+            if isinstance(parentObj, (list, dict, AbstractSet)):
+                if isinstance(parentObj, list):
+                    oldValue = parentObj.pop(currRow)
+                elif isinstance(parentObj, dict):
+                    value = parentObj.pop(child.objectName)
+                    key = child.objectName
+                    oldValue = DictItem(key, value)
+                elif isinstance(parentObj, AbstractSet):
+                    parentObj.discard(child.obj)
+                    oldValue = child.obj
                 self.removeRow(currRow, parent)
-            elif isinstance(parentObj, dict):
-                parentObj.pop(child.objectName)
-                self.removeRow(currRow, parent)
-            elif isinstance(parentObj, AbstractSet):
-                parentObj.discard(child.obj)
-                self.removeRow(currRow, parent)
+                self.undo.append(SetDataItem(index=parent, value=oldValue, role=ADD_ITEM_ROLE))
             else:
                 if not defaultVal == NOT_GIVEN:
-                    self.setData(self.index(currRow, 0, parent), defaultVal, Qt.EditRole)
+                    index = self.index(currRow, 0, parent)
+                    oldValue = self.data(index, Qt.EditRole)
+                    self.setData(index, defaultVal, Qt.EditRole)
+                    self.undo.append(SetDataItem(index=index, value=oldValue, role=Qt.EditRole))
                 else:
                     raise TypeError(
                         f"Unknown parent object type: "

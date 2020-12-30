@@ -357,6 +357,8 @@ class Tab(QWidget):
         self.toolBar.addAction(self.attrsTreeView.collapseAllAct)
         self.toolBar.addAction(self.attrsTreeView.expandAllAct)
         self.toolBar.addSeparator()
+        self.toolBar.addAction(self.attrsTreeView.undoAct)
+        self.toolBar.addAction(self.attrsTreeView.redoAct)
         self.toolBar.addAction(self.attrsTreeView.copyAct)
         self.toolBar.addAction(self.attrsTreeView.cutAct)
         self.toolBar.addAction(self.attrsTreeView.pasteAct)

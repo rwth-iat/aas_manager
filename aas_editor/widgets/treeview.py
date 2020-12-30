@@ -71,6 +71,22 @@ class TreeView(BasicTreeView):
                                    enabled=False)
         self.addAction(self.delClearAct)
 
+        self.undoAct = QAction(UNDO_ICON, "Undo", self,
+                               statusTip="Undo last edit action",
+                               shortcut=SC_UNDO,
+                               shortcutContext=Qt.WidgetWithChildrenShortcut,
+                               triggered=self._undoHandler,
+                               enabled=False)
+        self.addAction(self.undoAct)
+
+        self.redoAct = QAction(REDO_ICON, "Redo", self,
+                               statusTip="Redo last edit action",
+                               shortcut=SC_REDO,
+                               shortcutContext=Qt.WidgetWithChildrenShortcut,
+                               triggered=self._redoHandler,
+                               enabled=False)
+        self.addAction(self.redoAct)
+
         self.collapseAct = QAction("Collapse", self,
                                    statusTip="Collapse selected item",
                                    shortcutContext=Qt.WidgetWithChildrenShortcut,
@@ -147,9 +163,11 @@ class TreeView(BasicTreeView):
         self.attrsMenu.addAction(self.copyAct)
         self.attrsMenu.addAction(self.pasteAct)
         self.attrsMenu.addSeparator()
+        self.attrsMenu.addAction(self.delClearAct)
         self.attrsMenu.addAction(self.addAct)
         self.attrsMenu.addSeparator()
-        self.attrsMenu.addAction(self.delClearAct)
+        self.attrsMenu.addAction(self.undoAct)
+        self.attrsMenu.addAction(self.redoAct)
         self.attrsMenu.addSeparator()
         self.attrsMenu.addAction(self.zoomInAct)
         self.attrsMenu.addAction(self.zoomOutAct)
@@ -204,6 +222,13 @@ class TreeView(BasicTreeView):
         self.addAct.setEnabled(enabled)
         self.addAct.setText(addActText)
 
+    def updateUndoRedoActs(self):
+        # update undo/redo actions
+        undoEnabled = bool(self.model().data(QModelIndex(), UNDO_ROLE))
+        self.undoAct.setEnabled(undoEnabled)
+        redoEnabled = bool(self.model().data(QModelIndex(), REDO_ROLE))
+        self.redoAct.setEnabled(redoEnabled)
+
     def buildHandlers(self):
         self.customContextMenuRequested.connect(self.openMenu)
         self.modelChanged.connect(self.onModelChanged)
@@ -214,6 +239,7 @@ class TreeView(BasicTreeView):
         self.selectionModel().currentChanged.connect(self.updateActions)
         self.setCurrentIndex(self.rootIndex())
         self.model().dataChanged.connect(self.itemDataChangeFailed)
+        self.model().dataChanged.connect(self.updateUndoRedoActs)
 
     def onRowsInserted(self, parent, first, last):
         index = parent.child(last, 0)
@@ -241,6 +267,12 @@ class TreeView(BasicTreeView):
             self.setFont(font)
         else:
             print("zoom pressed with no model")
+
+    def _undoHandler(self):
+        self.model().setData(QModelIndex(), None, UNDO_ROLE)
+
+    def _redoHandler(self):
+        self.model().setData(QModelIndex(), None, REDO_ROLE)
 
     def _delClearHandler(self):
         index = self.currentIndex()
