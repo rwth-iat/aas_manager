@@ -244,6 +244,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                 self.packTreeView.openPack(file)
             except OSError:
                 pass
+            self.packTreeModel.setData(QModelIndex(), [], UNDO_ROLE)
 
     def writeSettings(self):
         settings = QSettings(ACPLT, APPLICATION_NAME)

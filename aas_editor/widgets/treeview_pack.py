@@ -10,7 +10,7 @@ from aas_editor.settings import FILTER_AAS_FILES, CLASSES_INFO, PACKVIEW_ATTRS_I
 from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, SC_SAVE_ALL, SC_OPEN, \
     PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, APPLICATION_NAME, OPEN_ICON, SAVE_ICON, \
     SAVE_ALL_ICON, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, OPEN_DRAG_ICON, \
-    NEW_PACK_ICON, TYPE_ROLE, VIEW_ICON
+    NEW_PACK_ICON, TYPE_ROLE, VIEW_ICON, NOT_GIVEN, CLEAR_ROW_ROLE
 from aas_editor.utils.util_classes import ClassesInfo
 from aas_editor.widgets import TreeView
 
@@ -377,7 +377,7 @@ class PackTreeView(TreeView):
                 self.closeFile(packItem)
 
     def closeFile(self, packItem: QModelIndex):
-        self.model().removeRow(packItem.row(), packItem.parent())
+        self.model().setData(packItem, NOT_GIVEN, CLEAR_ROW_ROLE)
 
     def openRecentSlot(self):
         action = self.sender()

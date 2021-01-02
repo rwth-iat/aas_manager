@@ -213,9 +213,11 @@ class TreeView(BasicTreeView):
     def onRowsInserted(self, parent: QModelIndex, first: int, last: int):
         index = parent.child(last, 0)
         self.setCurrentIndex(index)
+        QTimer.singleShot(100, self.updateUndoRedoActs)
 
     def onRowsRemoved(self, parent: QModelIndex, first: int, last: int):
         self.setCurrentIndex(parent)
+        QTimer.singleShot(100, self.updateUndoRedoActs)
 
     def updateActions(self, index: QModelIndex):
         # update paste action
@@ -282,10 +284,10 @@ class TreeView(BasicTreeView):
             print("zoom pressed with no model")
 
     def onUndo(self):
-        self.model().setData(QModelIndex(), None, UNDO_ROLE)
+        self.model().setData(QModelIndex(), NOT_GIVEN, UNDO_ROLE)
 
     def onRedo(self):
-        self.model().setData(QModelIndex(), None, REDO_ROLE)
+        self.model().setData(QModelIndex(), NOT_GIVEN, REDO_ROLE)
 
     def onDelClear(self):
         index = self.currentIndex()

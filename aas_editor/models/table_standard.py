@@ -15,6 +15,7 @@ from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_C
     TYPE_CHECK_ROLE, TYPE_ROLE, UNDO_ROLE, REDO_ROLE, MAX_UNDOS
 
 from aas_editor.utils.util_classes import DictItem, ClassesInfo
+from aas_editor.utils.util_type import isIterable
 
 SetDataItem = namedtuple("SetDataItem", ("index", "value", "role"))
 
@@ -274,7 +275,6 @@ class StandardTable(QAbstractItemModel):
                 self.defaultFont.setPointSize(font.pointSize())
                 self.dataChanged.emit(self.index(0), self.index(self.rowCount()))
                 return True
-            return False
         elif role == ADD_ITEM_ROLE:
             try:
                 self.addItem(value, index)
@@ -283,7 +283,6 @@ class StandardTable(QAbstractItemModel):
                 self.lastErrorMsg = f"Error occurred while adding item to {index.data(NAME_ROLE)}: {e}"
                 print(self.lastErrorMsg)
                 self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
-                return False
         elif role == CLEAR_ROW_ROLE:
             try:
                 parent = index.parent()
@@ -293,7 +292,6 @@ class StandardTable(QAbstractItemModel):
             except Exception as e:
                 self.lastErrorMsg = f"{index.data(NAME_ROLE)} could not be deleted or set to default: {e}"
                 self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
-                return False
         elif role == Qt.EditRole:
             try:
                 value = None if str(value) == "None" else value
@@ -330,24 +328,32 @@ class StandardTable(QAbstractItemModel):
             except Exception as e:
                 self.lastErrorMsg = f"Error occurred while setting {self.objByIndex(index).objectName}: {e}"
                 self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
-            return False
         elif role == UNDO_ROLE:
-            if self.undo:
+            if value == NOT_GIVEN and self.undo:
                 lastUndo: SetDataItem = self.undo.pop()
                 tempRedoList = self.redo
                 self.redo = []
                 if self.setData(*lastUndo):
                     self.redo = tempRedoList
                     self.redo.append(self.undo.pop())
-            return True
+                    return True
+            elif isIterable(value):
+                self.undo = deque(value)
+                return True
         elif role == REDO_ROLE:
-            if self.redo:
+            if value == NOT_GIVEN and self.redo:
                 lastRedo: SetDataItem = self.redo.pop()
                 tempRedoList = self.redo
                 self.redo = []
                 if self.setData(*lastRedo):
                     self.redo = tempRedoList
-            return True
+                    return True
+            elif isIterable(value):
+                self.redo = list(value)
+                return True
+        else:
+            raise ValueError(f"Unknown role: {role}")
+        return False
 
     def setChanged(self, topLeft: QModelIndex, bottomRight: QModelIndex = None):
         """Set the item and all parents as changed"""
@@ -408,6 +414,13 @@ class StandardTable(QAbstractItemModel):
                 if not defaultVal == NOT_GIVEN:
                     index = self.index(currRow, 0, parent)
                     self.setData(index, defaultVal, Qt.EditRole)
+                elif isinstance(child.obj, Package):
+                    oldValue = child.obj
+                    self.removeRow(currRow, parent)
+                    self.undo.append(
+                        SetDataItem(index=QPersistentModelIndex(parent), value=oldValue,
+                                    role=ADD_ITEM_ROLE))
+                    self.redo.clear()
                 else:
                     raise TypeError(
                         f"Unknown parent object type: "
