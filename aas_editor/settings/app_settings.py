@@ -17,6 +17,7 @@ MIN_FONT_SIZE = 6
 DEFAULT_FONT = QFont()
 DEFAULT_FONT.setPointSize(12)
 
+MAX_UNDOS = 10
 MAX_RECENT_FILES = 4
 
 # Custom roles

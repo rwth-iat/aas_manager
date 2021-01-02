@@ -1,4 +1,4 @@
-from collections import namedtuple
+from collections import namedtuple, deque
 from enum import Enum
 from typing import Any, Iterable, Union, AbstractSet, List
 
@@ -12,7 +12,7 @@ from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_C
     VALUE_COLUMN, NOT_GIVEN, \
     PACKAGE_ROLE, PACK_ITEM_ROLE, DEFAULT_FONT, ADD_ITEM_ROLE, CLEAR_ROW_ROLE, \
     DATA_CHANGE_FAILED_ROLE, IS_LINK_ROLE, LINK_BLUE, NEW_GREEN, CHANGED_BLUE, RED, TYPE_COLUMN, \
-    TYPE_CHECK_ROLE, TYPE_ROLE, UNDO_ROLE, REDO_ROLE
+    TYPE_CHECK_ROLE, TYPE_ROLE, UNDO_ROLE, REDO_ROLE, MAX_UNDOS
 
 from aas_editor.utils.util_classes import DictItem, ClassesInfo
 
@@ -27,7 +27,7 @@ class StandardTable(QAbstractItemModel):
         self._rootItem = rootItem if rootItem else DetailedInfoItem(None) # FIXME
         self._columns = columns
         self.lastErrorMsg = ""
-        self.undo: List[SetDataItem] = []
+        self.undo: deque[SetDataItem] = deque(maxlen=MAX_UNDOS)
         self.redo: List[SetDataItem] = []
 
     def index(self, row: int, column: int = 0, parent: QModelIndex = QModelIndex()) -> QModelIndex:
@@ -347,7 +347,6 @@ class StandardTable(QAbstractItemModel):
                 self.redo = []
                 if self.setData(*lastRedo):
                     self.redo = tempRedoList
-                    self.undo.append(self.redo.pop())
             return True
 
     def setChanged(self, topLeft: QModelIndex, bottomRight: QModelIndex = None):
