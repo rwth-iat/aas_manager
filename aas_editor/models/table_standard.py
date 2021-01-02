@@ -184,6 +184,7 @@ class StandardTable(QAbstractItemModel):
         self.endInsertRows()
         itemIndex = self.index(item.row(), 0, parent)
         self.undo.append(SetDataItem(index=QPersistentModelIndex(itemIndex), value=NOT_GIVEN, role=CLEAR_ROW_ROLE))
+        self.redo.clear()
         return itemIndex
 
     def insertRows(self, row: int, count: int, parent: QModelIndex = ...) -> bool:
@@ -324,6 +325,7 @@ class StandardTable(QAbstractItemModel):
                 self.setChanged(index)
                 self.update(index)
                 self.undo.append(SetDataItem(index=QPersistentModelIndex(index), value=oldValue, role=role))
+                self.redo.clear()
                 return True
             except Exception as e:
                 self.lastErrorMsg = f"Error occurred while setting {self.objByIndex(index).objectName}: {e}"
@@ -332,13 +334,19 @@ class StandardTable(QAbstractItemModel):
         elif role == UNDO_ROLE:
             if self.undo:
                 lastUndo: SetDataItem = self.undo.pop()
+                tempRedoList = self.redo
+                self.redo = []
                 if self.setData(*lastUndo):
+                    self.redo = tempRedoList
                     self.redo.append(self.undo.pop())
             return True
         elif role == REDO_ROLE:
             if self.redo:
                 lastRedo: SetDataItem = self.redo.pop()
+                tempRedoList = self.redo
+                self.redo = []
                 if self.setData(*lastRedo):
+                    self.redo = tempRedoList
                     self.undo.append(self.redo.pop())
             return True
 
@@ -396,12 +404,11 @@ class StandardTable(QAbstractItemModel):
                     oldValue = child.obj
                 self.removeRow(currRow, parent)
                 self.undo.append(SetDataItem(index=QPersistentModelIndex(parent), value=oldValue, role=ADD_ITEM_ROLE))
+                self.redo.clear()
             else:
                 if not defaultVal == NOT_GIVEN:
                     index = self.index(currRow, 0, parent)
-                    oldValue = self.data(index, Qt.EditRole)
                     self.setData(index, defaultVal, Qt.EditRole)
-                    self.undo.append(SetDataItem(index=QPersistentModelIndex(index), value=oldValue, role=Qt.EditRole))
                 else:
                     raise TypeError(
                         f"Unknown parent object type: "
