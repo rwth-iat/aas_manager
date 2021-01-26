@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets
-from PyQt5.QtGui import QPainter, QBrush
-from PyQt5.QtWidgets import QWidget, QStyledItemDelegate, QStyleOptionViewItem, QStyle
+from PyQt5.QtGui import QPainter, QBrush, QDoubleValidator, QIntValidator
+from PyQt5.QtWidgets import QWidget, QStyledItemDelegate, QStyleOptionViewItem, QStyle, \
+    QCompleter, QCheckBox, QComboBox
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex
 
@@ -9,6 +10,12 @@ from aas.model.aas import *
 from aas.model.base import *
 from aas.model.concept import *
 from aas.model.submodel import *
+
+from aas_editor.settings import DEFAULT_COMPLETIONS
+from aas_editor.utils.util import inheritors
+from aas_editor.utils.util_type import issubtype, getTypeName
+from aas_editor.widgets import CompleterComboBox
+from aas_editor.widgets.lineEdit import LineEdit
 
 
 class ColorDelegate(QStyledItemDelegate):
@@ -45,6 +52,44 @@ class EditDelegate(ColorDelegate):
 
     def createEditor(self, parent: QWidget, option: 'QStyleOptionViewItem',
                      index: QtCore.QModelIndex) -> QWidget:
+        objType = type(index.data(Qt.EditRole))
+        attr = index.data(Qt.DisplayRole)
+        if issubtype(objType, bool):
+            widget = QCheckBox(parent)
+        elif issubtype(objType, str):
+            widget = LineEdit(parent)
+            completions = DEFAULT_COMPLETIONS.get(objType, {}).get(attr, [])
+            if completions:
+                completer = QCompleter(parent, completions=completions)
+                widget.setCompleter(completer)
+        elif issubtype(objType, int):
+            widget = LineEdit(parent)
+            widget.setValidator(QIntValidator())
+        elif issubtype(objType, float):
+            widget = LineEdit(parent)
+            widget.setValidator(QDoubleValidator())
+        elif issubtype(objType, (Enum, Type)):
+            if issubtype(objType, Enum):
+                # add enum types to types
+                types = [member for member in objType]
+            else:  # Type
+                union = objType.__args__[0]
+                if type(union) == TypeVar:
+                    # add Type inheritors to types
+                    baseType = union.__bound__
+                    types = inheritors(baseType)
+                else:
+                    # add Union Type attrs to types
+                    types = union.__args__
+
+            if len(types) <= 6:
+                widget = QComboBox(parent)
+            else:
+                widget = CompleterComboBox(parent)
+
+            for typ in types:
+                widget.addItem(getTypeName(typ), typ)
+            widget.model().sort(0, Qt.AscendingOrder)
         if isinstance(index.data(Qt.EditRole), Enum):
             editor = QtWidgets.QComboBox(parent)
             editor.setAutoFillBackground(True)

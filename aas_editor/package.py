@@ -184,7 +184,7 @@ class StoredFile:
             mimetypes.init()
             mime_type = mimetypes.guess_type(self._filePath)[0]
             if mime_type is None:
-                mime_type = "text/plain"
+                mime_type = "application/octet-stream"
             return mime_type
 
     @property
