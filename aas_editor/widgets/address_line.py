@@ -95,6 +95,7 @@ class AddressLine(LineEdit):
             self.completer().setModel(AddressLine._model)
             self.completer().activated[QModelIndex].connect(self.onReturnPressed)
             self.returnPressed.connect(self.onReturnPressed)
+            self.clicked.connect(self.completer().complete)
         AddressLine.signal.modelChanged.connect(self.onModelChanged)
         self.setPlaceholderText("Address Line")
 
