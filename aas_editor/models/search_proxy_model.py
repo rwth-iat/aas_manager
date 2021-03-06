@@ -22,9 +22,6 @@ class SearchProxyModel(QSortFilterProxyModel):
                regExp: bool = True,
                filter: bool = False,
                matchCase: bool = False) -> List[QPersistentModelIndex]:
-        for index in self.iterItems():
-            self.setData(index, QBrush(QColor(0, 0, 0, 0)), Qt.BackgroundRole)
-
         foundItems = []
         if not pattern:
             return foundItems

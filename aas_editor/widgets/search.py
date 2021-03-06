@@ -81,6 +81,7 @@ class SearchBar(ToolBar):
             self.view.setCurrentIndex(QModelIndex(self.foundItems[0]))
             for item in self.foundItems:
                 self.view.itemDelegate().setBgColor(QModelIndex(item), QBrush(HIGHLIGHT_YELLOW))
+        self.model.dataChanged.emit(QModelIndex(), QModelIndex())
 
     def next(self):
         items = [QModelIndex(i) for i in self.foundItems]
