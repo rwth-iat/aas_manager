@@ -126,7 +126,7 @@ class AttrsTreeView(TreeView):
                     attrType = type(objVal)
                 else:
                     raise KeyError("No typehint found for the given item", index.data(NAME_ROLE))
-            self.replItemWithDialog(index, attrType, title=f"Create {attribute}", objVal=objVal)
+            self.replItemWithDialog(index, attrType, title=f"Edit/Create {attribute}", objVal=objVal)
 
     def openRef(self, detailInfoItem: QModelIndex, newTab=True, setCurrent=True, newWindow=False):
         """Open referenced item if clicked on Reference and item is saved locally"""
