@@ -157,16 +157,7 @@ class StandardItem(QObject):
         if role == IS_URL_MEDIA_ROLE:
             return self.isUrlMedia
         if role == MEDIA_CONTENT_ROLE:
-            if self.isUrlMedia or isinstance(self.obj.value, bytes):
-                return MediaContent(self.obj.value, str(self.obj.mime_type))
-            elif isinstance(self.obj.value, str) and self.obj.value in self.package.fileStore:
-                file_content = io.BytesIO()
-                self.package.fileStore.write_file(self.obj.value, file_content)
-                return MediaContent(file_content.getvalue(), str(self.obj.mime_type))
-            elif not self.obj.value:
-                return MediaContent(b"Value is not given", "text/plain")
-            else:
-                return MediaContent(b"Media not found", "text/plain")
+            return self.getMediaContent()
         if role == Qt.BackgroundRole:
             return self.bg
         if role == Qt.DecorationRole and column == 0:
@@ -253,3 +244,15 @@ class StandardItem(QObject):
                 except KeyError:
                     print("Typehint could not be gotten")
         return attrTypehint
+
+    def getMediaContent(self):
+        if self.isUrlMedia or isinstance(self.obj.value, bytes):
+            return MediaContent(self.obj.value, str(self.obj.mime_type))
+        elif isinstance(self.obj.value, str) and self.obj.value in self.package.fileStore:
+            file_content = io.BytesIO()
+            self.package.fileStore.write_file(self.obj.value, file_content)
+            return MediaContent(file_content.getvalue(), str(self.obj.mime_type))
+        elif not self.obj.value:
+            return MediaContent(b"Value is not given", "text/plain")
+        else:
+            return MediaContent(b"Media not found", "text/plain")
