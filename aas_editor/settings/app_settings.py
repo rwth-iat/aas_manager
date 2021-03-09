@@ -43,8 +43,8 @@ TYPE_HINT_ROLE = 1014
 TYPE_CHECK_ROLE = 1017
 
 # Columns
-COLUMNS_IN_DETAILED_INFO = ("attribute", "value", "type", "typehint")
-COLUMNS_IN_PACKS_TABLE = ("attribute", "value", "type", "typehint")
+COLUMNS_IN_DETAILED_INFO = ("attribute", "value", "type")
+COLUMNS_IN_PACKS_TABLE = ("attribute", "value", "type")
 ATTRIBUTE_COLUMN = 0
 VALUE_COLUMN = 1
 TYPE_COLUMN = 2
