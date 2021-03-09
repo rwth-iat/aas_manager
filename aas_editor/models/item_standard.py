@@ -162,7 +162,7 @@ class StandardItem(QObject):
             return self.bg
         if role == Qt.DecorationRole and column == 0:
             return self.icon
-        if role in (Qt.DisplayRole, Qt.ToolTipRole):
+        if role == Qt.DisplayRole:
             if column == ATTRIBUTE_COLUMN:
                 return self.objectName
             if column == VALUE_COLUMN:
@@ -171,6 +171,10 @@ class StandardItem(QObject):
                 return self.objTypeName
             if column == TYPE_HINT_COLUMN:
                 return self.typehintName
+        if role == Qt.ToolTipRole:
+            toolTip = self.getToolTip(column)
+            if toolTip:
+                return toolTip
         if role == Qt.EditRole:
             if column == ATTRIBUTE_COLUMN:
                 return self.objectName
@@ -256,3 +260,23 @@ class StandardItem(QObject):
             return MediaContent(b"Value is not given", "text/plain")
         else:
             return MediaContent(b"Media not found", "text/plain")
+
+    def getToolTip(self, column):
+        if column == ATTRIBUTE_COLUMN:
+            if self.doc:
+                return self.doc.replace(": ", "\n\n", 1)
+            else:
+                return self.objectName
+        if column == VALUE_COLUMN:
+            if self.typecheck:
+                return self.displayValue
+            else:
+                return f"{self.displayValue}\n\nThe value must be of type '{self.typehintName}', not of type '{self.objTypeName}'!"
+        if column == TYPE_COLUMN:
+            if self.typecheck:
+                return self.objTypeName
+            else:
+                return f"{self.objTypeName}\n\nThe value must be of type '{self.typehintName}', not of type '{self.objTypeName}'!"
+        if column == TYPE_HINT_COLUMN:
+            return self.typehintName
+        return None
