@@ -242,7 +242,7 @@ class StandardTable(QAbstractItemModel):
     def _getFgColor(self, index: QModelIndex):
         column = index.column()
         # color fg in red if obj type and typehint don't fit
-        if column == TYPE_COLUMN and not index.data(TYPE_CHECK_ROLE):
+        if column in (VALUE_COLUMN, TYPE_COLUMN) and not index.data(TYPE_CHECK_ROLE):
             return RED
         elif column == VALUE_COLUMN and index.data(IS_LINK_ROLE):
             return LINK_BLUE
