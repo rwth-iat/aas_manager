@@ -121,22 +121,21 @@ MIME_TYPE_ICON_DICT = {
     "text": qta.icon("mdi.file-document"),
 }
 
-# CHARS4=[{'offset': (-0.48, 0)}, {'offset': (-0.16, 0)},
-#         {'offset': (0.15, 0)}, {'offset': (0.46, 0)}]
-CHARS1_3 = [{'offset': (-0.48, 0)}, {'offset': (-0.13, 0)},
-            {'offset': (0.18, 0)}, {'offset': (0.48, 0)}]
-# CHARS3=[{'offset': (-0.3, 0)}, {'offset': (0, 0)}, {'offset': (0.3, 0)}]
-CHARS3 = [{'offset': (-0.36, 0)}, {'offset': (0, 0)}, {'offset': (0.36, 0)}]
-CHARS4 = [{'offset': (-0.48, 0)}, {'offset': (-0.15, 0)},
-        {'offset': (0.15, 0)}, {'offset': (0.48, 0)}]
-CHARS1_3=CHARS4
+# Distances between chars in icon
+CHARS_ICON_LEN_SETTINGS = {
+    1: [{'offset': (0, 0)}],
+    2: [{'offset': (-0.20, 0)}, {'offset': (0.20, 0)}],
+    3: [{'offset': (-0.36, 0)}, {'offset': (0, 0)}, {'offset': (0.36, 0)}],
+    4: [{'offset': (-0.40, 0)}, {'offset': (-0.13, 0)}, {'offset': (0.13, 0)}, {'offset': (0.40, 0)}]
+    # 4: [{'offset': (-0.48, 0)}, {'offset': (-0.15, 0)}, {'offset': (0.15, 0)}, {'offset': (0.48, 0)}]
+}
 
 
 def getCharsIcon(chars: str):
-    if len(chars) == 3:
-        options = CHARS3
-    elif len(chars) == 4:
-        options = CHARS4
+    if len(chars) > 4:
+        raise ValueError("Max 4 characters allowed for an icon", chars)
+    else:
+        options = CHARS_ICON_LEN_SETTINGS[len(chars)]
 
     mdiChar = "mdi.alpha"
     args = []
