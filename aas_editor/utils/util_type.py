@@ -127,7 +127,10 @@ def getTypeName(objType) -> str:
     nameAttrs = ("__name__", "_name", "name")
     for nameAttr in nameAttrs:
         try:
-            res = getattr(objType, nameAttr)
+            if objType in settings.TYPE_NAMES_DICT:
+                res = settings.TYPE_NAMES_DICT[objType]
+            else:
+                res = getattr(objType, nameAttr)
             if res:
                 break
         except AttributeError:

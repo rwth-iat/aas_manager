@@ -3,6 +3,7 @@ from abc import ABCMeta
 from enum import Enum
 from pathlib import Path
 
+import dateutil
 from aas.model import AssetAdministrationShell, Asset, ConceptDescription, Submodel, Property, \
     Entity, Capability, Event, Operation, RelationshipElement, AnnotatedRelationshipElement, \
     SubmodelElementCollectionUnordered, SubmodelElementCollectionOrdered, Range, Blob, File, \
@@ -23,10 +24,6 @@ EMPTY_VALUES = (None, tuple(), set(), list(), dict())
 
 LINK_TYPES = (AASReference,)
 MEDIA_TYPES = (File, Blob, aas_editor.package.StoredFile)
-
-# "/TestFile.pdf", "application/pdf"
-# file_content = io.BytesIO()
-# self.fileStore.write_file("/TestFile.pdf", file_content)
 
 # AnyXSDType = Base64Binary, HexBinary
 
