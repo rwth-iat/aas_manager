@@ -1,6 +1,49 @@
-Gibt es Unterschied zw. Reference und AASReference? Warum typehint of submodel.sematic_id ist Reference?
+- reprs for GDay, GMonth , GYearMonth, GYear, GMonthDay, etc.
+- write_file needs delete_file method
+- e.g. All Namespace obj variables must have property.setter, to make copy/paste/setDefault possible, otherwise
+    Namespace variable could be set to tuple() e.g.
+
+- add Typehints for attributes not inside __init__ but in class, so that get_type_hints() works
+- Make small classes, just for name:
+    Duration = dateutil.relativedelta.relativedelta
+Currently:
+```
+Duration = dateutil.relativedelta.relativedelta
+```
+
+Proposal:
+```
+class Duration(dateutil.relativedelta.relativedelta):
+    pass
+```
+
+
+Gibt es Unterschied zw. Reference und AASReference? Warum typehint of submodel.semantic_id ist Reference?
 
 Suggestions:
+- add from_referable method to Reference to use "choose from local" button
+- write_file needs delete_file method
+- How to realize Blob, bytes, bytearray widgets/dialogs?
+- DictSupplementaryFileContainer.add_file( content_type: Union[str, Enum] or without content type)?
+- Blob.mime_type may be Enum?
+- Unite Property.value and Property.value_type, smth like ValueReferencePair in IEC61360ConceptDescription.value_list
+- Error when creating datatypes.Date(2000)
+    res: "Date" = datetime.date.__new__(cls, year, month, day)  # type: ignore  # pickle support is not in typeshed
+    TypeError: an integer is required (got type NoneType)
+- Make small classes, just for name:
+    Duration = dateutil.relativedelta.relativedelta
+    DateTime = datetime.datetime
+    Time = datetime.time
+    Boolean = bool
+    Double = float
+    Decimal = decimal.Decimal
+    Integer = int
+    String = str
+- reprs for GDay, GMonth etc.
+- add Typehints for attributes not inside __init__ but in class, so that get_type_hints() works
+- e.g. All Namespace obj variables must have property.setter, to make copy/paste/setDefault possible, otherwise
+    Namespace variable could be set to tuple() e.g.
+- add func set_default_value() for each class attribute where it is possible (smth. like delete)
 - delete target_type parameter in init of AASReference or it should have same name as class attribute
 - make Submodel subscriptable to do smth like Iterable[Submodel[SubmodelElement]]
     now: TypeError: 'ABCMeta' object is not subscriptable
@@ -13,6 +56,8 @@ Needs:
                                 self.objStore = aasx.read_aas_json_file(f)
 
 Bugs:
+    ConceptDictionary: - change id_short from "name1" to "name2" is ok, but then change frm "name2"
+        back to "name1" raises Error: "name1" is already present in the parent Namespace
     Repr in AASReference wants to get __name__, but type is sometimes ForwardRef
         which doesnt have __name__ but it has __forward_arg__
     def __repr__(self) -> str:
