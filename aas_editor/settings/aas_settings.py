@@ -85,9 +85,6 @@ CLASSES_INFO = {
                 ADD_ACT_AAS_TXT: "Add concept description",
                 ADD_TYPE: ConceptDescription,
             },
-            "others": {
-                ADD_ACT_AAS_TXT: "",
-            },
             "fileStore": {
                 ADD_ACT_AAS_TXT: "Add file",
                 ADD_TYPE: aas_editor.package.StoredFile,
@@ -134,25 +131,25 @@ TYPES_WITH_INSTANCES_NOT_TO_POPULATE = (
 COMPLEX_ITERABLE_TYPES = (Namespace,)
 DEFAULT_ATTRS_TO_HIDE = {"parent": None}
 
-TYPE_ICON_DICT = {
-    AssetAdministrationShell: getCharsIcon("shl"),  # qta.icon("mdi.wallet") #  mdi.tab mdi.shredder folder-outline wallet
-    Asset: getCharsIcon("ast"),  # qta.icon("mdi.mini-sd") # mdi.toy-brick
-    ConceptDescription: getCharsIcon("cnc"),  # qta.icon("mdi.text-box")
-    Submodel: getCharsIcon("sub"),
-
-    Property: getCharsIcon("prp"),
-    Entity: getCharsIcon("ent"),
-    Capability: getCharsIcon("cap"),
-    Event: getCharsIcon("evnt"),  # qta.icon("mdi.timeline-clock")  # mdi.timer mdi.bell
-    Operation: getCharsIcon("opr"),  # qta.icon("mdi.cog")
-    RelationshipElement: getCharsIcon("rel"),
-    AnnotatedRelationshipElement: getCharsIcon("rel"), # qta.icon("mdi.arrow-left-right")  # mdi.relation-one-to-one
-    SubmodelElementCollectionUnordered: getCharsIcon("col"),
-    SubmodelElementCollectionOrdered: getCharsIcon("col"),  # qta.icon("mdi.package")
-
-    Range: getCharsIcon("rng"),
-    Blob: getCharsIcon("blb"),
-    File: getCharsIcon("file"),
-    ReferenceElement: getCharsIcon("ref"),
-    DataElement: getCharsIcon("data"),
+TYPE_SHORTS_DICT = {
+    AssetAdministrationShell: "aas",
+    Asset: "ast",
+    ConceptDescription: "cd",
+    Submodel: "sm",
+    Property: "prop",
+    Entity: "ent",
+    Capability: "cap",
+    Event: "evnt",
+    Operation: "opr",
+    RelationshipElement: "rel",
+    AnnotatedRelationshipElement: "arel",
+    SubmodelElementCollectionUnordered: "smc",
+    SubmodelElementCollectionOrdered: "smc",
+    Range: "rng",
+    Blob: "blob",
+    File: "file",
+    ReferenceElement: "ref",
+    DataElement: "data",
 }
+
+TYPE_ICON_DICT = {typ: getCharsIcon(TYPE_SHORTS_DICT[typ]) for typ in TYPE_SHORTS_DICT}
