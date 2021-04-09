@@ -27,19 +27,16 @@ MEDIA_TYPES = (File, Blob, aas_editor.package.StoredFile)
 
 # AnyXSDType = Base64Binary, HexBinary
 
-# Duration = type("Duration", (dateutil.relativedelta.relativedelta,), {})
-# DateTime = type("DateTime", (datetime.datetime,), {})
-# class Time(datetime.time):
-#     def __new__(cls, hour: int =0, minute: int=0, second: int=0, microsecond: int=0,
-#                 tzinfo: Optional[datetime.tzinfo]=None, *, fold: int=0):
-#         super(Time, self).__new__(hour, minute, second, microsecond, tzinfo, fold=fold)
-#
-# Time = type("Time", (datetime.time,), {})
-# Boolean = bool
-# Double = type("Double", (float,), {})
-# Decimal = decimal.Decimal
-# Integer = type("Integer", (int,), {})
-# String = type("String", (str,), {})
+TYPE_NAMES_DICT = {
+    bool: "Boolean",
+    float: "Double",
+    int: "Integer",
+    str: "String",
+    datetime.datetime: "DateTime",
+    datetime.time: "Time",
+    dateutil.relativedelta.relativedelta: "Duration",
+}
+
 
 ATTR_ORDER = (
     "id_short",
