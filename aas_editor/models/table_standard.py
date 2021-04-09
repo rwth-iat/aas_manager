@@ -415,6 +415,7 @@ class StandardTable(QAbstractItemModel):
                     index = self.index(currRow, 0, parent)
                     self.setData(index, defaultVal, Qt.EditRole)
                 elif isinstance(child.obj, Package):
+                    # close package
                     oldValue = child.obj
                     self.removeRow(currRow, parent)
                     self.undo.append(
