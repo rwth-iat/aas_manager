@@ -3,10 +3,8 @@ from PyQt5.QtCore import pyqtSignal, QModelIndex, QPersistentModelIndex, QPoint,
 from PyQt5.QtGui import QIcon, QPixmap, QRegion, QDrag, QCursor, QMouseEvent, \
     QDragEnterEvent, QDragLeaveEvent, QDropEvent, QCloseEvent
 from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, \
-    QTabWidget, QAction, QHBoxLayout, QFrame, QTabBar, QMenu, QSplitter, QShortcut
-from aas.model import Blob, File
+    QTabWidget, QAction, QHBoxLayout, QFrame, QTabBar, QMenu, QSplitter, QShortcut, QPushButton
 
-from aas_editor.package import StoredFile
 from aas_editor.settings.app_settings import *
 from aas_editor.utils.util_type import getTypeName
 from aas_editor.widgets import AddressLine, SearchBar, ToolBar, AttrsTreeView
@@ -346,7 +344,18 @@ class Tab(QWidget):
 
         QWebEngineSettings.defaultSettings().setAttribute(QWebEngineSettings.PluginsEnabled, True)
         self.mediaWidget = QWebEngineView()
-        self.mediaWidget.hide()
+        self.saveMediaAsBtn = QPushButton(f"Save media as..", self,
+                                          toolTip="Save media file as..")
+        self.saveMediaBtn = QPushButton(f"Save media on desktop", self,
+                                        toolTip="Save media file on desktop")
+        self.mediaViewWidget = QWidget()
+        mediaViewWidgetLayout = QVBoxLayout(self.mediaViewWidget)
+        mediaViewWidgetLayout.setContentsMargins(0, 0, 0, 0)
+        mediaViewWidgetLayout.addWidget(self.mediaWidget)
+        mediaViewWidgetLayout.addWidget(self.saveMediaBtn)
+        mediaViewWidgetLayout.addWidget(self.saveMediaAsBtn)
+        self.mediaViewWidget.hide()
+
 
         self.attrsTreeView = AttrsTreeView(self)
         self.attrsTreeView.setFrameShape(QFrame.NoFrame)
@@ -445,7 +454,7 @@ class Tab(QWidget):
     def updateMediaWidget(self):
         if self.packItem.data(IS_MEDIA_ROLE):
             self.mediaWidget.setContent(b"loading...")
-            self.mediaWidget.show()
+            self.mediaViewWidget.show()
             if not self.mediaWidget.width():
                 # set equal sizes
                 oldSizes = self.splitter.sizes()
@@ -463,7 +472,7 @@ class Tab(QWidget):
                 self.mediaWidget.setContent(b"Error occurred while loading media")
             self.mediaWidget.setZoomFactor(1.0)
         else:
-            self.mediaWidget.hide()
+            self.mediaViewWidget.hide()
 
     def showDetailInfoItemDoc(self, detailInfoItem: QModelIndex):
         self.descrLabel.setText(detailInfoItem.data(Qt.WhatsThisRole))
@@ -495,7 +504,7 @@ class Tab(QWidget):
         self.splitter.setOrientation(Qt.Horizontal)
         self.splitter.setContentsMargins(0, 0, 0, 0)
         self.splitter.addWidget(treeViewWidget)
-        self.splitter.addWidget(self.mediaWidget)
+        self.splitter.addWidget(self.mediaViewWidget)
 
         layout = QVBoxLayout(self)
         layout.setObjectName("tabLayout")
