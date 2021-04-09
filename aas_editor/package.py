@@ -117,12 +117,12 @@ class Package:
             if isinstance(obj, ConceptDescription):
                 yield obj
 
-    @property
-    def others(self):
-        for obj in self.objStore:
-            if not isinstance(obj,
-                              (AssetAdministrationShell, Asset, Submodel, ConceptDescription)):
-                yield obj
+    # @property
+    # def others(self):
+    #     for obj in self.objStore:
+    #         if not isinstance(obj,
+    #                           (AssetAdministrationShell, Asset, Submodel, ConceptDescription)):
+    #             yield obj
 
     @property
     def files(self):
