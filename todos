@@ -1,3 +1,25 @@
+TODO: standardtyp für eine Datei bei Erstellung über "File"-Menü änderbar
+TODO: подсказки для полей в диалогах для редактирования или создания объектов
+TODO: кнопки сохранения для медиавиджетов
+TODO: добавить функции autoscroll to/from source в Navigate меню
+FIXME: split doent work in new windows
+FIXME: при добавлении ConceptDescription нельзя выбрать тип IEC61360ConceptDescription
+FIXME: при повторном нажатии на hauptbaumelement tab обновляется (нельзя)
+FIXME: если значение при редактировании в дереве осталось то же, то не использовать set
+TODO: tooltip для полей не соответствующих тайпхинту, писать что ошибка/несоответствие
+FIXME: при включении и выключении shell view, concept dictionary больше не вылезает
+FIXME: проблема с адресной линией, когда нажимаешь вылезают не те предложения
+TODO: back при помощи кнопки на мыше
+TODO: блокировать закрытие последней вкладки в главном TabWidget
+TODO: сделать виджет для типа Reference вместо AASReference с выбором объекта из дерева
+TODO: переделать взятие доков из инита во взятие доков из класса
+
+
+
+
+TODO: defaults для каждого типа редактировать в программе, посредством создания для каждого типа стандартного элемента
+TODO: соеденить lastMsgError и dataChanged to errorOccured
+
 if edit dialog includes int make QSpinBox instead of QLineEdit
 unite Qualifier.value and Qualifier.value_type to groupbox
 ask if save in aasx (json or xml)

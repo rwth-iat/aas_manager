@@ -29,6 +29,12 @@ class TreeView(BasicTreeView):
         self.setUniformRowHeights(True)
         self.buildHandlers()
         self.setItemDelegate(ColorDelegate())  # set ColorDelegate as standard delegate
+        # TODO make it possible to turn off sorting
+        self.setSortingEnabled(True)
+        header = self.header()
+        header.setSortIndicatorShown(True)
+        header.setSectionsClickable(True)
+        header.setSortIndicator(-1, 0)
 
     # noinspection PyArgumentList
     def initActions(self):
