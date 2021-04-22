@@ -399,12 +399,17 @@ class PackTreeView(TreeView):
             files.remove(file)
         except ValueError:
             pass
+        except AttributeError:
+            files = []
         settings.setValue('recentFiles', files)
 
     def updateRecentFileActs(self):
         settings = QSettings(ACPLT, APPLICATION_NAME)
         files = settings.value('recentFiles', [])
-        files = files[:MAX_RECENT_FILES]
+        try:
+            files = files[:MAX_RECENT_FILES]
+        except TypeError:
+            files = []
 
         for i, file in enumerate(files):
             if len(file) < 30:
