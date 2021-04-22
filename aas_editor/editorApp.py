@@ -19,7 +19,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.packTreeModel = PacksTable(COLUMNS_IN_PACKS_TABLE)
         self.packTreeView.setModelWithProxy(self.packTreeModel)
-        self.packTreeView.hideColumn(VALUE_COLUMN)
+        self.packTreeView.hideColumn(VALUE_COLUMN) #FIXME type column value is corrupted if no value column at all
         dialogs.AASReferenceGroupBox.CHOOSE_FRM_VIEW = self.packTreeView
 
         AddressLine.setModel(self.packTreeView.model())
@@ -73,6 +73,14 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menuFile.addAction(self.packTreeView.saveAct)
         self.menuFile.addAction(self.packTreeView.saveAsAct)
         self.menuFile.addAction(self.packTreeView.saveAllAct)
+        self.menuFile.addSeparator()
+        self.menuStandardFile = QMenu("Set default new File type", self.menuFile)
+        self.menuFile.addMenu(self.menuStandardFile)
+        self.defNewFileTypeActGroup = QActionGroup(self)
+        for act in self.packTreeView.defNewFileTypeActs:
+            self.defNewFileTypeActGroup.addAction(act)
+        self.packTreeView.defNewFileTypeActs[0].setChecked(True)
+        self.menuStandardFile.addActions(self.defNewFileTypeActGroup.actions())
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.packTreeView.closeAct)
         self.menuFile.addAction(self.packTreeView.closeAllAct)

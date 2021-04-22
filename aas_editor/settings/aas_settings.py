@@ -15,10 +15,12 @@ from aas_editor.settings import getCharsIcon, HIDDEN_ATTRS, CHANGED_PARENT_OBJ, 
     ADD_TYPE, PACKVIEW_ATTRS_INFO
 from aas_editor.utils import util_classes
 
-FILTER_AAS_FILES = """AAS files (*.aasx *.xml *.json);;
-                      AASX files(*.aasx);; 
-                      XML files(*.xml);;
-                      JSON files(*.json);; All files (*.*)"""
+AAS_FILES = "AAS files (*.aasx *.xml *.json);;"
+AASX_FILES = "AASX files (*.aasx);;"
+XML_FILES = "XML files (*.xml);;"
+JSON_FILES = "JSON files (*.json);;"
+ALL_FILES = "All files (*.*)"
+FILTER_AAS_FILES = f"{AAS_FILES}{AASX_FILES}{XML_FILES}{JSON_FILES}{ALL_FILES}"
 
 EMPTY_VALUES = (None, tuple(), set(), list(), dict())
 
