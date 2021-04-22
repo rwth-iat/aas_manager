@@ -9,9 +9,9 @@ from aas_editor.package import Package, StoredFile
 from aas_editor.settings import FILTER_AAS_FILES, CLASSES_INFO, PACKVIEW_ATTRS_INFO, \
     AASX_FILES, XML_FILES, JSON_FILES, ALL_FILES
 from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, SC_SAVE_ALL, SC_OPEN, \
-    PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, APPLICATION_NAME, OPEN_ICON, SAVE_ICON, \
-    SAVE_ALL_ICON, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, OPEN_DRAG_ICON, \
-    NEW_PACK_ICON, TYPE_ROLE, VIEW_ICON, NOT_GIVEN, CLEAR_ROW_ROLE
+    PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, APPLICATION_NAME, OPEN_ICON, SAVE_ICON, SAVE_ALL_ICON, \
+    OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, OPEN_DRAG_ICON, NEW_PACK_ICON, TYPE_ROLE, \
+    VIEW_ICON, NOT_GIVEN, CLEAR_ROW_ROLE, FILE_DIALOG_OPTIONS
 from aas_editor.utils.util_classes import ClassesInfo
 from aas_editor.widgets import TreeView
 
@@ -260,9 +260,7 @@ class PackTreeView(TreeView):
         while not saved:
             file = QFileDialog.getSaveFileName(self, 'Create new AAS File', file,
                                                filter=self.filter_aas_files_for_init,
-                                               options=QFileDialog.DontResolveSymlinks |
-                                                       QFileDialog.DontUseNativeDialog
-                                               )[0]
+                                               options=FILE_DIALOG_OPTIONS)[0]
             if file:
                 pack = Package()
                 saved = self.savePack(pack, file)
@@ -278,8 +276,7 @@ class PackTreeView(TreeView):
         while not opened:
             file = QFileDialog.getOpenFileName(self, "Open AAS file", file,
                                                filter=FILTER_AAS_FILES,
-                                               options=QFileDialog.DontResolveSymlinks |
-                                                       QFileDialog.DontUseNativeDialog)[0]
+                                               options=FILE_DIALOG_OPTIONS)[0]
             if file:
                 opened = self.openPack(file)
             else:
@@ -291,8 +288,7 @@ class PackTreeView(TreeView):
         file = ""
         while not opened:
             file = QFileDialog.getOpenFileName(self, "Add file", file,
-                                               options=QFileDialog.DontResolveSymlinks |
-                                                       QFileDialog.DontUseNativeDialog)[0]
+                                               options=FILE_DIALOG_OPTIONS)[0]
             if file:
                 storedFile = StoredFile(filePath=file)
                 opened = self.model().setData(parent, storedFile, ADD_ITEM_ROLE)
@@ -337,9 +333,7 @@ class PackTreeView(TreeView):
             try:
                 file = QFileDialog.getSaveFileName(self, 'Save AAS File', file,
                                                    filter=FILTER_AAS_FILES,
-                                                   options=QFileDialog.DontResolveSymlinks |
-                                                           QFileDialog.DontUseNativeDialog
-                                                   )[0]
+                                                   options=FILE_DIALOG_OPTIONS)[0]
             except AttributeError as e:
                 QMessageBox.critical(self, "Error", f"No chosen package to save: {e}")
             else:

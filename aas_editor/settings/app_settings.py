@@ -1,6 +1,7 @@
 import qtawesome
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QKeySequence, QColor, QFont
+from PyQt5.QtWidgets import QFileDialog
 
 AAS_CREATOR = "PyI40AAS Testing Framework"
 APPLICATION_NAME = "AAS Editor"
@@ -19,6 +20,9 @@ DEFAULT_FONT.setPointSize(12)
 
 MAX_UNDOS = 10
 MAX_RECENT_FILES = 4
+
+#FileDialogOptions
+FILE_DIALOG_OPTIONS = QFileDialog.DontResolveSymlinks | QFileDialog.DontUseNativeDialog
 
 # Custom roles
 PACKAGE_ROLE = 1001
