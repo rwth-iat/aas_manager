@@ -40,7 +40,7 @@ class StandardItem(QObject):
         self.updateIcon()
 
         self.objName = name
-        self.doc = getAttrDoc(self.objName, self.parentObj.__init__.__doc__)
+        self.doc = getAttrDoc(self.objName, self.parentObj)
 
         self.typehint = typehint if typehint else self.getTypeHint()
         self.typecheck = checkType(self.obj, self.typehint)
@@ -71,7 +71,7 @@ class StandardItem(QObject):
             pass
         self.objTypeName = getTypeName(type(self.obj))
         self.updateIcon()
-        self.doc = getAttrDoc(self.objName, self.parentObj.__init__.__doc__)
+        self.doc = getAttrDoc(self.objName, self.parentObj)
 
     @property
     def objName(self) -> str:
@@ -80,7 +80,7 @@ class StandardItem(QObject):
     @objName.setter
     def objName(self, value):
         self._objName = value
-        self.doc = getAttrDoc(self.objName, self.parentObj.__init__.__doc__)
+        self.doc = getAttrDoc(self.objName, self.parentObj)
 
     @property
     def objectName(self) -> str:

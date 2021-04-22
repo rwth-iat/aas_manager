@@ -13,7 +13,8 @@ from aas_editor.editWidgets import StandardInputWidget, SpecialInputWidget
 from aas_editor.settings import DEFAULTS, DEFAULT_COMPLETIONS, ATTRIBUTE_COLUMN, OBJECT_ROLE,\
     DEFAULT_ATTRS_TO_HIDE
 from aas_editor.delegates import ColorDelegate
-from aas_editor.utils.util import inheritors, getReqParams4init, getParams4init, getDefaultVal
+from aas_editor.utils.util import inheritors, getReqParams4init, getParams4init, getDefaultVal, \
+    getAttrDoc
 from aas_editor.utils.util_type import getTypeName, issubtype, isoftype, isSimpleIterableType, \
     isIterableType, isIterable
 from aas_editor.utils.util_classes import DictItem
@@ -233,7 +234,7 @@ class ObjGroupBox(GroupBox):
             widget.setTitle(f"{attr}:")
             return widget
         else:
-            label = QLabel(f"{attr}:")
+            label = QLabel(f"{attr}:", toolTip=getAttrDoc(attr, self.objType))
             layoutWidget = QWidget()
             layout = QHBoxLayout(layoutWidget)
             layout.setContentsMargins(0, 0, 0, 0)

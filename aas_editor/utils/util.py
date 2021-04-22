@@ -212,14 +212,21 @@ def delAASParents(aasObj): #TODO change if aas changes
 #         return issubclass(typ._gorg, types)
 #     return issubclass(typ, types)
 
+def getDoc(typ: type) -> str:
+    return typ.__init__.__doc__
 
-def getAttrDoc(attr: str, doc: str) -> str:
+
+def getAttrDoc(attr: str, parentObj: type = None, doc: str = None) -> str:
     """
     Returns doc of specified parameter
     :param attr: parameter of obj init
+    :param parentObj: if no doc is given, doc will be extracted from typ
     :param doc: doc of obj init
     :return: doc of specified parameter
     """
+    if not doc and parentObj:
+        doc = getDoc(parentObj)
+
     if doc:
         doc = " ".join(doc.split())
         pattern = fr":param {attr}_?:(.*?)(:param|:raises|TODO|$)"
