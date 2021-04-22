@@ -95,8 +95,8 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menuView.addAction(self.mainTabWidget.zoomOutAct)
 
         self.menuNavigate = QMenu("&Navigate", self.menubar)
-        # self.menuNavigate.addAction(self.tabWidget.backAct)
-        # self.menuNavigate.addAction(self.tabWidget.forwardAct)
+        self.menuNavigate.addAction(self.packTreeView.autoScrollToSrcAct)
+        self.menuNavigate.addAction(self.packTreeView.autoScrollFromSrcAct)
         self.menuNavigate.addSeparator()
         self.menuNavigate.addAction(self.packTreeView.openInNewTabAct)
         self.menuNavigate.addAction(self.packTreeView.openInCurrTabAct)
