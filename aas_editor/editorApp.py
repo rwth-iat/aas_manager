@@ -2,6 +2,7 @@ from PyQt5.QtCore import QModelIndex, QSettings
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
+from aas_editor.settings import FILE_TYPE_FILTERS
 from aas_editor.settings.app_settings import *
 from aas_editor.widgets import SearchBar, AddressLine
 from aas_editor import design
@@ -227,25 +228,29 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
     def readSettings(self):
         settings = QSettings(ACPLT, APPLICATION_NAME)
 
+        # set previously used theme
         theme = settings.value('theme', DEFAULT_THEME)
         self.toggleTheme(theme)
 
+        # set previously used mainwindow size
         size = settings.value('size', DEFAULT_MAINWINDOW_SIZE)
         self.resize(size)
 
+        # set previously used sizes of right ans left layouts
         splitterLeftSize = settings.value('leftZoneSize', QSize(300, 624))
         splitterRightSize = settings.value('rightZoneSize', QSize(300, 624))
         self.leftLayoutWidget.resize(splitterLeftSize)
         self.rightLayoutWidget.resize(splitterRightSize)
 
+        # set previously used fontsizes in trees
         fontSizeFilesView = settings.value('fontSizeFilesView',
                                            PacksTable.defaultFont.pointSize())
-        PacksTable.defaultFont.setPointSize(int(fontSizeFilesView))
-
         fontSizeDetailedView = settings.value('fontSizeDetailedView',
                                               DetailedInfoTable.defaultFont.pointSize())
+        PacksTable.defaultFont.setPointSize(int(fontSizeFilesView))
         DetailedInfoTable.defaultFont.setPointSize(int(fontSizeDetailedView))
 
+        # try to open previously opened files
         openedAasFiles = settings.value('openedAasFiles', set())
         for file in openedAasFiles:
             try:
@@ -253,6 +258,13 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             except OSError:
                 pass
             self.packTreeModel.setData(QModelIndex(), [], UNDO_ROLE)
+
+        # set previously used default new file type
+        self.packTreeView.defNewFileTypeFilter = settings.value('defaultNewFileTypeFilter', '')
+        for act in self.packTreeView.defNewFileTypeActs:
+            if FILE_TYPE_FILTERS.get(act.text(), 'no filter') == self.packTreeView.defNewFileTypeFilter:
+                act.setChecked(True)
+                break
 
     def writeSettings(self):
         settings = QSettings(ACPLT, APPLICATION_NAME)
@@ -263,5 +275,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         settings.setValue('openedAasFiles', self.packTreeModel.openedFiles())
         settings.setValue('fontSizeFilesView', PacksTable.defaultFont.pointSize())
         settings.setValue('fontSizeDetailedView', DetailedInfoTable.defaultFont.pointSize())
+        settings.setValue('defaultNewFileTypeFilter', self.packTreeView.defNewFileTypeFilter)
 
 # ToDo logs insteads of prints
