@@ -15,12 +15,18 @@ from aas_editor.settings import getCharsIcon, HIDDEN_ATTRS, CHANGED_PARENT_OBJ, 
     ADD_TYPE, PACKVIEW_ATTRS_INFO
 from aas_editor.utils import util_classes
 
-AAS_FILES = "AAS files (*.aasx *.xml *.json);;"
-AASX_FILES = "AASX files (*.aasx);;"
-XML_FILES = "XML files (*.xml);;"
-JSON_FILES = "JSON files (*.json);;"
-ALL_FILES = "All files (*.*)"
-FILTER_AAS_FILES = f"{AAS_FILES}{AASX_FILES}{XML_FILES}{JSON_FILES}{ALL_FILES}"
+AAS_FILES_FILTER = "AAS files (*.aasx *.xml *.json)"
+AASX_FILES_FILTER = "AASX files (*.aasx)"
+XML_FILES_FILTER = "XML files (*.xml)"
+JSON_FILES_FILTER = "JSON files (*.json)"
+ALL_FILES_FILTER = "All files (*.*)"
+
+FILE_TYPE_FILTERS = {
+    "AASX": AASX_FILES_FILTER,
+    "XML": XML_FILES_FILTER,
+    "JSON": JSON_FILES_FILTER
+}
+FILTER_AAS_FILES = f"{AAS_FILES_FILTER};;{AASX_FILES_FILTER};;{XML_FILES_FILTER};;{JSON_FILES_FILTER};;{ALL_FILES_FILTER}"
 
 EMPTY_VALUES = (None, tuple(), set(), list(), dict())
 

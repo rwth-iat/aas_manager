@@ -6,8 +6,8 @@ from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog
 from aas.model import AssetAdministrationShell
 
 from aas_editor.package import Package, StoredFile
-from aas_editor.settings import FILTER_AAS_FILES, CLASSES_INFO, PACKVIEW_ATTRS_INFO, \
-    AASX_FILES, XML_FILES, JSON_FILES, ALL_FILES
+from aas_editor.settings import FILTER_AAS_FILES, CLASSES_INFO, PACKVIEW_ATTRS_INFO,\
+    FILE_TYPE_FILTERS
 from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, SC_SAVE_ALL, SC_OPEN, \
     PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, APPLICATION_NAME, OPEN_ICON, SAVE_ICON, SAVE_ALL_ICON, \
     OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, OPEN_DRAG_ICON, NEW_PACK_ICON, TYPE_ROLE, \
@@ -15,15 +15,15 @@ from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, SC_SAVE_ALL
 from aas_editor.utils.util_classes import ClassesInfo
 from aas_editor.widgets import TreeView
 
-EMPTY_VIEW_MSG = "Drop AAS files here"
-EMPTY_VIEW_ICON = OPEN_DRAG_ICON
-
 
 class PackTreeView(TreeView):
+    EMPTY_VIEW_MSG = "Drop AAS files here"
+    EMPTY_VIEW_ICON = OPEN_DRAG_ICON
+
     def __init__(self, parent=None):
         super(PackTreeView, self).__init__(parent,
-                                           emptyViewMsg=EMPTY_VIEW_MSG,
-                                           emptyViewIcon=EMPTY_VIEW_ICON)
+                                           emptyViewMsg=self.EMPTY_VIEW_MSG,
+                                           emptyViewIcon=self.EMPTY_VIEW_ICON)
         PackTreeView.__instance = self
         self.recentFilesSeparator = None
         self.setAcceptDrops(True)
@@ -40,13 +40,13 @@ class PackTreeView(TreeView):
                                   triggered=self.newPackWithDialog,
                                   enabled=True)
 
+        self.defNewFileTypeFilter = ""
         self.defNewFileTypeActs = []
-        for typ in ["AASX", "JSON", "XML"]:
+        for typ in FILE_TYPE_FILTERS.keys():
             act = QAction(typ, self, checkable=True,
                           statusTip=f"Choose {typ} as standard initialisation file type",
                           triggered=self.toggleDefNewFileType)
             self.defNewFileTypeActs.append(act)
-        self.filter_aas_files_for_init = f"{AASX_FILES}{JSON_FILES}{XML_FILES}{ALL_FILES}"
 
         self.openPackAct = QAction(OPEN_ICON, "&Open AAS file", self,
                                    shortcut=SC_OPEN,
@@ -113,12 +113,7 @@ class PackTreeView(TreeView):
         action = self.sender()
         if action:
             typ = action.text()
-            if typ == "AASX":
-                self.filter_aas_files_for_init = f"{AASX_FILES}{XML_FILES}{JSON_FILES}{ALL_FILES}"
-            elif typ == "XML":
-                self.filter_aas_files_for_init = f"{XML_FILES}{JSON_FILES}{AASX_FILES}{ALL_FILES}"
-            elif typ == "JSON":
-                self.filter_aas_files_for_init = f"{JSON_FILES}{XML_FILES}{AASX_FILES}{ALL_FILES}"
+            self.defNewFileTypeFilter = FILE_TYPE_FILTERS[typ]
 
     def onShellViewPushed(self):
         checked = self.shellViewAct.isChecked()
@@ -259,7 +254,8 @@ class PackTreeView(TreeView):
 
         while not saved:
             file = QFileDialog.getSaveFileName(self, 'Create new AAS File', file,
-                                               filter=self.filter_aas_files_for_init,
+                                               filter=FILTER_AAS_FILES,
+                                               initialFilter=self.defNewFileTypeFilter,
                                                options=FILE_DIALOG_OPTIONS)[0]
             if file:
                 pack = Package()
