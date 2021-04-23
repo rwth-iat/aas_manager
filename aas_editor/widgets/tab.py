@@ -1,9 +1,10 @@
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineSettings
-from PyQt5.QtCore import pyqtSignal, QModelIndex, QPersistentModelIndex, QPoint, QMimeData, QUrl
+from PyQt5.QtCore import pyqtSignal, QModelIndex, QPersistentModelIndex, QPoint, QMimeData, QUrl, \
+    QStandardPaths
 from PyQt5.QtGui import QIcon, QPixmap, QRegion, QDrag, QCursor, QMouseEvent, \
     QDragEnterEvent, QDragLeaveEvent, QDropEvent, QCloseEvent
-from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, \
-    QTabWidget, QAction, QHBoxLayout, QFrame, QTabBar, QMenu, QSplitter, QShortcut, QPushButton
+from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QTabWidget, QAction, QHBoxLayout, QFrame, \
+    QTabBar, QMenu, QSplitter, QShortcut, QPushButton, QFileDialog, QMessageBox
 
 from aas_editor.settings.app_settings import *
 from aas_editor.utils.util_type import getTypeName
@@ -345,9 +346,11 @@ class Tab(QWidget):
         QWebEngineSettings.defaultSettings().setAttribute(QWebEngineSettings.PluginsEnabled, True)
         self.mediaWidget = QWebEngineView()
         self.saveMediaAsBtn = QPushButton(f"Save media as..", self,
-                                          toolTip="Save media file as..")
+                                          toolTip="Save media file as..",
+                                          clicked=lambda: self.saveMediaAsWithDialog(QStandardPaths.writableLocation(QStandardPaths.DocumentsLocation)))
         self.saveMediaBtn = QPushButton(f"Save media on desktop", self,
-                                        toolTip="Save media file on desktop")
+                                        toolTip="Save media file on desktop",
+                                        clicked=lambda: self.saveMediaAsWithDialog(QStandardPaths.writableLocation(QStandardPaths.DesktopLocation)))
         self.mediaViewWidget = QWidget()
         mediaViewWidgetLayout = QVBoxLayout(self.mediaViewWidget)
         mediaViewWidgetLayout.setContentsMargins(0, 0, 0, 0)
@@ -473,6 +476,35 @@ class Tab(QWidget):
             self.mediaWidget.setZoomFactor(1.0)
         else:
             self.mediaViewWidget.hide()
+
+    def saveMediaAsWithDialog(self, directory="") -> bool:
+        mediaContent = self.packItem.data(MEDIA_CONTENT_ROLE)
+        file = self.packItem.data(NAME_ROLE)
+        saved = False
+        while not saved:
+            try:
+                file = QFileDialog.getSaveFileName(self, 'Save media File',
+                                                   directory+"/"+file.strip("/"),
+                                                   options=FILE_DIALOG_OPTIONS)[0]
+            except AttributeError as e:
+                QMessageBox.critical(self, "Error", f"{e}")
+            else:
+                if file:
+                    saved = self.saveMedia(mediaContent, file)
+                else:
+                    # cancel pressed
+                    return
+
+    def saveMedia(self, media = None, file: str = None) -> bool:
+        try:
+            with open(file, "wb") as f:
+                f.write(media.value)
+            return True
+        except (TypeError, ValueError) as e:
+            QMessageBox.critical(self, "Error", f"Media couldn't be saved: {file}: {e}")
+        except AttributeError as e:
+            QMessageBox.critical(self, "Error", f"No chosen media to save: {e}")
+        return False
 
     def showDetailInfoItemDoc(self, detailInfoItem: QModelIndex):
         self.descrLabel.setText(detailInfoItem.data(Qt.WhatsThisRole))
