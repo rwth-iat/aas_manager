@@ -133,7 +133,8 @@ def getTypeName(objType) -> str:
                 res = getattr(objType, nameAttr)
             if res:
                 break
-        except AttributeError:
+        except (AttributeError, TypeError) as e:
+            print(e)
             pass
     else:
         name = str(objType)
