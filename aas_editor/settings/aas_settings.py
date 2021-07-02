@@ -160,4 +160,5 @@ TYPE_SHORTS_DICT = {
     DataElement: "data",
 }
 
+# produce char icon objects from str dict
 TYPE_ICON_DICT = {typ: getCharsIcon(TYPE_SHORTS_DICT[typ]) for typ in TYPE_SHORTS_DICT}
