@@ -308,6 +308,8 @@ class TabWidget(QTabWidget):
         return False
 
     def removeTab(self, index: int):
+        if self.unclosable and self.count() == 1:
+            return
         widget = self.widget(index)
         if widget is not None:
             widget.deleteLater()
