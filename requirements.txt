@@ -1,6 +1,6 @@
-PyQt5 == 5.15.4
 pyi40aas
 qtawesome
 pytz
+PyQt5 == 5.15.4
 qpageview
 PyQtWebEngine
