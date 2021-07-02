@@ -327,6 +327,7 @@ class Tab(QWidget):
 
     def __init__(self, packItem=QModelIndex(), parent: TabWidget = None):
         super(Tab, self).__init__(parent)
+        self.tabWidget = parent
         self.icon = QIcon()
         self.initActions()
 
@@ -385,7 +386,10 @@ class Tab(QWidget):
         self.packItem = QPersistentModelIndex(QModelIndex())
         self.prevItems = []
         self.nextItems = []
-        self.openItem(packItem)
+        if packItem.isValid():
+            self.openItem(packItem)
+        else:
+            self.openEmptyItem()
 
         self._initLayout()
 
@@ -434,7 +438,17 @@ class Tab(QWidget):
             self.prevItems.append(self.packItem)
             self._openItem(QModelIndex(nextItem))
 
+    def openEmptyItem(self):
+        self._openItem(QModelIndex())
+
     def _openItem(self, packItem: QModelIndex):
+        try:
+            currTab: Tab = self.tabWidget.currentWidget()
+            state = currTab.attrsTreeView.header().saveState()
+        except AttributeError:
+            # if there is no curr widget, there is no current header state, it
+            state = None
+
         self.packItem = QPersistentModelIndex(packItem.siblingAtColumn(0))
         self.descrLabel.setText("")
 
@@ -453,6 +467,8 @@ class Tab(QWidget):
 
         self.forwardAct.setEnabled(True) if self.nextItems else self.forwardAct.setDisabled(True)
         self.backAct.setEnabled(True) if self.prevItems else self.backAct.setDisabled(True)
+        if state:
+            self.attrsTreeView.header().restoreState(state)
 
     def updateMediaWidget(self):
         if self.packItem.data(IS_MEDIA_ROLE):

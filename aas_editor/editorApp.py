@@ -266,6 +266,15 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                 act.setChecked(True)
                 break
 
+        # set previously used column widths for trees
+        packTreeViewHeaderState = settings.value('packTreeViewHeaderState')
+        if packTreeViewHeaderState:
+            self.packTreeView.header().restoreState(packTreeViewHeaderState)
+
+        tabTreeViewHeaderState = settings.value('tabTreeViewHeaderState')
+        if tabTreeViewHeaderState:
+            self.mainTabWidget.currentWidget().attrsTreeView.header().restoreState(tabTreeViewHeaderState)
+
     def writeSettings(self):
         settings = QSettings(ACPLT, APPLICATION_NAME)
         settings.setValue('theme', self.currTheme)
@@ -276,5 +285,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         settings.setValue('fontSizeFilesView', PacksTable.defaultFont.pointSize())
         settings.setValue('fontSizeDetailedView', DetailedInfoTable.defaultFont.pointSize())
         settings.setValue('defaultNewFileTypeFilter', self.packTreeView.defNewFileTypeFilter)
+        settings.setValue('packTreeViewHeaderState', self.packTreeView.header().saveState())
+        settings.setValue('tabTreeViewHeaderState', self.mainTabWidget.currentWidget().attrsTreeView.header().saveState())
 
 # ToDo logs insteads of prints
