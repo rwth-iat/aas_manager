@@ -129,6 +129,8 @@ def getTypeName(objType) -> str:
         try:
             if objType in settings.TYPE_NAMES_DICT:
                 res = settings.TYPE_NAMES_DICT[objType]
+                if isinstance(res, dict):
+                    res = res["class"]
             else:
                 res = getattr(objType, nameAttr)
             if res:

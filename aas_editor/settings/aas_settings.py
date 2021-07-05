@@ -35,15 +35,321 @@ MEDIA_TYPES = (File, Blob, aas_editor.package.StoredFile)
 
 # AnyXSDType = Base64Binary, HexBinary
 
+from aas import model
+
 TYPE_NAMES_DICT = {
-    bool: "Boolean",
-    float: "Double",
+    model.datatypes.String: "String",
+    model.datatypes.Boolean: "Boolean",
+    model.datatypes.Double: "Double",
+    model.datatypes.Decimal: "Decimal",
+    model.datatypes.Int: "Integer",
     int: "Integer",
-    str: "String",
-    datetime.datetime: "DateTime",
-    datetime.time: "Time",
-    dateutil.relativedelta.relativedelta: "Duration",
-}
+    model.datatypes.Duration: "Duration",
+    model.datatypes.DateTime: "DateTime",
+    model.datatypes.Date: "Date",
+    model.datatypes.Time: "Time",
+    model.datatypes.GYearMonth: "GYearMonth",
+    model.datatypes.GYear: "GYear",
+    model.datatypes.GMonthDay: "GMonthDay",
+    model.datatypes.GMonth: "GMonth",
+    model.datatypes.GDay: "GDay",
+    model.datatypes.Base64Binary: "Base64Binary",
+    model.datatypes.HexBinary: "HexBinary",
+    model.datatypes.Float: "Float",
+    model.datatypes.Long: "Long",
+    model.datatypes.Short: "Short",
+    model.datatypes.Byte: "Byte",
+    model.datatypes.NonPositiveInteger: "NonPositiveInteger",
+    model.datatypes.NegativeInteger: "NegativeInteger",
+    model.datatypes.NonNegativeInteger: "NonNegativeInteger",
+    model.datatypes.PositiveInteger: "PositiveInteger",
+    model.datatypes.UnsignedLong: "UnsignedLong",
+    model.datatypes.UnsignedInt: "UnsignedInt",
+    model.datatypes.UnsignedShort: "UnsignedShort",
+    model.datatypes.UnsignedByte: "UnsignedByte",
+    model.datatypes.AnyURI: "AnyURI",
+    model.datatypes.NormalizedString: "NormalizedString",
+    model.base.Identifier:
+        {"class": "Identifier",
+         "attributes":
+             {"idType": "id_type",
+              "id": "id_"
+              }
+         },
+    model.base.AdministrativeInformation:
+        {"class": "AdministrativeInformation",
+         "attributes":
+             {"version": "version",
+              "revision": "revision"
+              }
+         },
+    model.base.Qualifier:
+        {"class": "Qualifier",
+         "attributes":
+             {"semanticId": "semantic_id",
+              "type": "type_",
+              "valueType": "value_type",
+              "value": "value",
+              "valueId": "value_id"
+              }
+         },
+    model.submodel.Submodel:
+        {"class": "Submodel",
+         "attributes":
+             {"idShort": "id_short",
+              "displayName": "display_name",
+              "category": "category",
+              "description": "description",
+              "administration": "administration",
+              "identification": "identification",
+              "kind": "kind",
+              "semanticId": "semantic_id",
+              "qualifier": "qualifier",
+              "extension": "extension",
+              "submodelElement": "submodel_element"
+              }
+         },
+    model.submodel.SubmodelElement:
+        {"class": "SubmodelElement",
+         "attributes":
+             {"idShort": "id_short",
+              "displayName": "display_name",
+              "category": "category",
+              "description": "description",
+              "kind": "kind",
+              "semanticId": "semantic_id",
+              "qualifier": "qualifier",
+              "extension": "extension"
+              }
+         },
+    model.submodel.AnnotatedRelationshipElement:
+        {"class": "AnnotatedRelationshipElement",
+         "attributes":
+             {"idShort": "id_short",
+              "displayName": "display_name",
+              "category": "category",
+              "description": "description",
+              "kind": "kind",
+              "semanticId": "semantic_id",
+              "qualifier": "qualifier",
+              "extension": "extension",
+              "first": "first",
+              "second": "second",
+              "annotation": "annotation"
+              }
+         },
+    model.submodel.BasicEvent:
+        {"class": "BasicEvent",
+         "attributes":
+             {"idShort": "id_short",
+              "displayName": "display_name",
+              "category": "category",
+              "description": "description",
+              "kind": "kind",
+              "semanticId": "semantic_id",
+              "qualifier": "qualifier",
+              "extension": "extension",
+              "observed": "observed"
+              }
+         },
+    model.submodel.Capability:
+        {"class": "Capability",
+         "attributes":
+             {"idShort": "id_short",
+              "displayName": "display_name",
+              "category": "category",
+              "description": "description",
+              "kind": "kind",
+              "semanticId": "semantic_id",
+              "qualifier": "qualifier",
+              "extension": "extension",
+              }
+         },
+    model.submodel.Blob:
+        {"class": "Blob",
+         "attributes":
+             {"idShort": "id_short",
+              "displayName": "display_name",
+              "category": "category",
+              "description": "description",
+              "kind": "kind",
+              "semanticId": "semantic_id",
+              "qualifier": "qualifier",
+              "extension": "extension",
+              "value": "value",
+              "mimeType": "mime_type"
+              }
+         },
+    model.submodel.Entity:
+        {"class": "Entity",
+         "attributes":
+             {"idShort": "id_short",
+              "displayName": "display_name",
+              "category": "category",
+              "description": "description",
+              "kind": "kind",
+              "semanticId": "semantic_id",
+              "qualifier": "qualifier",
+              "extension": "extension",
+              "statement": "statement",
+              "entityType": "entity_type",
+              "globalAssetId": "global_asset_id",
+              "specificAssetId": "specific_asset_id"
+              }
+         },
+
+    model.submodel.File:
+        {"class": "File",
+         "attributes":
+             {"idShort": "id_short",
+              "displayName": "display_name",
+              "category": "category",
+              "description": "description",
+              "kind": "kind",
+              "semanticId": "semantic_id",
+              "qualifier": "qualifier",
+              "extension": "extension",
+              "value": "value",
+              "mimeType": "mime_type"
+              }
+         },
+    model.submodel.MultiLanguageProperty:
+        {"class": "MultiLanguageProperty",
+         "attributes":
+             {"idShort": "id_short",
+              "displayName": "display_name",
+              "category": "category",
+              "description": "description",
+              "kind": "kind",
+              "semanticId": "semantic_id",
+              "qualifier": "qualifier",
+              "extension": "extension",
+              "value": "value",
+              "valueId": "value_id"
+              }
+         },
+    model.submodel.Operation:
+        {"class": "Operation",
+         "attributes":
+             {"idShort": "id_short",
+              "displayName": "display_name",
+              "category": "category",
+              "description": "description",
+              "kind": "kind",
+              "semanticId": "semantic_id",
+              "qualifier": "qualifier",
+              "extension": "extension",
+              "inputVariable": "input_variable",
+              "outputVariable": "output_variable",
+              "inoutputVariable": "in_output_variable"
+              }
+         },
+    model.submodel.OperationVariable:
+        {"class": "OperationVariable",
+         "attributes":
+             {"idShort": "id_short",
+              "displayName": "display_name",
+              "category": "category",
+              "description": "description",
+              "kind": "kind",
+              "semanticId": "semantic_id",
+              "qualifier": "qualifier",
+              "extension": "extension",
+              "value": "value"
+              }
+         },
+    model.submodel.Property:
+        {"class": "Property",
+         "attributes":
+             {"idShort": "id_short",
+              "displayName": "display_name",
+              "category": "category",
+              "description": "description",
+              "kind": "kind",
+              "semanticId": "semantic_id",
+              "qualifier": "qualifier",
+              "extension": "extension",
+              "valueType": "value_type",
+              "value": "value",
+              "valueId": "value_id"
+              }
+         },
+    model.submodel.Range:
+        {"class": "Range",
+         "attributes":
+             {"idShort": "id_short",
+              "displayName": "display_name",
+              "category": "category",
+              "description": "description",
+              "kind": "kind",
+              "semanticId": "semantic_id",
+              "qualifier": "qualifier",
+              "extension": "extension",
+              "valueType": "value_type",
+              "min": "min",
+              "max": "max",
+              }
+         },
+    model.submodel.ReferenceElement:
+        {"class": "ReferenceElement",
+         "attributes":
+             {"idShort": "id_short",
+              "displayName": "display_name",
+              "category": "category",
+              "description": "description",
+              "kind": "kind",
+              "semanticId": "semantic_id",
+              "qualifier": "qualifier",
+              "extension": "extension",
+              "value": "value"
+              }
+         },
+    model.submodel.RelationshipElement:
+        {"class": "RelationshipElement",
+         "attributes":
+             {"idShort": "id_short",
+              "displayName": "display_name",
+              "category": "category",
+              "description": "description",
+              "kind": "kind",
+              "semanticId": "semantic_id",
+              "qualifier": "qualifier",
+              "extension": "extension",
+              "first": "first",
+              "second": "second"
+              }
+         },
+    model.submodel.SubmodelElementCollection:
+        {"class": "SubmodelElementCollection",
+         "attributes":
+             {"idShort": "id_short",
+              "displayName": "display_name",
+              "category": "category",
+              "description": "description",
+              "kind": "kind",
+              "semanticId": "semantic_id",
+              "qualifier": "qualifier",
+              "extension": "extension",
+              "value": "value",
+              "ordered": "ordered",
+              "allowDuplicates": "allow_duplicates"
+              }
+         },
+    model.base.Reference:
+        {"class": "Reference",
+         "attributes":
+             {"key": "key"
+              }
+         },
+    model.base.Key:
+        {"class": "Key",
+         "attributes":
+             {"type": "type_",
+              "value": "value",
+              "idType": "id_type"
+              }
+         }
+    }
 
 
 ATTR_ORDER = (
