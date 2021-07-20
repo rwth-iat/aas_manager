@@ -14,8 +14,8 @@ https://www.plattform-i40.de/PI40/Redaktion/EN/Downloads/Publikation/Details_of_
 ## Installation
 You can find binaries of the editor for Windows or Linux systems in [the releases](https://github.com/zrgt/pygui40aas/releases). 
 
-##License
+## License
 GPLv3. See [LICENSE](LICENSE).
 
-##Contact
+## Contact
 If you have any questions, please contact [Igor Garmaev](https://github.com/zrgt): [i.garmaev@plt.rwth-aachen.de](mailto:i.garmaev@plt.rwth-aachen.de)
