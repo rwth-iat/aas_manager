@@ -181,13 +181,13 @@ class GroupBox(QGroupBox):
             self.setStyleSheet(
                 "GroupBox::indicator:checked"
                 "{"
-                "    border-image: url(aas_editor/models/icons/close-hover.svg);"
+                "    border-image: url(aas_editor/icons/close-hover.svg);"
                 "}"
                 "GroupBox::indicator:checked:hover,"
                 "GroupBox::indicator:checked:focus,"
                 "GroupBox::indicator:checked:pressed"
                 "{"
-                "    border-image: url(aas_editor/models/icons/close-pressed.svg);"
+                "    border-image: url(aas_editor/icons/close-pressed.svg);"
                 "}"
             )
 

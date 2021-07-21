@@ -47,7 +47,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.initToolbars()
         self.buildHandlers()
         self.readSettings()
-        self.setWindowIcon(QIcon('aas_editor/logo.svg'))
+        self.setWindowIcon(QIcon('aas_editor/icons/logo.svg'))
 
     # noinspection PyArgumentList
     def initActions(self):
