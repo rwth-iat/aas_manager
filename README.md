@@ -1,7 +1,7 @@
 <!-- PROJECT LOGO -->
 <br />
 <p align="center">
-  <a href="https://github.com/github_username/repo_name">
+  <a href="https://github.com/zrgt/pygui40aas">
     <img src="aas_editor/icons/full_logo.svg" alt="Logo" width="80" height="80">
   </a>
   <p align="center">
