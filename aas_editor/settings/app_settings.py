@@ -7,17 +7,8 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-#
-#  This program is made available under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-#  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-#
-#  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
 import qtawesome
-import os
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QKeySequence, QColor, QFont
 from PyQt5.QtWidgets import QFileDialog
@@ -75,6 +66,7 @@ TYPE_COLUMN = 2
 TYPE_HINT_COLUMN = 3
 
 # Themes
+import os
 files = os.listdir("themes")
 THEMES = {"standard": ""}
 DEFAULT_THEME = "standard"
