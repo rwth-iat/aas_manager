@@ -1,5 +1,25 @@
-# AAS Manager
-AAS Manager is a free, open source, cross-platform visual viewer/editor based on [PyQt](https://www.riverbankcomputing.com/software/pyqt/) Framework and [PyI40AAS](https://git.rwth-aachen.de/acplt/pyi40aas) SDK.
+<!-- PROJECT LOGO -->
+<br />
+<p align="center">
+  <a href="https://github.com/github_username/repo_name">
+    <img src="aas_editor/icons/logo.svg" alt="Logo" width="80" height="80">
+  </a>
+
+  <h1 align="center">AAS Manager</h1>
+
+  <p align="center">
+    AAS Manager is a free, open source, cross-platform visual viewer/editor based on <a href="https://www.riverbankcomputing.com/software/pyqt/"><strong>PyQt</strong></a> Framework and <a href="https://git.rwth-aachen.de/acplt/pyi40aas"><strong>PyI40AAS</strong></a> SDK.
+    <br />
+    <br />
+    <a href="https://github.com/github_username/repo_name">Download</a>
+    ·
+    <a href="https://github.com/github_username/repo_name/issues">Report Bug</a>
+    ·
+    <a href="https://github.com/github_username/repo_name/issues">Request Feature</a>
+  </p>
+</p>
+
+
 
 ![screenshot](
 https://github.com/zrgt/pygui40aas/raw/master/viewer.png
@@ -12,7 +32,23 @@ https://www.plattform-i40.de/PI40/Redaktion/EN/Downloads/Publikation/Details_of_
 ) by Plattform Industrie 4.0.
 
 ## Installation
-You can find binaries of the editor for Windows or Linux systems in [the releases](https://github.com/zrgt/pygui40aas/releases). 
+###User version
+You can find binaries of the editor for Windows or Linux systems in [the releases](https://github.com/zrgt/pygui40aas/releases).
+
+###Development version
+1. Clone the repo
+   ```sh
+   git clone https://github.com/zrgt/pygui40aas.git
+   ```
+2. Install requirements
+   ```sh
+   pip install -r requirements.txt
+   ```
+3. Freeze an application into stand-alone executable
+   ```sh
+   pyinstaller aas_manager.spec
+   ```
+4. Run the executable in ``dist`` folder
 
 ## License
 GPLv3. See [LICENSE](LICENSE).
