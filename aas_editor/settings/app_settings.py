@@ -17,6 +17,7 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
 import qtawesome
+import os
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QKeySequence, QColor, QFont
 from PyQt5.QtWidgets import QFileDialog
@@ -34,6 +35,7 @@ DEFAULT_MAINWINDOW_SIZE = QSize(1194, 624)
 MAX_FONT_SIZE = 60
 MIN_FONT_SIZE = 6
 DEFAULT_FONT = QFont()
+DEFAULT_FONT.setWeight(20)
 DEFAULT_FONT.setPointSize(12)
 
 MAX_UNDOS = 10
@@ -73,10 +75,13 @@ TYPE_COLUMN = 2
 TYPE_HINT_COLUMN = 3
 
 # Themes
-DEFAULT_THEME = "dark"
-DARK_THEME_PATH = "themes/dark.qss"
-LIGHT_THEME_PATH = "themes/light.qss"
-THEMES = {"dark": DARK_THEME_PATH, "light": LIGHT_THEME_PATH, "standard": ""}
+files = os.listdir("themes")
+THEMES = {"standard": ""}
+DEFAULT_THEME = "standard"
+for file in files:
+    if file.endswith(".qss"):
+        themename = file.rstrip(".qss")
+        THEMES[themename] = f"themes/{file}"
 
 # Colors
 LIGHT_BLUE = QColor(132, 185, 255)
