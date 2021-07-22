@@ -47,13 +47,18 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.initToolbars()
         self.buildHandlers()
         self.readSettings()
-        self.setWindowIcon(QIcon('aas_editor/icons/logo.svg'))
+        self.setWindowIcon(APP_ICON)
 
     # noinspection PyArgumentList
     def initActions(self):
         self.exitAct = QAction(EXIT_ICON, "E&xit", self,
                                statusTip="Exit the application",
                                triggered=self.close)
+
+        self.aboutDialogAct = QAction("About", self,
+                                      statusTip=f"Show information about {APPLICATION_NAME}",
+                                      triggered=lambda: QMessageBox.information(self, "About",
+                                      "AAS Manager\nCopyright (C) 2021  Igor Garmaev\n garmaev@gmx.net"))
 
         self.switch2rightTreeSC = QShortcut(SC_FOCUS2RIGTH_TREE, self,
                                             activated=self.setFocus2rightTree)
@@ -123,9 +128,13 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menuNavigate.addAction(self.packTreeView.openInBackgroundAct)
         self.menuNavigate.addAction(self.packTreeView.openInNewWindowAct)
 
+        self.menuHelp = QMenu("&Help", self.menubar)
+        self.menuHelp.addAction(self.aboutDialogAct)
+
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
         self.menubar.addAction(self.menuNavigate.menuAction())
+        self.menubar.addAction(self.menuHelp.menuAction())
 
     def initToolbars(self):
         self.toolBar.addAction(self.packTreeView.saveAllAct)
@@ -154,7 +163,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.packToolBar.addSeparator()
         self.packToolBar.addAction(self.packTreeView.shellViewAct)
-
 
     @staticmethod
     def iterItems(root):
