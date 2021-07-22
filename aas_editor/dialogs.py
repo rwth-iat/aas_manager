@@ -15,13 +15,13 @@ from inspect import isabstract
 from typing import Union, List, Dict, Optional
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPaintEvent
+from PyQt5.QtGui import QPaintEvent, QPixmap
 from PyQt5.QtWidgets import QLabel, QPushButton, QDialog, QDialogButtonBox, \
-    QGroupBox, QWidget, QVBoxLayout, QHBoxLayout
+    QGroupBox, QWidget, QVBoxLayout, QHBoxLayout, QMessageBox
 
 from aas_editor.editWidgets import StandardInputWidget, SpecialInputWidget
-from aas_editor.settings import DEFAULTS, DEFAULT_COMPLETIONS, ATTRIBUTE_COLUMN, OBJECT_ROLE,\
-    DEFAULT_ATTRS_TO_HIDE
+from aas_editor.settings import DEFAULTS, DEFAULT_COMPLETIONS, ATTRIBUTE_COLUMN, OBJECT_ROLE, \
+    DEFAULT_ATTRS_TO_HIDE, APPLICATION_NAME, CONTRIBUTORS, CONTACT, COPYRIGHT_YEAR
 from aas_editor.delegates import ColorDelegate
 from aas_editor.utils.util import inheritors, getReqParams4init, getParams4init, getDefaultVal, \
     getAttrDoc
@@ -30,6 +30,19 @@ from aas_editor.utils.util_type import getTypeName, issubtype, isoftype, isSimpl
 from aas_editor.utils.util_classes import DictItem
 from aas_editor.widgets import *
 from aas_editor import widgets
+
+
+def aboutDialog(parent):
+    dialog = QMessageBox(parent)
+    dialog.setWindowTitle("About")
+    dialog.setText(
+        f"{APPLICATION_NAME}\n"
+        f"Contributors: {CONTRIBUTORS}\n"
+        f"Contact: {CONTACT}\n"
+        f"Copyright (C) {COPYRIGHT_YEAR}"
+    )
+    dialog.setIconPixmap(QPixmap("aas_editor/icons/logo.svg"))
+    dialog.exec()
 
 
 class AddDialog(QDialog):

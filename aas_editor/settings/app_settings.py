@@ -15,6 +15,9 @@ from PyQt5.QtWidgets import QFileDialog
 
 AAS_CREATOR = "PyI40AAS Testing Framework"
 APPLICATION_NAME = "AAS Manager"
+COPYRIGHT_YEAR = 2021
+CONTRIBUTORS = "Igor Garmaev"
+CONTACT = "garmaev@gmx.net"
 ACPLT = "ACPLT"
 
 NOT_GIVEN = "NotGivenValueAASEditor"

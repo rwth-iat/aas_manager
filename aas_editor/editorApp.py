@@ -12,6 +12,7 @@ from PyQt5.QtCore import QModelIndex, QSettings
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
+from aas_editor.dialogs import aboutDialog
 from aas_editor.settings import FILE_TYPE_FILTERS
 from aas_editor.settings.app_settings import *
 from aas_editor.widgets import SearchBar, AddressLine
@@ -57,8 +58,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.aboutDialogAct = QAction("About", self,
                                       statusTip=f"Show information about {APPLICATION_NAME}",
-                                      triggered=lambda: QMessageBox.information(self, "About",
-                                      "AAS Manager\nCopyright (C) 2021  Igor Garmaev\n garmaev@gmx.net"))
+                                      triggered=lambda: aboutDialog(self))
 
         self.switch2rightTreeSC = QShortcut(SC_FOCUS2RIGTH_TREE, self,
                                             activated=self.setFocus2rightTree)
@@ -270,7 +270,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         DetailedInfoTable.defaultFont.setPointSize(int(fontSizeDetailedView))
 
         # try to open previously opened files
-        openedAasFiles = settings.value('openedAasFiles', set())
+        openedAasFiles = settings.value(AppSettings.OPENED_AAS_FILES.name, AppSettings.OPENED_AAS_FILES.default)
         for file in openedAasFiles:
             try:
                 self.packTreeView.openPack(file)
