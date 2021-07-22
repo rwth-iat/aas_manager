@@ -248,26 +248,24 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         settings = QSettings(ACPLT, APPLICATION_NAME)
 
         # set previously used theme
-        theme = settings.value('theme', DEFAULT_THEME)
+        theme = settings.value(AppSettings.THEME.name, AppSettings.THEME.default)
         self.toggleTheme(theme)
 
         # set previously used mainwindow size
-        size = settings.value('size', DEFAULT_MAINWINDOW_SIZE)
+        size = settings.value(AppSettings.SIZE.name, AppSettings.SIZE.default)
         self.resize(size)
 
         # set previously used sizes of right ans left layouts
-        splitterLeftSize = settings.value('leftZoneSize', QSize(300, 624))
-        splitterRightSize = settings.value('rightZoneSize', QSize(300, 624))
+        splitterLeftSize = settings.value(AppSettings.LEFT_ZONE_SIZE.name, AppSettings.LEFT_ZONE_SIZE.default)
+        splitterRightSize = settings.value(AppSettings.RIGHT_ZONE_SIZE.name, AppSettings.RIGHT_ZONE_SIZE.default)
         self.leftLayoutWidget.resize(splitterLeftSize)
         self.rightLayoutWidget.resize(splitterRightSize)
 
         # set previously used fontsizes in trees
-        fontSizeFilesView = settings.value('fontSizeFilesView',
-                                           PacksTable.defaultFont.pointSize())
-        fontSizeDetailedView = settings.value('fontSizeDetailedView',
-                                              DetailedInfoTable.defaultFont.pointSize())
-        PacksTable.defaultFont.setPointSize(int(fontSizeFilesView))
-        DetailedInfoTable.defaultFont.setPointSize(int(fontSizeDetailedView))
+        fontSizeFilesView = settings.value(AppSettings.FONTSIZE_FILES_VIEW.name, AppSettings.FONTSIZE_FILES_VIEW.default)
+        fontSizeDetailedView = settings.value(AppSettings.FONTSIZE_DETAILED_VIEW.name, AppSettings.FONTSIZE_DETAILED_VIEW.default)
+        PacksTable.currFont.setPointSize(int(fontSizeFilesView))
+        DetailedInfoTable.currFont.setPointSize(int(fontSizeDetailedView))
 
         # try to open previously opened files
         openedAasFiles = settings.value(AppSettings.OPENED_AAS_FILES.name, AppSettings.OPENED_AAS_FILES.default)
@@ -279,32 +277,33 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             self.packTreeModel.setData(QModelIndex(), [], UNDO_ROLE)
 
         # set previously used default new file type
-        self.packTreeView.defNewFileTypeFilter = settings.value('defaultNewFileTypeFilter', '')
+        self.packTreeView.defNewFileTypeFilter = settings.value(AppSettings.DEFAULT_NEW_FILETYPE_FILTER.name,
+                                                                AppSettings.DEFAULT_NEW_FILETYPE_FILTER.default)
         for act in self.packTreeView.defNewFileTypeActs:
             if FILE_TYPE_FILTERS.get(act.text(), 'no filter') == self.packTreeView.defNewFileTypeFilter:
                 act.setChecked(True)
                 break
 
         # set previously used column widths for trees
-        packTreeViewHeaderState = settings.value('packTreeViewHeaderState')
+        packTreeViewHeaderState = settings.value(AppSettings.PACKTREEVIEW_HEADER_STATE.name)
         if packTreeViewHeaderState:
             self.packTreeView.header().restoreState(packTreeViewHeaderState)
 
-        tabTreeViewHeaderState = settings.value('tabTreeViewHeaderState')
+        tabTreeViewHeaderState = settings.value(AppSettings.TABTREEVIEW_HEADER_STATE.name)
         if tabTreeViewHeaderState:
             self.mainTabWidget.currentWidget().attrsTreeView.header().restoreState(tabTreeViewHeaderState)
 
     def writeSettings(self):
         settings = QSettings(ACPLT, APPLICATION_NAME)
-        settings.setValue('theme', self.currTheme)
-        settings.setValue('size', self.size())
-        settings.setValue('leftZoneSize', self.leftLayoutWidget.size())
-        settings.setValue('rightZoneSize', self.rightLayoutWidget.size())
-        settings.setValue('openedAasFiles', self.packTreeModel.openedFiles())
-        settings.setValue('fontSizeFilesView', PacksTable.defaultFont.pointSize())
-        settings.setValue('fontSizeDetailedView', DetailedInfoTable.defaultFont.pointSize())
-        settings.setValue('defaultNewFileTypeFilter', self.packTreeView.defNewFileTypeFilter)
-        settings.setValue('packTreeViewHeaderState', self.packTreeView.header().saveState())
-        settings.setValue('tabTreeViewHeaderState', self.mainTabWidget.currentWidget().attrsTreeView.header().saveState())
+        settings.setValue(AppSettings.THEME.name, self.currTheme)
+        settings.setValue(AppSettings.SIZE.name, self.size())
+        settings.setValue(AppSettings.LEFT_ZONE_SIZE.name, self.leftLayoutWidget.size())
+        settings.setValue(AppSettings.RIGHT_ZONE_SIZE.name, self.rightLayoutWidget.size())
+        settings.setValue(AppSettings.OPENED_AAS_FILES.name, self.packTreeModel.openedFiles())
+        settings.setValue(AppSettings.FONTSIZE_FILES_VIEW.name, PacksTable.currFont.pointSize())
+        settings.setValue(AppSettings.FONTSIZE_DETAILED_VIEW.name, DetailedInfoTable.currFont.pointSize())
+        settings.setValue(AppSettings.DEFAULT_NEW_FILETYPE_FILTER.name, self.packTreeView.defNewFileTypeFilter)
+        settings.setValue(AppSettings.PACKTREEVIEW_HEADER_STATE.name, self.packTreeView.header().saveState())
+        settings.setValue(AppSettings.TABTREEVIEW_HEADER_STATE.name, self.mainTabWidget.currentWidget().attrsTreeView.header().saveState())
 
 # ToDo logs insteads of prints

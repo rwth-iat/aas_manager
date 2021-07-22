@@ -7,6 +7,8 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
+import typing
+from dataclasses import dataclass
 
 import qtawesome
 from PyQt5.QtCore import Qt, QSize
@@ -199,3 +201,22 @@ SC_SEARCH = QKeySequence(Qt.CTRL + Qt.Key_F)
 
 SC_FOCUS2RIGTH_TREE = QKeySequence(Qt.CTRL + Qt.RightArrow)
 SC_FOCUS2LEFT_TREE = QKeySequence(Qt.CTRL + Qt.LeftArrow)
+
+
+@dataclass
+class Setting:
+    name: str
+    default: typing.Any
+
+
+class AppSettings:
+    THEME = Setting('theme', DEFAULT_THEME)
+    SIZE = Setting('size', DEFAULT_MAINWINDOW_SIZE)
+    LEFT_ZONE_SIZE = Setting('leftZoneSize', QSize(300, 624))
+    RIGHT_ZONE_SIZE = Setting('rightZoneSize', QSize(300, 624))
+    OPENED_AAS_FILES = Setting('openedAasFiles', set())
+    FONTSIZE_FILES_VIEW = Setting('fontSizeFilesView', DEFAULT_FONT)
+    FONTSIZE_DETAILED_VIEW = Setting('fontSizeDetailedView', DEFAULT_FONT)
+    DEFAULT_NEW_FILETYPE_FILTER = Setting('defaultNewFileTypeFilter', '')
+    PACKTREEVIEW_HEADER_STATE = Setting('packTreeViewHeaderState', None)
+    TABTREEVIEW_HEADER_STATE = Setting('tabTreeViewHeaderState', None)
