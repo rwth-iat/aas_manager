@@ -10,11 +10,11 @@
 
 import qtawesome
 from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QKeySequence, QColor, QFont
+from PyQt5.QtGui import QKeySequence, QColor, QFont, QIcon
 from PyQt5.QtWidgets import QFileDialog
 
 AAS_CREATOR = "PyI40AAS Testing Framework"
-APPLICATION_NAME = "AAS Editor"
+APPLICATION_NAME = "AAS Manager"
 ACPLT = "ACPLT"
 
 NOT_GIVEN = "NotGivenValueAASEditor"
@@ -26,7 +26,7 @@ DEFAULT_MAINWINDOW_SIZE = QSize(1194, 624)
 MAX_FONT_SIZE = 60
 MIN_FONT_SIZE = 6
 DEFAULT_FONT = QFont()
-DEFAULT_FONT.setWeight(20)
+DEFAULT_FONT.setWeight(40)
 DEFAULT_FONT.setPointSize(12)
 
 MAX_UNDOS = 10
@@ -93,6 +93,8 @@ ICON_DEFAULTS = {'scale_factor': 1.2,
                  'color_disabled': QColor(LIGHT_BLUE.red(), LIGHT_BLUE.green(), LIGHT_BLUE.blue(),
                                           50), }
 qta.set_defaults(**ICON_DEFAULTS)
+
+APP_ICON=QIcon('aas_editor/icons/logo.svg')
 
 EXIT_ICON = qta.icon("mdi.exit-to-app")
 NEW_PACK_ICON = qta.icon("mdi.folder-plus")
