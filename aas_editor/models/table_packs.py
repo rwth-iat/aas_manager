@@ -27,7 +27,7 @@ from aas_editor.settings.app_settings import PACKAGE_ROLE, DEFAULT_FONT, OPENED_
 
 
 class PacksTable(StandardTable):
-    defaultFont = QFont(DEFAULT_FONT)
+    currFont = QFont(DEFAULT_FONT)
 
     def openedPacks(self):
         packs = set()

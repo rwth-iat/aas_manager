@@ -39,7 +39,7 @@ SetDataItem = namedtuple("SetDataItem", ("index", "value", "role"))
 
 
 class StandardTable(QAbstractItemModel):
-    defaultFont = QFont(DEFAULT_FONT)
+    currFont = QFont(DEFAULT_FONT)
 
     def __init__(self, columns=("Item",), rootItem: StandardItem = None):
         super(StandardTable, self).__init__()
@@ -240,7 +240,7 @@ class StandardTable(QAbstractItemModel):
         if role == Qt.FontRole:
             return self._getFont(index)
         if role == Qt.SizeHintRole:
-            fontSize = self.defaultFont.pointSize()
+            fontSize = self.currFont.pointSize()
             return QSize(-1, fontSize*1.7)
         if role == Qt.TextAlignmentRole:
             return Qt.AlignLeft | Qt.AlignBottom
@@ -272,7 +272,7 @@ class StandardTable(QAbstractItemModel):
         return QVariant()
 
     def _getFont(self, index: QModelIndex) -> QFont:
-        font = QFont(self.defaultFont)
+        font = QFont(self.currFont)
         if index.column() == VALUE_COLUMN and index.data(IS_LINK_ROLE):
             font.setUnderline(True)
         return font
@@ -290,7 +290,7 @@ class StandardTable(QAbstractItemModel):
         elif role == Qt.FontRole:
             if isinstance(value, QFont):
                 font = QFont(value)
-                self.defaultFont.setPointSize(font.pointSize())
+                self.currFont.setPointSize(font.pointSize())
                 self.dataChanged.emit(self.index(0), self.index(self.rowCount()))
                 return True
         elif role == ADD_ITEM_ROLE:

@@ -27,7 +27,7 @@ from aas_editor.settings.app_settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROL
 
 
 class DetailedInfoTable(StandardTable):
-    defaultFont = QFont(DEFAULT_FONT)
+    currFont = QFont(DEFAULT_FONT)
 
     def __init__(self, packItem: QModelIndex):
         self.packItem = QPersistentModelIndex(packItem)
