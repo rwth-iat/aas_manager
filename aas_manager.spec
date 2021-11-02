@@ -8,6 +8,7 @@ a = Analysis(['main.py'],
              binaries=[],
              datas=[
                 ('LICENSE', '.'),
+                ('settings.ini', '.'),
                 ('aas_editor/icons', 'aas_editor/icons'),
                 ('themes/dark', 'themes/dark'),
                 ('themes/dark.qss', 'themes'),
