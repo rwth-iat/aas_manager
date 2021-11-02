@@ -32,17 +32,25 @@ from aas_editor.widgets import *
 from aas_editor import widgets
 
 
-def aboutDialog(parent):
-    dialog = QMessageBox(parent)
-    dialog.setWindowTitle("About")
-    dialog.setText(
-        f"{APPLICATION_NAME}\n"
-        f"Contributors: {CONTRIBUTORS}\n"
-        f"Contact: {CONTACT}\n"
-        f"Copyright (C) {COPYRIGHT_YEAR}"
-    )
-    dialog.setIconPixmap(QPixmap("aas_editor/icons/logo.svg"))
-    dialog.exec()
+class AboutDialog(QMessageBox):
+    def __init__(self, parent=None):  # <1>
+        super().__init__(parent)
+
+        self.setWindowTitle("About")
+
+        QBtn = QDialogButtonBox.Apply | QDialogButtonBox.Cancel
+
+        self.buttonBox = QDialogButtonBox(QBtn)
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
+
+        self.setText(
+            f"{APPLICATION_NAME}\n"
+            f"Contributors: {CONTRIBUTORS}\n"
+            f"Contact: {CONTACT}\n"
+            f"Copyright (C) {COPYRIGHT_YEAR}"
+        )
+        self.setIconPixmap(QPixmap("aas_editor/icons/logo.svg"))
 
 
 class AddDialog(QDialog):

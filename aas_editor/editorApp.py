@@ -12,10 +12,11 @@ from PyQt5.QtCore import QModelIndex, QSettings
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from aas_editor.dialogs import aboutDialog
+from aas_editor.dialogs import AboutDialog
 from aas_editor.settings import FILE_TYPE_FILTERS
 from aas_editor.settings.app_settings import *
 from aas_editor.settings.icon_settings import APP_ICON, EXIT_ICON, SETTINGS_ICON
+from aas_editor.settings_dialog import SettingsDialog
 from aas_editor.widgets import SearchBar, AddressLine
 from aas_editor import design
 from aas_editor.models import DetailedInfoTable, PacksTable
@@ -59,7 +60,11 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.aboutDialogAct = QAction("About", self,
                                       statusTip=f"Show information about {APPLICATION_NAME}",
-                                      triggered=lambda: aboutDialog(self))
+                                      triggered=AboutDialog(self).exec)
+
+        self.settingsDialogAct = QAction(SETTINGS_ICON, "Settings", self,
+                                         statusTip=f"Edit application settings",
+                                         triggered=SettingsDialog(self).exec)
 
         self.switch2rightTreeSC = QShortcut(SC_FOCUS2RIGTH_TREE, self,
                                             activated=self.setFocus2rightTree)
@@ -92,6 +97,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menuFile.addAction(self.packTreeView.saveAsAct)
         self.menuFile.addAction(self.packTreeView.saveAllAct)
         self.menuFile.addSeparator()
+        self.menuFile.addAction(self.settingsDialogAct)
         self.menuStandardFile = QMenu("Set default new File type", self.menuFile)
         self.menuFile.addMenu(self.menuStandardFile)
         self.defNewFileTypeActGroup = QActionGroup(self)
