@@ -35,15 +35,7 @@ from aas_editor import widgets
 class AboutDialog(QMessageBox):
     def __init__(self, parent=None):  # <1>
         super().__init__(parent)
-
         self.setWindowTitle("About")
-
-        QBtn = QDialogButtonBox.Apply | QDialogButtonBox.Cancel
-
-        self.buttonBox = QDialogButtonBox(QBtn)
-        self.buttonBox.accepted.connect(self.accept)
-        self.buttonBox.rejected.connect(self.reject)
-
         self.setText(
             f"{APPLICATION_NAME}\n"
             f"Contributors: {CONTRIBUTORS}\n"
