@@ -23,8 +23,9 @@ from PyQt5.QtGui import QBrush
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QToolButton, QAction, QTreeView
 
 from aas_editor.models.search_proxy_model import SearchProxyModel
-from aas_editor.settings.app_settings import NAME_ROLE, HIGHLIGHT_YELLOW
-from aas_editor.settings.icon_settings import NEXT_ICON, PREV_ICON, FILTER_ICON, REGEX_ICON, CASE_ICON, CLOSE_ICON
+from aas_editor.settings.app_settings import NAME_ROLE
+from aas_editor.settings.colors import HIGHLIGHT_YELLOW
+from aas_editor.settings.icons import NEXT_ICON, PREV_ICON, FILTER_ICON, REGEX_ICON, CASE_ICON, CLOSE_ICON
 from aas_editor.utils.util import absRow
 from aas_editor.widgets import ToolBar
 from aas_editor.widgets.lineEdit import LineEdit

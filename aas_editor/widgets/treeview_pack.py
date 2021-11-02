@@ -29,8 +29,8 @@ from aas_editor.settings import FILTER_AAS_FILES, CLASSES_INFO, PACKVIEW_ATTRS_I
 from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, SC_SAVE_ALL, SC_OPEN, \
     PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, APPLICATION_NAME, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, \
     TYPE_ROLE, \
-    NOT_GIVEN, CLEAR_ROW_ROLE, FILE_DIALOG_OPTIONS
-from aas_editor.settings.icon_settings import NEW_PACK_ICON, OPEN_ICON, OPEN_DRAG_ICON, SAVE_ICON, SAVE_ALL_ICON, \
+    NOT_GIVEN, CLEAR_ROW_ROLE, FILE_DIALOG_OPTIONS, SETTINGS, AppSettings
+from aas_editor.settings.icons import NEW_PACK_ICON, OPEN_ICON, OPEN_DRAG_ICON, SAVE_ICON, SAVE_ALL_ICON, \
     VIEW_ICON
 from aas_editor.utils.util_classes import ClassesInfo
 from aas_editor.widgets import TreeView
@@ -49,6 +49,15 @@ class PackTreeView(TreeView):
         self.setAcceptDrops(True)
         self.setExpandsOnDoubleClick(False)
 
+    @property
+    def defNewFileTypeFilter(self):
+        return SETTINGS.value(AppSettings.DEFAULT_NEW_FILETYPE_FILTER.name,
+                              AppSettings.DEFAULT_NEW_FILETYPE_FILTER.default)
+
+    @defNewFileTypeFilter.setter
+    def defNewFileTypeFilter(self, value):
+        SETTINGS.setValue(AppSettings.DEFAULT_NEW_FILETYPE_FILTER.name, value)
+
     # noinspection PyArgumentList
     def initActions(self):
         super(PackTreeView, self).initActions()
@@ -59,14 +68,6 @@ class PackTreeView(TreeView):
                                   statusTip="Create new AAS file",
                                   triggered=self.newPackWithDialog,
                                   enabled=True)
-
-        self.defNewFileTypeFilter = ""
-        self.defNewFileTypeActs = []
-        for typ in FILE_TYPE_FILTERS.keys():
-            act = QAction(typ, self, checkable=True,
-                          statusTip=f"Choose {typ} as standard initialisation file type",
-                          triggered=self.toggleDefNewFileType)
-            self.defNewFileTypeActs.append(act)
 
         self.openPackAct = QAction(OPEN_ICON, "&Open AAS file", self,
                                    shortcut=SC_OPEN,

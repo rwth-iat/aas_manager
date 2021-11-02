@@ -29,8 +29,9 @@ from aas_editor.package import Package
 from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
     VALUE_COLUMN, NOT_GIVEN, \
     PACKAGE_ROLE, PACK_ITEM_ROLE, DEFAULT_FONT, ADD_ITEM_ROLE, CLEAR_ROW_ROLE, \
-    DATA_CHANGE_FAILED_ROLE, IS_LINK_ROLE, LINK_BLUE, NEW_GREEN, CHANGED_BLUE, RED, TYPE_COLUMN, \
+    DATA_CHANGE_FAILED_ROLE, IS_LINK_ROLE, TYPE_COLUMN, \
     TYPE_CHECK_ROLE, TYPE_ROLE, UNDO_ROLE, REDO_ROLE, MAX_UNDOS
+from aas_editor.settings.colors import LINK_BLUE, CHANGED_BLUE, RED, NEW_GREEN
 
 from aas_editor.utils.util_classes import DictItem, ClassesInfo
 from aas_editor.utils.util_type import isIterable

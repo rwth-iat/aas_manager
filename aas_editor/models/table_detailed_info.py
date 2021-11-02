@@ -23,7 +23,8 @@ from PyQt5.QtGui import QFont, QBrush
 
 from aas_editor.models import DetailedInfoItem, StandardTable
 from aas_editor.settings.app_settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, COLUMNS_IN_DETAILED_INFO,\
-    ATTRIBUTE_COLUMN, PACK_ITEM_ROLE, LIGHT_BLUE, DEFAULT_FONT, LINKED_ITEM_ROLE, IS_LINK_ROLE
+    ATTRIBUTE_COLUMN, PACK_ITEM_ROLE, DEFAULT_FONT, LINKED_ITEM_ROLE, IS_LINK_ROLE
+from aas_editor.settings import LIGHT_BLUE
 
 
 class DetailedInfoTable(StandardTable):

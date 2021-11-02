@@ -10,9 +10,11 @@
 import typing
 from dataclasses import dataclass
 
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QKeySequence, QColor, QFont
+from PyQt5.QtCore import Qt, QSize, QSettings
+from PyQt5.QtGui import QKeySequence, QFont
 from PyQt5.QtWidgets import QFileDialog
+
+from aas_editor.settings.aas_settings import FILE_TYPE_FILTERS
 
 AAS_CREATOR = "PyI40AAS Testing Framework"
 APPLICATION_NAME = "AAS Manager"
@@ -79,13 +81,6 @@ for file in files:
         themename = file.rstrip(".qss")
         THEMES[themename] = f"themes/{file}"
 
-# Colors
-LIGHT_BLUE = QColor(132, 185, 255)
-LINK_BLUE = QColor(26, 13, 171)
-CHANGED_BLUE = QColor(83, 148, 236, 255)
-HIGHLIGHT_YELLOW = QColor(255, 255, 0, 130)
-RED = QColor("red")
-NEW_GREEN = QColor("green")
 
 # Shortcuts
 SC_COPY = QKeySequence.Copy
@@ -129,6 +124,8 @@ class AppSettings:
     OPENED_AAS_FILES = Setting('openedAasFiles', set())
     FONTSIZE_FILES_VIEW = Setting('fontSizeFilesView', DEFAULT_FONT.pointSize())
     FONTSIZE_DETAILED_VIEW = Setting('fontSizeDetailedView', DEFAULT_FONT.pointSize())
-    DEFAULT_NEW_FILETYPE_FILTER = Setting('defaultNewFileTypeFilter', '')
+    DEFAULT_NEW_FILETYPE_FILTER = Setting('defaultNewFileTypeFilter', FILE_TYPE_FILTERS["AASX"])
     PACKTREEVIEW_HEADER_STATE = Setting('packTreeViewHeaderState', None)
     TABTREEVIEW_HEADER_STATE = Setting('tabTreeViewHeaderState', None)
+
+SETTINGS = QSettings("settings.ini", QSettings.IniFormat)

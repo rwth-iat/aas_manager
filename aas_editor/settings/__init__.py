@@ -18,6 +18,7 @@
 
 from .util_constants import *
 from .defaults import *
+from .colors import *
+from .icons import *
 from .app_settings import *
 from .aas_settings import *
-from .icon_settings import *

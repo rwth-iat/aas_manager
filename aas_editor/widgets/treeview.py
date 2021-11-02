@@ -24,7 +24,7 @@ from aas_editor.delegates import ColorDelegate
 from aas_editor import dialogs
 from aas_editor.models import StandardTable
 from aas_editor.settings.app_settings import *
-from aas_editor.settings.icon_settings import COPY_ICON, PASTE_ICON, CUT_ICON, ADD_ICON, DEL_ICON, UNDO_ICON, REDO_ICON, \
+from aas_editor.settings.icons import COPY_ICON, PASTE_ICON, CUT_ICON, ADD_ICON, DEL_ICON, UNDO_ICON, REDO_ICON, \
     ZOOM_IN_ICON, ZOOM_OUT_ICON, EXPAND_ALL_ICON, COLLAPSE_ALL_ICON
 from aas_editor.utils.util import getDefaultVal, getReqParams4init, delAASParents
 from aas_editor.utils.util_type import checkType, isSimpleIterable, isIterable, getIterItemTypeHint

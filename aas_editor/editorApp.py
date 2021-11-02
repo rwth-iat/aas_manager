@@ -15,7 +15,7 @@ from PyQt5.QtWidgets import *
 from aas_editor.dialogs import AboutDialog
 from aas_editor.settings import FILE_TYPE_FILTERS
 from aas_editor.settings.app_settings import *
-from aas_editor.settings.icon_settings import APP_ICON, EXIT_ICON, SETTINGS_ICON
+from aas_editor.settings.icons import APP_ICON, EXIT_ICON, SETTINGS_ICON
 from aas_editor.settings_dialog import SettingsDialog
 from aas_editor.widgets import SearchBar, AddressLine
 from aas_editor import design
@@ -98,13 +98,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menuFile.addAction(self.packTreeView.saveAllAct)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.settingsDialogAct)
-        self.menuStandardFile = QMenu("Set default new File type", self.menuFile)
-        self.menuFile.addMenu(self.menuStandardFile)
-        self.defNewFileTypeActGroup = QActionGroup(self)
-        for act in self.packTreeView.defNewFileTypeActs:
-            self.defNewFileTypeActGroup.addAction(act)
-        self.packTreeView.defNewFileTypeActs[0].setChecked(True)
-        self.menuStandardFile.addActions(self.defNewFileTypeActGroup.actions())
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.packTreeView.closeAct)
         self.menuFile.addAction(self.packTreeView.closeAllAct)
@@ -252,7 +245,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                 a0.ignore()
 
     def readSettings(self):
-        settings = QSettings(ACPLT, APPLICATION_NAME)
+        settings = SETTINGS
 
         # set previously used theme
         theme = settings.value(AppSettings.THEME.name, AppSettings.THEME.default)
@@ -283,14 +276,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                 pass
             self.packTreeModel.setData(QModelIndex(), [], UNDO_ROLE)
 
-        # set previously used default new file type
-        self.packTreeView.defNewFileTypeFilter = settings.value(AppSettings.DEFAULT_NEW_FILETYPE_FILTER.name,
-                                                                AppSettings.DEFAULT_NEW_FILETYPE_FILTER.default)
-        for act in self.packTreeView.defNewFileTypeActs:
-            if FILE_TYPE_FILTERS.get(act.text(), 'no filter') == self.packTreeView.defNewFileTypeFilter:
-                act.setChecked(True)
-                break
-
         # set previously used column widths for trees
         packTreeViewHeaderState = settings.value(AppSettings.PACKTREEVIEW_HEADER_STATE.name)
         if packTreeViewHeaderState:
@@ -301,7 +286,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             self.mainTabWidget.currentWidget().attrsTreeView.header().restoreState(tabTreeViewHeaderState)
 
     def writeSettings(self):
-        settings = QSettings(ACPLT, APPLICATION_NAME)
+        settings = SETTINGS
         settings.setValue(AppSettings.THEME.name, self.currTheme)
         settings.setValue(AppSettings.SIZE.name, self.size())
         settings.setValue(AppSettings.LEFT_ZONE_SIZE.name, self.leftLayoutWidget.size())
