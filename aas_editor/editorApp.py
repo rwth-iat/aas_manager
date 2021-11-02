@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import *
 from aas_editor.dialogs import aboutDialog
 from aas_editor.settings import FILE_TYPE_FILTERS
 from aas_editor.settings.app_settings import *
+from aas_editor.settings.icon_settings import APP_ICON, EXIT_ICON, SETTINGS_ICON
 from aas_editor.widgets import SearchBar, AddressLine
 from aas_editor import design
 from aas_editor.models import DetailedInfoTable, PacksTable

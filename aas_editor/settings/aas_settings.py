@@ -29,8 +29,9 @@ from aas.model import AssetAdministrationShell, Asset, ConceptDescription, Submo
     Namespace, SubmodelElementCollection, SubmodelElement, AASReference, ConceptDictionary
 
 import aas_editor.package
-from aas_editor.settings import getCharsIcon, HIDDEN_ATTRS, CHANGED_PARENT_OBJ, ADD_ACT_AAS_TXT, \
+from aas_editor.settings import HIDDEN_ATTRS, CHANGED_PARENT_OBJ, ADD_ACT_AAS_TXT, \
     ADD_TYPE, PACKVIEW_ATTRS_INFO
+from aas_editor.settings.icon_settings import getCharsIcon
 from aas_editor.utils import util_classes
 
 AAS_FILES_FILTER = "AAS files (*.aasx *.xml *.json)"

@@ -22,9 +22,11 @@ from PyQt5.QtCore import pyqtSignal, QModelIndex, QPersistentModelIndex, QPoint,
 from PyQt5.QtGui import QIcon, QPixmap, QRegion, QDrag, QCursor, QMouseEvent, \
     QDragEnterEvent, QDragLeaveEvent, QDropEvent, QCloseEvent
 from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QTabWidget, QAction, QHBoxLayout, QFrame, \
-    QTabBar, QMenu, QSplitter, QShortcut, QPushButton, QFileDialog, QMessageBox
+    QTabBar, QMenu, QSplitter, QShortcut, QPushButton, QMessageBox
 
 from aas_editor.settings.app_settings import *
+from aas_editor.settings.icon_settings import FORWARD_ICON, BACK_ICON, SPLIT_VERT_ICON, SPLIT_HORIZ_ICON, ZOOM_IN_ICON, \
+    ZOOM_OUT_ICON
 from aas_editor.utils.util_type import getTypeName
 from aas_editor.widgets import AddressLine, SearchBar, ToolBar, AttrsTreeView
 from aas_editor.utils.util import getTreeItemPath

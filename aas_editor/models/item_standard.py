@@ -30,7 +30,7 @@ from aas_editor.settings.app_settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROL
     TYPE_HINT_COLUMN, TYPE_CHECK_ROLE, IS_MEDIA_ROLE, IS_URL_MEDIA_ROLE, MEDIA_CONTENT_ROLE, \
     TYPE_ROLE
 from aas_editor.settings.aas_settings import TYPE_ICON_DICT, LINK_TYPES, MEDIA_TYPES
-from aas_editor.settings import FILE_ICON, MIME_TYPE_ICON_DICT
+from aas_editor.settings.icon_settings import FILE_ICON, MIME_TYPE_ICON_DICT
 from aas_editor.utils.util import getDescription, getAttrDoc, simplifyInfo
 from aas_editor.utils.util_type import checkType, getTypeName, getTypeHintName, isIterable, \
     getAttrTypeHint, getIterItemTypeHint
