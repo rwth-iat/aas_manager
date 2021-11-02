@@ -17,7 +17,7 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
 from PyQt5 import QtCore
-from PyQt5.QtCore import pyqtSignal, QRect
+from PyQt5.QtCore import Qt, pyqtSignal, QRect
 from PyQt5.QtGui import QMouseEvent, QPaintEvent, QPainter, QWheelEvent
 from PyQt5.QtWidgets import QTreeView
 

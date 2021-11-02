@@ -18,7 +18,7 @@
 
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineSettings
 from PyQt5.QtCore import pyqtSignal, QModelIndex, QPersistentModelIndex, QPoint, QMimeData, QUrl, \
-    QStandardPaths
+    QStandardPaths, Qt
 from PyQt5.QtGui import QIcon, QPixmap, QRegion, QDrag, QCursor, QMouseEvent, \
     QDragEnterEvent, QDragLeaveEvent, QDropEvent, QCloseEvent
 from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QTabWidget, QAction, QHBoxLayout, QFrame, \
@@ -27,6 +27,7 @@ from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QTabWidget, QAction, Q
 from aas_editor.settings.app_settings import *
 from aas_editor.settings.icons import FORWARD_ICON, BACK_ICON, SPLIT_VERT_ICON, SPLIT_HORIZ_ICON, ZOOM_IN_ICON, \
     ZOOM_OUT_ICON
+from aas_editor.settings.shortcuts import SC_BACK, SC_FORWARD, SC_SEARCH
 from aas_editor.utils.util_type import getTypeName
 from aas_editor.widgets import AddressLine, SearchBar, ToolBar, AttrsTreeView
 from aas_editor.utils.util import getTreeItemPath

@@ -18,6 +18,7 @@
 
 from .util_constants import *
 from .defaults import *
+from .shortcuts import *
 from .colors import *
 from .icons import *
 from .app_settings import *

@@ -10,8 +10,8 @@
 import typing
 from dataclasses import dataclass
 
-from PyQt5.QtCore import Qt, QSize, QSettings
-from PyQt5.QtGui import QKeySequence, QFont
+from PyQt5.QtCore import QSize, QSettings
+from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QFileDialog
 
 from aas_editor.settings.aas_settings import FILE_TYPE_FILTERS
@@ -80,34 +80,6 @@ for file in files:
     if file.endswith(".qss"):
         themename = file.rstrip(".qss")
         THEMES[themename] = f"themes/{file}"
-
-
-# Shortcuts
-SC_COPY = QKeySequence.Copy
-SC_CUT = QKeySequence.Cut
-SC_PASTE = QKeySequence.Paste
-SC_DELETE = QKeySequence.Delete
-SC_NEW = QKeySequence.New
-SC_REDO = QKeySequence.Redo
-SC_UNDO = QKeySequence.Undo
-
-SC_ZOOM_IN = QKeySequence(Qt.CTRL + Qt.Key_Plus)
-SC_ZOOM_OUT = QKeySequence(Qt.CTRL + Qt.Key_Minus)
-
-SC_EXPAND_RECURS = QKeySequence(Qt.CTRL + Qt.ALT + Qt.Key_Plus)
-SC_EXPAND_ALL = QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_Plus)
-SC_COLLAPSE_RECURS = QKeySequence(Qt.CTRL + Qt.ALT + Qt.Key_Minus)
-SC_COLLAPSE_ALL = QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_Minus)
-
-SC_OPEN = QKeySequence(Qt.CTRL + Qt.Key_O)
-SC_SAVE_ALL = QKeySequence(Qt.CTRL + Qt.Key_S)
-SC_BACK = QKeySequence.Back
-SC_FORWARD = QKeySequence.Forward
-
-SC_SEARCH = QKeySequence(Qt.CTRL + Qt.Key_F)
-
-SC_FOCUS2RIGTH_TREE = QKeySequence(Qt.CTRL + Qt.RightArrow)
-SC_FOCUS2LEFT_TREE = QKeySequence(Qt.CTRL + Qt.LeftArrow)
 
 
 @dataclass

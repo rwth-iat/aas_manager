@@ -8,14 +8,14 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
-from PyQt5.QtCore import QModelIndex, QSettings
+from PyQt5.QtCore import QModelIndex
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 from aas_editor.dialogs import AboutDialog
-from aas_editor.settings import FILE_TYPE_FILTERS
 from aas_editor.settings.app_settings import *
 from aas_editor.settings.icons import APP_ICON, EXIT_ICON, SETTINGS_ICON
+from aas_editor.settings.shortcuts import SC_FOCUS2RIGTH_TREE, SC_FOCUS2LEFT_TREE
 from aas_editor.settings_dialog import SettingsDialog
 from aas_editor.widgets import SearchBar, AddressLine
 from aas_editor import design

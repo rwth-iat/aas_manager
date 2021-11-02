@@ -16,7 +16,7 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
-from PyQt5.QtCore import pyqtSignal, QModelIndex, QTimer
+from PyQt5.QtCore import Qt, pyqtSignal, QModelIndex, QTimer
 from PyQt5.QtGui import QClipboard
 from PyQt5.QtWidgets import QAction, QMenu, QApplication, QDialog, QMessageBox
 
@@ -26,6 +26,8 @@ from aas_editor.models import StandardTable
 from aas_editor.settings.app_settings import *
 from aas_editor.settings.icons import COPY_ICON, PASTE_ICON, CUT_ICON, ADD_ICON, DEL_ICON, UNDO_ICON, REDO_ICON, \
     ZOOM_IN_ICON, ZOOM_OUT_ICON, EXPAND_ALL_ICON, COLLAPSE_ALL_ICON
+from aas_editor.settings.shortcuts import SC_COPY, SC_CUT, SC_PASTE, SC_DELETE, SC_NEW, SC_REDO, SC_UNDO, SC_ZOOM_IN, \
+    SC_ZOOM_OUT, SC_EXPAND_RECURS, SC_EXPAND_ALL, SC_COLLAPSE_RECURS, SC_COLLAPSE_ALL
 from aas_editor.utils.util import getDefaultVal, getReqParams4init, delAASParents
 from aas_editor.utils.util_type import checkType, isSimpleIterable, isIterable, getIterItemTypeHint
 
