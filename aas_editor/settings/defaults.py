@@ -54,7 +54,8 @@ MIME_TYPES = [
 DEFAULTS = {
     Key: {
         "id_type": KeyType.IRI,
-        "value": "https://www.company.com/"
+        "value": "https://www.company.com/",
+        "local": True
     },
     Identifier: {
         "id_": "https://www.company.com/",
