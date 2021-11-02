@@ -7,38 +7,44 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
+from typing import Dict
+
 from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout, QLabel, QGroupBox, QHBoxLayout, QRadioButton
 from PyQt5.QtCore import Qt
 
-from aas_editor.settings import FILE_TYPE_FILTERS, SETTINGS, AppSettings
+from aas_editor.settings import FILE_TYPE_FILTERS, SETTINGS, AppSettings, Setting
 
 
 class OptionGroupBox(QGroupBox):
-    def currSetting(self):
+    def currOption(self):
         pass
 
-    def newSetting(self):
+    def newOption(self):
         pass
 
-    def applyNewSetting(self):
+    def applyNewOption(self):
         pass
 
 
-class DefaultNewFiletype(OptionGroupBox):
+class RadioBtnsGroupBox(OptionGroupBox):
     """Groupbox to choose default type of new file"""
-    def __init__(self, parent=None, **kwargs):
+    def __init__(self, parent=None, title="", options: Dict[str, any] = None,
+                 appSetting: Setting = None, **kwargs):
         super().__init__(parent, **kwargs)
-        self.setTitle("Standard initialisation file type")
+        self.setTitle(title)
         self.setAlignment(Qt.AlignLeft)
         layout = QHBoxLayout(self)
         self.setLayout(layout)
 
+        self.appSetting = appSetting
+        self.options = options
+
         self.radiobtns = []
-        for typ in list(FILE_TYPE_FILTERS.keys()):
-            btn = QRadioButton(typ)
+        for optionName in self.options:
+            btn = QRadioButton(optionName)
             self.radiobtns.append(btn)
             layout.addWidget(btn)
-            if self.currSetting() == FILE_TYPE_FILTERS[typ]:
+            if self.currOption() == options[optionName]:
                 btn.setChecked(True)
 
     def find_checked_radiobutton(self):
@@ -46,21 +52,20 @@ class DefaultNewFiletype(OptionGroupBox):
             if btn.isChecked():
                 return btn
 
-    def currSetting(self):
-        return SETTINGS.value(AppSettings.DEFAULT_NEW_FILETYPE_FILTER.name,
-                              AppSettings.DEFAULT_NEW_FILETYPE_FILTER.default)
+    def currOption(self):
+        return SETTINGS.value(self.appSetting.name, self.appSetting.default)
 
-    def newSetting(self):
-        typ = self.find_checked_radiobutton().text()
-        typ_filter = FILE_TYPE_FILTERS[typ]
-        return typ_filter
+    def newOption(self):
+        optionName = self.find_checked_radiobutton().text()
+        chosenOption = self.options[optionName]
+        return chosenOption
 
-    def applyNewSetting(self):
-        SETTINGS.setValue(AppSettings.DEFAULT_NEW_FILETYPE_FILTER.name, self.newSetting())
+    def applyNewOption(self):
+        SETTINGS.setValue(self.appSetting.name, self.newOption())
 
 
 class SettingsDialog(QDialog):
-    def __init__(self, parent=None):  # <1>
+    def __init__(self, parent=None):
         super().__init__(parent)
 
         self.setWindowTitle("Settings")
@@ -70,8 +75,17 @@ class SettingsDialog(QDialog):
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
 
-        self.optionGroupBoxes = []
-        self.optionGroupBoxes.append(DefaultNewFiletype(self))
+        self.optionGroupBoxes = [
+            RadioBtnsGroupBox(self, title="Standard initialisation file type",
+                              options=FILE_TYPE_FILTERS,
+                              appSetting=AppSettings.DEFAULT_NEW_FILETYPE_FILTER),
+            RadioBtnsGroupBox(self, title="Filetype for saving in AASX",
+                              options={"JSON": True, "XML": False},
+                              appSetting=AppSettings.WRITE_JSON_IN_AASX),
+            RadioBtnsGroupBox(self, title="Save submodels in separate files within AASX file",
+                              options={"Yes": True, "No": False},
+                              appSetting=AppSettings.SUBMODEL_SPLIT_PARTS)
+            ]
 
         self.layout = QVBoxLayout()
         message = QLabel("App settings")
@@ -87,4 +101,4 @@ class SettingsDialog(QDialog):
 
     def applySettings(self) -> None:
         for optionGroupBox in self.optionGroupBoxes:
-            optionGroupBox.applyNewSetting()
+            optionGroupBox.applyNewOption()

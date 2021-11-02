@@ -14,7 +14,6 @@ from PyQt5.QtCore import QSize, QSettings
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QFileDialog
 
-from aas_editor.settings.aas_settings import FILE_TYPE_FILTERS
 
 AAS_CREATOR = "PyI40AAS Testing Framework"
 APPLICATION_NAME = "AAS Manager"
@@ -22,8 +21,6 @@ COPYRIGHT_YEAR = 2021
 CONTRIBUTORS = "Igor Garmaev"
 CONTACT = "garmaev@gmx.net"
 ACPLT = "ACPLT"
-
-NOT_GIVEN = "NotGivenValueAASEditor"
 
 TOOLBARS_HEIGHT = 30
 ATTR_COLUMN_WIDTH = 200
@@ -96,8 +93,10 @@ class AppSettings:
     OPENED_AAS_FILES = Setting('openedAasFiles', set())
     FONTSIZE_FILES_VIEW = Setting('fontSizeFilesView', DEFAULT_FONT.pointSize())
     FONTSIZE_DETAILED_VIEW = Setting('fontSizeDetailedView', DEFAULT_FONT.pointSize())
-    DEFAULT_NEW_FILETYPE_FILTER = Setting('defaultNewFileTypeFilter', FILE_TYPE_FILTERS["AASX"])
     PACKTREEVIEW_HEADER_STATE = Setting('packTreeViewHeaderState', None)
     TABTREEVIEW_HEADER_STATE = Setting('tabTreeViewHeaderState', None)
+    DEFAULT_NEW_FILETYPE_FILTER = Setting('defaultNewFileTypeFilter', "AASX files (*.aasx)")
+    WRITE_JSON_IN_AASX = Setting('writeJsonInAasx', False)
+    SUBMODEL_SPLIT_PARTS = Setting('submodelSplitParts', False)
 
 SETTINGS = QSettings("settings.ini", QSettings.IniFormat)

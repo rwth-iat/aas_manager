@@ -20,7 +20,7 @@ from aas.adapter.aasx import DictSupplementaryFileContainer
 from aas.model import AssetAdministrationShell, Asset, Submodel, ConceptDescription, \
     DictObjectStore, Key
 
-from aas_editor.settings import DEFAULT_COMPLETIONS
+from aas_editor.settings import DEFAULT_COMPLETIONS, SETTINGS, AppSettings
 from aas_editor.utils.util_classes import ClassesInfo
 
 
@@ -47,6 +47,27 @@ class Package:
     @file.setter
     def file(self, file):
         self._file = Path(file).absolute()
+
+    @property
+    def writeJsonInAasx(self):
+        return SETTINGS.value(AppSettings.WRITE_JSON_IN_AASX.name,
+                              AppSettings.WRITE_JSON_IN_AASX.default)
+
+    @writeJsonInAasx.setter
+    def writeJsonInAasx(self, value: bool):
+        """If True, JSON parts are created for the AAS and each submodel in the AASX file instead of XML parts."""
+        SETTINGS.setValue(AppSettings.WRITE_JSON_IN_AASX.name, value)
+
+    @property
+    def submodelSplitParts(self):
+        return SETTINGS.value(AppSettings.SUBMODEL_SPLIT_PARTS.name,
+                              AppSettings.SUBMODEL_SPLIT_PARTS.default)
+
+    @submodelSplitParts.setter
+    def submodelSplitParts(self, value: bool):
+        """If True (default), submodels are written to separate AASX parts instead of being included
+        in the AAS part with in the AASX package."""
+        SETTINGS.setValue(AppSettings.SUBMODEL_SPLIT_PARTS.name, value)
 
     def __str__(self):
         return self.name
@@ -77,15 +98,14 @@ class Package:
         elif fileType == ".json":
             aasx.write_aas_json_file(self.file.as_posix(), self.objStore)
         elif fileType == ".aasx":
-            # todo ask user if save in xml, json or both
-            #  writer.write_aas_objects("/aasx/data.json" if args.json else "/aasx/data.xml",
-            #  [obj.identification for obj in self.objStore], self.objStore, self.fielSotre, write_json=args.json)
             with aasx.AASXWriter(self.file.as_posix()) as writer:
                 for obj in self.objStore:
                     if isinstance(obj, AssetAdministrationShell):
                         aas_id = obj.identification
                         break
-                writer.write_aas(aas_id, self.objStore, self.fileStore) #FIXME
+                writer.write_aas(aas_id, self.objStore, self.fileStore,
+                                 write_json=self.writeJsonInAasx,
+                                 submodel_split_parts=self.submodelSplitParts)
                 # Create OPC/AASX core properties
                 cp = pyecma376_2.OPCCoreProperties()
                 cp.created = datetime.now()

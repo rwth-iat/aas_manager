@@ -64,7 +64,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.settingsDialogAct = QAction(SETTINGS_ICON, "Settings", self,
                                          statusTip=f"Edit application settings",
-                                         triggered=SettingsDialog(self).exec)
+                                         triggered=lambda: SettingsDialog(self).exec())
 
         self.switch2rightTreeSC = QShortcut(SC_FOCUS2RIGTH_TREE, self,
                                             activated=self.setFocus2rightTree)
@@ -294,7 +294,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         settings.setValue(AppSettings.OPENED_AAS_FILES.name, self.packTreeModel.openedFiles())
         settings.setValue(AppSettings.FONTSIZE_FILES_VIEW.name, PacksTable.currFont.pointSize())
         settings.setValue(AppSettings.FONTSIZE_DETAILED_VIEW.name, DetailedInfoTable.currFont.pointSize())
-        settings.setValue(AppSettings.DEFAULT_NEW_FILETYPE_FILTER.name, self.packTreeView.defNewFileTypeFilter)
+        # settings.setValue(AppSettings.DEFAULT_NEW_FILETYPE_FILTER.name, self.packTreeView.defNewFileTypeFilter)
         settings.setValue(AppSettings.PACKTREEVIEW_HEADER_STATE.name, self.packTreeView.header().saveState())
         settings.setValue(AppSettings.TABTREEVIEW_HEADER_STATE.name, self.mainTabWidget.currentWidget().attrsTreeView.header().saveState())
 
