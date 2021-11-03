@@ -28,8 +28,7 @@ class OptionGroupBox(QGroupBox):
 
 class RadioBtnsGroupBox(OptionGroupBox):
     """Groupbox to choose default type of new file"""
-    def __init__(self, parent=None, title="", options: Dict[str, any] = None,
-                 appSetting: Setting = None, **kwargs):
+    def __init__(self, parent, title, options: Dict[str, any], optionType, appSetting: Setting, **kwargs):
         super().__init__(parent, **kwargs)
         self.setTitle(title)
         self.setAlignment(Qt.AlignLeft)
@@ -38,6 +37,7 @@ class RadioBtnsGroupBox(OptionGroupBox):
 
         self.appSetting = appSetting
         self.options = options
+        self.optionType = optionType
 
         self.radiobtns = []
         for optionName in self.options:
@@ -53,7 +53,8 @@ class RadioBtnsGroupBox(OptionGroupBox):
                 return btn
 
     def currOption(self):
-        return SETTINGS.value(self.appSetting.name, self.appSetting.default)
+        option = SETTINGS.value(self.appSetting.name, self.appSetting.default, self.optionType)
+        return option
 
     def newOption(self):
         optionName = self.find_checked_radiobutton().text()
@@ -78,13 +79,16 @@ class SettingsDialog(QDialog):
         self.optionGroupBoxes = [
             RadioBtnsGroupBox(self, title="Standard initialisation file type",
                               options=FILE_TYPE_FILTERS,
-                              appSetting=AppSettings.DEFAULT_NEW_FILETYPE_FILTER),
+                              appSetting=AppSettings.DEFAULT_NEW_FILETYPE_FILTER,
+                              optionType=str),
             RadioBtnsGroupBox(self, title="Filetype for saving in AASX",
                               options={"JSON": True, "XML": False},
-                              appSetting=AppSettings.WRITE_JSON_IN_AASX),
+                              appSetting=AppSettings.WRITE_JSON_IN_AASX,
+                              optionType=bool),
             RadioBtnsGroupBox(self, title="Save submodels in separate files within AASX file",
                               options={"Yes": True, "No": False},
-                              appSetting=AppSettings.SUBMODEL_SPLIT_PARTS)
+                              appSetting=AppSettings.SUBMODEL_SPLIT_PARTS,
+                              optionType=bool)
             ]
 
         self.layout = QVBoxLayout()
