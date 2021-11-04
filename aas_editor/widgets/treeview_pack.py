@@ -336,7 +336,7 @@ class PackTreeView(TreeView):
             pack.write(file)
             self.updateRecentFiles(pack.file.absolute().as_posix())
             return True
-        except (TypeError, ValueError) as e:
+        except (TypeError, ValueError, KeyError) as e:
             QMessageBox.critical(self, "Error", f"Package couldn't be saved: {file}: {e}")
         except AttributeError as e:
             QMessageBox.critical(self, "Error", f"No chosen package to save: {e}")

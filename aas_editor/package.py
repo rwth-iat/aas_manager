@@ -99,13 +99,14 @@ class Package:
             aasx.write_aas_json_file(self.file.as_posix(), self.objStore)
         elif fileType == ".aasx":
             with aasx.AASXWriter(self.file.as_posix()) as writer:
+                aas_ids = []
                 for obj in self.objStore:
                     if isinstance(obj, AssetAdministrationShell):
-                        aas_id = obj.identification
-                        break
-                writer.write_aas(aas_id, self.objStore, self.fileStore,
-                                 write_json=self.writeJsonInAasx,
-                                 submodel_split_parts=self.submodelSplitParts)
+                        aas_ids.append(obj.identification)
+                for aas_id in aas_ids:
+                    writer.write_aas(aas_id, self.objStore, self.fileStore,
+                                     write_json=self.writeJsonInAasx,
+                                     submodel_split_parts=self.submodelSplitParts)
                 # Create OPC/AASX core properties
                 cp = pyecma376_2.OPCCoreProperties()
                 cp.created = datetime.now()
