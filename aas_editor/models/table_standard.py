@@ -213,6 +213,7 @@ class StandardTable(QAbstractItemModel):
         return True
 
     def update(self, index: QModelIndex):
+        """Update item: remove all children rows, then add updated rows"""
         if not index.isValid():
             return QVariant()
         if self.hasChildren(index):
