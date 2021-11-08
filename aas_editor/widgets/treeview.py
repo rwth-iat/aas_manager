@@ -283,9 +283,11 @@ class TreeView(BasicTreeView):
         self.addAct.setText(addActText)
 
     def updateUndoRedoActs(self):
-        # update undo/redo actions
+        """update undo/redo actions"""
+        # check if there is undo act
         undoEnabled = bool(self.model().data(QModelIndex(), UNDO_ROLE))
         self.undoAct.setEnabled(undoEnabled)
+        # check if there is redo act
         redoEnabled = bool(self.model().data(QModelIndex(), REDO_ROLE))
         self.redoAct.setEnabled(redoEnabled)
 
