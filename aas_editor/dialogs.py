@@ -14,10 +14,10 @@ from enum import Enum, unique
 from inspect import isabstract
 from typing import Union, List, Dict, Optional
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QRect, QSize
 from PyQt5.QtGui import QPaintEvent, QPixmap
 from PyQt5.QtWidgets import QLabel, QPushButton, QDialog, QDialogButtonBox, \
-    QGroupBox, QWidget, QVBoxLayout, QHBoxLayout, QMessageBox
+    QGroupBox, QWidget, QVBoxLayout, QHBoxLayout, QMessageBox, QScrollArea, QFrame
 
 from aas_editor.editWidgets import StandardInputWidget, SpecialInputWidget
 from aas_editor.settings import DEFAULTS, DEFAULT_COMPLETIONS, ATTRIBUTE_COLUMN, OBJECT_ROLE, \
@@ -57,12 +57,33 @@ class AddDialog(QDialog):
         self.buttonOk = self.buttonBox.button(QDialogButtonBox.Ok)
         self.buttonOk.released.connect(self.accept)
         self.buttonOk.setDisabled(True)
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(2, 2, 2, 2)
-        layout.addWidget(self.buttonBox)
-        self.setLayout(layout)
-        self.setMinimumWidth(400)
+
+        self.scrollArea = QScrollArea(self)
+        self.scrollArea.setFrameShape(QFrame.NoFrame)
+        self.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollAreaWidgetContents = QWidget(self.scrollArea)
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 300, 600))
+        self.scrollArea.setWidget(self.scrollAreaWidgetContents)
+        self.setMinimumWidth(480)
         self.setMaximumHeight(900)
+
+        self.verticalLayout = QVBoxLayout(self)
+        self.verticalLayout.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout.addWidget(self.scrollArea)
+        self.verticalLayout.addWidget(self.buttonBox)
+        self.verticalLayoutScroll = QVBoxLayout(self.scrollAreaWidgetContents)
+        self.verticalLayoutScroll.setContentsMargins(0,0,0,0)
+
+    def adjustSize(self) -> None:
+        layoutSize = self.layout().sizeHint()
+        buttonsSize = self.buttonBox.sizeHint()
+        result = QSize(max(layoutSize.width(), buttonsSize.width()), layoutSize.height() + buttonsSize.height() + 10)
+        self.resize(result)
+
+    def layout(self) -> 'QLayout':
+        return self.verticalLayoutScroll
 
     def getObj2add(self):
         pass
@@ -154,6 +175,7 @@ class AddObjDialog(AddDialog):
         self.inputWidget.setObjectName("mainBox")
         self.inputWidget.setStyleSheet("#mainBox{border:0;}") #FIXME
         self.layout().insertWidget(0, self.inputWidget)
+        self.adjustSize()
 
     def getInputWidget(self):
         pass
