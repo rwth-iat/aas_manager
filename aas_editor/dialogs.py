@@ -405,8 +405,14 @@ class IterableGroupBox(GroupBox):
 
 
 class TypeOptionObjGroupBox(GroupBox):
-    def __init__(self, objTypes, **kwargs):
+    """GroupBox with option to choose widget for which type will be generated"""
+    def __init__(self, objTypes: List, **kwargs):
         super(TypeOptionObjGroupBox, self).__init__(objTypes, **kwargs)
+
+        # remove abstract types
+        for typ in list(self.objType):
+            if isabstract(typ):
+                self.objType.remove(typ)
 
         self.initTypeComboBox()
         currObjType = self.typeComboBox.currentData()
