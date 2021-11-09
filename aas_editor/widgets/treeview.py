@@ -404,8 +404,12 @@ class TreeView(BasicTreeView):
 
     def addItemWithDialog(self, parent: QModelIndex, objType, objVal=None,
                           title="", rmDefParams=False):
-        dialog = dialogs.AddObjDialog(objType, self, rmDefParams=rmDefParams,
-                                      objVal=objVal, title=title)
+        try:
+            dialog = dialogs.AddObjDialog(objType, self, rmDefParams=rmDefParams, objVal=objVal, title=title)
+        except Exception as e:
+            QMessageBox.critical(self, "Error", str(e))
+            return False
+
         result = False
         while not result and dialog.exec_() == QDialog.Accepted:
             try:
@@ -426,10 +430,15 @@ class TreeView(BasicTreeView):
             print("Item adding cancelled")
         dialog.deleteLater()
         self.setFocus()
+        return result
 
     def replItemWithDialog(self, index, objType, objVal=None, title="", rmDefParams=False):
         title = title if title else f"Edit {index.data(NAME_ROLE)}"
-        dialog = dialogs.AddObjDialog(objType, self, rmDefParams=rmDefParams, objVal=objVal, title=title)
+        try:
+            dialog = dialogs.AddObjDialog(objType, self, rmDefParams=rmDefParams, objVal=objVal, title=title)
+        except Exception as e:
+            QMessageBox.critical(self, "Error", str(e))
+            return False
         result = False
         while not result and dialog.exec_() == QDialog.Accepted:
             try:
@@ -444,6 +453,7 @@ class TreeView(BasicTreeView):
         dialog.deleteLater()
         self.setFocus()
         self.setCurrentIndex(index)
+        return result
 
     def itemDataChangeFailed(self, topLeft, bottomRight, roles):
         """Check dataChanged signal if data change failed and show Error dialog if failed"""
