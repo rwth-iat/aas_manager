@@ -51,11 +51,11 @@ class AddDialog(QDialog):
     def __init__(self, parent=None, title=""):
         QDialog.__init__(self, parent)
         self.setWindowTitle(title)
-        QBtn = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
-        self.buttonBox = QDialogButtonBox(QBtn)
-        self.buttonBox.accepted.connect(self.accept)
-        self.buttonBox.rejected.connect(self.reject)
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
+        self.buttonCancel = self.buttonBox.button(QDialogButtonBox.Cancel)
+        self.buttonCancel.released.connect(self.reject)
         self.buttonOk = self.buttonBox.button(QDialogButtonBox.Ok)
+        self.buttonOk.released.connect(self.accept)
         self.buttonOk.setDisabled(True)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(2, 2, 2, 2)
