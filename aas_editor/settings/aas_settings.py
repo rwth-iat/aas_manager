@@ -26,6 +26,7 @@ from aas.model import AssetAdministrationShell, Asset, ConceptDescription, Submo
     SubmodelElementCollectionUnordered, SubmodelElementCollectionOrdered, Range, Blob, File, \
     ReferenceElement, DataElement, AdministrativeInformation, Identifier, AbstractObjectStore, \
     Namespace, SubmodelElementCollection, SubmodelElement, AASReference, ConceptDictionary
+from aas.model.datatypes import Decimal
 
 import aas_editor.package
 from aas_editor.settings.util_constants import HIDDEN_ATTRS, CHANGED_PARENT_OBJ, ADD_ACT_AAS_TXT, \
@@ -459,7 +460,7 @@ ATTR_INFOS_TO_SIMPLIFY = (AdministrativeInformation, Identifier,)
 
 TYPES_NOT_TO_POPULATE = (type, ABCMeta)
 TYPES_WITH_INSTANCES_NOT_TO_POPULATE = (
-    AbstractObjectStore, str, int, float, bool, Enum, Path, util_classes.DictItem)  # '+ TYPES_IN_ONE_ROW
+    AbstractObjectStore, str, int, float, bool, Enum, Path, util_classes.DictItem, Decimal)  # '+ TYPES_IN_ONE_ROW
 COMPLEX_ITERABLE_TYPES = (Namespace,)
 DEFAULT_ATTRS_TO_HIDE = {"parent": None}
 
