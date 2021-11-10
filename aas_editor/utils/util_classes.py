@@ -16,13 +16,16 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
-from typing import NamedTuple, Any, Type, Tuple, Optional, List
+from typing import NamedTuple, Any, Type, Tuple, Optional, List, Dict
 
 from aas_editor.settings.util_constants import *
 from aas_editor.settings import aas_settings as s
 
 
 # DictItem = NamedTuple("DictItem", key=Any, value=Any)
+from aas_editor.utils.util_type import issubtype
+
+
 class DictItem(NamedTuple):
     key: Any
     value: Any
@@ -58,11 +61,32 @@ class ClassesInfo:
         for typ in s.CLASSES_INFO:
             if issubclass(cls, typ):
                 try:
-                    res.update(s.CLASSES_INFO[typ][
-                                   HIDDEN_ATTRS])
+                    res.update(s.CLASSES_INFO[typ][HIDDEN_ATTRS])
                 except KeyError:
                     continue
         return tuple(res)
+
+    @staticmethod
+    def default_params_to_hide(cls) -> Dict[str, str]:
+        res = dict()
+        for typ in s.CLASSES_INFO:
+            if issubtype(cls, typ):
+                try:
+                    res.update(s.CLASSES_INFO[typ][DEFAULT_PARAMS_TO_HIDE])
+                except KeyError:
+                    continue
+        return res
+
+    @staticmethod
+    def params_to_attrs(cls) -> Dict[str, str]:
+        res = dict()
+        for typ in s.CLASSES_INFO:
+            if issubtype(cls, typ):
+                try:
+                    res.update(s.CLASSES_INFO[typ][PARAMS_TO_ATTRS])
+                except KeyError:
+                    continue
+        return res
 
     @staticmethod
     def addActText(cls, attr: Optional[str] = None) -> str:
@@ -96,9 +120,9 @@ class ClassesInfo:
             for typ in s.CLASSES_INFO:
                 if issubclass(cls, typ):
                     try:
-                        res = s.CLASSES_INFO[typ][
-                            CHANGED_PARENT_OBJ]
-                        return res
+                        res = s.CLASSES_INFO[typ][CHANGED_PARENT_OBJ]
+                        if cls is typ:
+                            return res
                     except KeyError:
                         continue
         return res

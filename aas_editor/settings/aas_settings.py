@@ -30,7 +30,7 @@ from aas.model.datatypes import Decimal
 
 import aas_editor.package
 from aas_editor.settings.util_constants import HIDDEN_ATTRS, CHANGED_PARENT_OBJ, ADD_ACT_AAS_TXT, \
-    ADD_TYPE, PACKVIEW_ATTRS_INFO
+    ADD_TYPE, PACKVIEW_ATTRS_INFO, PARAMS_TO_ATTRS, DEFAULT_PARAMS_TO_HIDE
 from aas_editor.settings.icons import getCharsIcon
 from aas_editor.utils import util_classes
 
@@ -391,8 +391,8 @@ PREFERED_LANGS_ORDER = ("en-us", "en", "de")
 
 CLASSES_INFO = {
     object: {
-        HIDDEN_ATTRS: (
-            "namespace_element_sets", "parent", "security", "source")
+        HIDDEN_ATTRS: ("namespace_element_sets", "parent", "security", "source"),
+        DEFAULT_PARAMS_TO_HIDE: {"parent": None}
     },
     datetime.datetime: {
         HIDDEN_ATTRS: ("min", "max", "resolution"),
@@ -453,6 +453,11 @@ CLASSES_INFO = {
         ADD_ACT_AAS_TXT: "Add statement",
         ADD_TYPE: SubmodelElement,
     },
+    AASReference: {
+        PARAMS_TO_ATTRS: {
+            "target_type": "type"
+        },
+    },
 }
 
 
@@ -462,7 +467,6 @@ TYPES_NOT_TO_POPULATE = (type, ABCMeta)
 TYPES_WITH_INSTANCES_NOT_TO_POPULATE = (
     AbstractObjectStore, str, int, float, bool, Enum, Path, util_classes.DictItem, Decimal)  # '+ TYPES_IN_ONE_ROW
 COMPLEX_ITERABLE_TYPES = (Namespace,)
-DEFAULT_ATTRS_TO_HIDE = {"parent": None}
 
 TYPE_SHORTS_DICT = {
     AssetAdministrationShell: "aas",
