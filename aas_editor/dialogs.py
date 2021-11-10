@@ -21,7 +21,7 @@ from PyQt5.QtWidgets import QLabel, QPushButton, QDialog, QDialogButtonBox, \
 
 from aas_editor.editWidgets import StandardInputWidget, SpecialInputWidget
 from aas_editor.settings import DEFAULTS, DEFAULT_COMPLETIONS, ATTRIBUTE_COLUMN, OBJECT_ROLE, \
-    DEFAULT_ATTRS_TO_HIDE, APPLICATION_NAME, CONTRIBUTORS, CONTACT, COPYRIGHT_YEAR
+    DEFAULT_PARAMS_TO_HIDE, APPLICATION_NAME, CONTRIBUTORS, CONTACT, COPYRIGHT_YEAR, VERSION
 from aas_editor.delegates import ColorDelegate
 from aas_editor.utils.util import inheritors, getReqParams4init, getParams4init, getDefaultVal, \
     getAttrDoc
@@ -38,6 +38,7 @@ class AboutDialog(QMessageBox):
         self.setWindowTitle("About")
         self.setText(
             f"{APPLICATION_NAME}\n"
+            f"Version: {VERSION}"
             f"Contributors: {CONTRIBUTORS}\n"
             f"Contact: {CONTACT}\n"
             f"Copyright (C) {COPYRIGHT_YEAR}"
