@@ -21,13 +21,13 @@ from PyQt5.QtWidgets import QLabel, QPushButton, QDialog, QDialogButtonBox, \
 
 from aas_editor.editWidgets import StandardInputWidget, SpecialInputWidget
 from aas_editor.settings import DEFAULTS, DEFAULT_COMPLETIONS, ATTRIBUTE_COLUMN, OBJECT_ROLE, \
-    DEFAULT_PARAMS_TO_HIDE, APPLICATION_NAME, CONTRIBUTORS, CONTACT, COPYRIGHT_YEAR, VERSION
+    APPLICATION_NAME, CONTRIBUTORS, CONTACT, COPYRIGHT_YEAR, VERSION
 from aas_editor.delegates import ColorDelegate
 from aas_editor.utils.util import inheritors, getReqParams4init, getParams4init, getDefaultVal, \
     getAttrDoc
 from aas_editor.utils.util_type import getTypeName, issubtype, isoftype, isSimpleIterableType, \
     isIterableType, isIterable
-from aas_editor.utils.util_classes import DictItem
+from aas_editor.utils.util_classes import DictItem, ClassesInfo
 from aas_editor.widgets import *
 from aas_editor import widgets
 
@@ -102,23 +102,40 @@ def checkIfAccepted(func):
     return wrap
 
 
-def getInputWidget(objType, rmDefParams=True, title="", attrsToHide: dict = None,
-                   parent=None, objVal=None, **kwargs) -> QWidget:
+def getInputWidget(objType, rmDefParams=True, title="", paramsToHide: dict = None,
+                   parent=None, objVal=None, paramsToAttrs=None, **kwargs) -> QWidget:
     print(objType, objType.__str__, objType.__repr__, objType.__class__)
 
     if objVal and not isoftype(objVal, objType):
         print("Given object type does not match to real object type:", objType, objVal)
         objVal = None
 
-    attrsToHide = attrsToHide if attrsToHide else DEFAULT_ATTRS_TO_HIDE.copy()
+    paramsToHide = paramsToHide if paramsToHide else ClassesInfo.default_params_to_hide(objType)
+    paramsToAttrs = paramsToAttrs if paramsToAttrs else ClassesInfo.params_to_attrs(objType)
     kwargs = {
         "rmDefParams": rmDefParams,
         "title": title,
-        "attrsToHide": attrsToHide,
+        "paramsToHide": paramsToHide,
+        "paramsToAttrs": paramsToAttrs,
         "parent": parent,
         "objVal": objVal,
         **kwargs
     }
+
+    # if obj is given and rmDefParams = True, save all init params of obj in paramsToHide
+    # and show user only required params to set
+    if objVal and rmDefParams:
+        params, defaults = getParams4init(objType)
+        reqParams = getReqParams4init(objType, rmDefParams=True)
+
+        for param in params.keys():
+            if param in reqParams:
+                continue
+            attr = paramsToAttrs.get(param, param)
+            try:
+                paramsToHide[param] = getattr(objVal, attr.rstrip("_"))  # TODO fix if aas changes
+            except AttributeError:
+                paramsToHide[param] = getattr(objVal, attr)
 
     if isabstract(objType) and not isIterableType(objType):
         objTypes = inheritors(objType)
@@ -151,28 +168,7 @@ class AddObjDialog(AddDialog):
             "parent": self,
         }
 
-        # if obj is given and rmDefParams = True, save all init params of obj in attrsToHide
-        # and show user only required params to set
-        if objVal and rmDefParams:
-            attrsToHide = {}
-
-            params, defaults = getParams4init(objType)
-            for key in params.keys():
-                try:
-                    attrsToHide[key] = getattr(objVal, key.rstrip("_"))  # TODO fix if aas changes
-                except AttributeError:
-                    attrsToHide[key] = getattr(objVal, key)
-
-            reqParams = getReqParams4init(objType, rmDefParams=True)
-            for key in reqParams.keys():
-                try:
-                    attrsToHide.pop(key.rstrip("_"))  # TODO fix if aas changes
-                except KeyError:
-                    attrsToHide.pop(key)
-
-            self.inputWidget = getInputWidget(objType, attrsToHide=attrsToHide, **kwargs)
-        else:
-            self.inputWidget = getInputWidget(objType, **kwargs)
+        self.inputWidget = getInputWidget(objType, **kwargs)
         self.inputWidget.setObjectName("mainBox")
         self.inputWidget.setStyleSheet("#mainBox{border:0;}") #FIXME
         self.layout().insertWidget(0, self.inputWidget)
@@ -195,14 +191,15 @@ class GroupBoxType(Enum):
 
 class GroupBox(QGroupBox):
     """Groupbox which also can be closable groupbox"""
-    def __init__(self, objType, parent=None, title="", attrsToHide: dict = None, rmDefParams=True,
-                 objVal=None, **kwargs):
+    def __init__(self, objType, parent=None, title="", paramsToHide: dict = None, rmDefParams=True,
+                 objVal=None, paramsToAttrs=None, **kwargs):
         super().__init__(parent)
         if title:
             self.setTitle(title)
 
         self.objType = objType
-        self.attrsToHide = attrsToHide if attrsToHide else DEFAULT_ATTRS_TO_HIDE.copy()
+        self.paramsToHide = paramsToHide if paramsToHide else ClassesInfo.default_params_to_hide(objType)
+        self.paramsToAttrs = paramsToAttrs if paramsToAttrs else ClassesInfo.params_to_attrs(objType)
         self.rmDefParams = rmDefParams
         self.objVal = objVal
 
@@ -246,41 +243,42 @@ class GroupBox(QGroupBox):
 
 
 class ObjGroupBox(GroupBox):
-    def __init__(self, objType, parent=None, attrsToHide: dict = None, objVal=None, **kwargs):
-        super().__init__(objType, objVal=objVal, parent=parent, attrsToHide=attrsToHide, **kwargs)
+    def __init__(self, objType, parent=None, paramsToHide: dict = None, objVal=None, paramsToAttrs: dict = None, **kwargs):
+        super().__init__(objType, objVal=objVal, parent=parent, paramsToHide=paramsToHide, paramsToAttrs=paramsToAttrs, **kwargs)
 
         self.inputWidgets: List[QWidget] = []
-        self.attrWidgetDict: Dict[str, QWidget] = {}
+        self.paramWidgetDict: Dict[str, QWidget] = {}
 
-        self.reqAttrsDict = getReqParams4init(self.objType, self.rmDefParams, self.attrsToHide)
+        self.reqParamsDict = getReqParams4init(self.objType, self.rmDefParams, self.paramsToHide)
         self.kwargs = kwargs.copy() if kwargs else {}
         self.kwargs.pop("objVal", None)
         self.initLayout()
 
     def initLayout(self):
-        if self.reqAttrsDict:
-            for attr, attrType in self.reqAttrsDict.items():
+        if self.reqParamsDict:
+            for param, paramType in self.reqParamsDict.items():
                 # TODO delete when right _ will be deleted in aas models
+                attr = self.paramsToAttrs.get(param, param)
                 val = getattr(self.objVal, attr.rstrip("_"),
-                              DEFAULTS.get(self.objType, {}).get(attr, getDefaultVal(self.objType, attr, None)))
-                self.kwargs["completions"] = DEFAULT_COMPLETIONS.get(self.objType, {}).get(attr, [])
-                inputWidget = self.getInputWidget(attr, attrType, val, **self.kwargs)
+                              DEFAULTS.get(self.objType, {}).get(attr, getDefaultVal(self.objType, param, None)))
+                self.kwargs["completions"] = DEFAULT_COMPLETIONS.get(self.objType, {}).get(param, [])
+                inputWidget = self.getInputWidget(param, paramType, val, **self.kwargs)
                 self.inputWidgets.append(inputWidget)
                 self.layout().addWidget(inputWidget)
         # else: # TODO check if it works ok
         #     inputWidget = self.getInputWidget(objName, objType, rmDefParams, objVal)
         #     self.layout().addWidget(inputWidget)
 
-    def getInputWidget(self, attr: str, attrType, val, **kwargs) -> QHBoxLayout:
-        print(f"Getting widget for attr: {attr} of type: {attrType}")
-        widget = getInputWidget(attrType, objVal=val, **kwargs)
-        self.attrWidgetDict[attr] = widget
+    def getInputWidget(self, param: str, paramType, val, **kwargs) -> QHBoxLayout:
+        print(f"Getting widget for param: {param} of type: {paramType}")
+        widget = getInputWidget(paramType, objVal=val, **kwargs)
+        self.paramWidgetDict[param] = widget
 
         if isinstance(widget, QGroupBox):
-            widget.setTitle(f"{attr}:")
+            widget.setTitle(f"{param}:")
             return widget
         else:
-            label = QLabel(f"{attr}:", toolTip=getAttrDoc(attr, self.objType))
+            label = QLabel(f"{param}:", toolTip=getAttrDoc(param, self.objType))
             layoutWidget = QWidget()
             layout = QHBoxLayout(layoutWidget)
             layout.setContentsMargins(0, 0, 0, 0)
@@ -291,20 +289,20 @@ class ObjGroupBox(GroupBox):
 
     def getObj2add(self):
         """Return resulting obj due to user input data"""
-        attrValueDict = {}
-        for attr, widget in self.attrWidgetDict.items():
-            attrValueDict[attr] = widget.getObj2add()
-        for attr, value in self.attrsToHide.items():
-            attrValueDict[attr] = value
+        paramValueDict = {}
+        for param, widget in self.paramWidgetDict.items():
+            paramValueDict[param] = widget.getObj2add()
+        for param, value in self.paramsToHide.items():
+            paramValueDict[param] = value
         try:
-            obj = self.objType(**attrValueDict)
+            obj = self.objType(**paramValueDict)
         except TypeError:
-            for key in DEFAULT_ATTRS_TO_HIDE:
+            for key in ClassesInfo.default_params_to_hide(object):
                 try:
-                    attrValueDict.pop(key)
+                    paramValueDict.pop(key)
                 except KeyError:
                     continue
-            obj = self.objType(**attrValueDict)
+            obj = self.objType(**paramValueDict)
         return obj
 
     def delInputWidget(self, widget: QWidget):
@@ -315,9 +313,9 @@ class ObjGroupBox(GroupBox):
         self.adjustSize()
         self.window().adjustSize()
 
-    def setVal4attr(self, attr: str, val):
-        attrWidget = self.attrWidgetDict[attr]
-        attrWidget.setVal(val)
+    def setVal4param(self, param: str, val):
+        paramWidget = self.paramWidgetDict[param]
+        paramWidget.setVal(val)
 
     def setVal(self, val):
         if val and isoftype(val, self.objType):
