@@ -52,7 +52,7 @@ def getArgs(obj) -> typing.Tuple[typing.Type]:
 def isTypehint(obj) -> bool:
     obj = getOrigin(obj)
     try:
-        if obj in TYPING_TYPES:
+        if obj in TYPING_TYPES or type(obj) is typing.TypeVar:
             return True
     except TypeError as e:
         print(e)
