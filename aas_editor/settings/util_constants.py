@@ -16,9 +16,11 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
-HIDDEN_ATTRS = "attrs_not_in_detailed_info"
+HIDDEN_ATTRS = "attrs_not_in_detailed_info"  # params, which will be hide from user
 CHANGED_PARENT_OBJ = "changed_parent_obj"
 ADD_ACT_AAS_TXT = "add_act_aas_txt"
 ADD_TYPE = "add_type"
 PACKVIEW_ATTRS_INFO = "attrs_info"
 NOT_GIVEN = "NotGivenValueAASEditor"
+DEFAULT_PARAMS_TO_HIDE = "default_params_to_hide"  # params, which will be hide from user and will have default values
+PARAMS_TO_ATTRS = "params_attrs"
