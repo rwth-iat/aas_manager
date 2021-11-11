@@ -247,12 +247,17 @@ def getAttrDoc(attr: str, parentObj: type = None, doc: str = None) -> str:
 
     if doc:
         doc = " ".join(doc.split())
-        pattern = fr":ivar {attr}_?:(.*?)(:ivar|:raises|TODO|$)"
+        pattern = fr":ivar [~]?[.]?{attr}_?:(.*?)(:ivar|:raises|TODO|$)"
         res = re.search(pattern, doc)
         if res:
             reg = res.regs[1]
             doc = doc[reg[0]: reg[1]]
             doc = re.sub("([(]inherited from.*[)])?", "", doc)
+            doc = re.sub("[~]([a-zA-Z]+\.)+", "", doc)
+            doc = re.sub("(:class:)?", "", doc)
+            doc = re.sub("(<.*>)?", "", doc)
+            doc = re.sub("`", "", doc)
+            doc = re.sub("[~]\.", "", doc)
             doc = f"{attr}: {doc}"
             return doc
     return ""
