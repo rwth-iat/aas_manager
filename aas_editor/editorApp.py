@@ -12,7 +12,7 @@ from PyQt5.QtCore import QModelIndex
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from aas_editor.dialogs import AboutDialog
+from aas_editor.dialogs import AboutDialog, ComplianceToolDialog
 from aas_editor.settings.app_settings import *
 from aas_editor.settings.icons import APP_ICON, EXIT_ICON, SETTINGS_ICON
 from aas_editor.settings.shortcuts import SC_FOCUS2RIGTH_TREE, SC_FOCUS2LEFT_TREE
@@ -61,6 +61,10 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.aboutDialogAct = QAction("About", self,
                                       statusTip=f"Show information about {APPLICATION_NAME}",
                                       triggered=AboutDialog(self).exec)
+
+        self.complToolDialogAct = QAction("Compliance tool", self,
+                                      statusTip="Open compliance tool",
+                                      triggered=lambda: ComplianceToolDialog(self).exec())
 
         self.settingsDialogAct = QAction(SETTINGS_ICON, "Settings", self,
                                          statusTip=f"Edit application settings",
@@ -128,12 +132,16 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menuNavigate.addAction(self.packTreeView.openInBackgroundAct)
         self.menuNavigate.addAction(self.packTreeView.openInNewWindowAct)
 
+        self.menuTools = QMenu("&Tools", self.menubar)
+        self.menuTools.addAction(self.complToolDialogAct)
+
         self.menuHelp = QMenu("&Help", self.menubar)
         self.menuHelp.addAction(self.aboutDialogAct)
 
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
         self.menubar.addAction(self.menuNavigate.menuAction())
+        self.menubar.addAction(self.menuTools.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
 
     def initToolbars(self):

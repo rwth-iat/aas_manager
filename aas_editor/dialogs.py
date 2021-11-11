@@ -7,7 +7,13 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
+import logging
 
+from aas import compliance_tool
+from aas.compliance_tool import compliance_check_aasx
+from aas.compliance_tool import compliance_check_json
+from aas.compliance_tool import compliance_check_xml
+from aas.compliance_tool.state_manager import ComplianceToolStateManager
 from aas.model.base import *
 
 from enum import Enum, unique
@@ -17,11 +23,12 @@ from typing import Union, List, Dict, Optional
 from PyQt5.QtCore import Qt, QRect, QSize
 from PyQt5.QtGui import QPaintEvent, QPixmap
 from PyQt5.QtWidgets import QLabel, QPushButton, QDialog, QDialogButtonBox, \
-    QGroupBox, QWidget, QVBoxLayout, QHBoxLayout, QMessageBox, QScrollArea, QFrame
+    QGroupBox, QWidget, QVBoxLayout, QHBoxLayout, QMessageBox, QScrollArea, QFrame, QFileDialog, QPlainTextEdit, \
+    QComboBox
 
 from aas_editor.editWidgets import StandardInputWidget, SpecialInputWidget
 from aas_editor.settings import DEFAULTS, DEFAULT_COMPLETIONS, ATTRIBUTE_COLUMN, OBJECT_ROLE, \
-    APPLICATION_NAME, CONTRIBUTORS, CONTACT, COPYRIGHT_YEAR, VERSION
+    APPLICATION_NAME, CONTRIBUTORS, CONTACT, COPYRIGHT_YEAR, VERSION, FILTER_AAS_FILES
 from aas_editor.delegates import ColorDelegate
 from aas_editor.utils.util import inheritors, getReqParams4init, getParams4init, getDefaultVal, \
     getAttrDoc
@@ -30,6 +37,72 @@ from aas_editor.utils.util_type import getTypeName, issubtype, isoftype, isSimpl
 from aas_editor.utils.util_classes import DictItem, ClassesInfo
 from aas_editor.widgets import *
 from aas_editor import widgets
+from aas_editor.widgets.lineEdit import DropFilePlainTextEdit
+
+
+class ComplianceToolDialog(QDialog):
+    def __init__(self, parent=None):  # <1>
+        super().__init__(parent)
+        self._initLayout()
+        self.setWindowTitle("Compliance Tool")
+        self.setMinimumSize(500, 300)
+
+        self.descrLabel = QLabel(self)
+        self.descrLabel.setWordWrap(True)
+        self.descrLabel.setText('Compliance tool for creating and checking aasx, json and xml files in compliance with '
+                                '"Details of the Asset Administration Shell" specification of Plattform Industrie 4.0.')
+
+        self.plainTextEdit = DropFilePlainTextEdit(self, emptyViewMsg="Drop aas file here")
+        self.plainTextEdit.setMinimumSize(300, 300)
+        #self.plainTextEdit.setEnabled(False)
+        self.plainTextEdit.fileDropped.connect(self.checkFile)
+
+        self.optionsComboBox = QComboBox(self)
+        self.optionsComboBox.addItem("Show all Logs", 2)
+        self.optionsComboBox.addItem("Show only Errors", 1)
+        self.optionsComboBox.addItem("Show no Logs", 0)
+
+        self.chooseButton = QPushButton(f"Choose file", self,
+                                        toolTip="Choose file",
+                                        clicked=self.chooseAndCheckFile)
+        self.layout().addWidget(self.plainTextEdit)
+        self.layout().addWidget(self.optionsComboBox)
+        self.layout().addWidget(self.chooseButton)
+        self.layout().addWidget(self.descrLabel)
+
+    def _initLayout(self):
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addWidget(self)
+        self.setLayout(layout)
+
+    def chooseAndCheckFile(self):
+        file = QFileDialog.getOpenFileName(self, "Open AAS file",
+                                           filter=FILTER_AAS_FILES,
+                                           options=QFileDialog.DontResolveSymlinks |
+                                                   QFileDialog.DontUseNativeDialog)[0]
+        if file:
+            self.checkFile(file)
+        else:
+            return
+
+    def checkFile(self, file):
+        try:
+            if file.endswith(".xml"):
+                check_aas_example = compliance_check_xml.check_aas_example
+            elif file.endswith(".json"):
+                check_aas_example = compliance_check_json.check_aas_example
+            elif file.endswith(".aasx"):
+                check_aas_example = compliance_check_aasx.check_aas_example
+            else:
+                raise TypeError("File of unknown type:", file)
+            manager = ComplianceToolStateManager()
+            check_aas_example(file, manager)
+            info = manager.format_state_manager(self.optionsComboBox.currentData())
+            self.plainTextEdit.setPlainText(info)
+        except Exception as e:
+            QMessageBox.critical(self, "Error", str(e))
 
 
 class AboutDialog(QMessageBox):
@@ -38,7 +111,7 @@ class AboutDialog(QMessageBox):
         self.setWindowTitle("About")
         self.setText(
             f"{APPLICATION_NAME}\n"
-            f"Version: {VERSION}"
+            f"Version: {VERSION}\n"
             f"Contributors: {CONTRIBUTORS}\n"
             f"Contact: {CONTACT}\n"
             f"Copyright (C) {COPYRIGHT_YEAR}"
