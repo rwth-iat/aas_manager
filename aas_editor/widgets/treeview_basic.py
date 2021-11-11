@@ -37,6 +37,7 @@ class BasicTreeView(QTreeView):
         super(BasicTreeView, self).__init__(parent)
         self.emptyViewMsg = emptyViewMsg
         self.emptyViewIcon = emptyViewIcon
+        self.setMouseTracking(True)
 
     def setModel(self, model: QtCore.QAbstractItemModel) -> None:
         super(BasicTreeView, self).setModel(model)

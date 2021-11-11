@@ -189,7 +189,7 @@ class StandardItem(QObject):
                 return self.objTypeName
             if column == TYPE_HINT_COLUMN:
                 return self.typehintName
-        if role == Qt.ToolTipRole:
+        if role in (Qt.ToolTipRole, Qt.StatusTipRole):
             toolTip = self.getToolTip(column)
             if toolTip:
                 return toolTip
