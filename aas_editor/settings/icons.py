@@ -12,7 +12,7 @@ from PyQt5.QtGui import QColor, QIcon
 
 from aas_editor.settings.colors import LIGHT_BLUE
 
-ICON_DEFAULTS = {'scale_factor': 1.2,
+ICON_DEFAULTS = {'scale_factor': 1.0,
                  'color': QColor(LIGHT_BLUE.red(), LIGHT_BLUE.green(), LIGHT_BLUE.blue(), 225),
                  'color_active': QColor(LIGHT_BLUE.red(), LIGHT_BLUE.green(), LIGHT_BLUE.blue(),
                                         255),

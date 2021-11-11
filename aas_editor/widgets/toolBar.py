@@ -28,4 +28,3 @@ class ToolBar(QToolBar):
     def __init__(self, parent: Optional[QWidget] = ...):
         super(ToolBar, self).__init__(parent)
         self.setFixedHeight(TOOLBARS_HEIGHT)
-        self.setIconSize(QSize(TOOLBARS_HEIGHT, TOOLBARS_HEIGHT))
