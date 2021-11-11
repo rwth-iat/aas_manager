@@ -231,7 +231,7 @@ def delAASParents(aasObj): #TODO change if aas changes
 #     return issubclass(typ, types)
 
 def getDoc(typ: type) -> str:
-    return typ.__init__.__doc__
+    return typ.__doc__
 
 
 def getAttrDoc(attr: str, parentObj: type = None, doc: str = None) -> str:
@@ -247,12 +247,12 @@ def getAttrDoc(attr: str, parentObj: type = None, doc: str = None) -> str:
 
     if doc:
         doc = " ".join(doc.split())
-        pattern = fr":param {attr}_?:(.*?)(:param|:raises|TODO|$)"
+        pattern = fr":ivar {attr}_?:(.*?)(:ivar|:raises|TODO|$)"
         res = re.search(pattern, doc)
         if res:
             reg = res.regs[1]
             doc = doc[reg[0]: reg[1]]
-            doc = re.sub("([(]from .*[)])?", "", doc)
+            doc = re.sub("([(]inherited from.*[)])?", "", doc)
             doc = f"{attr}: {doc}"
             return doc
     return ""
