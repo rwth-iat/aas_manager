@@ -33,7 +33,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.packTreeModel = PacksTable(COLUMNS_IN_PACKS_TABLE)
         self.packTreeView.setModelWithProxy(self.packTreeModel)
-        self.packTreeView.hideColumn(VALUE_COLUMN) #FIXME type column value is corrupted if no value column at all
         dialogs.AASReferenceGroupBox.CHOOSE_FRM_VIEW = self.packTreeView
 
         AddressLine.setModel(self.packTreeView.model())
