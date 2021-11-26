@@ -501,12 +501,13 @@ class IterableGroupBox(GroupBox):
 class TypeOptionObjGroupBox(GroupBox):
     """GroupBox with option to choose widget for which type will be generated"""
     def __init__(self, objTypes: List, **kwargs):
-        super(TypeOptionObjGroupBox, self).__init__(objTypes, **kwargs)
+        super(TypeOptionObjGroupBox, self).__init__(objTypes[0], **kwargs)
 
+        self.objTypes = list(objTypes)
         # remove abstract types
-        for typ in list(self.objType):
+        for typ in list(self.objTypes):
             if isabstract(typ):
-                self.objType.remove(typ)
+                self.objTypes.remove(typ)
 
         self.initTypeComboBox()
         currObjType = self.typeComboBox.currentData()
@@ -524,7 +525,7 @@ class TypeOptionObjGroupBox(GroupBox):
     def initTypeComboBox(self):
         """Init func for ComboBox where desired Type of input data will be chosen"""
         self.typeComboBox = CompleterComboBox(self)
-        for typ in self.objType:
+        for typ in self.objTypes:
             self.typeComboBox.addItem(getTypeName(typ), typ)
             self.typeComboBox.model().sort(0, Qt.AscendingOrder)
         if self.objVal:
@@ -552,7 +553,7 @@ class TypeOptionObjGroupBox(GroupBox):
         return self.widget.getObj2add()
 
     def setVal(self, val):
-        if val and type(val) in self.objType:
+        if val and type(val) in self.objTypes:
             self.objVal = val
             self.typeComboBox.setCurrentIndex(self.typeComboBox.findData(type(self.objVal)))
 
