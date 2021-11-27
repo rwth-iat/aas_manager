@@ -15,10 +15,11 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
+from typing import Optional
 
 from PyQt5.QtCore import Qt, pyqtSignal, QModelIndex, QTimer
 from PyQt5.QtGui import QClipboard
-from PyQt5.QtWidgets import QAction, QMenu, QApplication, QDialog, QMessageBox
+from PyQt5.QtWidgets import QAction, QMenu, QApplication, QDialog, QMessageBox, QHeaderView, QWidget
 
 from aas_editor.delegates import ColorDelegate
 from aas_editor import dialogs
@@ -37,6 +38,31 @@ from aas_editor.package import Package
 from aas_editor.widgets.treeview_basic import BasicTreeView
 
 
+class HeaderView(QHeaderView):
+    def __init__(self, orientation, parent: Optional[QWidget] = ...) -> None:
+        super(HeaderView, self).__init__(orientation, parent)
+        self.setSectionsMovable(True)
+        self.setStretchLastSection(True)
+
+        self.sortIndicatorChanged.connect(lambda a,b: print(a,b))
+        self.currSortSection = self.sortIndicatorSection()
+        self.currOrder = self.sortIndicatorOrder()
+        self.sectionClicked.connect(self.onSectionClicked)
+
+    def onSectionClicked(self, logicalIndex: int) -> None:
+        if self.currSortSection == -1 or self.currSortSection != logicalIndex:
+            self.setSortIndicator(logicalIndex, 0)
+            self.currSortSection = logicalIndex
+            self.currOrder = 0
+        elif self.currOrder == 0:
+            self.setSortIndicator(logicalIndex, 1)
+            self.currSortSection = logicalIndex
+            self.currOrder = 1
+        else:
+            self.setSortIndicator(-1, 0)
+            self.currSortSection = -1
+
+
 class TreeView(BasicTreeView):
     openInCurrTabClicked = pyqtSignal(QModelIndex)
     openInNewTabClicked = pyqtSignal(QModelIndex)
@@ -52,12 +78,8 @@ class TreeView(BasicTreeView):
         self.setUniformRowHeights(True)
         self.buildHandlers()
         self.setItemDelegate(ColorDelegate())  # set ColorDelegate as standard delegate
-        # TODO make it possible to turn off sorting
         self.setSortingEnabled(True)
-        header = self.header()
-        header.setSortIndicatorShown(True)
-        header.setSectionsClickable(True)
-        header.setSortIndicator(-1, 0)
+        self.setHeader(HeaderView(Qt.Horizontal, self))
 
     # noinspection PyArgumentList
     def initActions(self):
