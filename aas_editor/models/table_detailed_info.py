@@ -46,13 +46,6 @@ class DetailedInfoTable(StandardTable):
         else:
             return super(DetailedInfoTable, self).data(index, role)
 
-    def _getFont(self, index: QModelIndex):
-        font = super(DetailedInfoTable, self)._getFont(index)
-        if index.column() == ATTRIBUTE_COLUMN:
-            if not isinstance(index.parent().data(OBJECT_ROLE), dict):
-                font.setBold(True)
-        return font
-
     def getLinkedItem(self, index: QModelIndex) -> QModelIndex:
         if not index.data(IS_LINK_ROLE):
             return QModelIndex()

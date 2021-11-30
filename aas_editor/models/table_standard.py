@@ -268,10 +268,13 @@ class StandardTable(QAbstractItemModel):
                 return CHANGED_BLUE
         return QVariant()
 
-    def _getFont(self, index: QModelIndex) -> QFont:
+    def _getFont(self, index: QModelIndex):
         font = QFont(self.currFont)
         if index.column() == VALUE_COLUMN and index.data(IS_LINK_ROLE):
             font.setUnderline(True)
+        elif index.column() == ATTRIBUTE_COLUMN:
+            if not isinstance(index.parent().data(OBJECT_ROLE), dict):
+                font.setBold(True)
         return font
 
     def setData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
