@@ -46,31 +46,6 @@ class DetailedInfoTable(StandardTable):
         else:
             return super(DetailedInfoTable, self).data(index, role)
 
-    def _getBgColor(self, index: QModelIndex):
-        bg = super(DetailedInfoTable, self)._getBgColor(index)
-        if isinstance(bg, QBrush) and bg.color().alpha():
-            return bg.color()
-        color = LIGHT_BLUE
-        if index.parent().isValid():
-            if index.row() == 0:
-                color.setAlpha(260 - index.parent().data(Qt.BackgroundRole).alpha())
-            else:
-                color.setAlpha(
-                    260 - index.siblingAtRow(index.row() - 1).data(Qt.BackgroundRole).alpha())
-        else:
-            if index.row() % 2:
-                color.setAlpha(150)
-            else:
-                color.setAlpha(110)
-        return color
-
-    def _getFont(self, index: QModelIndex):
-        font = super(DetailedInfoTable, self)._getFont(index)
-        if index.column() == ATTRIBUTE_COLUMN:
-            if not isinstance(index.parent().data(OBJECT_ROLE), dict):
-                font.setBold(True)
-        return font
-
     def getLinkedItem(self, index: QModelIndex) -> QModelIndex:
         if not index.data(IS_LINK_ROLE):
             return QModelIndex()

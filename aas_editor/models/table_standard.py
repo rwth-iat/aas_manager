@@ -235,15 +235,13 @@ class StandardTable(QAbstractItemModel):
         return True
 
     def data(self, index: QModelIndex, role: int = ...) -> Any:
-        if role == Qt.BackgroundRole:
-            return self._getBgColor(index)
         if role == Qt.ForegroundRole:
             return self._getFgColor(index)
         if role == Qt.FontRole:
             return self._getFont(index)
         if role == Qt.SizeHintRole:
             fontSize = self.currFont.pointSize()
-            return QSize(-1, fontSize*1.7)
+            return QSize(-1, fontSize*1.9)
         if role == Qt.TextAlignmentRole:
             return Qt.AlignLeft | Qt.AlignBottom
         if role == DATA_CHANGE_FAILED_ROLE:
@@ -256,9 +254,6 @@ class StandardTable(QAbstractItemModel):
             item = self.objByIndex(index)
             column = index.column()
             return item.data(role, column, column_name=self._columns[column])
-
-    def _getBgColor(self, index: QModelIndex):
-        return self.objByIndex(index).data(Qt.BackgroundRole)
 
     def _getFgColor(self, index: QModelIndex):
         column = index.column()
@@ -274,10 +269,13 @@ class StandardTable(QAbstractItemModel):
                 return CHANGED_BLUE
         return QVariant()
 
-    def _getFont(self, index: QModelIndex) -> QFont:
+    def _getFont(self, index: QModelIndex):
         font = QFont(self.currFont)
         if index.column() == VALUE_COLUMN and index.data(IS_LINK_ROLE):
             font.setUnderline(True)
+        elif index.column() == ATTRIBUTE_COLUMN:
+            if not isinstance(index.parent().data(OBJECT_ROLE), dict):
+                font.setBold(True)
         return font
 
     def setData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
@@ -285,11 +283,6 @@ class StandardTable(QAbstractItemModel):
             index = QModelIndex(index)
         if not index.isValid() and role not in (Qt.FontRole, ADD_ITEM_ROLE, UNDO_ROLE, REDO_ROLE):
             return QVariant()
-        elif role == Qt.BackgroundRole:
-            item = self.objByIndex(index)
-            res = item.setData(value, role, index.column())
-            self.dataChanged.emit(index, index)
-            return res
         elif role == Qt.FontRole:
             if isinstance(value, QFont):
                 font = QFont(value)

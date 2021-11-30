@@ -10,7 +10,8 @@
 from PyQt5.QtGui import QColor
 
 LIGHT_BLUE = QColor(132, 185, 255)
-LINK_BLUE = QColor(26, 13, 171)
+LIGHT_BLUE_ALTERNATE = QColor(132, 185, 255, 30)
+LINK_BLUE = QColor(40, 123, 220)
 CHANGED_BLUE = QColor(83, 148, 236, 255)
 HIGHLIGHT_YELLOW = QColor(255, 255, 0, 130)
 RED = QColor("red")
