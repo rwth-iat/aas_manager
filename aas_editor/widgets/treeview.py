@@ -17,7 +17,7 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 from typing import Optional
 
-from PyQt5.QtCore import Qt, pyqtSignal, QModelIndex, QTimer
+from PyQt5.QtCore import Qt, pyqtSignal, QModelIndex, QTimer, QAbstractItemModel
 from PyQt5.QtGui import QClipboard
 from PyQt5.QtWidgets import QAction, QMenu, QApplication, QDialog, QMessageBox, QHeaderView, QWidget
 
@@ -49,13 +49,48 @@ class HeaderView(QHeaderView):
         self.currOrder = self.sortIndicatorOrder()
         self.sectionClicked.connect(self.onSectionClicked)
 
+        self.sectionCountChanged.connect(self.initShowSectionActs)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.ActionsContextMenu)
+
+    def headerDataChanged(self, orientation: Qt.Orientation, logicalFirst: int, logicalLast: int) -> None:
+        self.initShowSectionActs()
+        super(HeaderView, self).headerDataChanged(orientation, logicalFirst, logicalLast)
+
+    def initShowSectionActs(self):
+        for action in self.actions():
+            self.removeAction(action)
+
+        for section in range(self.count()):
+            sectionName = self.text(section)
+            sectionShown = not self.isSectionHidden(section)
+            act = QAction(sectionName, self,
+                          toolTip=f"Show/Hide section {sectionName}",
+                          statusTip=f"Show/Hide section {sectionName}",
+                          checkable=True)
+            act.setData(section)
+            act.setChecked(sectionShown)
+            act.toggled.connect(self.toggleShowColumnAct)
+            self.addAction(act)
+
+    def toggleShowColumnAct(self, toggled):
+        action: QAction = self.sender()
+        section = action.data()
+        if toggled:
+            self.showSection(section)
+        else:
+            self.hideSection(section)
+
+    def text(self, section):
+        if isinstance(self.model(), QAbstractItemModel):
+            return self.model().headerData(section, self.orientation())
+
     def onSectionClicked(self, logicalIndex: int) -> None:
         if self.currSortSection == -1 or self.currSortSection != logicalIndex:
-            self.setSortIndicator(logicalIndex, 0)
+            self.setSortIndicator(logicalIndex, Qt.SortOrder.AscendingOrder)
             self.currSortSection = logicalIndex
             self.currOrder = 0
         elif self.currOrder == 0:
-            self.setSortIndicator(logicalIndex, 1)
+            self.setSortIndicator(logicalIndex, Qt.SortOrder.DescendingOrder)
             self.currSortSection = logicalIndex
             self.currOrder = 1
         else:
