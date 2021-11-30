@@ -339,7 +339,16 @@ class StandardTable(QAbstractItemModel):
                     item.parentObj.update([item.obj])
                 else:
                     oldValue = getattr(item.parentObj, item.objName)
-                    setattr(item.parentObj, item.objName, value)
+                    try:
+                        setattr(item.parentObj, item.objName, value)
+                    except TypeError as e:
+                        #FIXME: Warning:pyi40aas specific code part for setting Property.value
+                        try:
+                            valueTypeItem = self.match(QModelIndex(), Qt.DisplayRole, "value_type", 1)[0]
+                            self.setData(valueTypeItem, type(value), Qt.EditRole)
+                        except IndexError:
+                            raise e
+                        setattr(item.parentObj, item.objName, value)
                     item.obj = getattr(item.parentObj, item.objName)
                 self.setChanged(index)
                 self.update(index)
