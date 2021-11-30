@@ -235,8 +235,6 @@ class StandardTable(QAbstractItemModel):
         return True
 
     def data(self, index: QModelIndex, role: int = ...) -> Any:
-        if role == Qt.BackgroundRole:
-            return self._getBgColor(index)
         if role == Qt.ForegroundRole:
             return self._getFgColor(index)
         if role == Qt.FontRole:
@@ -255,9 +253,6 @@ class StandardTable(QAbstractItemModel):
         else:
             item = self.objByIndex(index)
             return item.data(role, index.column())
-
-    def _getBgColor(self, index: QModelIndex):
-        return self.objByIndex(index).data(Qt.BackgroundRole)
 
     def _getFgColor(self, index: QModelIndex):
         column = index.column()
@@ -284,11 +279,6 @@ class StandardTable(QAbstractItemModel):
             index = QModelIndex(index)
         if not index.isValid() and role not in (Qt.FontRole, ADD_ITEM_ROLE, UNDO_ROLE, REDO_ROLE):
             return QVariant()
-        elif role == Qt.BackgroundRole:
-            item = self.objByIndex(index)
-            res = item.setData(value, role, index.column())
-            self.dataChanged.emit(index, index)
-            return res
         elif role == Qt.FontRole:
             if isinstance(value, QFont):
                 font = QFont(value)

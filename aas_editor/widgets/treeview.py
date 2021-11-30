@@ -115,6 +115,9 @@ class TreeView(BasicTreeView):
         self.setItemDelegate(ColorDelegate())  # set ColorDelegate as standard delegate
         self.setSortingEnabled(True)
         self.setHeader(HeaderView(Qt.Horizontal, self))
+        p = self.palette()
+        p.setColor(QPalette.AlternateBase, QColor(LIGHT_BLUE_ALTERNATE))
+        self.setPalette(p)
 
     # noinspection PyArgumentList
     def initActions(self):

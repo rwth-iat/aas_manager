@@ -46,7 +46,6 @@ class StandardItem(QObject):
         super().__init__(parent)
         self.new = new
         self.changed = False
-        self.bg = QBrush(QColor(0, 0, 0, 0))
 
         # following attrs will be set during self.obj = obj
         self.typecheck = None
@@ -145,12 +144,6 @@ class StandardItem(QObject):
                     if isinstance(self.obj, cls):
                         self.icon = QIcon(TYPE_ICON_DICT[cls])
 
-    def setData(self, value, role, column=ATTRIBUTE_COLUMN):
-        if role == Qt.BackgroundRole and isinstance(value, QBrush):
-            self.bg = value
-            return True
-        return False
-
     def data(self, role, column=ATTRIBUTE_COLUMN):
         if role == Qt.WhatsThisRole:
             return self.doc
@@ -176,8 +169,6 @@ class StandardItem(QObject):
             return self.isUrlMedia
         if role == MEDIA_CONTENT_ROLE:
             return self.getMediaContent()
-        if role == Qt.BackgroundRole:
-            return self.bg
         if role == Qt.DecorationRole and column == 0:
             return self.icon
         if role == Qt.DisplayRole:
