@@ -20,7 +20,7 @@ import inspect
 import re
 from abc import ABCMeta
 from enum import Enum
-from typing import List, Dict, Type
+from typing import List, Dict, Type, Set
 
 from PyQt5.QtCore import Qt, QFile, QTextStream, QModelIndex
 from PyQt5.QtWidgets import QApplication
@@ -61,6 +61,29 @@ def getAttrs4detailInfo(obj, exclSpecial: bool = True, exclCallable: bool = True
             continue
     attrs.sort(key=attrOrder)
     return attrs
+
+
+def getAttrs4inheritors(cls) -> Set[str]:
+    """Return attributes of all inheritor classes of the cls"""
+    aas_attrs = set()
+    referableClasses = inheritors(cls)
+    for cls in referableClasses:
+        attrs = list(getParams4init(cls, withDefaults=False).keys())
+        params_to_attrs = util_classes.ClassesInfo.params_to_attrs(cls)
+        for param, attr in params_to_attrs.items():
+            try:
+                attrs.remove(param)
+                attrs.append(attr)
+            except ValueError:
+                print("Error occurred while replacing param to attr: probably CLASSES_INFO is corrupted")
+        hidden_attrs = util_classes.ClassesInfo.hiddenAttrs(cls)
+        for hidden_attr in hidden_attrs:
+            try:
+                attrs.remove(hidden_attr)
+            except ValueError:
+                print("Error occurred while removing hidden attr: probably CLASSES_INFO is corrupted")
+        aas_attrs.update(attrs)
+    return aas_attrs
 
 
 def simplifyInfo(obj, attrName: str = "") -> str:
