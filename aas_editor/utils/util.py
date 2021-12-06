@@ -25,11 +25,9 @@ from typing import List, Dict, Type
 from PyQt5.QtCore import Qt, QFile, QTextStream, QModelIndex
 from PyQt5.QtWidgets import QApplication
 
-from aas_editor.settings import NOT_GIVEN
-from aas_editor.utils.util_classes import ClassesInfo
-from aas_editor.settings.aas_settings import ATTR_ORDER, PREFERED_LANGS_ORDER, \
-    ATTR_INFOS_TO_SIMPLIFY
-from aas_editor.utils.util_type import removeOptional, isIterable, getTypeName
+from aas_editor import settings
+import aas_editor.utils.util_classes as util_classes
+import aas_editor.utils.util_type as util_type
 
 
 def nameIsSpecial(method_name):
@@ -49,14 +47,14 @@ def getAttrs(obj, exclSpecial=True, exclCallable=True) -> List[str]:
 
 
 def attrOrder(attr):
-    if attr in ATTR_ORDER:
-        return ATTR_ORDER.index(attr)
+    if attr in settings.ATTR_ORDER:
+        return settings.ATTR_ORDER.index(attr)
     return 1000
 
 
 def getAttrs4detailInfo(obj, exclSpecial: bool = True, exclCallable: bool = True) -> List[str]:
     attrs = getAttrs(obj, exclSpecial, exclCallable)
-    for attr in ClassesInfo.hiddenAttrs(type(obj)):
+    for attr in util_classes.ClassesInfo.hiddenAttrs(type(obj)):
         try:
             attrs.remove(attr)
         except ValueError:
@@ -69,11 +67,11 @@ def simplifyInfo(obj, attrName: str = "") -> str:
     res = str(obj)[0:150]
     if len(res)>=150:
         res = f"{res}..."
-    if isinstance(obj, ATTR_INFOS_TO_SIMPLIFY):
+    if isinstance(obj, settings.ATTR_INFOS_TO_SIMPLIFY):
         res = re.sub("^[A-Z]\w*[(]", "", res)
         res = res.rstrip(")")
     elif inspect.isclass(obj):
-        res = getTypeName(obj)
+        res = util_type.getTypeName(obj)
     elif isinstance(obj, Enum):
         res = obj.name
     elif isinstance(obj, dict) and attrName == "description":
@@ -83,13 +81,13 @@ def simplifyInfo(obj, attrName: str = "") -> str:
 
 def getDescription(descriptions: dict) -> str:
     if descriptions:
-        for lang in PREFERED_LANGS_ORDER:
+        for lang in settings.PREFERED_LANGS_ORDER:
             if lang in descriptions:
                 return descriptions.get(lang)
         return tuple(descriptions.values())[0]
 
 
-def getDefaultVal(objType: Type, param: str, default=NOT_GIVEN):
+def getDefaultVal(objType: Type, param: str, default=settings.NOT_GIVEN):
     """
     :param objType: type
     :param param: name of argument in __init__ or __new__
@@ -113,13 +111,13 @@ def getDefaultVal(objType: Type, param: str, default=NOT_GIVEN):
             except IndexError:
                 pass
 
-    if default == NOT_GIVEN:
+    if default == settings.NOT_GIVEN:
         raise AttributeError("No such default parameter found:", param)
     else:
         return default
 
 
-def getParams4init(objType: Type):
+def getParams4init(objType: Type, withDefaults=True):
     """Return params for init with their type and default values"""
     if hasattr(objType, "__origin__") and objType.__origin__:
         objType = objType.__origin__
@@ -147,7 +145,10 @@ def getParams4init(objType: Type):
     except KeyError:
         pass
 
-    return params, defaults
+    if withDefaults:
+        return params, defaults
+    else:
+        return params
 
 
 def getReqParams4init(objType: Type, rmDefParams=True,
@@ -162,7 +163,7 @@ def getReqParams4init(objType: Type, rmDefParams=True,
     if delOptional:
         for param in params:
             typeHint = params[param]
-            params[param] = removeOptional(typeHint)
+            params[param] = util_type.removeOptional(typeHint)
 
     if attrsToHide:
         for attr in attrsToHide:
@@ -190,7 +191,7 @@ def delAASParents(aasObj): #TODO change if aas changes
 
         if hasattr(attr, "parent"):
             attr.parent = None
-        if isIterable(attr):
+        if util_type.isIterable(attr):
             for item in attr:
                 if hasattr(item, "parent"):
                     item.parent = None

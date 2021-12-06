@@ -26,6 +26,7 @@ from typing import Union, Tuple, Iterable
 from aas.model import AASReference
 
 from aas_editor import settings
+import aas_editor.settings.aas_settings as aas_settings
 from aas_editor.utils import util
 from aas_editor.utils import util_classes
 
@@ -145,8 +146,8 @@ def getTypeName(objType) -> str:
     nameAttrs = ("__name__", "_name", "name")
     for nameAttr in nameAttrs:
         try:
-            if objType in settings.TYPE_NAMES_DICT:
-                res = settings.TYPE_NAMES_DICT[objType]
+            if objType in aas_settings.TYPE_NAMES_DICT:
+                res = aas_settings.TYPE_NAMES_DICT[objType]
                 if isinstance(res, dict):
                     res = res["class"]
             else:
