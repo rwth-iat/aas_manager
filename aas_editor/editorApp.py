@@ -39,11 +39,11 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         AddressLine.setModel(self.packTreeView.model())
 
         self.searchBarPack = SearchBar(self.packTreeView, filterColumns=[ATTRIBUTE_COLUMN],
-                                       parent=self.leftLayoutWidget)
+                                       parent=self.leftLayoutWidget, closable=True)
         self.leftVerticalLayout.insertWidget(1, self.searchBarPack)
 
         welcomeTab = self.mainTabWidget.addTab(Tab(parent=self.mainTabWidget), "Welcome")
-        self.mainTabWidget.widget(welcomeTab).openSearchBar()
+        self.mainTabWidget.widget(welcomeTab).searchBar.showFocused()
 
         self.initActions()
         self.initMenu()

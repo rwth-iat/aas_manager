@@ -136,6 +136,10 @@ class SearchBar(ToolBar):
         else:
             self.hide()
 
+    def showFocused(self):
+        self.show()
+        self.searchLine.setFocus()
+
     def initLayout(self):
         pathLayout = QHBoxLayout(self)
         pathLayout.setContentsMargins(0, 0, 0, 0)

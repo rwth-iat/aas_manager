@@ -404,7 +404,7 @@ class Tab(QWidget):
         self.searchBar = SearchBar(self.attrsTreeView, parent=self,
                                    filterColumns=[ATTRIBUTE_COLUMN, VALUE_COLUMN], closable=True)
         self.searchBar.hide()
-        self.openSearchBarSC = QShortcut(SC_SEARCH, self, activated=self.openSearchBar)
+        self.openSearchBarSC = QShortcut(SC_SEARCH, self, activated=self.searchBar.showFocused)
 
         self.packItem = QPersistentModelIndex(QModelIndex())
         self.prevItems = []
@@ -437,10 +437,6 @@ class Tab(QWidget):
 
     def windowIcon(self) -> QIcon:
         return self.packItem.data(Qt.DecorationRole)
-
-    def openSearchBar(self):
-        self.searchBar.show()
-        self.searchBar.searchLine.setFocus()
 
     def openItem(self, packItem: QModelIndex):
         if not packItem == QModelIndex(self.packItem):
