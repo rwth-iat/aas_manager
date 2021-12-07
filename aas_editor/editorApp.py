@@ -17,7 +17,7 @@ from aas_editor.settings.app_settings import *
 from aas_editor.settings.icons import APP_ICON, EXIT_ICON, SETTINGS_ICON
 from aas_editor.settings.shortcuts import SC_FOCUS2RIGTH_TREE, SC_FOCUS2LEFT_TREE
 from aas_editor.settings_dialog import SettingsDialog
-from aas_editor.widgets import SearchBar, AddressLine
+from aas_editor.widgets import AddressLine
 from aas_editor import design
 from aas_editor.models import DetailedInfoTable, PacksTable
 from aas_editor.utils.util import toggleStylesheet
@@ -37,10 +37,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         dialogs.AASReferenceGroupBox.CHOOSE_FRM_VIEW = self.packTreeView
 
         AddressLine.setModel(self.packTreeView.model())
-
-        self.searchBarPack = SearchBar(self.packTreeView, filterColumns=[ATTRIBUTE_COLUMN],
-                                       parent=self.leftLayoutWidget, closable=True)
-        self.leftVerticalLayout.insertWidget(1, self.searchBarPack)
 
         welcomeTab = self.mainTabWidget.addTab(Tab(parent=self.mainTabWidget), "Welcome")
         self.mainTabWidget.widget(welcomeTab).searchBar.showFocused()

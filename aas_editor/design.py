@@ -19,10 +19,10 @@
 
 
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtWidgets import QFrame
+from PyQt5.QtWidgets import QFrame, QWidget, QHBoxLayout
 
-from aas_editor.settings.app_settings import APPLICATION_NAME
-from aas_editor.widgets import ToolBar, PackTreeView, TabWidget
+from aas_editor.settings.app_settings import APPLICATION_NAME, TOOLBARS_HEIGHT, ATTRIBUTE_COLUMN
+from aas_editor.widgets import ToolBar, PackTreeView, TabWidget, SearchBar
 
 
 class Ui_MainWindow(object):
@@ -36,7 +36,7 @@ class Ui_MainWindow(object):
         self.gridLayout.setContentsMargins(2, 0, 2, 0)
 
         self.splitter = QtWidgets.QSplitter(self.centralwidget)
-        self.splitter.setOrientation(QtCore.Qt.Horizontal)
+        self.splitter.setOrientation(QtCore.Qt.Vertical)
         self.splitter.setObjectName("splitter")
 
         # Left part
@@ -48,16 +48,26 @@ class Ui_MainWindow(object):
         self.leftVerticalLayout.setSpacing(5)
         self.leftVerticalLayout.setObjectName("verticalLayout")
 
-        self.toolBar = ToolBar(self.leftLayoutWidget)
-        self.toolBar.setObjectName("toolBar")
-        self.leftVerticalLayout.addWidget(self.toolBar)
-
         self.packTreeView = PackTreeView(self.leftLayoutWidget)
         self.packTreeView.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.packTreeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.packTreeView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
         self.packTreeView.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
         self.packTreeView.setObjectName("packTreeView")
+
+        self.toolBar = ToolBar(self.leftLayoutWidget)
+        self.toolBar.setObjectName("toolBar")
+        self.leftVerticalLayout.addWidget(self.toolBar)
+        self.searchBarPack = SearchBar(self.packTreeView, filterColumns=[ATTRIBUTE_COLUMN],
+                                       parent=self.leftLayoutWidget, closable=True)
+        toolBarWidget = QWidget()
+        toolBarLayout = QHBoxLayout(toolBarWidget)
+        toolBarLayout.setContentsMargins(0, 0, 0, 0)
+        toolBarLayout.addWidget(self.toolBar)
+        toolBarLayout.addWidget(self.searchBarPack)
+        toolBarWidget.setFixedHeight(TOOLBARS_HEIGHT)
+
+        self.leftVerticalLayout.addWidget(toolBarWidget)
         self.leftVerticalLayout.addWidget(self.packTreeView)
 
         # Right part
