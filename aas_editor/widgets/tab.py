@@ -388,17 +388,11 @@ class Tab(QWidget):
         self.attrsTreeView.setFrameShape(QFrame.NoFrame)
 
         self.toolBar = ToolBar(self)
-        self.toolBar.addAction(self.attrsTreeView.zoomInAct)
-        self.toolBar.addAction(self.attrsTreeView.zoomOutAct)
         self.toolBar.addAction(self.attrsTreeView.collapseAllAct)
         self.toolBar.addAction(self.attrsTreeView.expandAllAct)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.attrsTreeView.undoAct)
         self.toolBar.addAction(self.attrsTreeView.redoAct)
-        self.toolBar.addAction(self.attrsTreeView.copyAct)
-        self.toolBar.addAction(self.attrsTreeView.cutAct)
-        self.toolBar.addAction(self.attrsTreeView.pasteAct)
-        self.toolBar.addAction(self.attrsTreeView.delClearAct)
         self.toolBar.addAction(self.attrsTreeView.editCreateInDialogAct)
         self.toolBar.addAction(self.attrsTreeView.addAct)
         self.searchBar = SearchBar(self.attrsTreeView, parent=self,

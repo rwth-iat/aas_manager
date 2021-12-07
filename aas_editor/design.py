@@ -52,9 +52,6 @@ class Ui_MainWindow(object):
         self.toolBar.setObjectName("toolBar")
         self.leftVerticalLayout.addWidget(self.toolBar)
 
-        self.packToolBar = ToolBar(self.leftLayoutWidget)
-        self.leftVerticalLayout.addWidget(self.packToolBar)
-
         self.packTreeView = PackTreeView(self.leftLayoutWidget)
         self.packTreeView.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.packTreeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)

@@ -145,11 +145,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menubar.addAction(self.menuHelp.menuAction())
 
     def initToolbars(self):
-        self.toolBar.addAction(self.packTreeView.saveAllAct)
-        self.toolBar.addAction(self.packTreeView.saveAct)
-        self.toolBar.addAction(self.packTreeView.openPackAct)
-        self.toolBar.addAction(self.packTreeView.newPackAct)
-
         settingsBtn = QToolButton(icon=SETTINGS_ICON)
         settingsBtn.setPopupMode(QToolButton.InstantPopup)
         menuSettings = QMenu("Settings")
@@ -159,18 +154,19 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         menuSettings.addAction(self.packTreeView.autoScrollFromSrcAct)
         settingsBtn.setMenu(menuSettings)
 
-        self.packToolBar.addWidget(settingsBtn)
-        self.packToolBar.addAction(self.packTreeView.collapseAllAct)
-        self.packToolBar.addAction(self.packTreeView.expandAllAct)
-        self.packToolBar.addSeparator()
-        self.packToolBar.addAction(self.packTreeView.copyAct)
-        self.packToolBar.addAction(self.packTreeView.cutAct)
-        self.packToolBar.addAction(self.packTreeView.pasteAct)
-        self.packToolBar.addAction(self.packTreeView.delClearAct)
-        self.packToolBar.addAction(self.packTreeView.addAct)
-
-        self.packToolBar.addSeparator()
-        self.packToolBar.addAction(self.packTreeView.shellViewAct)
+        self.toolBar.addWidget(settingsBtn)
+        self.toolBar.addSeparator()
+        self.toolBar.addAction(self.packTreeView.saveAllAct)
+        self.toolBar.addAction(self.packTreeView.saveAct)
+        self.toolBar.addAction(self.packTreeView.openPackAct)
+        self.toolBar.addAction(self.packTreeView.newPackAct)
+        self.toolBar.addSeparator()
+        self.toolBar.addAction(self.packTreeView.collapseAllAct)
+        self.toolBar.addAction(self.packTreeView.expandAllAct)
+        self.toolBar.addSeparator()
+        self.toolBar.addAction(self.packTreeView.addAct)
+        self.toolBar.addSeparator()
+        self.toolBar.addAction(self.packTreeView.shellViewAct)
 
     @staticmethod
     def iterItems(root):
