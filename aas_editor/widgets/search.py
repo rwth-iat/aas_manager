@@ -69,7 +69,7 @@ class SearchBar(ToolBar):
 
     def buildHandlers(self):
         self.view.modelChanged.connect(self.setModel)
-        self.closeBtn.clicked.connect(self.closeBar)
+        self.closeBtn.clicked.connect(lambda: self.toggleView(False))
         self.nextBtn.clicked.connect(self.next)
         self.prevBtn.clicked.connect(self.previous)
 
@@ -128,7 +128,7 @@ class SearchBar(ToolBar):
                        statusTip="Show/hide search bar",
                        toggled=self.toggleView,
                        checkable=True,
-                       checked=True)
+                       checked=self.isVisible())
 
     def toggleView(self, toggled: bool):
         if toggled:
