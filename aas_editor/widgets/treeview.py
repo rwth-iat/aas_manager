@@ -47,20 +47,25 @@ class HeaderView(QHeaderView):
         self.sortIndicatorChanged.connect(lambda a,b: print(a,b))
         self.currSortSection = self.sortIndicatorSection()
         self.currOrder = self.sortIndicatorOrder()
-        self.sectionClicked.connect(self.onSectionClicked)
+        self.sectionActions = {}
 
         self.sectionCountChanged.connect(self.initShowSectionActs)
+        self.sectionResized.connect(self.onSectionResized)
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.ActionsContextMenu)
+        self.sectionClicked.connect(self.onSectionClicked)
 
-    def headerDataChanged(self, orientation: Qt.Orientation, logicalFirst: int, logicalLast: int) -> None:
-        self.initShowSectionActs()
-        super(HeaderView, self).headerDataChanged(orientation, logicalFirst, logicalLast)
+    def onSectionResized(self, logicalIndex, oldSize, newSize):
+        if newSize == 0 and self.sectionActions[logicalIndex].isChecked():
+            self.sectionActions[logicalIndex].setChecked(False)
+        elif oldSize == 0 and not self.sectionActions[logicalIndex].isChecked():
+            self.sectionActions[logicalIndex].setChecked(True)
 
     def initShowSectionActs(self):
         for action in self.actions():
             self.removeAction(action)
 
-        for section in range(self.count()):
+        sections = self.count()
+        for section in range(sections):
             sectionName = self.text(section)
             sectionShown = not self.isSectionHidden(section)
             act = QAction(sectionName, self,
@@ -71,6 +76,7 @@ class HeaderView(QHeaderView):
             act.setChecked(sectionShown)
             act.toggled.connect(self.toggleShowColumnAct)
             self.addAction(act)
+            self.sectionActions[section] = act
 
     def toggleShowColumnAct(self, toggled):
         action: QAction = self.sender()
