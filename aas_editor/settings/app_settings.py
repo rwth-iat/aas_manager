@@ -35,6 +35,7 @@ DEFAULT_FONT.setPointSize(12)
 
 MAX_UNDOS = 10
 MAX_RECENT_FILES = 4
+MAX_SIGNS_TO_SHOW = 1000
 
 #FileDialogOptions
 FILE_DIALOG_OPTIONS = QFileDialog.DontResolveSymlinks | QFileDialog.DontUseNativeDialog
