@@ -102,6 +102,15 @@ def simplifyInfo(obj, attrName: str = "") -> str:
     return res
 
 
+def getLimitStr(obj, max_sgns=settings.MAX_SIGNS_TO_SHOW) -> str:
+    try:
+        if len(obj) > max_sgns:
+            return f"{str(obj)[0:max_sgns]}..."
+    except Exception as e:
+        print(e)
+    return str(obj)
+
+
 def getDescription(descriptions: dict) -> str:
     if descriptions:
         for lang in settings.PREFERED_LANGS_ORDER:

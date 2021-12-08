@@ -28,10 +28,10 @@ from aas_editor.settings.app_settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROL
     ATTRIBUTE_COLUMN, \
     VALUE_COLUMN, IS_LINK_ROLE, TYPE_HINT_ROLE, PARENT_OBJ_ROLE, TYPE_COLUMN, \
     TYPE_HINT_COLUMN, TYPE_CHECK_ROLE, IS_MEDIA_ROLE, IS_URL_MEDIA_ROLE, MEDIA_CONTENT_ROLE, \
-    TYPE_ROLE
+    TYPE_ROLE, MAX_SIGNS_TO_SHOW
 from aas_editor.settings.aas_settings import TYPE_ICON_DICT, LINK_TYPES, MEDIA_TYPES
 from aas_editor.settings.icons import FILE_ICON, MIME_TYPE_ICON_DICT
-from aas_editor.utils.util import getDescription, getAttrDoc, simplifyInfo
+from aas_editor.utils.util import getDescription, getAttrDoc, simplifyInfo, getLimitStr
 from aas_editor.utils.util_type import checkType, getTypeName, getTypeHintName, isIterable, \
     getAttrTypeHint, getIterItemTypeHint
 from PyQt5.QtCore import Qt
@@ -111,7 +111,7 @@ class StandardItem(QObject):
             return getTypeName(self.obj.__class__)
 
     @property
-    def typehint(self) -> str:
+    def typehint(self):
         return self._typehint
 
     @typehint.setter
@@ -173,17 +173,17 @@ class StandardItem(QObject):
             return self.icon
         if role == Qt.DisplayRole:
             if column == ATTRIBUTE_COLUMN:
-                return self.objectName
+                return getLimitStr(self.objectName)
             if column == VALUE_COLUMN:
-                return self.displayValue
+                return getLimitStr(self.displayValue)
             if column == TYPE_COLUMN:
-                return self.objTypeName
+                return getLimitStr(self.objTypeName)
             if column == TYPE_HINT_COLUMN:
-                return self.typehintName
+                return getLimitStr(self.typehintName)
         if role in (Qt.ToolTipRole, Qt.StatusTipRole):
             toolTip = self.getToolTip(column)
             if toolTip:
-                return toolTip
+                return getLimitStr(toolTip)
         if role == Qt.EditRole:
             if column == ATTRIBUTE_COLUMN:
                 return self.objectName
