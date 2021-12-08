@@ -12,12 +12,13 @@ from PyQt5.QtCore import QModelIndex
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from aas_editor.dialogs import AboutDialog, ComplianceToolDialog
+from aas_editor.settings import EXTENDED_COLUMNS_IN_PACK_TABLE
 from aas_editor.settings.app_settings import *
 from aas_editor.settings.icons import APP_ICON, EXIT_ICON, SETTINGS_ICON
 from aas_editor.settings.shortcuts import SC_FOCUS2RIGTH_TREE, SC_FOCUS2LEFT_TREE
 from aas_editor.settings_dialog import SettingsDialog
-from aas_editor.widgets import AddressLine
+from aas_editor.dialogs import AboutDialog, ComplianceToolDialog
+from aas_editor.widgets import SearchBar, AddressLine
 from aas_editor import design
 from aas_editor.models import DetailedInfoTable, PacksTable
 from aas_editor.utils.util import toggleStylesheet
@@ -31,9 +32,12 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.setupUi(self)
         self.currTheme = DEFAULT_THEME
 
-        self.packTreeModel = PacksTable(COLUMNS_IN_PACKS_TABLE)
+        columns_in_packs_table = list(DEFAULT_COLUMNS_IN_PACKS_TABLE)
+        columns_in_packs_table.extend(EXTENDED_COLUMNS_IN_PACK_TABLE)
+        self.packTreeModel = PacksTable(columns_in_packs_table)
         self.packTreeView.setModelWithProxy(self.packTreeModel)
-        self.packTreeView.hideColumn(VALUE_COLUMN) #FIXME type column value is corrupted if no value column at all
+        for column in range(len(columns_in_packs_table), 2, -1):
+            self.packTreeView.hideColumn(column)
         dialogs.AASReferenceGroupBox.CHOOSE_FRM_VIEW = self.packTreeView
 
         AddressLine.setModel(self.packTreeView.model())

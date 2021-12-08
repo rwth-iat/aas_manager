@@ -25,7 +25,7 @@ from aas.model import AssetAdministrationShell, Asset, ConceptDescription, Submo
     Entity, Capability, Event, Operation, RelationshipElement, AnnotatedRelationshipElement, \
     SubmodelElementCollectionUnordered, SubmodelElementCollectionOrdered, Range, Blob, File, \
     ReferenceElement, DataElement, AdministrativeInformation, Identifier, AbstractObjectStore, \
-    Namespace, SubmodelElementCollection, SubmodelElement, AASReference, ConceptDictionary
+    Namespace, SubmodelElementCollection, SubmodelElement, AASReference, ConceptDictionary, Referable
 from aas.model.datatypes import Decimal
 
 import aas_editor.package
@@ -33,6 +33,7 @@ from aas_editor.settings.util_constants import HIDDEN_ATTRS, CHANGED_PARENT_OBJ,
     ADD_TYPE, PACKVIEW_ATTRS_INFO, PARAMS_TO_ATTRS, DEFAULT_PARAMS_TO_HIDE
 from aas_editor.settings.icons import getCharsIcon
 from aas_editor.utils import util_classes
+import aas_editor.utils.util as util
 
 AAS_FILES_FILTER = "AAS files (*.aasx *.xml *.json)"
 AASX_FILES_FILTER = "AASX files (*.aasx)"
@@ -460,6 +461,10 @@ CLASSES_INFO = {
     },
 }
 
+EXTENDED_COLUMNS_IN_PACK_TABLE = list(util.getAttrs4inheritors(Referable))
+EXTENDED_COLUMNS_IN_PACK_TABLE.sort()
+for i, el in enumerate(EXTENDED_COLUMNS_IN_PACK_TABLE):
+    EXTENDED_COLUMNS_IN_PACK_TABLE[i] = f"attr: {EXTENDED_COLUMNS_IN_PACK_TABLE[i]}"
 
 ATTR_INFOS_TO_SIMPLIFY = (AdministrativeInformation, Identifier,)
 
