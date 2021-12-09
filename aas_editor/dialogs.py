@@ -543,7 +543,7 @@ class TypeOptionObjGroupBox(GroupBox):
         """Changes input GroupBox due to objType structure"""
         kwargs["objVal"] = self.objVal
         includeInheritedTyps = False if inheritors(objType) else False
-        newWidget = getInputWidget(objType, includeInheritedTypsncludeInheritedTyps=includeInheritedTyps, **kwargs)
+        newWidget = getInputWidget(objType, includeInheritedTyps=includeInheritedTyps, **kwargs)
         self.layout().replaceWidget(self.widget, newWidget)
         self.widget.close()
         newWidget.showMinimized()
