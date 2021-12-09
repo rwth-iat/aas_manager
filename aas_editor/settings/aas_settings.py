@@ -463,8 +463,6 @@ CLASSES_INFO = {
 
 EXTENDED_COLUMNS_IN_PACK_TABLE = list(util.getAttrs4inheritors(Referable))
 EXTENDED_COLUMNS_IN_PACK_TABLE.sort()
-for i, el in enumerate(EXTENDED_COLUMNS_IN_PACK_TABLE):
-    EXTENDED_COLUMNS_IN_PACK_TABLE[i] = f"attr: {EXTENDED_COLUMNS_IN_PACK_TABLE[i]}"
 
 ATTR_INFOS_TO_SIMPLIFY = (AdministrativeInformation, Identifier,)
 
