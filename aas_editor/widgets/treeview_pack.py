@@ -50,13 +50,12 @@ class PackTreeView(TreeView):
         self.setExpandsOnDoubleClick(False)
 
     @property
-    def defNewFileTypeFilter(self):
-        return SETTINGS.value(AppSettings.DEFAULT_NEW_FILETYPE_FILTER.name,
-                              AppSettings.DEFAULT_NEW_FILETYPE_FILTER.default)
+    def defaultNewFileTypeFilter(self):
+        return AppSettings.DEFAULT_NEW_FILETYPE_FILTER.value()
 
-    @defNewFileTypeFilter.setter
-    def defNewFileTypeFilter(self, value):
-        SETTINGS.setValue(AppSettings.DEFAULT_NEW_FILETYPE_FILTER.name, value)
+    @defaultNewFileTypeFilter.setter
+    def defaultNewFileTypeFilter(self, value):
+        AppSettings.DEFAULT_NEW_FILETYPE_FILTER.setValue(value)
 
     # noinspection PyArgumentList
     def initActions(self):
@@ -134,7 +133,7 @@ class PackTreeView(TreeView):
         action = self.sender()
         if action:
             typ = action.text()
-            self.defNewFileTypeFilter = FILE_TYPE_FILTERS[typ]
+            self.defaultNewFileTypeFilter = FILE_TYPE_FILTERS[typ]
 
     def onShellViewPushed(self):
         checked = self.shellViewAct.isChecked()
@@ -276,7 +275,7 @@ class PackTreeView(TreeView):
         while not saved:
             file = QFileDialog.getSaveFileName(self, 'Create new AAS File', file,
                                                filter=FILTER_AAS_FILES,
-                                               initialFilter=self.defNewFileTypeFilter,
+                                               initialFilter=self.defaultNewFileTypeFilter,
                                                options=FILE_DIALOG_OPTIONS)[0]
             if file:
                 pack = Package()

@@ -14,6 +14,7 @@ from PyQt5.QtCore import QSize, QSettings
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QFileDialog
 
+from aas_editor.settings import NOT_GIVEN
 
 AAS_CREATOR = "PyI40AAS Testing Framework"
 APPLICATION_NAME = "AAS Manager"
@@ -81,24 +82,38 @@ for file in files:
         THEMES[themename] = f"themes/{file}"
 
 
-@dataclass
+
+SETTINGS = QSettings("settings.ini", QSettings.IniFormat)
+
+@dataclass(order=True)
 class Setting:
     name: str
-    default: typing.Any
+    default: typing.Any = NOT_GIVEN
+    type: typing.Type = NOT_GIVEN
+
+    def setValue(self, value):
+        return SETTINGS.setValue(self.name, value)
+
+    def value(self):
+        args = [self.name]
+        if self.default != NOT_GIVEN:
+            args.append(self.default)
+        if self.type != NOT_GIVEN:
+            args.append(self.type)
+        return SETTINGS.value(*args)
 
 
 class AppSettings:
-    THEME = Setting('theme', DEFAULT_THEME)
+    THEME = Setting('theme', DEFAULT_THEME, str)
     SIZE = Setting('size', DEFAULT_MAINWINDOW_SIZE)
     LEFT_ZONE_SIZE = Setting('leftZoneSize', QSize(300, 624))
     RIGHT_ZONE_SIZE = Setting('rightZoneSize', QSize(300, 624))
     OPENED_AAS_FILES = Setting('openedAasFiles', set())
-    FONTSIZE_FILES_VIEW = Setting('fontSizeFilesView', DEFAULT_FONT.pointSize())
-    FONTSIZE_DETAILED_VIEW = Setting('fontSizeDetailedView', DEFAULT_FONT.pointSize())
+    FONTSIZE_FILES_VIEW = Setting('fontSizeFilesView', DEFAULT_FONT.pointSize(), int)
+    FONTSIZE_DETAILED_VIEW = Setting('fontSizeDetailedView', DEFAULT_FONT.pointSize(), int)
     PACKTREEVIEW_HEADER_STATE = Setting('packTreeViewHeaderState', None)
     TABTREEVIEW_HEADER_STATE = Setting('tabTreeViewHeaderState', None)
-    DEFAULT_NEW_FILETYPE_FILTER = Setting('defaultNewFileTypeFilter', "AASX files (*.aasx)")
-    WRITE_JSON_IN_AASX = Setting('writeJsonInAasx', False)
-    SUBMODEL_SPLIT_PARTS = Setting('submodelSplitParts', False)
+    DEFAULT_NEW_FILETYPE_FILTER = Setting('defaultNewFileTypeFilter', "AASX files (*.aasx)", str)
+    WRITE_JSON_IN_AASX = Setting('writeJsonInAasx', False, bool)
+    SUBMODEL_SPLIT_PARTS = Setting('submodelSplitParts', False, bool)
 
-SETTINGS = QSettings("settings.ini", QSettings.IniFormat)

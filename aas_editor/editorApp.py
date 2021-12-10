@@ -253,30 +253,28 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                 a0.ignore()
 
     def readSettings(self):
-        settings = SETTINGS
-
         # set previously used theme
-        theme = settings.value(AppSettings.THEME.name, AppSettings.THEME.default)
+        theme = AppSettings.THEME.value()
         self.toggleTheme(theme)
 
         # set previously used mainwindow size
-        size = settings.value(AppSettings.SIZE.name, AppSettings.SIZE.default)
+        size = AppSettings.SIZE.value()
         self.resize(size)
 
         # set previously used sizes of right ans left layouts
-        splitterLeftSize = settings.value(AppSettings.LEFT_ZONE_SIZE.name, AppSettings.LEFT_ZONE_SIZE.default)
-        splitterRightSize = settings.value(AppSettings.RIGHT_ZONE_SIZE.name, AppSettings.RIGHT_ZONE_SIZE.default)
+        splitterLeftSize = AppSettings.LEFT_ZONE_SIZE.value()
+        splitterRightSize = AppSettings.RIGHT_ZONE_SIZE.value()
         self.leftLayoutWidget.resize(splitterLeftSize)
         self.rightLayoutWidget.resize(splitterRightSize)
 
         # set previously used fontsizes in trees
-        fontSizeFilesView = settings.value(AppSettings.FONTSIZE_FILES_VIEW.name, AppSettings.FONTSIZE_FILES_VIEW.default)
-        fontSizeDetailedView = settings.value(AppSettings.FONTSIZE_DETAILED_VIEW.name, AppSettings.FONTSIZE_DETAILED_VIEW.default)
-        PacksTable.currFont.setPointSize(int(fontSizeFilesView))
-        DetailedInfoTable.currFont.setPointSize(int(fontSizeDetailedView))
+        fontSizeFilesView = AppSettings.FONTSIZE_FILES_VIEW.value()
+        fontSizeDetailedView = AppSettings.FONTSIZE_DETAILED_VIEW.value()
+        PacksTable.currFont.setPointSize(fontSizeFilesView)
+        DetailedInfoTable.currFont.setPointSize(fontSizeDetailedView)
 
         # try to open previously opened files
-        openedAasFiles = settings.value(AppSettings.OPENED_AAS_FILES.name, AppSettings.OPENED_AAS_FILES.default)
+        openedAasFiles = AppSettings.OPENED_AAS_FILES.value()
         for file in openedAasFiles:
             try:
                 self.packTreeView.openPack(file)
@@ -285,25 +283,24 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             self.packTreeModel.setData(QModelIndex(), [], UNDO_ROLE)
 
         # set previously used column widths for trees
-        packTreeViewHeaderState = settings.value(AppSettings.PACKTREEVIEW_HEADER_STATE.name)
+        packTreeViewHeaderState = AppSettings.PACKTREEVIEW_HEADER_STATE.value()
         if packTreeViewHeaderState:
             self.packTreeView.header().restoreState(packTreeViewHeaderState)
 
-        tabTreeViewHeaderState = settings.value(AppSettings.TABTREEVIEW_HEADER_STATE.name)
+        tabTreeViewHeaderState = AppSettings.TABTREEVIEW_HEADER_STATE.value()
         if tabTreeViewHeaderState:
             self.mainTabWidget.currentWidget().attrsTreeView.header().restoreState(tabTreeViewHeaderState)
 
     def writeSettings(self):
-        settings = SETTINGS
-        settings.setValue(AppSettings.THEME.name, self.currTheme)
-        settings.setValue(AppSettings.SIZE.name, self.size())
-        settings.setValue(AppSettings.LEFT_ZONE_SIZE.name, self.leftLayoutWidget.size())
-        settings.setValue(AppSettings.RIGHT_ZONE_SIZE.name, self.rightLayoutWidget.size())
-        settings.setValue(AppSettings.OPENED_AAS_FILES.name, self.packTreeModel.openedFiles())
-        settings.setValue(AppSettings.FONTSIZE_FILES_VIEW.name, PacksTable.currFont.pointSize())
-        settings.setValue(AppSettings.FONTSIZE_DETAILED_VIEW.name, DetailedInfoTable.currFont.pointSize())
-        # settings.setValue(AppSettings.DEFAULT_NEW_FILETYPE_FILTER.name, self.packTreeView.defNewFileTypeFilter)
-        settings.setValue(AppSettings.PACKTREEVIEW_HEADER_STATE.name, self.packTreeView.header().saveState())
-        settings.setValue(AppSettings.TABTREEVIEW_HEADER_STATE.name, self.mainTabWidget.currentWidget().attrsTreeView.header().saveState())
+        AppSettings.THEME.setValue(self.currTheme)
+        AppSettings.SIZE.setValue(self.size())
+        AppSettings.LEFT_ZONE_SIZE.setValue(self.leftLayoutWidget.size())
+        AppSettings.RIGHT_ZONE_SIZE.setValue(self.rightLayoutWidget.size())
+        AppSettings.OPENED_AAS_FILES.setValue(self.packTreeModel.openedFiles())
+        AppSettings.FONTSIZE_FILES_VIEW.setValue(PacksTable.currFont.pointSize())
+        AppSettings.FONTSIZE_DETAILED_VIEW.setValue(DetailedInfoTable.currFont.pointSize())
+        AppSettings.PACKTREEVIEW_HEADER_STATE.setValue(self.packTreeView.header().saveState())
+        AppSettings.TABTREEVIEW_HEADER_STATE.setValue(self.mainTabWidget.currentWidget().attrsTreeView.header().saveState())
+        # AppSettings.DEFAULT_NEW_FILETYPE_FILTER.setValue(self.packTreeView.defaultNewFileTypeFilter)
 
 # ToDo logs insteads of prints
