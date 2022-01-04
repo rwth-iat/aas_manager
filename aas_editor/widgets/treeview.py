@@ -27,7 +27,7 @@ from aas_editor.models import StandardTable
 from aas_editor.settings import NOT_GIVEN, LIGHT_BLUE_ALTERNATE
 from aas_editor.settings.app_settings import *
 from aas_editor.settings.icons import COPY_ICON, PASTE_ICON, CUT_ICON, ADD_ICON, DEL_ICON, UNDO_ICON, REDO_ICON, \
-    ZOOM_IN_ICON, ZOOM_OUT_ICON, EXPAND_ALL_ICON, COLLAPSE_ALL_ICON
+    ZOOM_IN_ICON, ZOOM_OUT_ICON, EXPAND_ALL_ICON, COLLAPSE_ALL_ICON, UPDATE_ICON
 from aas_editor.settings.shortcuts import SC_COPY, SC_CUT, SC_PASTE, SC_DELETE, SC_NEW, SC_REDO, SC_UNDO, SC_ZOOM_IN, \
     SC_ZOOM_OUT, SC_EXPAND_RECURS, SC_EXPAND_ALL, SC_COLLAPSE_RECURS, SC_COLLAPSE_ALL
 from aas_editor.utils.util import getDefaultVal, getReqParams4init, delAASParents
@@ -169,6 +169,13 @@ class TreeView(BasicTreeView):
                                    enabled=False)
         self.addAction(self.delClearAct)
 
+        self.updateAct = QAction(UPDATE_ICON, "Update/reload", self,
+                                 statusTip="Update/reload selected item",
+                                 shortcutContext=Qt.WidgetWithChildrenShortcut,
+                                 triggered=self.onUpdate,
+                                 enabled=True)
+        self.addAction(self.updateAct)
+
         self.undoAct = QAction(UNDO_ICON, "Undo", self,
                                statusTip="Undo last edit action",
                                shortcut=SC_UNDO,
@@ -263,6 +270,7 @@ class TreeView(BasicTreeView):
         self.attrsMenu.addSeparator()
         self.attrsMenu.addAction(self.delClearAct)
         self.attrsMenu.addAction(self.addAct)
+        self.attrsMenu.addAction(self.updateAct)
         self.attrsMenu.addSeparator()
         self.attrsMenu.addAction(self.undoAct)
         self.attrsMenu.addAction(self.redoAct)
@@ -386,7 +394,12 @@ class TreeView(BasicTreeView):
         self.model().setData(QModelIndex(), NOT_GIVEN, UNDO_ROLE)
 
     def onRedo(self):
-        self.model().setData(QModelIndex(), NOT_GIVEN, REDO_ROLE)
+        model = self.model()
+        model.setData(QModelIndex(), NOT_GIVEN, REDO_ROLE)
+
+    def onUpdate(self):
+        index = self.currentIndex()
+        self.model().setData(index, NOT_GIVEN, UPDATE_ROLE)
 
     def onDelClear(self):
         index = self.currentIndex()
