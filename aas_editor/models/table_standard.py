@@ -60,8 +60,12 @@ class StandardTable(QAbstractItemModel):
         if not child.isValid():
             return QModelIndex()
 
-        childObj = self.objByIndex(child)
-        parentObj = childObj.parent()
+        try:
+            childObj = self.objByIndex(child)
+            parentObj = childObj.parent()
+        except (RuntimeError, AttributeError) as e:
+            print(e)
+            return QModelIndex()
 
         if parentObj == self._rootItem or not parentObj:
             return QModelIndex()
