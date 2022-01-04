@@ -41,6 +41,7 @@ class TabBar(QTabBar):
         super(TabBar, self).__init__(parent)
         self.menuIndexTab = None
 
+        self.setFixedHeight(TOOLBARS_HEIGHT)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.setElideMode(Qt.ElideRight)
         self.setUsesScrollButtons(True)
