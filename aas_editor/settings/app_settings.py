@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from PyQt5.QtCore import QSize, QSettings
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QFileDialog
+from PyQt5 import QtCore
 
 from aas_editor.settings import NOT_GIVEN
 
@@ -107,6 +108,7 @@ class Setting:
 class AppSettings:
     THEME = Setting('theme', DEFAULT_THEME, str)
     SIZE = Setting('size', DEFAULT_MAINWINDOW_SIZE)
+    ORIENTATION = Setting('orientation', QtCore.Qt.Vertical, int)
     LEFT_ZONE_SIZE = Setting('leftZoneSize', QSize(300, 624))
     RIGHT_ZONE_SIZE = Setting('rightZoneSize', QSize(300, 624))
     OPENED_AAS_FILES = Setting('openedAasFiles', set())

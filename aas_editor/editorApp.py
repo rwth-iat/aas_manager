@@ -8,6 +8,7 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
+from PyQt5 import QtCore
 from PyQt5.QtCore import QModelIndex
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -82,6 +83,13 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                                triggered=self.toggleThemeSlot)
             self.themeActs.append(themeAct)
 
+        self.setHOrientationAct = QAction("Horizontal", self,
+                                          statusTip=f"Set horizontal orientation",
+                                          triggered=lambda: self.setOrientation(QtCore.Qt.Horizontal))
+        self.setVOrientationAct = QAction("Vertical", self,
+                                          statusTip=f"Set vertical orientation",
+                                          triggered=lambda: self.setOrientation(QtCore.Qt.Vertical))
+
     def initMenu(self):
         self.menubar = QMenuBar(self)
         self.menubar.setObjectName("menubar")
@@ -115,6 +123,10 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menuAppearance = QMenu("Appearance", self.menuView)
         self.menuAppearance.addAction(self.toolBar.toggleViewAction())
         self.menuAppearance.addAction(self.searchBarPack.toggleViewAction())
+        self.menuView.addAction(self.menuAppearance.menuAction())
+        self.menuAppearance = QMenu("Orientation", self.menuView)
+        self.menuAppearance.addAction(self.setHOrientationAct)
+        self.menuAppearance.addAction(self.setVOrientationAct)
         self.menuView.addAction(self.menuAppearance.menuAction())
         self.menuView.addSection("AAS file view")
         self.menuView.addAction(self.packTreeView.zoomInAct)
@@ -253,9 +265,11 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         theme = AppSettings.THEME.value()
         self.toggleTheme(theme)
 
-        # set previously used mainwindow size
+        # set previously used mainwindow size and orientation
         size = AppSettings.SIZE.value()
         self.resize(size)
+        orientation = AppSettings.ORIENTATION.value()
+        self.setOrientation(orientation)
 
         # set previously used sizes of right ans left layouts
         splitterLeftSize = AppSettings.LEFT_ZONE_SIZE.value()

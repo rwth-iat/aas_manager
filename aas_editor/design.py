@@ -21,7 +21,7 @@
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QFrame, QWidget, QHBoxLayout
 
-from aas_editor.settings.app_settings import APPLICATION_NAME, TOOLBARS_HEIGHT, ATTRIBUTE_COLUMN
+from aas_editor.settings.app_settings import APPLICATION_NAME, TOOLBARS_HEIGHT, ATTRIBUTE_COLUMN, AppSettings
 from aas_editor.widgets import ToolBar, PackTreeView, TabWidget, SearchBar
 
 
@@ -36,7 +36,6 @@ class Ui_MainWindow(object):
         self.gridLayout.setContentsMargins(2, 0, 2, 0)
 
         self.splitter = QtWidgets.QSplitter(self.centralwidget)
-        self.splitter.setOrientation(QtCore.Qt.Vertical)
         self.splitter.setObjectName("splitter")
 
         # Left part
@@ -60,14 +59,17 @@ class Ui_MainWindow(object):
         self.leftVerticalLayout.addWidget(self.toolBar)
         self.searchBarPack = SearchBar(self.packTreeView, filterColumns=[ATTRIBUTE_COLUMN],
                                        parent=self.leftLayoutWidget, closable=True)
-        toolBarWidget = QWidget()
-        toolBarLayout = QHBoxLayout(toolBarWidget)
-        toolBarLayout.setContentsMargins(0, 0, 0, 0)
-        toolBarLayout.addWidget(self.toolBar)
-        toolBarLayout.addWidget(self.searchBarPack)
-        toolBarWidget.setFixedHeight(TOOLBARS_HEIGHT)
 
-        self.leftVerticalLayout.addWidget(toolBarWidget)
+        toolBarHLayout = QHBoxLayout()
+        toolBarHLayout.setContentsMargins(0, 0, 0, 0)
+        toolBarHLayout.addWidget(self.toolBar)
+        toolBarHLayout.addWidget(self.searchBarPack)
+
+        self.toolBarWidget = QWidget()
+        self.toolBarWidget.setFixedHeight(TOOLBARS_HEIGHT)
+        self.toolBarWidget.setLayout(toolBarHLayout)
+
+        self.leftVerticalLayout.addWidget(self.toolBarWidget)
         self.leftVerticalLayout.addWidget(self.packTreeView)
 
         # Right part
@@ -99,4 +101,12 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", APPLICATION_NAME))
         self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar"))
+
+    def setOrientation(self, o: QtCore.Qt.Orientation):
+        if o == QtCore.Qt.Horizontal:
+            self.splitter.setOrientation(QtCore.Qt.Horizontal)
+            AppSettings.ORIENTATION.setValue(QtCore.Qt.Horizontal)
+        elif o == QtCore.Qt.Vertical:
+            self.splitter.setOrientation(QtCore.Qt.Vertical)
+            AppSettings.ORIENTATION.setValue(QtCore.Qt.Vertical)
 
