@@ -176,7 +176,7 @@ def checkIfAccepted(func):
 
 
 def getInputWidget(objType, rmDefParams=True, title="", paramsToHide: dict = None,
-                   parent=None, objVal=None, paramsToAttrs=None, **kwargs) -> QWidget:
+                   parent=None, objVal=None, paramsToAttrs=None, includeInheritedTyps=True, **kwargs) -> QWidget:
     print(objType, objType.__str__, objType.__repr__, objType.__class__)
 
     if objVal and not isoftype(objVal, objType):
@@ -224,6 +224,10 @@ def getInputWidget(objType, rmDefParams=True, title="", paramsToHide: dict = Non
         widget = SpecialInputWidget(objType, **kwargs)
     elif issubtype(objType, StandardInputWidget.types):
         widget = StandardInputWidget(objType, **kwargs)
+    elif includeInheritedTyps and inheritors(objType):
+        objTypes = list(inheritors(objType))
+        objTypes.append(objType)
+        widget = TypeOptionObjGroupBox(objTypes, **kwargs)
     else:
         widget = ObjGroupBox(objType, **kwargs)
     return widget
@@ -538,7 +542,8 @@ class TypeOptionObjGroupBox(GroupBox):
     def replaceGroupBoxWidget(self, objType, **kwargs):
         """Changes input GroupBox due to objType structure"""
         kwargs["objVal"] = self.objVal
-        newWidget = getInputWidget(objType, **kwargs)
+        includeInheritedTyps = False if inheritors(objType) else False
+        newWidget = getInputWidget(objType, includeInheritedTyps=includeInheritedTyps, **kwargs)
         self.layout().replaceWidget(self.widget, newWidget)
         self.widget.close()
         newWidget.showMinimized()

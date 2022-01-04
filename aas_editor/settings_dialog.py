@@ -12,7 +12,7 @@ from typing import Dict
 from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout, QLabel, QGroupBox, QHBoxLayout, QRadioButton
 from PyQt5.QtCore import Qt
 
-from aas_editor.settings import FILE_TYPE_FILTERS, SETTINGS, AppSettings, Setting
+from aas_editor.settings import FILE_TYPE_FILTERS, AppSettings, Setting
 
 
 class OptionGroupBox(QGroupBox):
@@ -28,7 +28,7 @@ class OptionGroupBox(QGroupBox):
 
 class RadioBtnsGroupBox(OptionGroupBox):
     """Groupbox to choose default type of new file"""
-    def __init__(self, parent, title, options: Dict[str, any], optionType, appSetting: Setting, **kwargs):
+    def __init__(self, parent, title, options: Dict[str, any], appSetting: Setting, **kwargs):
         super().__init__(parent, **kwargs)
         self.setTitle(title)
         self.setAlignment(Qt.AlignLeft)
@@ -37,7 +37,6 @@ class RadioBtnsGroupBox(OptionGroupBox):
 
         self.appSetting = appSetting
         self.options = options
-        self.optionType = optionType
 
         self.radiobtns = []
         for optionName in self.options:
@@ -53,8 +52,7 @@ class RadioBtnsGroupBox(OptionGroupBox):
                 return btn
 
     def currOption(self):
-        option = SETTINGS.value(self.appSetting.name, self.appSetting.default, self.optionType)
-        return option
+        return self.appSetting.value()
 
     def newOption(self):
         optionName = self.find_checked_radiobutton().text()
@@ -62,7 +60,7 @@ class RadioBtnsGroupBox(OptionGroupBox):
         return chosenOption
 
     def applyNewOption(self):
-        SETTINGS.setValue(self.appSetting.name, self.newOption())
+        self.appSetting.setValue(self.newOption())
 
 
 class SettingsDialog(QDialog):
@@ -79,16 +77,13 @@ class SettingsDialog(QDialog):
         self.optionGroupBoxes = [
             RadioBtnsGroupBox(self, title="Standard initialisation file type",
                               options=FILE_TYPE_FILTERS,
-                              appSetting=AppSettings.DEFAULT_NEW_FILETYPE_FILTER,
-                              optionType=str),
+                              appSetting=AppSettings.DEFAULT_NEW_FILETYPE_FILTER),
             RadioBtnsGroupBox(self, title="Filetype for saving in AASX",
                               options={"JSON": True, "XML": False},
-                              appSetting=AppSettings.WRITE_JSON_IN_AASX,
-                              optionType=bool),
+                              appSetting=AppSettings.WRITE_JSON_IN_AASX),
             RadioBtnsGroupBox(self, title="Save submodels in separate files within AASX file",
                               options={"Yes": True, "No": False},
-                              appSetting=AppSettings.SUBMODEL_SPLIT_PARTS,
-                              optionType=bool)
+                              appSetting=AppSettings.SUBMODEL_SPLIT_PARTS)
             ]
 
         self.layout = QVBoxLayout()

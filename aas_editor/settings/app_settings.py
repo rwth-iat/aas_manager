@@ -14,6 +14,7 @@ from PyQt5.QtCore import QSize, QSettings
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QFileDialog
 
+from aas_editor.settings import NOT_GIVEN
 
 AAS_CREATOR = "PyI40AAS Testing Framework"
 APPLICATION_NAME = "AAS Manager"
@@ -41,26 +42,27 @@ MAX_SIGNS_TO_SHOW = 1000
 FILE_DIALOG_OPTIONS = QFileDialog.DontResolveSymlinks | QFileDialog.DontUseNativeDialog
 
 # Custom roles
-PACKAGE_ROLE = 1001
-NAME_ROLE = 1002
-OBJECT_ROLE = 1003
-PARENT_OBJ_ROLE = 1004
-PACK_ITEM_ROLE = 1005
-LINKED_ITEM_ROLE = 1006
-IS_LINK_ROLE = 1007
-IS_MEDIA_ROLE = 1008
-IS_URL_MEDIA_ROLE = 1015
-MEDIA_CONTENT_ROLE = 1016
-OPENED_PACKS_ROLE = 1009
-OPENED_FILES_ROLE = 1010
-ADD_ITEM_ROLE = 1011
-CLEAR_ROW_ROLE = 1012
-UNDO_ROLE = 1019
-REDO_ROLE = 1020
-DATA_CHANGE_FAILED_ROLE = 1013
-TYPE_ROLE = 1018
-TYPE_HINT_ROLE = 1014
-TYPE_CHECK_ROLE = 1017
+PACKAGE_ROLE = 1010
+NAME_ROLE = 1020
+OBJECT_ROLE = 1030
+PARENT_OBJ_ROLE = 1040
+PACK_ITEM_ROLE = 1050
+LINKED_ITEM_ROLE = 1060
+IS_LINK_ROLE = 1070
+IS_MEDIA_ROLE = 1080
+IS_URL_MEDIA_ROLE = 1090
+MEDIA_CONTENT_ROLE = 1100
+OPENED_PACKS_ROLE = 1110
+OPENED_FILES_ROLE = 1120
+ADD_ITEM_ROLE = 1130
+CLEAR_ROW_ROLE = 1140
+UPDATE_ROLE = 1150
+UNDO_ROLE = 1160
+REDO_ROLE = 1170
+DATA_CHANGE_FAILED_ROLE = 1180
+TYPE_ROLE = 1190
+TYPE_HINT_ROLE = 1200
+TYPE_CHECK_ROLE = 1210
 
 # Columns
 DEFAULT_COLUMNS_IN_DETAILED_INFO = ("name", "representation", "type")
@@ -81,24 +83,38 @@ for file in files:
         THEMES[themename] = f"themes/{file}"
 
 
-@dataclass
+
+SETTINGS = QSettings("settings.ini", QSettings.IniFormat)
+
+@dataclass(order=True)
 class Setting:
     name: str
-    default: typing.Any
+    default: typing.Any = NOT_GIVEN
+    type: typing.Type = NOT_GIVEN
+
+    def setValue(self, value):
+        return SETTINGS.setValue(self.name, value)
+
+    def value(self):
+        args = [self.name]
+        if self.default != NOT_GIVEN:
+            args.append(self.default)
+        if self.type != NOT_GIVEN:
+            args.append(self.type)
+        return SETTINGS.value(*args)
 
 
 class AppSettings:
-    THEME = Setting('theme', DEFAULT_THEME)
+    THEME = Setting('theme', DEFAULT_THEME, str)
     SIZE = Setting('size', DEFAULT_MAINWINDOW_SIZE)
     LEFT_ZONE_SIZE = Setting('leftZoneSize', QSize(300, 624))
     RIGHT_ZONE_SIZE = Setting('rightZoneSize', QSize(300, 624))
     OPENED_AAS_FILES = Setting('openedAasFiles', set())
-    FONTSIZE_FILES_VIEW = Setting('fontSizeFilesView', DEFAULT_FONT.pointSize())
-    FONTSIZE_DETAILED_VIEW = Setting('fontSizeDetailedView', DEFAULT_FONT.pointSize())
+    FONTSIZE_FILES_VIEW = Setting('fontSizeFilesView', DEFAULT_FONT.pointSize(), int)
+    FONTSIZE_DETAILED_VIEW = Setting('fontSizeDetailedView', DEFAULT_FONT.pointSize(), int)
     PACKTREEVIEW_HEADER_STATE = Setting('packTreeViewHeaderState', None)
     TABTREEVIEW_HEADER_STATE = Setting('tabTreeViewHeaderState', None)
-    DEFAULT_NEW_FILETYPE_FILTER = Setting('defaultNewFileTypeFilter', "AASX files (*.aasx)")
-    WRITE_JSON_IN_AASX = Setting('writeJsonInAasx', False)
-    SUBMODEL_SPLIT_PARTS = Setting('submodelSplitParts', False)
+    DEFAULT_NEW_FILETYPE_FILTER = Setting('defaultNewFileTypeFilter', "AASX files (*.aasx)", str)
+    WRITE_JSON_IN_AASX = Setting('writeJsonInAasx', False, bool)
+    SUBMODEL_SPLIT_PARTS = Setting('submodelSplitParts', False, bool)
 
-SETTINGS = QSettings("settings.ini", QSettings.IniFormat)

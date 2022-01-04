@@ -29,7 +29,7 @@ from aas_editor.package import Package
 from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
     VALUE_COLUMN, PACKAGE_ROLE, PACK_ITEM_ROLE, DEFAULT_FONT, ADD_ITEM_ROLE, CLEAR_ROW_ROLE, \
     DATA_CHANGE_FAILED_ROLE, IS_LINK_ROLE, TYPE_COLUMN, \
-    TYPE_CHECK_ROLE, TYPE_ROLE, UNDO_ROLE, REDO_ROLE, MAX_UNDOS
+    TYPE_CHECK_ROLE, TYPE_ROLE, UNDO_ROLE, REDO_ROLE, MAX_UNDOS, UPDATE_ROLE
 from aas_editor.settings import NOT_GIVEN
 from aas_editor.settings.colors import LINK_BLUE, CHANGED_BLUE, RED, NEW_GREEN
 
@@ -60,8 +60,12 @@ class StandardTable(QAbstractItemModel):
         if not child.isValid():
             return QModelIndex()
 
-        childObj = self.objByIndex(child)
-        parentObj = childObj.parent()
+        try:
+            childObj = self.objByIndex(child)
+            parentObj = childObj.parent()
+        except (RuntimeError, AttributeError) as e:
+            print(e)
+            return QModelIndex()
 
         if parentObj == self._rootItem or not parentObj:
             return QModelIndex()
@@ -374,6 +378,8 @@ class StandardTable(QAbstractItemModel):
             elif isIterable(value):
                 self.redo = list(value)
                 return True
+        elif role == UPDATE_ROLE:
+            self.update(index)
         else:
             raise ValueError(f"Unknown role: {role}")
         return False

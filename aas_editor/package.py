@@ -20,7 +20,7 @@ from aas.adapter.aasx import DictSupplementaryFileContainer
 from aas.model import AssetAdministrationShell, Asset, Submodel, ConceptDescription, \
     DictObjectStore, Key
 
-from aas_editor.settings import DEFAULT_COMPLETIONS, SETTINGS, AppSettings
+from aas_editor.settings import DEFAULT_COMPLETIONS, AppSettings
 from aas_editor.utils.util_classes import ClassesInfo
 
 
@@ -50,24 +50,22 @@ class Package:
 
     @property
     def writeJsonInAasx(self):
-        return SETTINGS.value(AppSettings.WRITE_JSON_IN_AASX.name,
-                              AppSettings.WRITE_JSON_IN_AASX.default)
+        return AppSettings.WRITE_JSON_IN_AASX.value()
 
     @writeJsonInAasx.setter
     def writeJsonInAasx(self, value: bool):
         """If True, JSON parts are created for the AAS and each submodel in the AASX file instead of XML parts."""
-        SETTINGS.setValue(AppSettings.WRITE_JSON_IN_AASX.name, value)
+        AppSettings.WRITE_JSON_IN_AASX.setValue(value)
 
     @property
     def submodelSplitParts(self):
-        return SETTINGS.value(AppSettings.SUBMODEL_SPLIT_PARTS.name,
-                              AppSettings.SUBMODEL_SPLIT_PARTS.default)
+        return AppSettings.SUBMODEL_SPLIT_PARTS.value()
 
     @submodelSplitParts.setter
     def submodelSplitParts(self, value: bool):
         """If True (default), submodels are written to separate AASX parts instead of being included
         in the AAS part with in the AASX package."""
-        SETTINGS.setValue(AppSettings.SUBMODEL_SPLIT_PARTS.name, value)
+        AppSettings.SUBMODEL_SPLIT_PARTS.setValue(value)
 
     def __str__(self):
         return self.name
