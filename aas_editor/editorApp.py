@@ -92,8 +92,10 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menuFile.addAction(self.packTreeView.openPackAct)
 
         self.menuFile.addSeparator()
+        self.menuOpenRecent = QMenu("Open Recent", self.menuFile)
         for recentFileAct in self.packTreeView.recentFileActs:
-            self.menuFile.addAction(recentFileAct)
+            self.menuOpenRecent.addAction(recentFileAct)
+        self.menuFile.addAction(self.menuOpenRecent.menuAction())
         self.packTreeView.recentFilesSeparator = self.menuFile.addSeparator()
         self.packTreeView.updateRecentFileActs()
 
@@ -108,10 +110,10 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menuFile.addAction(self.exitAct)
 
         self.menuView = QMenu("&View", self.menubar)
-        self.menuChoose_theme = QMenu("Choose Theme", self.menuView)
+        self.menuChooseTheme = QMenu("Choose Theme", self.menuView)
         for themeAct in self.themeActs:
-            self.menuChoose_theme.addAction(themeAct)
-        self.menuView.addAction(self.menuChoose_theme.menuAction())
+            self.menuChooseTheme.addAction(themeAct)
+        self.menuView.addAction(self.menuChooseTheme.menuAction())
         self.menuAppearance = QMenu("Appearance", self.menuView)
         self.menuAppearance.addAction(self.toolBar.toggleViewAction())
         self.menuAppearance.addAction(self.searchBarPack.toggleViewAction())
