@@ -50,16 +50,12 @@ class HeaderView(QHeaderView):
         self.currOrder = self.sortIndicatorOrder()
         self.sectionActions = {}
 
-        self.sectionCountChanged.connect(self.initShowSectionActs)
-        self.sectionResized.connect(self.onSectionResized)
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.ActionsContextMenu)
         self.sectionClicked.connect(self.onSectionClicked)
 
-    def onSectionResized(self, logicalIndex, oldSize, newSize):
-        if newSize == 0 and self.sectionActions[logicalIndex].isChecked():
-            self.sectionActions[logicalIndex].setChecked(False)
-        elif oldSize == 0 and not self.sectionActions[logicalIndex].isChecked():
-            self.sectionActions[logicalIndex].setChecked(True)
+    def restoreState(self, state: typing.Union[QtCore.QByteArray, bytes, bytearray]) -> bool:
+        super(HeaderView, self).restoreState(state)
+        self.initShowSectionActs()
 
     def initShowSectionActs(self):
         for action in self.actions():
