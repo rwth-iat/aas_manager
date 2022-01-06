@@ -87,9 +87,11 @@ def getAttrs4inheritors(cls) -> Set[str]:
 
 
 def simplifyInfo(obj, attrName: str = "") -> str:
-    res = str(obj)[0:150]
-    if len(res)>=150:
-        res = f"{res}..."
+    if len(str(obj))>=settings.MAX_SIGNS_TO_SHOW_IN_TREE:
+        res = f"{str(obj)[0:settings.MAX_SIGNS_TO_SHOW_IN_TREE]}..."
+    else:
+        res = str(obj)
+
     if isinstance(obj, settings.ATTR_INFOS_TO_SIMPLIFY):
         res = re.sub("^[A-Z]\w*[(]", "", res)
         res = res.rstrip(")")
@@ -99,6 +101,8 @@ def simplifyInfo(obj, attrName: str = "") -> str:
         res = obj.name
     elif isinstance(obj, dict) and attrName == "description":
         res = getDescription(obj)
+    elif res.startswith("<") and res.endswith(">"):  # if no repr for obj
+        return ""
     return res
 
 
