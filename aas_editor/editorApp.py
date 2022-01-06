@@ -292,7 +292,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                 pass
             self.packTreeModel.setData(QModelIndex(), [], UNDO_ROLE)
 
-        # set previously used column widths for trees
+        # set previous tree states
         packTreeViewHeaderState = AppSettings.PACKTREEVIEW_HEADER_STATE.value()
         if packTreeViewHeaderState:
             self.packTreeView.header().restoreState(packTreeViewHeaderState)
