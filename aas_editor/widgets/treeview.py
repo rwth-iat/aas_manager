@@ -71,11 +71,36 @@ class HeaderView(QHeaderView):
                           checkable=True)
             act.setData(section)
             act.setChecked(sectionShown)
-            act.toggled.connect(self.toggleShowColumnAct)
+            act.toggled.connect(self.onToggleShowSection)
             self.addAction(act)
             self.sectionActions[section] = act
 
-    def toggleShowColumnAct(self, toggled):
+        unchooseAllAct = QAction("Hide all sections", self,
+                                 toolTip="Hide all sections",
+                                 statusTip="Hide all section",
+                                 triggered=self.hideAllSections)
+        self.addAction(unchooseAllAct)
+
+    def hideAllSections(self):
+        """Hide all section except first"""
+        for i in range(1, self.count()):
+            self.hideSection(i)
+
+    def hideSection(self, alogicalIndex: int) -> None:
+        super(HeaderView, self).hideSection(alogicalIndex)
+        acts = self.actions()
+        for act in acts:
+            if act.data() == alogicalIndex:
+                act.setChecked(False)
+
+    def showSection(self, alogicalIndex: int) -> None:
+        super(HeaderView, self).showSection(alogicalIndex)
+        acts = self.actions()
+        for act in acts:
+            if act.data() == alogicalIndex:
+                act.setChecked(True)
+
+    def onToggleShowSection(self, toggled):
         action: QAction = self.sender()
         section = action.data()
         if toggled:
