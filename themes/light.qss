@@ -1374,6 +1374,11 @@ QTableView::item:selected:hover
     color: #31363B;
 }
 
+QTreeView::item
+{
+    border-right: 0.2ex solid rgba(186, 185, 184, 0.5);
+}
+
 QListView::item:pressed,
 QTreeView::item:pressed
 {

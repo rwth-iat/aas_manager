@@ -1390,6 +1390,11 @@ QHeaderView
     border-radius: 0px;
 }
 
+QTreeView::item
+{
+    border-right: 0.2ex solid rgba(118, 121, 124, 0.4);
+}
+
 QTableView::item:pressed,
 QListView::item:pressed,
 QTreeView::item:pressed
