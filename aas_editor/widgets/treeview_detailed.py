@@ -47,11 +47,11 @@ class AttrsTreeView(TreeView):
         self.setObjectName("attrsTreeView")
         self.setModelWithProxy(DetailedInfoTable(packItem))
         self.setColumnWidth(ATTRIBUTE_COLUMN, ATTR_COLUMN_WIDTH)
-        self.setItemDelegate(EditDelegate())
+        self.setItemDelegate(EditDelegate(self))
 
     def buildHandlers(self):
         super(AttrsTreeView, self).buildHandlers()
-        self.setItemDelegate(EditDelegate())
+        self.setItemDelegate(EditDelegate(self))
         self.clicked.connect(self.openRef)
         self.wheelClicked.connect(lambda refItem: self.openRef(refItem, setCurrent=False))
 

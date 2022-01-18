@@ -142,7 +142,7 @@ class TreeView(BasicTreeView):
         self.initMenu()
         self.setUniformRowHeights(True)
         self.buildHandlers()
-        self.setItemDelegate(ColorDelegate())  # set ColorDelegate as standard delegate
+        self.setItemDelegate(ColorDelegate(self))  # set ColorDelegate as standard delegate
         self.setSortingEnabled(True)
         self.setHeader(HeaderView(Qt.Horizontal, self))
         p = self.palette()
