@@ -144,7 +144,7 @@ class StandardItem(QObject):
                     if isinstance(self.obj, cls):
                         self.icon = QIcon(TYPE_ICON_DICT[cls])
 
-    def data(self, role, column=ATTRIBUTE_COLUMN):
+    def data(self, role, column=ATTRIBUTE_COLUMN, column_name=""):
         if role == Qt.WhatsThisRole:
             return self.doc
         if role == NAME_ROLE:
@@ -180,6 +180,13 @@ class StandardItem(QObject):
                 return getLimitStr(self.objTypeName)
             if column == TYPE_HINT_COLUMN:
                 return getLimitStr(self.typehintName)
+            if column_name:
+                try:
+                    return getLimitStr(getattr(self.obj, column_name))
+                except AttributeError as e:
+                    return QVariant()
+                except Exception as e:
+                    return getLimitStr(e)
         if role in (Qt.ToolTipRole, Qt.StatusTipRole):
             toolTip = self.getToolTip(column)
             if toolTip:

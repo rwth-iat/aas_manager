@@ -47,14 +47,6 @@ class PackTreeViewItem(StandardItem):
         self.obj = obj
         self.populate()
 
-    def data(self, role, column=ATTRIBUTE_COLUMN):
-        if role == Qt.ToolTipRole:
-            try:
-                return getDescription(self.obj.description)
-            except AttributeError:
-                pass
-        return super(PackTreeViewItem, self).data(role, column)
-
     def populate(self):
         kwargs = {
             "parent": self,

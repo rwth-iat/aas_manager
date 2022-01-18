@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from PyQt5.QtCore import QSize, QSettings
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QFileDialog
+from PyQt5 import QtCore
 
 from aas_editor.settings import NOT_GIVEN
 
@@ -66,8 +67,8 @@ TYPE_HINT_ROLE = 1200
 TYPE_CHECK_ROLE = 1210
 
 # Columns
-COLUMNS_IN_DETAILED_INFO = ("attribute", "value", "type")
-COLUMNS_IN_PACKS_TABLE = ("attribute", "value", "type")
+DEFAULT_COLUMNS_IN_DETAILED_INFO = ("name", "representation", "type")
+DEFAULT_COLUMNS_IN_PACKS_TABLE = ("name", "representation", "type", "typehint")
 ATTRIBUTE_COLUMN = 0
 VALUE_COLUMN = 1
 TYPE_COLUMN = 2
@@ -108,6 +109,7 @@ class Setting:
 class AppSettings:
     THEME = Setting('theme', DEFAULT_THEME, str)
     SIZE = Setting('size', DEFAULT_MAINWINDOW_SIZE)
+    ORIENTATION = Setting('orientation', QtCore.Qt.Vertical, int)
     LEFT_ZONE_SIZE = Setting('leftZoneSize', QSize(300, 624))
     RIGHT_ZONE_SIZE = Setting('rightZoneSize', QSize(300, 624))
     OPENED_AAS_FILES = Setting('openedAasFiles', set())

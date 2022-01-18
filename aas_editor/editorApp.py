@@ -8,15 +8,17 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
+from PyQt5 import QtCore
 from PyQt5.QtCore import QModelIndex
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from aas_editor.dialogs import AboutDialog, ComplianceToolDialog
+from aas_editor.settings import EXTENDED_COLUMNS_IN_PACK_TABLE
 from aas_editor.settings.app_settings import *
 from aas_editor.settings.icons import APP_ICON, EXIT_ICON, SETTINGS_ICON
 from aas_editor.settings.shortcuts import SC_FOCUS2RIGTH_TREE, SC_FOCUS2LEFT_TREE
 from aas_editor.settings_dialog import SettingsDialog
+from aas_editor.dialogs import AboutDialog, ComplianceToolDialog
 from aas_editor.widgets import SearchBar, AddressLine
 from aas_editor import design
 from aas_editor.models import DetailedInfoTable, PacksTable
@@ -31,16 +33,15 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.setupUi(self)
         self.currTheme = DEFAULT_THEME
 
-        self.packTreeModel = PacksTable(COLUMNS_IN_PACKS_TABLE)
+        columns_in_packs_table = list(DEFAULT_COLUMNS_IN_PACKS_TABLE)
+        columns_in_packs_table.extend(EXTENDED_COLUMNS_IN_PACK_TABLE)
+        self.packTreeModel = PacksTable(columns_in_packs_table)
         self.packTreeView.setModelWithProxy(self.packTreeModel)
-        self.packTreeView.hideColumn(VALUE_COLUMN) #FIXME type column value is corrupted if no value column at all
+        for column in range(len(columns_in_packs_table), 2, -1):
+            self.packTreeView.hideColumn(column)
         dialogs.AASReferenceGroupBox.CHOOSE_FRM_VIEW = self.packTreeView
 
         AddressLine.setModel(self.packTreeView.model())
-
-        self.searchBarPack = SearchBar(self.packTreeView, filterColumns=[ATTRIBUTE_COLUMN],
-                                       parent=self.leftLayoutWidget, closable=True)
-        self.leftVerticalLayout.insertWidget(1, self.searchBarPack)
 
         welcomeTab = self.mainTabWidget.addTab(Tab(parent=self.mainTabWidget), "Welcome")
         self.mainTabWidget.widget(welcomeTab).searchBar.showFocused()
@@ -82,6 +83,13 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                                triggered=self.toggleThemeSlot)
             self.themeActs.append(themeAct)
 
+        self.setHOrientationAct = QAction("Horizontal", self,
+                                          statusTip=f"Set horizontal orientation",
+                                          triggered=lambda: self.setOrientation(QtCore.Qt.Horizontal))
+        self.setVOrientationAct = QAction("Vertical", self,
+                                          statusTip=f"Set vertical orientation",
+                                          triggered=lambda: self.setOrientation(QtCore.Qt.Vertical))
+
     def initMenu(self):
         self.menubar = QMenuBar(self)
         self.menubar.setObjectName("menubar")
@@ -118,6 +126,10 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menuAppearance.addAction(self.toolBar.toggleViewAction())
         self.menuAppearance.addAction(self.searchBarPack.toggleViewAction())
         self.menuView.addAction(self.menuAppearance.menuAction())
+        self.menuAppearance = QMenu("Orientation", self.menuView)
+        self.menuAppearance.addAction(self.setHOrientationAct)
+        self.menuAppearance.addAction(self.setVOrientationAct)
+        self.menuView.addAction(self.menuAppearance.menuAction())
         self.menuView.addSection("AAS file view")
         self.menuView.addAction(self.packTreeView.zoomInAct)
         self.menuView.addAction(self.packTreeView.zoomOutAct)
@@ -147,11 +159,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menubar.addAction(self.menuHelp.menuAction())
 
     def initToolbars(self):
-        self.toolBar.addAction(self.packTreeView.saveAllAct)
-        self.toolBar.addAction(self.packTreeView.saveAct)
-        self.toolBar.addAction(self.packTreeView.openPackAct)
-        self.toolBar.addAction(self.packTreeView.newPackAct)
-
         settingsBtn = QToolButton(icon=SETTINGS_ICON)
         settingsBtn.setPopupMode(QToolButton.InstantPopup)
         menuSettings = QMenu("Settings")
@@ -161,18 +168,19 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         menuSettings.addAction(self.packTreeView.autoScrollFromSrcAct)
         settingsBtn.setMenu(menuSettings)
 
-        self.packToolBar.addWidget(settingsBtn)
-        self.packToolBar.addAction(self.packTreeView.collapseAllAct)
-        self.packToolBar.addAction(self.packTreeView.expandAllAct)
-        self.packToolBar.addSeparator()
-        self.packToolBar.addAction(self.packTreeView.copyAct)
-        self.packToolBar.addAction(self.packTreeView.cutAct)
-        self.packToolBar.addAction(self.packTreeView.pasteAct)
-        self.packToolBar.addAction(self.packTreeView.delClearAct)
-        self.packToolBar.addAction(self.packTreeView.addAct)
-
-        self.packToolBar.addSeparator()
-        self.packToolBar.addAction(self.packTreeView.shellViewAct)
+        self.toolBar.addWidget(settingsBtn)
+        self.toolBar.addSeparator()
+        self.toolBar.addAction(self.packTreeView.saveAllAct)
+        self.toolBar.addAction(self.packTreeView.saveAct)
+        self.toolBar.addAction(self.packTreeView.openPackAct)
+        self.toolBar.addAction(self.packTreeView.newPackAct)
+        self.toolBar.addSeparator()
+        self.toolBar.addAction(self.packTreeView.collapseAllAct)
+        self.toolBar.addAction(self.packTreeView.expandAllAct)
+        self.toolBar.addSeparator()
+        self.toolBar.addAction(self.packTreeView.addAct)
+        self.toolBar.addSeparator()
+        self.toolBar.addAction(self.packTreeView.shellViewAct)
 
     @staticmethod
     def iterItems(root):
@@ -259,9 +267,11 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         theme = AppSettings.THEME.value()
         self.toggleTheme(theme)
 
-        # set previously used mainwindow size
+        # set previously used mainwindow size and orientation
         size = AppSettings.SIZE.value()
         self.resize(size)
+        orientation = AppSettings.ORIENTATION.value()
+        self.setOrientation(orientation)
 
         # set previously used sizes of right ans left layouts
         splitterLeftSize = AppSettings.LEFT_ZONE_SIZE.value()
@@ -284,7 +294,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                 pass
             self.packTreeModel.setData(QModelIndex(), [], UNDO_ROLE)
 
-        # set previously used column widths for trees
+        # set previous tree states
         packTreeViewHeaderState = AppSettings.PACKTREEVIEW_HEADER_STATE.value()
         if packTreeViewHeaderState:
             self.packTreeView.header().restoreState(packTreeViewHeaderState)

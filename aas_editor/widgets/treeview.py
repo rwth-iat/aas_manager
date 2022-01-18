@@ -43,22 +43,19 @@ class HeaderView(QHeaderView):
         super(HeaderView, self).__init__(orientation, parent)
         self.setSectionsMovable(True)
         self.setStretchLastSection(True)
+        self.setFixedHeight(TOOLBARS_HEIGHT)
 
         self.sortIndicatorChanged.connect(lambda a,b: print(a,b))
         self.currSortSection = self.sortIndicatorSection()
         self.currOrder = self.sortIndicatorOrder()
         self.sectionActions = {}
 
-        self.sectionCountChanged.connect(self.initShowSectionActs)
-        self.sectionResized.connect(self.onSectionResized)
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.ActionsContextMenu)
         self.sectionClicked.connect(self.onSectionClicked)
 
-    def onSectionResized(self, logicalIndex, oldSize, newSize):
-        if newSize == 0 and self.sectionActions[logicalIndex].isChecked():
-            self.sectionActions[logicalIndex].setChecked(False)
-        elif oldSize == 0 and not self.sectionActions[logicalIndex].isChecked():
-            self.sectionActions[logicalIndex].setChecked(True)
+    def restoreState(self, state: typing.Union[QtCore.QByteArray, bytes, bytearray]) -> bool:
+        super(HeaderView, self).restoreState(state)
+        self.initShowSectionActs()
 
     def initShowSectionActs(self):
         for action in self.actions():
@@ -74,11 +71,36 @@ class HeaderView(QHeaderView):
                           checkable=True)
             act.setData(section)
             act.setChecked(sectionShown)
-            act.toggled.connect(self.toggleShowColumnAct)
+            act.toggled.connect(self.onToggleShowSection)
             self.addAction(act)
             self.sectionActions[section] = act
 
-    def toggleShowColumnAct(self, toggled):
+        unchooseAllAct = QAction("Hide all sections", self,
+                                 toolTip="Hide all sections",
+                                 statusTip="Hide all section",
+                                 triggered=self.hideAllSections)
+        self.addAction(unchooseAllAct)
+
+    def hideAllSections(self):
+        """Hide all section except first"""
+        for i in range(1, self.count()):
+            self.hideSection(i)
+
+    def hideSection(self, alogicalIndex: int) -> None:
+        super(HeaderView, self).hideSection(alogicalIndex)
+        acts = self.actions()
+        for act in acts:
+            if act.data() == alogicalIndex:
+                act.setChecked(False)
+
+    def showSection(self, alogicalIndex: int) -> None:
+        super(HeaderView, self).showSection(alogicalIndex)
+        acts = self.actions()
+        for act in acts:
+            if act.data() == alogicalIndex:
+                act.setChecked(True)
+
+    def onToggleShowSection(self, toggled):
         action: QAction = self.sender()
         section = action.data()
         if toggled:

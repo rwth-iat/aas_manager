@@ -22,11 +22,11 @@ from PyQt5.QtCore import pyqtSignal, QModelIndex, QPersistentModelIndex, QPoint,
 from PyQt5.QtGui import QIcon, QPixmap, QRegion, QDrag, QCursor, QMouseEvent, \
     QDragEnterEvent, QDragLeaveEvent, QDropEvent, QCloseEvent
 from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QTabWidget, QAction, QHBoxLayout, QFrame, \
-    QTabBar, QMenu, QSplitter, QShortcut, QPushButton, QMessageBox
+    QTabBar, QMenu, QSplitter, QShortcut, QPushButton, QMessageBox, QToolButton
 
 from aas_editor.settings.app_settings import *
 from aas_editor.settings.icons import FORWARD_ICON, BACK_ICON, SPLIT_VERT_ICON, SPLIT_HORIZ_ICON, ZOOM_IN_ICON, \
-    ZOOM_OUT_ICON
+    ZOOM_OUT_ICON, SETTINGS_ICON
 from aas_editor.settings.shortcuts import SC_BACK, SC_FORWARD, SC_SEARCH
 from aas_editor.utils.util_type import getTypeName
 from aas_editor.widgets import AddressLine, SearchBar, ToolBar, AttrsTreeView
@@ -41,6 +41,7 @@ class TabBar(QTabBar):
         super(TabBar, self).__init__(parent)
         self.menuIndexTab = None
 
+        self.setFixedHeight(TOOLBARS_HEIGHT)
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.setElideMode(Qt.ElideRight)
         self.setUsesScrollButtons(True)
@@ -358,6 +359,8 @@ class Tab(QWidget):
         self.pathToolBar.addAction(self.backAct)
         self.pathToolBar.addAction(self.forwardAct)
 
+        self.pathWidget = QWidget(self)
+        self.pathWidget.show()
         self.pathLine: AddressLine = AddressLine(self)
         self.objTypeLine = LineEdit(self, placeholderText="Object Type")
         self.objTypeLine.setFixedWidth(168)
@@ -387,20 +390,7 @@ class Tab(QWidget):
         self.attrsTreeView = AttrsTreeView(self)
         self.attrsTreeView.setFrameShape(QFrame.NoFrame)
 
-        self.toolBar = ToolBar(self)
-        self.toolBar.addAction(self.attrsTreeView.zoomInAct)
-        self.toolBar.addAction(self.attrsTreeView.zoomOutAct)
-        self.toolBar.addAction(self.attrsTreeView.collapseAllAct)
-        self.toolBar.addAction(self.attrsTreeView.expandAllAct)
-        self.toolBar.addSeparator()
-        self.toolBar.addAction(self.attrsTreeView.undoAct)
-        self.toolBar.addAction(self.attrsTreeView.redoAct)
-        self.toolBar.addAction(self.attrsTreeView.copyAct)
-        self.toolBar.addAction(self.attrsTreeView.cutAct)
-        self.toolBar.addAction(self.attrsTreeView.pasteAct)
-        self.toolBar.addAction(self.attrsTreeView.delClearAct)
-        self.toolBar.addAction(self.attrsTreeView.editCreateInDialogAct)
-        self.toolBar.addAction(self.attrsTreeView.addAct)
+        self.initToolbar()
         self.searchBar = SearchBar(self.attrsTreeView, parent=self,
                                    filterColumns=[ATTRIBUTE_COLUMN, VALUE_COLUMN], closable=True)
         self.searchBar.hide()
@@ -415,6 +405,33 @@ class Tab(QWidget):
             self.openEmptyItem()
 
         self._initLayout()
+
+    def initToolbar(self):
+        self.toolBar = ToolBar(self)
+
+        settingsBtn = QToolButton(icon=SETTINGS_ICON)
+        settingsBtn.setPopupMode(QToolButton.InstantPopup)
+        menuSettings = QMenu("Settings")
+        menuSettings.addAction(QAction("Hide/show tabs bar", self,
+                       statusTip="Hide/show tabs bar",
+                       toggled=lambda a: self.tabWidget.tabBar().show() if a else self.tabWidget.tabBar().hide(),
+                       checkable=True,
+                       checked=not self.tabWidget.tabBar().isHidden()))
+        menuSettings.addAction(QAction("Hide/show address line", self,
+                       statusTip="Hide/show address line",
+                       toggled=lambda a: self.pathWidget.show() if a else self.pathWidget.hide(),
+                       checkable=True,
+                       checked=not self.pathWidget.isHidden()))
+        settingsBtn.setMenu(menuSettings)
+        self.toolBar.addWidget(settingsBtn)
+
+        self.toolBar.addAction(self.attrsTreeView.collapseAllAct)
+        self.toolBar.addAction(self.attrsTreeView.expandAllAct)
+        self.toolBar.addSeparator()
+        self.toolBar.addAction(self.attrsTreeView.undoAct)
+        self.toolBar.addAction(self.attrsTreeView.redoAct)
+        self.toolBar.addAction(self.attrsTreeView.editCreateInDialogAct)
+        self.toolBar.addAction(self.attrsTreeView.addAct)
 
     # noinspection PyArgumentList
     def initActions(self):
@@ -545,13 +562,12 @@ class Tab(QWidget):
         self.descrLabel.setText(detailInfoItem.data(Qt.WhatsThisRole))
 
     def _initLayout(self):
-        pathWidget = QWidget()
-        pathLayout = QHBoxLayout(pathWidget)
+        pathLayout = QHBoxLayout(self.pathWidget)
         pathLayout.setContentsMargins(0, 0, 0, 0)
         pathLayout.addWidget(self.pathToolBar)
         pathLayout.addWidget(self.pathLine)
         pathLayout.addWidget(self.objTypeLine)
-        pathWidget.setFixedHeight(TOOLBARS_HEIGHT)
+        self.pathWidget.setFixedHeight(TOOLBARS_HEIGHT)
 
         toolBarWidget = QWidget()
         toolBarLayout = QHBoxLayout(toolBarWidget)
@@ -563,7 +579,7 @@ class Tab(QWidget):
         treeViewWidget = QWidget()
         treeViewLayout = QVBoxLayout(treeViewWidget)
         treeViewLayout.setContentsMargins(0, 0, 0, 0)
-        treeViewLayout.addWidget(pathWidget)
+        treeViewLayout.addWidget(self.pathWidget)
         treeViewLayout.addWidget(self.attrsTreeView)
         treeViewLayout.addWidget(self.descrLabel)
 
@@ -575,7 +591,7 @@ class Tab(QWidget):
 
         layout = QVBoxLayout(self)
         layout.setObjectName("tabLayout")
-        layout.addWidget(pathWidget)
+        layout.addWidget(self.pathWidget)
         layout.addWidget(toolBarWidget)
         layout.addWidget(self.splitter)
         layout.setSpacing(2)

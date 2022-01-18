@@ -18,13 +18,12 @@
 
 from typing import Any
 
-from PyQt5.QtCore import QModelIndex, Qt, QPersistentModelIndex
-from PyQt5.QtGui import QFont, QBrush
+from PyQt5.QtCore import QModelIndex, QPersistentModelIndex
+from PyQt5.QtGui import QFont
 
 from aas_editor.models import DetailedInfoItem, StandardTable
-from aas_editor.settings.app_settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, COLUMNS_IN_DETAILED_INFO,\
-    ATTRIBUTE_COLUMN, PACK_ITEM_ROLE, DEFAULT_FONT, LINKED_ITEM_ROLE, IS_LINK_ROLE
-from aas_editor.settings import LIGHT_BLUE
+from aas_editor.settings.app_settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, DEFAULT_COLUMNS_IN_DETAILED_INFO,\
+    PACK_ITEM_ROLE, DEFAULT_FONT, LINKED_ITEM_ROLE, IS_LINK_ROLE
 
 
 class DetailedInfoTable(StandardTable):
@@ -36,7 +35,7 @@ class DetailedInfoTable(StandardTable):
         self.package = packItem.data(PACKAGE_ROLE)
         root = DetailedInfoItem(self.mainObj, name=packItem.data(NAME_ROLE),
                                 package=self.package, new=False)
-        super(DetailedInfoTable, self).__init__(COLUMNS_IN_DETAILED_INFO, root)
+        super(DetailedInfoTable, self).__init__(DEFAULT_COLUMNS_IN_DETAILED_INFO, root)
 
     def data(self, index: QModelIndex, role: int = ...) -> Any:
         if role == PACK_ITEM_ROLE:

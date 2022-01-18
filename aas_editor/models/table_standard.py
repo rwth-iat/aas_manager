@@ -256,7 +256,8 @@ class StandardTable(QAbstractItemModel):
             return self.redo
         else:
             item = self.objByIndex(index)
-            return item.data(role, index.column())
+            column = index.column()
+            return item.data(role, column, column_name=self._columns[column])
 
     def _getFgColor(self, index: QModelIndex):
         column = index.column()
