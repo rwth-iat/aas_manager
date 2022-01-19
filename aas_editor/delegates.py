@@ -57,9 +57,6 @@ class ColorDelegate(QStyledItemDelegate):
 
 
 class EditDelegate(ColorDelegate):
-    def __init__(self):
-        super().__init__()
-
     def createEditor(self, parent: QWidget, option: 'QStyleOptionViewItem',
                      index: QtCore.QModelIndex) -> QWidget:
         objType = type(index.data(Qt.EditRole))

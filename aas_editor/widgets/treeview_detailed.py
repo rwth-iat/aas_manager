@@ -32,9 +32,6 @@ from aas_editor.widgets import TreeView
 
 
 class AttrsTreeView(TreeView):
-    def __init__(self, parent):
-        super(AttrsTreeView, self).__init__(parent)
-
     # noinspection PyUnresolvedReferences
     def newPackItem(self, packItem):
         self.initTreeView(packItem)
