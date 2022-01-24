@@ -65,25 +65,32 @@ def getAttrs4detailInfo(obj, exclSpecial: bool = True, exclCallable: bool = True
 
 def getAttrs4inheritors(cls) -> Set[str]:
     """Return attributes of all inheritor classes of the cls"""
-    aas_attrs = set()
     referableClasses = inheritors(cls)
+    aas_attrs = set()
     for cls in referableClasses:
-        attrs = list(getParams4init(cls, withDefaults=False).keys())
-        params_to_attrs = util_classes.ClassesInfo.params_to_attrs(cls)
-        for param, attr in params_to_attrs.items():
-            try:
-                attrs.remove(param)
-                attrs.append(attr)
-            except ValueError:
-                print("Error occurred while replacing param to attr: probably CLASSES_INFO is corrupted")
-        hidden_attrs = util_classes.ClassesInfo.hiddenAttrs(cls)
-        for hidden_attr in hidden_attrs:
-            try:
-                attrs.remove(hidden_attr)
-            except ValueError:
-                print("Error occurred while removing hidden attr: probably CLASSES_INFO is corrupted")
+        attrs = getAttrsOfCls(cls)
         aas_attrs.update(attrs)
     return aas_attrs
+
+
+def getAttrsOfCls(cls) -> Set[str]:
+    """Return attributes of the class instance"""
+    attrs = list(getParams4init(cls, withDefaults=False).keys())
+    params_to_attrs = util_classes.ClassesInfo.params_to_attrs(cls)
+    for param, attr in params_to_attrs.items():
+        try:
+            attrs.remove(param)
+            attrs.append(attr)
+        except ValueError:
+            print("Error occurred while replacing param to attr: probably CLASSES_INFO is corrupted")
+    hidden_attrs = util_classes.ClassesInfo.hiddenAttrs(cls)
+    for hidden_attr in hidden_attrs:
+        try:
+            attrs.remove(hidden_attr)
+        except ValueError:
+            print("Error occurred while removing hidden attr: probably CLASSES_INFO is corrupted")
+    return attrs
+
 
 
 def simplifyInfo(obj, attrName: str = "") -> str:
