@@ -18,20 +18,20 @@
 
 import io
 from collections import namedtuple
-from types import GeneratorType
 
-from PyQt5.QtGui import QBrush, QIcon, QColor
+from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QObject, QVariant
 
 from aas_editor.package import StoredFile
+from aas_editor.settings import NOT_GIVEN
 from aas_editor.settings.app_settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, \
     ATTRIBUTE_COLUMN, \
     VALUE_COLUMN, IS_LINK_ROLE, TYPE_HINT_ROLE, PARENT_OBJ_ROLE, TYPE_COLUMN, \
     TYPE_HINT_COLUMN, TYPE_CHECK_ROLE, IS_MEDIA_ROLE, IS_URL_MEDIA_ROLE, MEDIA_CONTENT_ROLE, \
-    TYPE_ROLE, MAX_SIGNS_TO_SHOW
+    TYPE_ROLE
 from aas_editor.settings.aas_settings import TYPE_ICON_DICT, LINK_TYPES, MEDIA_TYPES
 from aas_editor.settings.icons import FILE_ICON, MIME_TYPE_ICON_DICT
-from aas_editor.utils.util import getDescription, getAttrDoc, simplifyInfo, getLimitStr
+from aas_editor.utils.util import getAttrDoc, simplifyInfo, getLimitStr
 from aas_editor.utils.util_type import checkType, getTypeName, getTypeHintName, isIterable, \
     getAttrTypeHint, getIterItemTypeHint
 from PyQt5.QtCore import Qt
@@ -145,8 +145,7 @@ class StandardItem(QObject):
                         self.icon = QIcon(TYPE_ICON_DICT[cls])
 
     def data(self, role, column=ATTRIBUTE_COLUMN, column_name=""):
-        if role == Qt.WhatsThisRole:
-            return self.doc
+        # custom roles
         if role == NAME_ROLE:
             return self.objectName
         if role == OBJECT_ROLE:
@@ -169,36 +168,78 @@ class StandardItem(QObject):
             return self.isUrlMedia
         if role == MEDIA_CONTENT_ROLE:
             return self.getMediaContent()
-        if role == Qt.DecorationRole and column == 0:
+        # qt roles
+        if role == Qt.DecorationRole and column == ATTRIBUTE_COLUMN:
             return self.icon
-        if role == Qt.DisplayRole:
-            if column == ATTRIBUTE_COLUMN:
-                return getLimitStr(self.objectName)
-            if column == VALUE_COLUMN:
-                return getLimitStr(self.displayValue)
-            if column == TYPE_COLUMN:
-                return getLimitStr(self.objTypeName)
-            if column == TYPE_HINT_COLUMN:
-                return getLimitStr(self.typehintName)
-            if column_name:
-                try:
-                    return getLimitStr(getattr(self.obj, column_name))
-                except AttributeError as e:
-                    return QVariant()
-                except Exception as e:
-                    return getLimitStr(e)
+        if role == Qt.WhatsThisRole:
+            return self.doc
         if role in (Qt.ToolTipRole, Qt.StatusTipRole):
-            toolTip = self.getToolTip(column)
-            if toolTip:
-                return getLimitStr(toolTip)
+            return self._getTooltipRoleData(column)
+        if role == Qt.DisplayRole:
+            return self._getDisplayRoleData(column, column_name)
         if role == Qt.EditRole:
-            if column == ATTRIBUTE_COLUMN:
-                return self.objectName
-            if column == VALUE_COLUMN:
-                if isinstance(self.obj, DictItem):
-                    return self.obj.value
-                return self.obj
+            return self._getEditRoleData(column, column_name)
         return QVariant()
+
+    def _getEditRoleData(self, column, column_name):
+        if column == ATTRIBUTE_COLUMN:
+            return self.objectName
+        if column == VALUE_COLUMN:
+            if isinstance(self.obj, DictItem):
+                return self.obj.value
+            return self.obj
+        if column_name:
+            try:
+                return getattr(self.obj, column_name)
+            except AttributeError:
+                return QVariant()
+
+    def _getDisplayRoleData(self, column, column_name):
+        data = NOT_GIVEN
+        if column == ATTRIBUTE_COLUMN:
+            data = self.objectName
+        if column == VALUE_COLUMN:
+            data = self.displayValue
+        if column == TYPE_COLUMN:
+            data = self.objTypeName
+        if column == TYPE_HINT_COLUMN:
+            data = self.typehintName
+        if column_name:
+            try:
+                obj = getattr(self.obj, column_name)
+                data = simplifyInfo(obj)
+            except AttributeError as e:
+                pass
+            except Exception as e:
+                data = e
+
+        if data != NOT_GIVEN:
+            return getLimitStr(data)
+        else:
+            return QVariant()
+
+    def _getTooltipRoleData(self, column):
+        tooltip = ""
+        if column == ATTRIBUTE_COLUMN:
+            if self.doc:
+                tooltip = self.doc.replace(": ", "\n\n", 1)
+            else:
+                tooltip = self.objectName
+        elif column == VALUE_COLUMN:
+            if self.typecheck:
+                tooltip = self.displayValue
+            else:
+                tooltip = f"{self.displayValue}\n\nThe value must be of type '{self.typehintName}', not of type '{self.objTypeName}'!"
+        elif column == TYPE_COLUMN:
+            if self.typecheck:
+                tooltip = self.objTypeName
+            else:
+                tooltip = f"{self.objTypeName}\n\nThe value must be of type '{self.typehintName}', not of type '{self.objTypeName}'!"
+        elif column == TYPE_HINT_COLUMN:
+            tooltip = self.typehintName
+
+        tooltip = getLimitStr(tooltip)
+        return tooltip if tooltip else QVariant()
 
     def setParent(self, a0: 'QObject') -> None:
         super().setParent(a0)
@@ -277,22 +318,3 @@ class StandardItem(QObject):
         else:
             return MediaContent(b"Media not found", "text/plain")
 
-    def getToolTip(self, column):
-        if column == ATTRIBUTE_COLUMN:
-            if self.doc:
-                return self.doc.replace(": ", "\n\n", 1)
-            else:
-                return self.objectName
-        if column == VALUE_COLUMN:
-            if self.typecheck:
-                return self.displayValue
-            else:
-                return f"{self.displayValue}\n\nThe value must be of type '{self.typehintName}', not of type '{self.objTypeName}'!"
-        if column == TYPE_COLUMN:
-            if self.typecheck:
-                return self.objTypeName
-            else:
-                return f"{self.objTypeName}\n\nThe value must be of type '{self.typehintName}', not of type '{self.objTypeName}'!"
-        if column == TYPE_HINT_COLUMN:
-            return self.typehintName
-        return None
