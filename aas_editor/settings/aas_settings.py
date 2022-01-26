@@ -32,7 +32,7 @@ import aas_editor.package
 from aas_editor.settings.util_constants import HIDDEN_ATTRS, CHANGED_PARENT_OBJ, ADD_ACT_AAS_TXT, \
     ADD_TYPE, PACKVIEW_ATTRS_INFO, PARAMS_TO_ATTRS, DEFAULT_PARAMS_TO_HIDE
 from aas_editor.settings.icons import getCharsIcon
-from aas_editor.utils import util_classes
+from aas_editor.utils import util_classes, util_type
 import aas_editor.utils.util as util
 
 AAS_FILES_FILTER = "AAS files (*.aasx *.xml *.json)"
@@ -463,6 +463,12 @@ CLASSES_INFO = {
 
 EXTENDED_COLUMNS_IN_PACK_TABLE = list(util.getAttrs4inheritors(Referable))
 EXTENDED_COLUMNS_IN_PACK_TABLE.sort()
+REFERABLE_INHERITORS = sorted(list(util.inheritors(Referable)), key=util_type.getTypeName)
+
+REFERABLE_INHERITORS_ATTRS = {}
+for inheritor in REFERABLE_INHERITORS:
+    REFERABLE_INHERITORS_ATTRS.update({inheritor: util.getAttrsOfCls(inheritor)})
+
 
 ATTR_INFOS_TO_SIMPLIFY = (AdministrativeInformation, Identifier,)
 

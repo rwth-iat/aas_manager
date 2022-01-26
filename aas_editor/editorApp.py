@@ -7,6 +7,7 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
+import json
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import QModelIndex
@@ -295,9 +296,14 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             self.packTreeModel.setData(QModelIndex(), [], UNDO_ROLE)
 
         # set previous tree states
+        packTreeViewHeader = self.packTreeView.header()
         packTreeViewHeaderState = AppSettings.PACKTREEVIEW_HEADER_STATE.value()
         if packTreeViewHeaderState:
-            self.packTreeView.header().restoreState(packTreeViewHeaderState)
+            packTreeViewHeader.restoreState(packTreeViewHeaderState)
+        with open(AppSettings.PACKTREEVIEW_HEADER_CUSTOM_COLUMN_LISTS_FILE) as json_file:
+            customLists = json.load(json_file)
+            packTreeViewHeader.setCustomLists(customLists)
+        packTreeViewHeader.initMenu()
 
         tabTreeViewHeaderState = AppSettings.TABTREEVIEW_HEADER_STATE.value()
         if tabTreeViewHeaderState:

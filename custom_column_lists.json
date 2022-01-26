@@ -1,0 +1,4 @@
+{
+  "example_list": ["value", "description", "kind"],
+  "example_list2": ["type", "typehint"]
+}

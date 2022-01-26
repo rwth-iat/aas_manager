@@ -117,6 +117,7 @@ class AppSettings:
     FONTSIZE_FILES_VIEW = Setting('fontSizeFilesView', DEFAULT_FONT.pointSize(), int)
     FONTSIZE_DETAILED_VIEW = Setting('fontSizeDetailedView', DEFAULT_FONT.pointSize(), int)
     PACKTREEVIEW_HEADER_STATE = Setting('packTreeViewHeaderState', None)
+    PACKTREEVIEW_HEADER_CUSTOM_COLUMN_LISTS_FILE = "custom_column_lists.json"
     TABTREEVIEW_HEADER_STATE = Setting('tabTreeViewHeaderState', None)
     DEFAULT_NEW_FILETYPE_FILTER = Setting('defaultNewFileTypeFilter', "AASX files (*.aasx)", str)
     WRITE_JSON_IN_AASX = Setting('writeJsonInAasx', False, bool)

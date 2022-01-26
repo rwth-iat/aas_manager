@@ -86,12 +86,6 @@ class HeaderView(QHeaderView):
             self.addAction(act)
             self.sectionActions[section] = act
 
-        unchooseAllAct = QAction("Hide all sections", self,
-                                 toolTip="Hide all sections",
-                                 statusTip="Hide all section",
-                                 triggered=self.hideAllSections)
-        self.addAction(unchooseAllAct)
-
     def hideAllSections(self):
         """Hide all section except first"""
         for i in range(1, self.count()):

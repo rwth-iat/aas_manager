@@ -15,25 +15,95 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-
+import typing
 from pathlib import Path
+from typing import Optional
 
-from PyQt5.QtCore import Qt, QModelIndex, QSettings
-from PyQt5.QtGui import QDropEvent, QDragEnterEvent
-from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog
+from PyQt5.QtCore import Qt, QModelIndex, QSettings, QPoint
+from PyQt5.QtGui import QDropEvent, QDragEnterEvent, QMouseEvent, QColor, QPalette, QPainter
+from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QStyleOptionViewItem, QMenu, QWidget
 from aas.model import AssetAdministrationShell
 
+from aas_editor.delegates import EditDelegate
 from aas_editor.package import Package, StoredFile
 from aas_editor.settings import FILTER_AAS_FILES, CLASSES_INFO, PACKVIEW_ATTRS_INFO, \
-    FILE_TYPE_FILTERS, NOT_GIVEN
-from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, APPLICATION_NAME, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, \
+    FILE_TYPE_FILTERS, NOT_GIVEN, EMPTY_VALUES, REFERABLE_INHERITORS_ATTRS
+from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, \
+    APPLICATION_NAME, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, \
     TYPE_ROLE, \
-    CLEAR_ROW_ROLE, FILE_DIALOG_OPTIONS, SETTINGS, AppSettings
+    CLEAR_ROW_ROLE, FILE_DIALOG_OPTIONS, AppSettings, COLUMN_NAME_ROLE
 from aas_editor.settings.shortcuts import SC_OPEN, SC_SAVE_ALL
 from aas_editor.settings.icons import NEW_PACK_ICON, OPEN_ICON, OPEN_DRAG_ICON, SAVE_ICON, SAVE_ALL_ICON, \
     VIEW_ICON
+from aas_editor.utils import util_type
 from aas_editor.utils.util_classes import ClassesInfo
+from aas_editor.utils.util_type import getAttrTypeHint
 from aas_editor.widgets import TreeView
+from aas_editor.widgets.treeview import HeaderView
+
+
+class PackHeaderView(HeaderView):
+    def __init__(self, orientation, parent: Optional[QWidget] = ...) -> None:
+        self.customLists = {}
+        super(PackHeaderView, self).__init__(orientation, parent)
+
+    def setCustomLists(self, value: typing.Dict["str", typing.List[str]]):
+        self.customLists = value
+        self.initMenu()
+
+    def initMenu(self) -> None:
+        self.menu = QMenu(self)
+
+        allColumnsMenu = self.menu.addMenu("All Columns")
+        for i in self.actions():
+            allColumnsMenu.addAction(i)
+
+        showColumns4typeMenu = self.menu.addMenu("Show Columns for type")
+        for cls in REFERABLE_INHERITORS_ATTRS:
+            clsname = util_type.getTypeName(cls)
+            sectionNames = REFERABLE_INHERITORS_ATTRS[cls]
+            showColumnsAct = QAction(f"{clsname}", self,
+                                   toolTip=f"Show attributes of Type: {clsname}",
+                                   statusTip=f"Show attributes of Type: {clsname}",
+                                   triggered=self.onShowListOfSectionsAct)
+            showColumnsAct.setData(sectionNames)
+            showColumns4typeMenu.addAction(showColumnsAct)
+
+        showColumnsListMenu = self.menu.addMenu("Show custom column list")
+        for listname in self.customLists:
+            sectionNames = self.customLists[listname]
+            showColumnsAct = QAction(f"{listname}", self,
+                                   toolTip=f"Show custom list {listname}: {sectionNames}. To manage custom lists, edit custom_column_lists.json",
+                                   statusTip=f"Show custom list {listname}: {sectionNames}. To manage custom lists, edit custom_column_lists.json",
+                                   triggered=self.onShowListOfSectionsAct)
+            showColumnsAct.setData(sectionNames)
+            showColumnsListMenu.addAction(showColumnsAct)
+
+        self.menu.addSeparator()
+        unchooseAllAct = QAction("Hide all columns", self,
+                                 toolTip="Hide all columns",
+                                 statusTip="Hide all columns",
+                                 triggered=self.hideAllSections)
+        self.menu.addAction(unchooseAllAct)
+
+    def onShowListOfSectionsAct(self):
+        action: QAction = self.sender()
+        sectionNames = action.data()
+        self.showSectionWithNames(sectionNames, only=True)
+
+    def openMenu(self, point: QPoint):
+        chosenSection = self.logicalIndexAt(point)
+        hideChosenSection = QAction(f"Hide column", self,
+                               toolTip=f"Hide column",
+                               statusTip=f"Hide column",
+                               triggered=lambda: self.hideSection(chosenSection))
+        self.menu.addAction(hideChosenSection)
+        self.menu.exec_(self.viewport().mapToGlobal(point))
+        self.menu.removeAction(hideChosenSection)
+
+
+
+
 
 
 class PackTreeView(TreeView):
@@ -48,6 +118,8 @@ class PackTreeView(TreeView):
         self.recentFilesSeparator = None
         self.setAcceptDrops(True)
         self.setExpandsOnDoubleClick(False)
+        self.setSelectionBehavior(self.SelectItems)
+        self.setHeader(PackHeaderView(Qt.Horizontal, self))
 
     @property
     def defaultNewFileTypeFilter(self):
