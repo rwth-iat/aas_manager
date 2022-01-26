@@ -29,31 +29,7 @@ from aas_editor.widgets.lineEdit import LineEdit
 
 
 class ColorDelegate(QStyledItemDelegate):
-    def __init__(self):
-        super().__init__()
-        self.indexColors: Dict[QModelIndex, QBrush] = {}
-
-    def paint(self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex):
-        if index.isValid() and index in self.indexColors:
-            self.initStyleOption(option, index)
-            option.backgroundBrush = self.indexColors[index]
-            widget = option.widget
-            style = widget.style()
-            style.drawControl(QStyle.CE_ItemViewItem, option, painter, widget)
-        else:
-            super(ColorDelegate, self).paint(painter, option, index)
-
-    def setBgColor(self, index: QModelIndex, val: QBrush):
-        self.indexColors[index] = val
-
-    def bgColor(self, index: QModelIndex):
-        return self.indexColors[index]
-
-    def removeBgColor(self, index: QModelIndex):
-        self.indexColors.pop(index)
-
-    def clearBgColors(self):
-        self.indexColors.clear()
+    pass
 
 
 class EditDelegate(ColorDelegate):
