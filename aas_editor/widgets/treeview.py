@@ -97,12 +97,37 @@ class HeaderView(QHeaderView):
         for i in range(1, self.count()):
             self.hideSection(i)
 
+    def hideSectionWithNames(self, names: typing.List[str]):
+        for name in names:
+            self.hideSectionWithName(name)
+
+    def hideSectionWithName(self, name: str):
+        for i in range(1, self.count()):
+            if self.text(i) == name:
+                self.hideSection(i)
+                return True
+        return False
+
+    def showSectionWithNames(self, names: typing.List[str], only=False):
+        if only:
+            self.hideAllSections()
+        for name in names:
+            self.showSectionWithName(name)
+
+    def showSectionWithName(self, name: str):
+        for i in range(1, self.count()):
+            if self.text(i) == name:
+                self.showSection(i)
+                return True
+        return False
+
     def hideSection(self, alogicalIndex: int) -> None:
         super(HeaderView, self).hideSection(alogicalIndex)
         acts = self.actions()
         for act in acts:
             if act.data() == alogicalIndex:
                 act.setChecked(False)
+                return
 
     def showSection(self, alogicalIndex: int) -> None:
         super(HeaderView, self).showSection(alogicalIndex)
