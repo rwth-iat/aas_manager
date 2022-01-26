@@ -283,6 +283,9 @@ class StandardTable(QAbstractItemModel):
         elif index.column() == ATTRIBUTE_COLUMN:
             if not isinstance(index.parent().data(OBJECT_ROLE), dict):
                 font.setBold(True)
+                font.setUnderline(True)
+        elif index.column() not in (TYPE_COLUMN, TYPE_HINT_COLUMN):
+            font.setItalic(True)
         return font
 
     def setData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
