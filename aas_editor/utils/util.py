@@ -94,11 +94,7 @@ def getAttrsOfCls(cls) -> Set[str]:
 
 
 def simplifyInfo(obj, attrName: str = "") -> str:
-    if len(str(obj))>=settings.MAX_SIGNS_TO_SHOW_IN_TREE:
-        res = f"{str(obj)[0:settings.MAX_SIGNS_TO_SHOW_IN_TREE]}..."
-    else:
-        res = str(obj)
-
+    res = str(obj)
     if isinstance(obj, settings.ATTR_INFOS_TO_SIMPLIFY):
         res = re.sub("^[A-Z]\w*[(]", "", res)
         res = res.rstrip(")")
