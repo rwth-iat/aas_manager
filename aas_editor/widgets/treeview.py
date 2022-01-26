@@ -17,7 +17,7 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 from typing import Optional
 
-from PyQt5.QtCore import Qt, pyqtSignal, QModelIndex, QTimer, QAbstractItemModel
+from PyQt5.QtCore import Qt, pyqtSignal, QModelIndex, QTimer, QAbstractItemModel, QPoint
 from PyQt5.QtGui import QClipboard, QPalette, QColor
 from PyQt5.QtWidgets import QAction, QMenu, QApplication, QDialog, QMessageBox, QHeaderView, QWidget
 
@@ -50,12 +50,23 @@ class HeaderView(QHeaderView):
         self.currOrder = self.sortIndicatorOrder()
         self.sectionActions = {}
 
-        self.setContextMenuPolicy(Qt.ContextMenuPolicy.ActionsContextMenu)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.initMenu()
+        self.customContextMenuRequested.connect(self.openMenu)
         self.sectionClicked.connect(self.onSectionClicked)
+
+    def openMenu(self, point: QPoint):
+        self.menu.exec_(self.viewport().mapToGlobal(point))
+
+    def initMenu(self) -> None:
+        self.menu = QMenu(self)
+        for i in self.actions():
+            self.menu.addAction(i)
 
     def restoreState(self, state: typing.Union[QtCore.QByteArray, bytes, bytearray]) -> bool:
         super(HeaderView, self).restoreState(state)
         self.initShowSectionActs()
+        self.initMenu()
 
     def initShowSectionActs(self):
         for action in self.actions():
