@@ -254,6 +254,9 @@ class StandardTable(QAbstractItemModel):
             return self.undo
         if role == REDO_ROLE:
             return self.redo
+        if role == COLUMN_NAME_ROLE:
+            column = index.column()
+            return self._columns[column]
         else:
             item = self.objByIndex(index)
             column = index.column()
