@@ -18,7 +18,6 @@ def main():
 
     from aas_editor.editorApp import EditorApp
     window = EditorApp()
-    # window.packTreeModel.addItem(Package("aas_files/TestPackage.aasx"))
     window.show()
 
     app.exec_()
