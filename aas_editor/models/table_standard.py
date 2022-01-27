@@ -245,9 +245,9 @@ class StandardTable(QAbstractItemModel):
             return self._getFont(index)
         if role == Qt.SizeHintRole:
             fontSize = self.currFont.pointSize()
-            return QSize(-1, fontSize*1.9)
+            return QSize(-1, (fontSize+2)*1.9)
         if role == Qt.TextAlignmentRole:
-            return Qt.AlignLeft | Qt.AlignBottom
+            return Qt.AlignLeft | Qt.AlignVCenter
         if role == DATA_CHANGE_FAILED_ROLE:
             return self.lastErrorMsg
         if role == UNDO_ROLE:
