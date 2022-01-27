@@ -28,7 +28,7 @@ from PyQt5.QtWidgets import QLabel, QPushButton, QDialog, QDialogButtonBox, \
 
 from aas_editor.editWidgets import StandardInputWidget, SpecialInputWidget
 from aas_editor.settings import DEFAULTS, DEFAULT_COMPLETIONS, ATTRIBUTE_COLUMN, OBJECT_ROLE, \
-    APPLICATION_NAME, CONTRIBUTORS, CONTACT, COPYRIGHT_YEAR, VERSION, FILTER_AAS_FILES
+    APPLICATION_NAME, CONTRIBUTORS, CONTACT, COPYRIGHT_YEAR, VERSION, FILTER_AAS_FILES, DEFAULT_INHERITOR
 from aas_editor.delegates import ColorDelegate
 from aas_editor.utils.util import inheritors, getReqParams4init, getParams4init, getDefaultVal, \
     getAttrDoc
@@ -212,6 +212,7 @@ def getInputWidget(objType, rmDefParams=True, title="", paramsToHide: dict = Non
 
     if isabstract(objType) and not isIterableType(objType):
         objTypes = inheritors(objType)
+        kwargs["defType"] = DEFAULT_INHERITOR.get(objType, None)
         widget = TypeOptionObjGroupBox(objTypes, **kwargs)
     elif isSimpleIterableType(objType):
         widget = IterableGroupBox(objType, **kwargs)
@@ -227,6 +228,7 @@ def getInputWidget(objType, rmDefParams=True, title="", paramsToHide: dict = Non
     elif includeInheritedTyps and inheritors(objType):
         objTypes = list(inheritors(objType))
         objTypes.append(objType)
+        kwargs["defType"] = DEFAULT_INHERITOR.get(objType, None)
         widget = TypeOptionObjGroupBox(objTypes, **kwargs)
     else:
         widget = ObjGroupBox(objType, **kwargs)
@@ -505,7 +507,7 @@ class IterableGroupBox(GroupBox):
 
 class TypeOptionObjGroupBox(GroupBox):
     """GroupBox with option to choose widget for which type will be generated"""
-    def __init__(self, objTypes: List, **kwargs):
+    def __init__(self, objTypes: List, defType=None, **kwargs):
         objTypes = list(objTypes)
         super(TypeOptionObjGroupBox, self).__init__(objTypes[0], **kwargs)
 
@@ -516,6 +518,10 @@ class TypeOptionObjGroupBox(GroupBox):
                 self.objTypes.remove(typ)
 
         self.initTypeComboBox()
+        if defType is not None and defType in objTypes:
+            index = self.typeComboBox.findText(getTypeName(defType), Qt.MatchExactly)
+            if index > -1:
+                self.typeComboBox.setCurrentIndex(index)
         currObjType = self.typeComboBox.currentData()
 
         kwargs["parent"] = self

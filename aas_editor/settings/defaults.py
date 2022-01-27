@@ -16,7 +16,8 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
-from aas.model import Key, KeyType, Asset, AssetKind, Identifier, IdentifierType, File, Blob
+from aas.model import Key, KeyType, Asset, AssetKind, Identifier, IdentifierType, File, Blob, SubmodelElement, Property, \
+    Constraint, Qualifier
 
 MIME_TYPES = [
     "application/graphql",
@@ -50,6 +51,11 @@ MIME_TYPES = [
     "text/plain",
     "text/xml",
 ]
+
+DEFAULT_INHERITOR = {
+    SubmodelElement: Property,
+    Constraint: Qualifier,
+}
 
 DEFAULTS = {
     Key: {
