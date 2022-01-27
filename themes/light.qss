@@ -1377,6 +1377,7 @@ QTableView::item:selected:hover
 QTreeView::item
 {
     border-right: 0.2ex solid rgba(186, 185, 184, 0.5);
+    border-bottom: 0.2ex solid rgba(186, 185, 184, 0.5);
 }
 
 QTreeView::item:!enabled

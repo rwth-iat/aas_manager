@@ -166,7 +166,7 @@ class TreeView(BasicTreeView):
 
     def __init__(self, parent=None, **kwargs):
         super(TreeView, self).__init__(parent, **kwargs)
-        self.setAlternatingRowColors(True)
+        self.setAlternatingRowColors(False)
         self.setAnimated(True)
         self.initActions()
         self.initMenu()

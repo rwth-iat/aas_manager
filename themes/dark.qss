@@ -1393,6 +1393,7 @@ QHeaderView
 QTreeView::item
 {
     border-right: 0.2ex solid rgba(118, 121, 124, 0.4);
+    border-bottom: 0.2ex solid rgba(118, 121, 124, 0.4);
 }
 
 QTreeView::item:!enabled
