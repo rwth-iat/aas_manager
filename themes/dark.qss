@@ -1395,6 +1395,11 @@ QTreeView::item
     border-right: 0.2ex solid rgba(118, 121, 124, 0.4);
 }
 
+QTreeView::item:!enabled
+{
+    background: rgba(255, 255, 255, 0.1);
+}
+
 QTableView::item:pressed,
 QListView::item:pressed,
 QTreeView::item:pressed
