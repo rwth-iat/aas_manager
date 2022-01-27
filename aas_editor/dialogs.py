@@ -499,7 +499,8 @@ class IterableGroupBox(GroupBox):
                 self._addInputWidget(val)
         else:
             print("Value is not iterable")
-            self._addInputWidget()
+            for widget in reversed(self.inputWidgets):
+                self.delInputWidget(widget)
 
 
 class TypeOptionObjGroupBox(GroupBox):
