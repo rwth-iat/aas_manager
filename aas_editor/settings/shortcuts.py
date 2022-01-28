@@ -28,5 +28,3 @@ SC_SAVE_ALL = QKeySequence(Qt.CTRL + Qt.Key_S)
 SC_BACK = QKeySequence.Back
 SC_FORWARD = QKeySequence.Forward
 SC_SEARCH = QKeySequence(Qt.CTRL + Qt.Key_F)
-SC_FOCUS2RIGTH_TREE = QKeySequence(Qt.CTRL + Qt.RightArrow)
-SC_FOCUS2LEFT_TREE = QKeySequence(Qt.CTRL + Qt.LeftArrow)

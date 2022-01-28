@@ -17,7 +17,6 @@ from PyQt5.QtWidgets import *
 from aas_editor.settings import EXTENDED_COLUMNS_IN_PACK_TABLE
 from aas_editor.settings.app_settings import *
 from aas_editor.settings.icons import APP_ICON, EXIT_ICON, SETTINGS_ICON
-from aas_editor.settings.shortcuts import SC_FOCUS2RIGTH_TREE, SC_FOCUS2LEFT_TREE
 from aas_editor.settings_dialog import SettingsDialog
 from aas_editor.dialogs import AboutDialog, ComplianceToolDialog
 from aas_editor.widgets import SearchBar, AddressLine
@@ -72,10 +71,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                                          statusTip=f"Edit application settings",
                                          triggered=lambda: SettingsDialog(self).exec())
 
-        self.switch2rightTreeSC = QShortcut(SC_FOCUS2RIGTH_TREE, self,
-                                            activated=self.setFocus2rightTree)
-        self.switch2leftTreeSC = QShortcut(SC_FOCUS2LEFT_TREE, self,
-                                           activated=self.packTreeView.setFocus)
         # Theme actions
         self.themeActs = []
         for theme in THEMES:
@@ -225,13 +220,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         for row in range(first, last):
             packItem = self.packTreeModel.index(row, 0, parent)
             self.mainTabWidget.removePackTab(packItem)
-
-    def setFocus2rightTree(self):
-        tab: 'Tab' = self.mainTabWidget.currentWidget()
-        if not tab.attrsTreeView.currentIndex().isValid():
-            firstItem = tab.attrsTreeView.model().index(0, 0, QModelIndex())
-            tab.attrsTreeView.setCurrentIndex(firstItem)
-        self.mainTabWidget.currentWidget().attrsTreeView.setFocus()
 
     def toggleThemeSlot(self):
         action = self.sender()
