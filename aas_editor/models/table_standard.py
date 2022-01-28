@@ -29,7 +29,8 @@ from aas_editor.package import Package
 from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
     VALUE_COLUMN, PACKAGE_ROLE, PACK_ITEM_ROLE, DEFAULT_FONT, ADD_ITEM_ROLE, CLEAR_ROW_ROLE, \
     DATA_CHANGE_FAILED_ROLE, IS_LINK_ROLE, TYPE_COLUMN, \
-    TYPE_CHECK_ROLE, TYPE_ROLE, UNDO_ROLE, REDO_ROLE, MAX_UNDOS, UPDATE_ROLE, TYPE_HINT_COLUMN, COLUMN_NAME_ROLE
+    TYPE_CHECK_ROLE, TYPE_ROLE, UNDO_ROLE, REDO_ROLE, MAX_UNDOS, UPDATE_ROLE, TYPE_HINT_COLUMN, COLUMN_NAME_ROLE, \
+    LINKED_ITEM_ROLE
 from aas_editor.settings import NOT_GIVEN
 from aas_editor.settings.colors import LINK_BLUE, CHANGED_BLUE, RED, NEW_GREEN
 
@@ -257,6 +258,8 @@ class StandardTable(QAbstractItemModel):
         if role == COLUMN_NAME_ROLE:
             column = index.column()
             return self._columns[column]
+        if role == LINKED_ITEM_ROLE:
+            return self.getLinkedItem(index)
         else:
             item = self.objByIndex(index)
             column = index.column()
@@ -287,6 +290,18 @@ class StandardTable(QAbstractItemModel):
         elif index.column() not in (TYPE_COLUMN, TYPE_HINT_COLUMN):
             font.setItalic(True)
         return font
+
+    def getLinkedItem(self, index: QModelIndex) -> QModelIndex:
+        if not index.data(IS_LINK_ROLE):
+            return QModelIndex()
+        try:
+            reference = self.data(index, OBJECT_ROLE)
+            objStore = self.data(index, PACKAGE_ROLE).objStore
+            obj = reference.resolve(objStore)
+            linkedPackItem, = self.data(index, PACK_ITEM_ROLE).model().match(QModelIndex(), OBJECT_ROLE, obj, hits=1)
+            return linkedPackItem
+        except AttributeError:
+            return QModelIndex()
 
     def setData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
         if isinstance(index, QPersistentModelIndex):

@@ -23,7 +23,7 @@ from PyQt5.QtGui import QFont
 
 from aas_editor.models import DetailedInfoItem, StandardTable
 from aas_editor.settings.app_settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, DEFAULT_COLUMNS_IN_DETAILED_INFO,\
-    PACK_ITEM_ROLE, DEFAULT_FONT, LINKED_ITEM_ROLE, IS_LINK_ROLE
+    PACK_ITEM_ROLE, DEFAULT_FONT
 
 
 class DetailedInfoTable(StandardTable):
@@ -40,19 +40,5 @@ class DetailedInfoTable(StandardTable):
     def data(self, index: QModelIndex, role: int = ...) -> Any:
         if role == PACK_ITEM_ROLE:
             return QModelIndex(self.packItem)
-        if role == LINKED_ITEM_ROLE:
-            return self.getLinkedItem(index)
         else:
             return super(DetailedInfoTable, self).data(index, role)
-
-    def getLinkedItem(self, index: QModelIndex) -> QModelIndex:
-        if not index.data(IS_LINK_ROLE):
-            return QModelIndex()
-        try:
-            reference = self.data(index, OBJECT_ROLE)
-            objStore = self.data(index, PACKAGE_ROLE).objStore
-            obj = reference.resolve(objStore)
-            linkedPackItem, = self.data(index, PACK_ITEM_ROLE).model().match(QModelIndex(), OBJECT_ROLE, obj, hits=1)
-            return linkedPackItem
-        except AttributeError:
-            return QModelIndex()
