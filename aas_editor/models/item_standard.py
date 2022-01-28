@@ -161,7 +161,7 @@ class StandardItem(QObject):
         if role == PACKAGE_ROLE:
             return self.package
         if role == IS_LINK_ROLE:
-            return self.isLink
+            return self.isLink(column, column_name)
         if role == IS_MEDIA_ROLE:
             return self.isMedia
         if role == IS_URL_MEDIA_ROLE:
@@ -183,7 +183,10 @@ class StandardItem(QObject):
 
     def _getEditRoleData(self, column, column_name):
         if column == ATTRIBUTE_COLUMN:
-            return self.objectName
+            if isinstance(self.obj, DictItem):
+                return self.objectName
+            else:
+                return self.obj
         if column == VALUE_COLUMN:
             if isinstance(self.obj, DictItem):
                 return self.obj.value
@@ -258,11 +261,11 @@ class StandardItem(QObject):
         except AttributeError:
             return None
 
-    @property
-    def isLink(self) -> bool:
-        if self.package and isinstance(self.obj, LINK_TYPES):
+    def isLink(self, column: int, column_name: str) -> bool:
+        data = self._getEditRoleData(column, column_name)
+        if self.package and isinstance(data, LINK_TYPES):
             try:
-                self.obj.resolve(self.package.objStore)
+                data.resolve(self.package.objStore)
                 return True
             except (AttributeError, KeyError, NotImplementedError, TypeError, IndexError) as e:
                 print(e)

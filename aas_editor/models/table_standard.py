@@ -270,7 +270,7 @@ class StandardTable(QAbstractItemModel):
         # color fg in red if obj type and typehint don't fit
         if column in (VALUE_COLUMN, TYPE_COLUMN) and not index.data(TYPE_CHECK_ROLE):
             return RED
-        elif column == VALUE_COLUMN and index.data(IS_LINK_ROLE):
+        elif index.data(IS_LINK_ROLE):
             return LINK_BLUE
         elif column == ATTRIBUTE_COLUMN:
             if self.objByIndex(index).new:
@@ -281,7 +281,7 @@ class StandardTable(QAbstractItemModel):
 
     def _getFont(self, index: QModelIndex):
         font = QFont(self.currFont)
-        if index.column() == VALUE_COLUMN and index.data(IS_LINK_ROLE):
+        if index.data(IS_LINK_ROLE):
             font.setUnderline(True)
         elif index.column() == ATTRIBUTE_COLUMN:
             if not isinstance(index.parent().data(OBJECT_ROLE), dict):
