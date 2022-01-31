@@ -345,10 +345,9 @@ class PackTreeView(TreeView):
         file = 'new_aas_file.aasx'
 
         while not saved:
-            file = QFileDialog.getSaveFileName(self, 'Create new AAS File', file,
+            file, _ = QFileDialog.getSaveFileName(self, 'Create new AAS File', file,
                                                filter=FILTER_AAS_FILES,
-                                               initialFilter=self.defaultNewFileTypeFilter,
-                                               options=FILE_DIALOG_OPTIONS)[0]
+                                               initialFilter=self.defaultNewFileTypeFilter)
             if file:
                 pack = Package()
                 saved = self.savePack(pack, file)
@@ -362,9 +361,8 @@ class PackTreeView(TreeView):
         opened = False
         file = ""
         while not opened:
-            file = QFileDialog.getOpenFileName(self, "Open AAS file", file,
-                                               filter=FILTER_AAS_FILES,
-                                               options=FILE_DIALOG_OPTIONS)[0]
+            file, _ = QFileDialog.getOpenFileName(self, "Open AAS file", file,
+                                                  filter=FILTER_AAS_FILES)
             if file:
                 opened = self.openPack(file)
             else:
@@ -375,8 +373,7 @@ class PackTreeView(TreeView):
         opened = False
         file = ""
         while not opened:
-            file = QFileDialog.getOpenFileName(self, "Add file", file,
-                                               options=FILE_DIALOG_OPTIONS)[0]
+            file, _ = QFileDialog.getOpenFileName(self, "Add file", file)
             if file:
                 storedFile = StoredFile(filePath=file)
                 opened = self.model().setData(parent, storedFile, ADD_ITEM_ROLE)
@@ -419,9 +416,8 @@ class PackTreeView(TreeView):
         file = pack.file.as_posix()
         while not saved:
             try:
-                file = QFileDialog.getSaveFileName(self, 'Save AAS File', file,
-                                                   filter=FILTER_AAS_FILES,
-                                                   options=FILE_DIALOG_OPTIONS)[0]
+                file, _ = QFileDialog.getSaveFileName(self, 'Save AAS File', file,
+                                                   filter=FILTER_AAS_FILES)
             except AttributeError as e:
                 QMessageBox.critical(self, "Error", f"No chosen package to save: {e}")
             else:
