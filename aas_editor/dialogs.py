@@ -78,10 +78,8 @@ class ComplianceToolDialog(QDialog):
         self.setLayout(layout)
 
     def chooseAndCheckFile(self):
-        file = QFileDialog.getOpenFileName(self, "Open AAS file",
-                                           filter=FILTER_AAS_FILES,
-                                           options=QFileDialog.DontResolveSymlinks |
-                                                   QFileDialog.DontUseNativeDialog)[0]
+        file, _ = QFileDialog.getOpenFileName(self, "Open AAS file",
+                                           filter=FILTER_AAS_FILES)
         if file:
             self.checkFile(file)
         else:

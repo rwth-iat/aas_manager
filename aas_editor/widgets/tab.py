@@ -535,9 +535,8 @@ class Tab(QWidget):
         saved = False
         while not saved:
             try:
-                file = QFileDialog.getSaveFileName(self, 'Save media File',
-                                                   directory+"/"+file.strip("/"),
-                                                   options=FILE_DIALOG_OPTIONS)[0]
+                file, _ = QFileDialog.getSaveFileName(self, 'Save media File',
+                                                   directory+"/"+file.strip("/"))
             except AttributeError as e:
                 QMessageBox.critical(self, "Error", f"{e}")
             else:

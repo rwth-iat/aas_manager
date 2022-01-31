@@ -40,9 +40,6 @@ MAX_RECENT_FILES = 10
 MAX_SIGNS_TO_SHOW = 1000
 MAX_SIGNS_TO_SHOW_IN_TREE = 150
 
-#FileDialogOptions
-FILE_DIALOG_OPTIONS = QFileDialog.DontResolveSymlinks | QFileDialog.DontUseNativeDialog
-
 # Custom roles
 PACKAGE_ROLE = 1010
 NAME_ROLE = 1020

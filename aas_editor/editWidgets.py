@@ -44,9 +44,7 @@ class BytesEdit(QWidget):
         self.layout().addWidget(plusButton)
 
     def chooseFile(self):
-        file = QFileDialog.getOpenFileName(self, "Open AAS file",
-                                           options=QFileDialog.DontResolveSymlinks |
-                                                   QFileDialog.DontUseNativeDialog)[0]
+        file, _ = QFileDialog.getOpenFileName(self, "Open AAS file")
         if file:
             with open(file, "rb") as f:
                 self.plainTextEdit.setPlainText(str(f.read()))
