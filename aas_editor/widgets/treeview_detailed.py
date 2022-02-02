@@ -195,10 +195,3 @@ class AttrsTreeView(TreeView):
                 self.edit(index)
         else:
             self.toggleFold(index)
-
-    def toggleFold(self, index: QModelIndex):
-        index = index.siblingAtColumn(0)
-        if self.isExpanded(index):
-            self.collapse(index)
-        else:
-            self.expand(index)

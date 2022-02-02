@@ -592,3 +592,10 @@ class TreeView(BasicTreeView):
         """Check dataChanged signal if data change failed and show Error dialog if failed"""
         if DATA_CHANGE_FAILED_ROLE in roles:
             QMessageBox.critical(self, "Error", self.model().data(topLeft, DATA_CHANGE_FAILED_ROLE))
+
+    def toggleFold(self, index: QModelIndex):
+        index = index.siblingAtColumn(0)
+        if self.isExpanded(index):
+            self.collapse(index)
+        else:
+            self.expand(index)
