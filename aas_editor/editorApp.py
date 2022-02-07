@@ -206,7 +206,8 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
     def onCurrTabItemChanged(self, item: QModelIndex):
         if self.packTreeView.autoScrollFromSrcAct.isChecked():
-            self.packTreeView.setCurrentIndex(item)
+            if not item.siblingAtColumn(0) == self.packTreeView.currentIndex().siblingAtColumn(0):
+                self.packTreeView.setCurrentIndex(item)
 
     def onSelectedPackItemChanged(self, item: QModelIndex):
         if self.packTreeView.autoScrollToSrcAct.isChecked():
