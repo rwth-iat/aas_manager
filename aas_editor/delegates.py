@@ -7,6 +7,7 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
+from typing import AbstractSet
 
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPainter, QBrush, QDoubleValidator, QIntValidator
@@ -23,13 +24,38 @@ from aas.model.submodel import *
 
 from aas_editor.settings import DEFAULT_COMPLETIONS
 from aas_editor.utils.util import inheritors
-from aas_editor.utils.util_type import issubtype, getTypeName
+from aas_editor.utils.util_classes import DictItem
+from aas_editor.utils.util_type import issubtype, getTypeName, isoftype
 from aas_editor.widgets import CompleterComboBox
 from aas_editor.widgets.lineEdit import LineEdit
 
 
 class ColorDelegate(QStyledItemDelegate):
-    pass
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.indexColors: Dict[QModelIndex, QBrush] = {}
+
+    def paint(self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex):
+        if index.isValid() and index in self.indexColors:
+            self.initStyleOption(option, index)
+            option.backgroundBrush = self.indexColors[index]
+            widget = option.widget
+            style = widget.style()
+            style.drawControl(QStyle.CE_ItemViewItem, option, painter, widget)
+        else:
+            super(ColorDelegate, self).paint(painter, option, index)
+
+    def setBgColor(self, index: QModelIndex, val: QBrush):
+        self.indexColors[index] = val
+
+    def bgColor(self, index: QModelIndex):
+        return self.indexColors[index]
+
+    def removeBgColor(self, index: QModelIndex):
+        self.indexColors.pop(index)
+
+    def clearBgColors(self):
+        self.indexColors.clear()
 
 
 class EditDelegate(ColorDelegate):
