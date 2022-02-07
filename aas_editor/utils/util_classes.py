@@ -30,12 +30,8 @@ class DictItem(NamedTuple):
     key: Any
     value: Any
 
-    @property
-    def name(self):
-        return self.key
-
     def __str__(self):
-        return str(self.value)
+        return self.__repr__()
 
     def __repr__(self):
         return f"{self.key}: {self.value}"

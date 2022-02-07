@@ -55,8 +55,9 @@ class DetailedInfoItem(StandardItem):
 
     @staticmethod
     def _populateDict(obj, **kwargs):
-        for key, value in obj.items():
-            DetailedInfoItem(DictItem(key, value), **kwargs)
+        for i, key in enumerate(obj):
+            DetailedInfoItem(DictItem(key, obj[key]),
+                             name=f"{getTypeName(DictItem)} {i}", **kwargs)
 
     @staticmethod
     def _populateIterable(obj, **kwargs):

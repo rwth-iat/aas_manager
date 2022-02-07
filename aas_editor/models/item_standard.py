@@ -36,7 +36,7 @@ from aas_editor.utils.util_type import checkType, getTypeName, getTypeHintName, 
     getAttrTypeHint, getIterItemTypeHint
 from PyQt5.QtCore import Qt
 
-from aas_editor.utils.util_classes import DictItem, ClassesInfo
+from aas_editor.utils.util_classes import ClassesInfo
 
 MediaContent = namedtuple("MediaContent", ("value", "mime_type"))
 
@@ -182,14 +182,7 @@ class StandardItem(QObject):
         return QVariant()
 
     def _getEditRoleData(self, column, column_name):
-        if column == ATTRIBUTE_COLUMN:
-            if isinstance(self.obj, DictItem):
-                return self.objectName
-            else:
-                return self.obj
         if column == VALUE_COLUMN:
-            if isinstance(self.obj, DictItem):
-                return self.obj.value
             return self.obj
         if column_name:
             try:

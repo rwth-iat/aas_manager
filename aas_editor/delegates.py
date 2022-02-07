@@ -27,6 +27,7 @@ from aas_editor.utils.util import inheritors
 from aas_editor.utils.util_classes import DictItem
 from aas_editor.utils.util_type import issubtype, getTypeName, isoftype
 from aas_editor.widgets import CompleterComboBox
+from aas_editor.widgets.dictItemEdit import DictItemEdit
 from aas_editor.widgets.lineEdit import LineEdit
 
 
@@ -59,6 +60,9 @@ class ColorDelegate(QStyledItemDelegate):
 
 
 class EditDelegate(ColorDelegate):
+    # FIXME check if other types are also editable
+    editableTypesInTable = (bool, int, float, str, Enum, Type,      DictItem, bytes, type(None), dict, list, AbstractSet)
+
     def createEditor(self, parent: QWidget, option: 'QStyleOptionViewItem',
                      index: QtCore.QModelIndex) -> QWidget:
         objType = type(index.data(Qt.EditRole))
@@ -95,16 +99,12 @@ class EditDelegate(ColorDelegate):
                 widget = QComboBox(parent)
             else:
                 widget = CompleterComboBox(parent)
-
-            for typ in types:
-                widget.addItem(getTypeName(typ), typ)
-            widget.model().sort(0, Qt.AscendingOrder)
-        if isinstance(index.data(Qt.EditRole), Enum):
-            editor = QtWidgets.QComboBox(parent)
-            editor.setAutoFillBackground(True)
+            widget.setAutoFillBackground(True)
+        elif issubtype(objType, DictItem):
+            widget = DictItemEdit(parent)
         else:
-            editor = super().createEditor(parent, option, index)
-        return editor
+            return super().createEditor(parent, option, index)
+        return widget
 
     def setEditorData(self, editor: QWidget, index: QtCore.QModelIndex) -> None:
         if isinstance(index.data(Qt.EditRole), Enum):
@@ -112,13 +112,17 @@ class EditDelegate(ColorDelegate):
             items = [member for member in type(currItem)]
             for item in items:
                 editor.addItem(item.name, item)
+            editor.model().sort(0, Qt.AscendingOrder)
             editor.setCurrentText(currItem.name)
+        elif isinstance(index.data(Qt.EditRole), DictItem):
+            currItem = index.data(Qt.EditRole)
+            editor.setCurrentData(currItem)
         else:
             super().setEditorData(editor, index)
 
     def setModelData(self, editor: QWidget, model: QtCore.QAbstractItemModel,
                      index: QtCore.QModelIndex) -> None:
-        if isinstance(index.data(Qt.EditRole), Enum):
+        if isoftype(index.data(Qt.EditRole), (Enum, DictItem)):
             obj = editor.currentData()
             model.setData(index, obj, Qt.EditRole)
         else:

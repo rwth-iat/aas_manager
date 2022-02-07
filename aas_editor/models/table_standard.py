@@ -88,20 +88,13 @@ class StandardTable(QAbstractItemModel):
             return self._columns[section]
 
     def flags(self, index: QModelIndex) -> Qt.ItemFlags:
-        if not index.isValid():
+        if not index.isValid() or index.data(Qt.DisplayRole) is None:
             return Qt.NoItemFlags
 
-        if (index.column() != VALUE_COLUMN
-            and not isinstance(index.data(OBJECT_ROLE), DictItem)) \
-                or self.hasChildren(index):
+        if index.column() in (ATTRIBUTE_COLUMN, TYPE_COLUMN, TYPE_HINT_COLUMN):
             return Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
-        # FIXME check if other types are also editable
-        if isinstance(index.data(OBJECT_ROLE),
-                      (DictItem, Enum, bool, int, float, str, bytes, type(None), dict, list, AbstractSet)):
-            return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
-
-        return Qt.ItemIsEnabled | Qt.ItemIsSelectable
+        return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
     def hasChildren(self, parent: QModelIndex = ...) -> bool:
         return True if self.rowCount(parent) else False
@@ -284,9 +277,8 @@ class StandardTable(QAbstractItemModel):
         if index.data(IS_LINK_ROLE):
             font.setUnderline(True)
         elif index.column() == ATTRIBUTE_COLUMN:
-            if not isinstance(index.parent().data(OBJECT_ROLE), dict):
-                font.setBold(True)
-                font.setUnderline(True)
+            font.setBold(True)
+            font.setUnderline(True)
         elif index.column() not in (TYPE_COLUMN, TYPE_HINT_COLUMN):
             font.setItalic(True)
         return font
@@ -348,12 +340,10 @@ class StandardTable(QAbstractItemModel):
                     parentSet.add(value)
                     item.obj = value
                 elif isinstance(index.data(OBJECT_ROLE), DictItem):
-                    oldValue = item.obj
-                    if index.column() == VALUE_COLUMN:
-                        item.obj = DictItem(item.obj.key, value)
-                    elif index.column() == ATTRIBUTE_COLUMN:
-                        item.parentObj.pop(item.obj.key)
-                        item.obj = DictItem(value, item.obj.value)
+                    oldValue: DictItem = item.obj
+                    item.obj = value
+                    if value.key != oldValue.key:
+                        item.parentObj.pop(oldValue.key)
                     item.parentObj.update([item.obj])
                 else:
                     oldValue = getattr(item.parentObj, item.objName)
