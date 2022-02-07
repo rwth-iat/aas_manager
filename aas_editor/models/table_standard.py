@@ -451,9 +451,8 @@ class StandardTable(QAbstractItemModel):
                 if isinstance(parentObj, list):
                     oldValue = parentObj.pop(currRow)
                 elif isinstance(parentObj, dict):
-                    value = parentObj.pop(child.objectName)
-                    key = child.objectName
-                    oldValue = DictItem(key, value)
+                    oldValue: DictItem = child.data(OBJECT_ROLE)
+                    parentObj.pop(oldValue.key)
                 elif isinstance(parentObj, AbstractSet):
                     parentObj.discard(child.obj)
                     oldValue = child.obj
