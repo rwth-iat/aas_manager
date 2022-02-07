@@ -18,7 +18,7 @@
 from abc import abstractmethod
 
 from PyQt5.QtCore import pyqtSignal, QRect, QSize
-from PyQt5.QtGui import QMouseEvent, QPaintEvent, QPainter, QDropEvent, QDragEnterEvent, QFont
+from PyQt5.QtGui import QMouseEvent, QPaintEvent, QPainter, QDropEvent, QDragEnterEvent
 from PyQt5.QtWidgets import QLineEdit, QPlainTextEdit
 from PyQt5.QtCore import Qt
 
@@ -28,7 +28,7 @@ from aas_editor.settings import OPEN_DRAG_ICON
 class LineEdit(QLineEdit):
     clicked = pyqtSignal()
 
-    def __init__(self, parent, **kwargs):
+    def __init__(self, parent=None, **kwargs):
         super(LineEdit, self).__init__(parent, **kwargs)
         self.setToolTip(self.text())
         self.textChanged.connect(self.onTextChanged)
