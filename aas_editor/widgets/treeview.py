@@ -465,10 +465,10 @@ class TreeView(BasicTreeView):
 
     def onCopy(self):
         index = self.currentIndex()
-        obj2copy = index.data(OBJECT_ROLE)
-        delAASParents(obj2copy)  # TODO check if there is a better solution to del aas parents
+        data2copy = index.data(COPY_ROLE)
+        delAASParents(data2copy)  # TODO check if there is a better solution to del aas parents
         self.treeObjClipboard.clear()
-        self.treeObjClipboard.append(obj2copy)
+        self.treeObjClipboard.append(data2copy)
         clipboard = QApplication.clipboard()
         clipboard.setText(index.data(Qt.DisplayRole), QClipboard.Clipboard)
         if self.isPasteOk(index):

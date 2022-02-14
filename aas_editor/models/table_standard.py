@@ -30,7 +30,7 @@ from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_C
     VALUE_COLUMN, PACKAGE_ROLE, PACK_ITEM_ROLE, DEFAULT_FONT, ADD_ITEM_ROLE, CLEAR_ROW_ROLE, \
     DATA_CHANGE_FAILED_ROLE, IS_LINK_ROLE, TYPE_COLUMN, \
     TYPE_CHECK_ROLE, TYPE_ROLE, UNDO_ROLE, REDO_ROLE, MAX_UNDOS, UPDATE_ROLE, TYPE_HINT_COLUMN, COLUMN_NAME_ROLE, \
-    LINKED_ITEM_ROLE
+    LINKED_ITEM_ROLE, COPY_ROLE
 from aas_editor.settings import NOT_GIVEN
 from aas_editor.settings.colors import LINK_BLUE, CHANGED_BLUE, RED, NEW_GREEN
 
@@ -306,6 +306,13 @@ class StandardTable(QAbstractItemModel):
                 self.currFont.setPointSize(font.pointSize())
                 self.dataChanged.emit(self.index(0), self.index(self.rowCount()))
                 return True
+        elif role == COPY_ROLE:
+            if index.column() in (ATTRIBUTE_COLUMN, VALUE_COLUMN):
+                return index.data(OBJECT_ROLE)
+            elif index.column() in (TYPE_COLUMN, TYPE_HINT_COLUMN):
+                return index.data(Qt.DisplayRole)
+            else:
+                return index.data(Qt.EditRole)
         elif role == ADD_ITEM_ROLE:
             try:
                 self.addItem(value, index)
