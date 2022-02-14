@@ -253,6 +253,13 @@ class StandardTable(QAbstractItemModel):
             return self._columns[column]
         if role == LINKED_ITEM_ROLE:
             return self.getLinkedItem(index)
+        if role == COPY_ROLE:
+            if index.column() in (ATTRIBUTE_COLUMN, VALUE_COLUMN):
+                return index.data(OBJECT_ROLE)
+            elif index.column() in (TYPE_COLUMN, TYPE_HINT_COLUMN):
+                return index.data(Qt.DisplayRole)
+            else:
+                return index.data(Qt.EditRole)
         else:
             item = self.objByIndex(index)
             column = index.column()
@@ -306,13 +313,6 @@ class StandardTable(QAbstractItemModel):
                 self.currFont.setPointSize(font.pointSize())
                 self.dataChanged.emit(self.index(0), self.index(self.rowCount()))
                 return True
-        elif role == COPY_ROLE:
-            if index.column() in (ATTRIBUTE_COLUMN, VALUE_COLUMN):
-                return index.data(OBJECT_ROLE)
-            elif index.column() in (TYPE_COLUMN, TYPE_HINT_COLUMN):
-                return index.data(Qt.DisplayRole)
-            else:
-                return index.data(Qt.EditRole)
         elif role == ADD_ITEM_ROLE:
             try:
                 self.addItem(value, index)
