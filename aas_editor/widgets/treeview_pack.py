@@ -31,13 +31,13 @@ from aas_editor.settings import FILTER_AAS_FILES, CLASSES_INFO, PACKVIEW_ATTRS_I
 from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, \
     APPLICATION_NAME, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, \
     TYPE_ROLE, \
-    CLEAR_ROW_ROLE, FILE_DIALOG_OPTIONS, AppSettings, COLUMN_NAME_ROLE
+    CLEAR_ROW_ROLE, AppSettings, COLUMN_NAME_ROLE
 from aas_editor.settings.shortcuts import SC_OPEN, SC_SAVE_ALL
 from aas_editor.settings.icons import NEW_PACK_ICON, OPEN_ICON, OPEN_DRAG_ICON, SAVE_ICON, SAVE_ALL_ICON, \
     VIEW_ICON
 from aas_editor.utils import util_type
 from aas_editor.utils.util_classes import ClassesInfo
-from aas_editor.utils.util_type import getAttrTypeHint
+from aas_editor.utils.util_type import getAttrTypeHint, isoftype
 from aas_editor.widgets import TreeView
 from aas_editor.widgets.treeview import HeaderView
 
@@ -100,10 +100,6 @@ class PackHeaderView(HeaderView):
         self.menu.addAction(hideChosenSection)
         self.menu.exec_(self.viewport().mapToGlobal(point))
         self.menu.removeAction(hideChosenSection)
-
-
-
-
 
 
 class PackTreeView(TreeView):
@@ -199,6 +195,37 @@ class PackTreeView(TreeView):
                                     statusTip="Change to shell view",
                                     triggered=self.onShellViewPushed,
                                     checkable=True)
+
+        self.setItemDelegate(EditDelegate(self))
+
+    def isEditableInsideCell(self, index: QModelIndex):
+        data = index.data(Qt.EditRole)
+        if index.flags() & Qt.ItemIsEditable \
+                and isoftype(data, self.itemDelegate().editableTypesInTable) \
+                and data not in EMPTY_VALUES:
+            return True
+        else:
+            return False
+
+    def onEditCreate(self, objVal=None, index=QModelIndex()):
+        """
+        :param objVal: value to set in dialog input widgets
+        :raise KeyError if no typehint found and no objVal was given
+        """
+        if not index.isValid():
+            index = self.currentIndex()
+        if index.isValid():
+            objVal = objVal if objVal else index.data(Qt.EditRole)
+            attribute = index.data(COLUMN_NAME_ROLE)
+            parentObj = index.data(OBJECT_ROLE)
+            try:
+                attrType = getAttrTypeHint(type(parentObj), attribute)
+            except KeyError as e:
+                if objVal:
+                    attrType = type(objVal)
+                else:
+                    raise KeyError("No typehint found for the given item", attribute)
+            self.replItemWithDialog(index, attrType, title=f"Edit/Create {attribute}", objVal=objVal)
 
     def toggleDefNewFileType(self):
         #FIXME refactor

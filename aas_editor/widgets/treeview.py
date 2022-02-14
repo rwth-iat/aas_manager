@@ -18,20 +18,20 @@
 from typing import Optional
 
 from PyQt5.QtCore import Qt, pyqtSignal, QModelIndex, QTimer, QAbstractItemModel, QPoint
-from PyQt5.QtGui import QClipboard, QPalette, QColor
-from PyQt5.QtWidgets import QAction, QMenu, QApplication, QDialog, QMessageBox, QHeaderView, QWidget
+from PyQt5.QtGui import QClipboard, QPalette, QColor, QMouseEvent, QKeyEvent
+from PyQt5.QtWidgets import QAction, QMenu, QApplication, QDialog, QMessageBox, QHeaderView, QWidget, QAbstractItemView
 
-from aas_editor.delegates import ColorDelegate
+from aas_editor.delegates import EditDelegate
 from aas_editor import dialogs
 from aas_editor.models import StandardTable
-from aas_editor.settings import NOT_GIVEN, LIGHT_BLUE_ALTERNATE
+from aas_editor.settings import NOT_GIVEN, LIGHT_BLUE_ALTERNATE, EMPTY_VALUES
 from aas_editor.settings.app_settings import *
 from aas_editor.settings.icons import COPY_ICON, PASTE_ICON, CUT_ICON, ADD_ICON, DEL_ICON, UNDO_ICON, REDO_ICON, \
-    ZOOM_IN_ICON, ZOOM_OUT_ICON, EXPAND_ALL_ICON, COLLAPSE_ALL_ICON, UPDATE_ICON
+    ZOOM_IN_ICON, ZOOM_OUT_ICON, EXPAND_ALL_ICON, COLLAPSE_ALL_ICON, UPDATE_ICON, EDIT_ICON
 from aas_editor.settings.shortcuts import SC_COPY, SC_CUT, SC_PASTE, SC_DELETE, SC_NEW, SC_REDO, SC_UNDO, SC_ZOOM_IN, \
     SC_ZOOM_OUT, SC_EXPAND_RECURS, SC_EXPAND_ALL, SC_COLLAPSE_RECURS, SC_COLLAPSE_ALL
 from aas_editor.utils.util import getDefaultVal, getReqParams4init, delAASParents
-from aas_editor.utils.util_type import checkType, isSimpleIterable, isIterable, getIterItemTypeHint
+from aas_editor.utils.util_type import checkType, isSimpleIterable, isIterable, getIterItemTypeHint, isoftype
 
 from aas_editor.utils.util_classes import DictItem, ClassesInfo
 from aas_editor.package import Package
@@ -172,7 +172,7 @@ class TreeView(BasicTreeView):
         self.initMenu()
         self.setUniformRowHeights(True)
         self.buildHandlers()
-        self.setItemDelegate(ColorDelegate(self))  # set ColorDelegate as standard delegate
+        self.setItemDelegate(EditDelegate(self))  # set ColorDelegate as standard delegate
         self.setSortingEnabled(True)
         self.setHeader(HeaderView(Qt.Horizontal, self))
         p = self.palette()
@@ -212,6 +212,22 @@ class TreeView(BasicTreeView):
                               triggered=self.onAddAct,
                               enabled=False)
         self.addAction(self.addAct)
+
+        self.editCreateInDialogAct = QAction("E&dit/create in dialog", self,
+                                             icon=EDIT_ICON,
+                                             statusTip="Edit/create selected item in dialog",
+                                             shortcut=Qt.CTRL+Qt.Key_E,
+                                             shortcutContext=Qt.WidgetWithChildrenShortcut,
+                                             triggered=self.editCreateInDialog,
+                                             enabled=False)
+        self.addAction(self.editCreateInDialogAct)
+
+        self.editAct = QAction("&Edit", self,
+                               statusTip="Edit selected item",
+                               shortcut=Qt.Key_Enter,
+                               triggered=lambda: self.edit(self.currentIndex()),
+                               enabled=False)
+        self.addAction(self.editAct)
 
         self.delClearAct = QAction(DEL_ICON, "Delete/clear", self,
                                    statusTip="Delete/clear selected item",
@@ -321,6 +337,8 @@ class TreeView(BasicTreeView):
         self.attrsMenu.addAction(self.pasteAct)
         self.attrsMenu.addSeparator()
         self.attrsMenu.addAction(self.delClearAct)
+        self.attrsMenu.addAction(self.editAct)
+        self.attrsMenu.addAction(self.editCreateInDialogAct)
         self.attrsMenu.addAction(self.addAct)
         self.attrsMenu.addAction(self.updateAct)
         self.attrsMenu.addSeparator()
@@ -389,6 +407,16 @@ class TreeView(BasicTreeView):
             self.copyAct.setEnabled(False)
             self.cutAct.setEnabled(False)
             self.delClearAct.setEnabled(False)
+
+        if index.flags() & Qt.ItemIsEditable:
+            self.editCreateInDialogAct.setEnabled(True)
+        else:
+            self.editCreateInDialogAct.setEnabled(False)
+
+        if self.isEditableInsideCell(index):
+            self.editAct.setEnabled(True)
+        else:
+            self.editAct.setEnabled(False)
 
         # update add action
         obj = index.data(OBJECT_ROLE)
@@ -592,6 +620,61 @@ class TreeView(BasicTreeView):
         """Check dataChanged signal if data change failed and show Error dialog if failed"""
         if DATA_CHANGE_FAILED_ROLE in roles:
             QMessageBox.critical(self, "Error", self.model().data(topLeft, DATA_CHANGE_FAILED_ROLE))
+
+    def keyPressEvent(self, event: QKeyEvent) -> None:
+        if event.key() in (Qt.Key_Return, Qt.Key_Enter):
+            if self.state() == QAbstractItemView.EditingState:
+                # if we are editing, inform base
+                super(TreeView, self).keyPressEvent(event)
+            else:
+                self.onEnterEvent()
+        else:
+            # any other key was pressed, inform base
+            super(TreeView, self).keyPressEvent(event)
+
+    def mouseDoubleClickEvent(self, e: QMouseEvent) -> None:
+        if e.button() == Qt.LeftButton:
+            self.onDoubleClickEvent()
+        else:
+            super(TreeView, self).mouseDoubleClickEvent(e)
+
+    def onDoubleClickEvent(self):
+        index = self.currentIndex()
+        # if we're not editing, check if editable and start editing or expand/collapse
+        if index.flags() & Qt.ItemIsEditable:
+            self.editInCellOrInDialog(index)
+        else:
+            self.toggleFold(index)
+
+    def onEnterEvent(self):
+        index = self.currentIndex()
+        # if we're not editing, check if editable and start editing or expand/collapse
+        if index.flags() & Qt.ItemIsEditable:
+            self.editInCellOrInDialog(index)
+        else:
+            self.toggleFold(index)
+
+    def editInCellOrInDialog(self, index: QModelIndex) -> None:
+        if self.isEditableInsideCell(index):
+            self.edit(index)
+        else:
+            self.editCreateInDialog(index=index)
+
+    def isEditableInsideCell(self, index):
+        data = index.data(OBJECT_ROLE)
+        if index.flags() & Qt.ItemIsEditable \
+                and isoftype(data, self.itemDelegate().editableTypesInTable) \
+                and data not in EMPTY_VALUES:
+            return True
+        else:
+            return False
+
+    def editCreateInDialog(self, objVal=None, index=QModelIndex()):
+        try:
+            self.onEditCreate(objVal, index)
+        except Exception as e:
+            print(e)
+            QMessageBox.critical(self, "Error", str(e))
 
     def toggleFold(self, index: QModelIndex):
         index = index.siblingAtColumn(0)

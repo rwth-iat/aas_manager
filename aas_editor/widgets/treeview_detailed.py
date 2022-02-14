@@ -18,7 +18,6 @@
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex
-from PyQt5.QtGui import QMouseEvent, QKeyEvent
 from PyQt5.QtWidgets import QAction, QAbstractScrollArea, QAbstractItemView, QMessageBox
 
 from aas_editor.models import DetailedInfoTable
@@ -26,8 +25,7 @@ from aas_editor.delegates import EditDelegate
 from aas_editor.settings import EMPTY_VALUES
 from aas_editor.settings.app_settings import ATTR_COLUMN_WIDTH, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
     VALUE_COLUMN, LINKED_ITEM_ROLE, IS_LINK_ROLE, PARENT_OBJ_ROLE
-from aas_editor.settings.icons import EDIT_ICON
-from aas_editor.utils.util_type import getAttrTypeHint
+from aas_editor.utils.util_type import getAttrTypeHint, isoftype
 from aas_editor.widgets import TreeView
 
 
@@ -55,23 +53,6 @@ class AttrsTreeView(TreeView):
     # noinspection PyArgumentList
     def initMenu(self):
         super(AttrsTreeView, self).initMenu()
-        self.editCreateInDialogAct = QAction("E&dit/create in dialog", self,
-                                             icon=EDIT_ICON,
-                                             statusTip="Edit/create selected item in dialog",
-                                             shortcut=Qt.CTRL+Qt.Key_E,
-                                             shortcutContext=Qt.WidgetWithChildrenShortcut,
-                                             triggered=self.editCreateInDialog,
-                                             enabled=True)
-        self.addAction(self.editCreateInDialogAct)
-
-        self.editAct = QAction("&Edit", self,
-                               statusTip="Edit selected item",
-                               shortcut=Qt.Key_Enter,
-                               triggered=lambda: self.edit(self.currentIndex()),
-                               enabled=False)
-
-        self.attrsMenu.insertActions(self.addAct, (self.editAct, self.editCreateInDialogAct))
-
         self.openInCurrTabAct.triggered.connect(
             lambda: self.openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), newTab=False))
         self.openInNewTabAct.triggered.connect(
@@ -119,30 +100,37 @@ class AttrsTreeView(TreeView):
             print(e)
             QMessageBox.critical(self, "Error", str(e))
 
-    def editCreateInDialog(self, objVal=None):
-        try:
-            self.onEditCreate(objVal)
-        except Exception as e:
-            print(e)
-            QMessageBox.critical(self, "Error", str(e))
-
-    def onEditCreate(self, objVal=None):
+    def onEditCreate(self, objVal, index=QModelIndex()):
         """
         :param objVal: value to set in dialog input widgets
         :raise KeyError if no typehint found and no objVal was given
         """
-        index = self.currentIndex()
+        if not index.isValid():
+            index = self.currentIndex()
         if index.isValid():
             objVal = objVal if objVal else index.data(OBJECT_ROLE)
             attribute = index.data(NAME_ROLE)
+            parentObj = index.data(PARENT_OBJ_ROLE)
             try:
-                attrType = getAttrTypeHint(type(index.data(PARENT_OBJ_ROLE)), attribute)
+                attrType = getAttrTypeHint(type(parentObj), attribute)
             except KeyError as e:
                 if objVal:
                     attrType = type(objVal)
                 else:
-                    raise KeyError("No typehint found for the given item", index.data(NAME_ROLE))
+                    raise KeyError("No typehint found for the given item", attribute)
             self.replItemWithDialog(index, attrType, title=f"Edit/Create {attribute}", objVal=objVal)
+
+    def currentIndex(self) -> QtCore.QModelIndex:
+        return super(AttrsTreeView, self).currentIndex().siblingAtColumn(VALUE_COLUMN)
+
+    def isEditableInsideCell(self, index: QModelIndex):
+        data = index.data(OBJECT_ROLE)
+        if index.siblingAtColumn(VALUE_COLUMN).flags() & Qt.ItemIsEditable \
+                and isoftype(data, self.itemDelegate().editableTypesInTable) \
+                and data not in EMPTY_VALUES:
+            return True
+        else:
+            return False
 
     def openRef(self, detailInfoItem: QModelIndex, newTab=True, setCurrent=True, newWindow=False):
         """Open referenced item if clicked on Reference and item is saved locally"""
@@ -157,41 +145,4 @@ class AttrsTreeView(TreeView):
             else:
                 self.openInCurrTabClicked.emit(linkedPackItem)
 
-    def mouseDoubleClickEvent(self, e: QMouseEvent) -> None:
-        if e.button() == Qt.LeftButton:
-            self.onDoubleClickEvent()
-        else:
-            super(TreeView, self).mouseDoubleClickEvent(e)
 
-    def keyPressEvent(self, event: QKeyEvent) -> None:
-        if event.key() in (Qt.Key_Return, Qt.Key_Enter):
-            if self.state() == QAbstractItemView.EditingState:
-                # if we are editing, inform base
-                super(TreeView, self).keyPressEvent(event)
-            else:
-                self.onEnterEvent()
-        else:
-            # any other key was pressed, inform base
-            super(TreeView, self).keyPressEvent(event)
-
-    def onEnterEvent(self):
-        index = self.currentIndex()
-        # if we're not editing, check if editable and start editing or expand/collapse
-        if index.siblingAtColumn(VALUE_COLUMN).flags() & Qt.ItemIsEditable:
-            if index.data(OBJECT_ROLE) in EMPTY_VALUES:
-                self.editCreateInDialog()
-            else:
-                self.edit(index)
-        else:
-            self.toggleFold(index)
-
-    def onDoubleClickEvent(self):
-        index = self.currentIndex()
-        # if we're not editing, check if editable and start editing or expand/collapse
-        if index.flags() & Qt.ItemIsEditable:
-            if index.data(OBJECT_ROLE) in EMPTY_VALUES:
-                self.editCreateInDialog()
-            else:
-                self.edit(index)
-        else:
-            self.toggleFold(index)
