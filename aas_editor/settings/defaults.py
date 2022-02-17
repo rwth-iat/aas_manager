@@ -17,7 +17,8 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
 from aas.model import Key, KeyType, Asset, AssetKind, Identifier, IdentifierType, File, Blob, SubmodelElement, Property, \
-    Constraint, Qualifier
+    Constraint, Qualifier, AASReference, Identifiable
+from aas.model.datatypes import String
 
 MIME_TYPES = [
     "application/graphql",
@@ -69,7 +70,10 @@ DEFAULTS = {
     },
     Asset: {
         "kind": AssetKind.INSTANCE,
-    }
+    },
+    Property: {
+        "value_type": String,
+    },
 }
 
 DEFAULT_COMPLETIONS = {
