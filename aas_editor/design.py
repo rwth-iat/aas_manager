@@ -59,17 +59,9 @@ class Ui_MainWindow(object):
         self.leftVerticalLayout.addWidget(self.toolBar)
         self.searchBarPack = SearchBar(self.packTreeView, filterColumns=[ATTRIBUTE_COLUMN],
                                        parent=self.leftLayoutWidget, closable=True)
+        self.leftVerticalLayout.addWidget(self.searchBarPack)
 
-        toolBarHLayout = QHBoxLayout()
-        toolBarHLayout.setContentsMargins(0, 0, 0, 0)
-        toolBarHLayout.addWidget(self.toolBar)
-        toolBarHLayout.addWidget(self.searchBarPack)
 
-        self.toolBarWidget = QWidget()
-        self.toolBarWidget.setFixedHeight(TOOLBARS_HEIGHT)
-        self.toolBarWidget.setLayout(toolBarHLayout)
-
-        self.leftVerticalLayout.addWidget(self.toolBarWidget)
         self.leftVerticalLayout.addWidget(self.packTreeView)
 
         # Right part

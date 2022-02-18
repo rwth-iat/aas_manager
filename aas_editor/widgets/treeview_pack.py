@@ -58,26 +58,26 @@ class PackHeaderView(HeaderView):
         for i in self.actions():
             allColumnsMenu.addAction(i)
 
-        showColumns4typeMenu = self.menu.addMenu("Show Columns for type")
-        for cls in REFERABLE_INHERITORS_ATTRS:
-            clsname = util_type.getTypeName(cls)
-            sectionNames = REFERABLE_INHERITORS_ATTRS[cls]
-            showColumnsAct = QAction(f"{clsname}", self,
-                                   toolTip=f"Show attributes of Type: {clsname}",
-                                   statusTip=f"Show attributes of Type: {clsname}",
-                                   triggered=self.onShowListOfSectionsAct)
-            showColumnsAct.setData(sectionNames)
-            showColumns4typeMenu.addAction(showColumnsAct)
+        # showColumns4typeMenu = self.menu.addMenu("Show Columns for type")
+        # for cls in REFERABLE_INHERITORS_ATTRS:
+        #     clsname = util_type.getTypeName(cls)
+        #     sectionNames = REFERABLE_INHERITORS_ATTRS[cls]
+        #     showColumnsAct = QAction(f"{clsname}", self,
+        #                            toolTip=f"Show attributes of Type: {clsname}",
+        #                            statusTip=f"Show attributes of Type: {clsname}",
+        #                            triggered=self.onShowListOfSectionsAct)
+        #     showColumnsAct.setData(sectionNames)
+        #     showColumns4typeMenu.addAction(showColumnsAct)
 
-        showColumnsListMenu = self.menu.addMenu("Show custom column list")
-        for listname in self.customLists:
-            sectionNames = self.customLists[listname]
-            showColumnsAct = QAction(f"{listname}", self,
-                                   toolTip=f"Show custom list {listname}: {sectionNames}. To manage custom lists, edit custom_column_lists.json",
-                                   statusTip=f"Show custom list {listname}: {sectionNames}. To manage custom lists, edit custom_column_lists.json",
-                                   triggered=self.onShowListOfSectionsAct)
-            showColumnsAct.setData(sectionNames)
-            showColumnsListMenu.addAction(showColumnsAct)
+        # showColumnsListMenu = self.menu.addMenu("Show custom column list")
+        # for listname in self.customLists:
+        #     sectionNames = self.customLists[listname]
+        #     showColumnsAct = QAction(f"{listname}", self,
+        #                            toolTip=f"Show custom list {listname}: {sectionNames}. To manage custom lists, edit custom_column_lists.json",
+        #                            statusTip=f"Show custom list {listname}: {sectionNames}. To manage custom lists, edit custom_column_lists.json",
+        #                            triggered=self.onShowListOfSectionsAct)
+        #     showColumnsAct.setData(sectionNames)
+        #     showColumnsListMenu.addAction(showColumnsAct)
 
         self.menu.addSeparator()
         unchooseAllAct = QAction("Hide all columns", self,
