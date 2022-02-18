@@ -622,7 +622,26 @@ class TreeView(BasicTreeView):
             QMessageBox.critical(self, "Error", self.model().data(topLeft, DATA_CHANGE_FAILED_ROLE))
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
-        if event.key() in (Qt.Key_Return, Qt.Key_Enter):
+        if event.key() in (Qt.Key_Right, Qt.Key_Left):
+            self.setFocus()
+            if event.key() == Qt.Key_Right:
+                delta = +1
+            else:
+                delta = -1
+            currIndex = self.currentIndex()
+            currCol=currIndex.column()
+            if currIndex.isValid():
+                visCol=self.header().visualIndex(currCol)
+                i = delta
+                while True:
+                    newLogCol = self.header().logicalIndex(visCol+i)
+                    if visCol+i < 0 or visCol+i >= self.header().count():
+                        break
+                    if not self.header().isSectionHidden(newLogCol):
+                        self.setCurrentIndex(currIndex.siblingAtColumn(newLogCol))
+                        break
+                    i+=delta
+        elif event.key() in (Qt.Key_Return, Qt.Key_Enter):
             if self.state() == QAbstractItemView.EditingState:
                 # if we are editing, inform base
                 super(TreeView, self).keyPressEvent(event)
@@ -631,6 +650,12 @@ class TreeView(BasicTreeView):
         else:
             # any other key was pressed, inform base
             super(TreeView, self).keyPressEvent(event)
+
+    def keyReleaseEvent(self, event) -> None:
+        if event.key() in (Qt.Key_Right, Qt.Key_Left):
+            return
+        else:
+            super(TreeView, self).keyReleaseEvent(event)
 
     def mouseDoubleClickEvent(self, e: QMouseEvent) -> None:
         if e.button() == Qt.LeftButton:
