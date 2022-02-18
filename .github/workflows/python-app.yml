@@ -26,3 +26,13 @@ jobs:
         pip install qtawesome==1.0.3
         pip install PyQt5==5.15.4
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+    - name: Package Application
+      uses: JackMcKew/pyinstaller-action-windows@main
+      with:
+        path: .
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: my-app
+        path: dist/windows
