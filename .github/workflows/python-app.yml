@@ -53,7 +53,11 @@ jobs:
             ASSET_MIME: application/zip
           - os: windows-latest
             TARGET: windows
-            CMD_BUILD: pyinstaller aas_manager.spec
+            CMD_BUILD: |
+                pyinstaller aas_manager.spec
+                cd dist
+                7z a AAS_Manager_Win.zip AAS_Manager
+
             OUT_FILE_NAME: AAS_Manager
             ASSET_MIME: application/vnd.microsoft.portable-executable
     steps:
