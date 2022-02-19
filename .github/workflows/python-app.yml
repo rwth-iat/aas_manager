@@ -40,14 +40,21 @@ jobs:
             CMD_BUILD: >
                 pyinstaller aas_manager.spec &&
                 cd dist/ &&
-                ls &&
-                zip -r AAS_Manager.zip AAS_Manager
-            OUT_FILE_NAME: AAS_Manager.zip
+                zip -r AAS_Manager_MacOS.zip AAS_Manager
+            OUT_FILE_NAME: AAS_Manager_MacOS.zip
+            ASSET_MIME: application/zip
+          - os: ubuntu-latest
+            TARGET: ubuntu
+            CMD_BUILD: >
+                pyinstaller aas_manager.spec &&
+                cd dist/ &&
+                zip -r AAS_Manager_Linux.zip AAS_Manager
+            OUT_FILE_NAME: AAS_Manager_Linux.zip
             ASSET_MIME: application/zip
           - os: windows-latest
             TARGET: windows
             CMD_BUILD: pyinstaller aas_manager.spec
-            OUT_FILE_NAME: AAS_Manager.exe
+            OUT_FILE_NAME: AAS_Manager
             ASSET_MIME: application/vnd.microsoft.portable-executable
     steps:
     - uses: actions/checkout@v1
