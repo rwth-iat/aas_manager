@@ -57,8 +57,7 @@ jobs:
                 pyinstaller aas_manager.spec
                 cd dist
                 7z a AAS_Manager_Win.zip AAS_Manager
-
-            OUT_FILE_NAME: AAS_Manager
+            OUT_FILE_NAME: AAS_Manager_Win.zip
             ASSET_MIME: application/vnd.microsoft.portable-executable
     steps:
     - uses: actions/checkout@v1
