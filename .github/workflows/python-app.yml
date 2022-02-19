@@ -40,8 +40,9 @@ jobs:
             CMD_BUILD: >
                 pyinstaller aas_manager.spec &&
                 cd dist/ &&
-                zip -r9 AAS_Manager AAS_Manager.app/
-            OUT_FILE_NAME: aas_manager.zip
+                ls &&
+                zip -r9 AAS_Manager AAS_Manager.exe/
+            OUT_FILE_NAME: AAS_Manager.zip
             ASSET_MIME: application/zip
           - os: windows-latest
             TARGET: windows
