@@ -9,6 +9,7 @@ a = Analysis(['main.py'],
              datas=[
                 ('LICENSE', '.'),
                 ('settings.ini', '.'),
+                ('custom_column_lists.json', '.'),
                 ('aas_editor/icons', 'aas_editor/icons'),
                 ('themes/dark', 'themes/dark'),
                 ('themes/dark.qss', 'themes'),
