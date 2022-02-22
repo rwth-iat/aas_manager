@@ -18,7 +18,8 @@ from aas_editor.settings import EXTENDED_COLUMNS_IN_PACK_TABLE
 from aas_editor.settings.app_settings import *
 from aas_editor.settings.icons import APP_ICON, EXIT_ICON, SETTINGS_ICON
 from aas_editor.settings_dialog import SettingsDialog
-from aas_editor.dialogs import AboutDialog, ComplianceToolDialog
+from aas_editor.dialogs import AboutDialog
+from aas_editor.widgets.compliance_tool import ComplianceToolDialog
 from aas_editor.widgets import SearchBar, AddressLine
 from aas_editor import design
 from aas_editor.models import DetailedInfoTable, PacksTable
