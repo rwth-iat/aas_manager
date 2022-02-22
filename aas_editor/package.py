@@ -18,7 +18,7 @@ import pyecma376_2
 from aas.adapter import aasx
 from aas.adapter.aasx import DictSupplementaryFileContainer
 from aas.model import AssetAdministrationShell, Asset, Submodel, ConceptDescription, \
-    DictObjectStore, Key
+    DictObjectStore, Key, AASReference
 
 from aas_editor.settings import DEFAULT_COMPLETIONS, AppSettings
 from aas_editor.utils.util_classes import ClassesInfo
@@ -52,20 +52,13 @@ class Package:
     def writeJsonInAasx(self):
         return AppSettings.WRITE_JSON_IN_AASX.value()
 
-    @writeJsonInAasx.setter
-    def writeJsonInAasx(self, value: bool):
-        """If True, JSON parts are created for the AAS and each submodel in the AASX file instead of XML parts."""
-        AppSettings.WRITE_JSON_IN_AASX.setValue(value)
-
     @property
     def submodelSplitParts(self):
         return AppSettings.SUBMODEL_SPLIT_PARTS.value()
 
-    @submodelSplitParts.setter
-    def submodelSplitParts(self, value: bool):
-        """If True (default), submodels are written to separate AASX parts instead of being included
-        in the AAS part with in the AASX package."""
-        AppSettings.SUBMODEL_SPLIT_PARTS.setValue(value)
+    @property
+    def allSubmodelRefsToAas(self):
+        return AppSettings.ALL_SUBMODEL_REFS_TO_AAS.value()
 
     def __str__(self):
         return self.name
@@ -87,6 +80,8 @@ class Package:
             raise TypeError("Wrong file type:", self.file.suffix)
 
     def write(self, file: str = None):
+        if self.allSubmodelRefsToAas:
+            self.all_submodels_to_aas()
         if file:
             self.file: Path = file
 
@@ -115,6 +110,15 @@ class Package:
                 writer.write_core_properties(cp)
         else:
             raise TypeError("Wrong file type:", self.file.suffix)
+
+    def all_submodels_to_aas(self):
+        """Add references of all existing submodels to submodel attribute of existing AAS."""
+        #TODO: fix if pyi40aas changes
+        for shell in self.shells:
+            for submodel in self.submodels:
+                reference = AASReference.from_referable(submodel)
+                shell.submodel.add(reference)
+            break
 
     @property
     def name(self):

@@ -83,7 +83,10 @@ class SettingsDialog(QDialog):
                               appSetting=AppSettings.WRITE_JSON_IN_AASX),
             RadioBtnsGroupBox(self, title="Save submodels in separate files within AASX file",
                               options={"Yes": True, "No": False},
-                              appSetting=AppSettings.SUBMODEL_SPLIT_PARTS)
+                              appSetting=AppSettings.SUBMODEL_SPLIT_PARTS),
+            RadioBtnsGroupBox(self, title="Automatically add references of existing submodels to the first AAS when saving file",
+                              options={"Yes": True, "No": False},
+                              appSetting=AppSettings.ALL_SUBMODEL_REFS_TO_AAS)
             ]
 
         self.layout = QVBoxLayout()
