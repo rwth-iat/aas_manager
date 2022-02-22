@@ -25,7 +25,7 @@ from aas.model import AssetAdministrationShell, Asset, ConceptDescription, Submo
     Entity, Capability, Event, Operation, RelationshipElement, AnnotatedRelationshipElement, \
     SubmodelElementCollectionUnordered, SubmodelElementCollectionOrdered, Range, Blob, File, \
     ReferenceElement, DataElement, AdministrativeInformation, Identifier, AbstractObjectStore, \
-    Namespace, SubmodelElementCollection, SubmodelElement, AASReference, ConceptDictionary, Referable
+    Namespace, SubmodelElementCollection, SubmodelElement, AASReference, ConceptDictionary, Referable, Identifiable
 from aas.model.datatypes import Decimal
 
 import aas_editor.package
@@ -455,6 +455,7 @@ CLASSES_INFO = {
         ADD_TYPE: SubmodelElement,
     },
     AASReference: {
+        DEFAULT_PARAMS_TO_HIDE: {"target_type": Identifiable},
         PARAMS_TO_ATTRS: {
             "target_type": "type"
         },
