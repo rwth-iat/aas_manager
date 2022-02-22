@@ -29,10 +29,10 @@ pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 
 exe = EXE(pyz,
-          a.scripts, 
+          a.scripts,
           [],
           exclude_binaries=True,
-          name='AAS Manager',
+          name='AAS_Manager',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
@@ -46,8 +46,8 @@ exe = EXE(pyz,
 coll = COLLECT(exe,
                a.binaries,
                a.zipfiles,
-               a.datas, 
+               a.datas,
                strip=False,
                upx=True,
                upx_exclude=[],
-               name='AAS Manager')
+               name='AAS_Manager')
