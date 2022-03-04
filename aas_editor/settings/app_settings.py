@@ -123,6 +123,12 @@ class AppSettings:
     PACKTREEVIEW_HEADER_CUSTOM_COLUMN_LISTS_FILE = "custom_column_lists.json"
     TABTREEVIEW_HEADER_STATE = Setting('tabTreeViewHeaderState', None)
     DEFAULT_NEW_FILETYPE_FILTER = Setting('defaultNewFileTypeFilter', "AASX files (*.aasx)", str)
+
+    # If True, JSON parts are created for the AAS and each submodel
+    # in the AASX file instead of XML parts.
     WRITE_JSON_IN_AASX = Setting('writeJsonInAasx', False, bool)
+    # If True, submodels are written to separate AASX parts
+    # instead of being included in the AAS part with in the AASX package.
     SUBMODEL_SPLIT_PARTS = Setting('submodelSplitParts', False, bool)
+    ALL_SUBMODEL_REFS_TO_AAS = Setting('allSubmodelRefsToAas', True, bool)
 
