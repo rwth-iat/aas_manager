@@ -20,8 +20,8 @@ from pathlib import Path
 from typing import Optional
 
 from PyQt5.QtCore import Qt, QModelIndex, QSettings, QPoint
-from PyQt5.QtGui import QDropEvent, QDragEnterEvent, QMouseEvent, QColor, QPalette, QPainter
-from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QStyleOptionViewItem, QMenu, QWidget
+from PyQt5.QtGui import QDropEvent, QDragEnterEvent
+from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QMenu, QWidget
 from aas.model import AssetAdministrationShell
 
 from aas_editor.delegates import EditDelegate
@@ -31,13 +31,14 @@ from aas_editor.settings import FILTER_AAS_FILES, CLASSES_INFO, PACKVIEW_ATTRS_I
 from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, \
     APPLICATION_NAME, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, \
     TYPE_ROLE, \
-    CLEAR_ROW_ROLE, AppSettings, COLUMN_NAME_ROLE
+    CLEAR_ROW_ROLE, AppSettings, COLUMN_NAME_ROLE, OBJECT_COLUMN_NAME, OBJECT_VALUE_COLUMN_NAME
 from aas_editor.settings.shortcuts import SC_OPEN, SC_SAVE_ALL
 from aas_editor.settings.icons import NEW_PACK_ICON, OPEN_ICON, OPEN_DRAG_ICON, SAVE_ICON, SAVE_ALL_ICON, \
     VIEW_ICON
 from aas_editor.utils import util_type
+from aas_editor.utils.util import getDefaultVal, getReqParams4init
 from aas_editor.utils.util_classes import ClassesInfo
-from aas_editor.utils.util_type import getAttrTypeHint, isoftype
+from aas_editor.utils.util_type import getAttrTypeHint, isoftype, checkType
 from aas_editor.widgets import TreeView
 from aas_editor.widgets.treeview import HeaderView
 
@@ -63,9 +64,9 @@ class PackHeaderView(HeaderView):
             clsname = util_type.getTypeName(cls)
             sectionNames = REFERABLE_INHERITORS_ATTRS[cls]
             showColumnsAct = QAction(f"{clsname}", self,
-                                   toolTip=f"Show attributes of Type: {clsname}",
-                                   statusTip=f"Show attributes of Type: {clsname}",
-                                   triggered=self.onShowListOfSectionsAct)
+                                     toolTip=f"Show attributes of Type: {clsname}",
+                                     statusTip=f"Show attributes of Type: {clsname}",
+                                     triggered=self.onShowListOfSectionsAct)
             showColumnsAct.setData(sectionNames)
             showColumns4typeMenu.addAction(showColumnsAct)
 
@@ -73,9 +74,9 @@ class PackHeaderView(HeaderView):
         for listname in self.customLists:
             sectionNames = self.customLists[listname]
             showColumnsAct = QAction(f"{listname}", self,
-                                   toolTip=f"Show custom list {listname}: {sectionNames}. To manage custom lists, edit custom_column_lists.json",
-                                   statusTip=f"Show custom list {listname}: {sectionNames}. To manage custom lists, edit custom_column_lists.json",
-                                   triggered=self.onShowListOfSectionsAct)
+                                     toolTip=f"Show custom list {listname}: {sectionNames}. To manage custom lists, edit custom_column_lists.json",
+                                     statusTip=f"Show custom list {listname}: {sectionNames}. To manage custom lists, edit custom_column_lists.json",
+                                     triggered=self.onShowListOfSectionsAct)
             showColumnsAct.setData(sectionNames)
             showColumnsListMenu.addAction(showColumnsAct)
 
@@ -94,9 +95,9 @@ class PackHeaderView(HeaderView):
     def openMenu(self, point: QPoint):
         chosenSection = self.logicalIndexAt(point)
         hideChosenSection = QAction(f"Hide column", self,
-                               toolTip=f"Hide column",
-                               statusTip=f"Hide column",
-                               triggered=lambda: self.hideSection(chosenSection))
+                                    toolTip=f"Hide column",
+                                    statusTip=f"Hide column",
+                                    triggered=lambda: self.hideSection(chosenSection))
         self.menu.addAction(hideChosenSection)
         self.menu.exec_(self.viewport().mapToGlobal(point))
         self.menu.removeAction(hideChosenSection)
@@ -228,7 +229,7 @@ class PackTreeView(TreeView):
             self.replItemWithDialog(index, attrType, title=f"Edit/Create {attribute}", objVal=objVal)
 
     def toggleDefNewFileType(self):
-        #FIXME refactor
+        # FIXME refactor
         action = self.sender()
         if action:
             typ = action.text()
@@ -373,8 +374,8 @@ class PackTreeView(TreeView):
 
         while not saved:
             file, _ = QFileDialog.getSaveFileName(self, 'Create new AAS File', file,
-                                               filter=FILTER_AAS_FILES,
-                                               initialFilter=self.defaultNewFileTypeFilter)
+                                                  filter=FILTER_AAS_FILES,
+                                                  initialFilter=self.defaultNewFileTypeFilter)
             if file:
                 pack = Package()
                 saved = self.savePack(pack, file)
@@ -444,7 +445,7 @@ class PackTreeView(TreeView):
         while not saved:
             try:
                 file, _ = QFileDialog.getSaveFileName(self, 'Save AAS File', file,
-                                                   filter=FILTER_AAS_FILES)
+                                                      filter=FILTER_AAS_FILES)
             except AttributeError as e:
                 QMessageBox.critical(self, "Error", f"No chosen package to save: {e}")
             else:
@@ -472,7 +473,7 @@ class PackTreeView(TreeView):
                                      standardButtons=QMessageBox.Save |
                                                      QMessageBox.Cancel |
                                                      QMessageBox.Discard)
-                dialog.setDefaultButton=QMessageBox.Save
+                dialog.setDefaultButton = QMessageBox.Save
                 dialog.button(QMessageBox.Save).setText("&Save&Close")
                 res = dialog.exec()
                 if res == QMessageBox.Save:
@@ -489,7 +490,7 @@ class PackTreeView(TreeView):
                              standardButtons=QMessageBox.Save |
                                              QMessageBox.Cancel |
                                              QMessageBox.Discard)
-        dialog.setDefaultButton=QMessageBox.Save
+        dialog.setDefaultButton = QMessageBox.Save
         dialog.button(QMessageBox.Save).setText("&Save and Close All")
         res = dialog.exec()
         if res == QMessageBox.Save:
@@ -541,7 +542,7 @@ class PackTreeView(TreeView):
             if len(file) < 30:
                 self.recentFileActs[i].setText(file)
             else:
-                self.recentFileActs[i].setText(f"..{file[len(file)-30:]}")
+                self.recentFileActs[i].setText(f"..{file[len(file) - 30:]}")
             self.recentFileActs[i].setData(file)
             self.recentFileActs[i].setVisible(True)
 
@@ -562,3 +563,54 @@ class PackTreeView(TreeView):
         for url in e.mimeData().urls():
             file = str(url.toLocalFile())
             self.openPack(file)
+
+    def onDelClear(self):
+        index = self.currentIndex()
+        attribute = index.data(COLUMN_NAME_ROLE)
+        if attribute in (OBJECT_COLUMN_NAME, OBJECT_VALUE_COLUMN_NAME):
+            super(PackTreeView, self).onDelClear()
+        else:
+            parentObjType = type(index.data(OBJECT_ROLE))
+            defaultVal = getDefaultVal(parentObjType, attribute)
+            self.model().setData(index, defaultVal, Qt.EditRole)
+
+    def isPasteOk(self, index: QModelIndex) -> bool:
+        attrName = index.data(COLUMN_NAME_ROLE)
+        if attrName in (OBJECT_COLUMN_NAME, OBJECT_VALUE_COLUMN_NAME):
+            return super(PackTreeView, self).isPasteOk(index)
+        else:
+            if not self.treeObjClipboard or not index.isValid():
+                return False
+
+            try:
+                attrTypehint = getAttrTypeHint(type(index.data(OBJECT_ROLE)), attrName, delOptional=False)
+            except KeyError as e:
+                print(e)
+                return False
+
+            obj2paste = self.treeObjClipboard[0]
+            targetTypeHint = attrTypehint
+
+            try:
+                if checkType(obj2paste, targetTypeHint):
+                    return True
+            except (AttributeError, TypeError) as e:
+                print(e)
+            return False
+
+    def onPaste(self):
+        index = self.currentIndex()
+        attrName = index.data(COLUMN_NAME_ROLE)
+        if attrName in (OBJECT_COLUMN_NAME, OBJECT_VALUE_COLUMN_NAME):
+            super(PackTreeView, self).onPaste()
+        else:
+            obj2paste = self.treeObjClipboard[0]
+            targetParentObj = index.data(OBJECT_ROLE)
+            targetObj = getattr(targetParentObj, attrName)
+            targetTypeHint = getAttrTypeHint(type(index.data(OBJECT_ROLE)), attrName, delOptional=False)
+            reqAttrsDict = getReqParams4init(type(obj2paste), rmDefParams=True)
+
+            # if no req. attrs, paste data without dialog
+            # else paste data with dialog for asking to check req. attrs
+            if checkType(obj2paste, targetTypeHint):
+                self._onPasteReplace(index, obj2paste, withDialog=bool(reqAttrsDict))

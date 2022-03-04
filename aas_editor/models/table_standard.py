@@ -330,24 +330,6 @@ class StandardTable(QAbstractItemModel):
             except Exception as e:
                 self.lastErrorMsg = f"{index.data(NAME_ROLE)} could not be deleted or set to default: {e}"
                 self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
-        elif role == Qt.EditRole and index.column() not in (ATTRIBUTE_COLUMN, VALUE_COLUMN, TYPE_COLUMN, TYPE_HINT_COLUMN): #TODO refactor
-            try:
-                value = None if str(value) == "None" else value
-
-                parentObj = index.data(OBJECT_ROLE)
-                objName = index.data(COLUMN_NAME_ROLE)
-                oldValue = getattr(parentObj, objName)
-
-                setattr(parentObj, objName, value)
-                obj = getattr(parentObj, objName)
-                self.setChanged(index)
-                #self.update(index)
-                self.undo.append(SetDataItem(index=QPersistentModelIndex(index), value=oldValue, role=role))
-                self.redo.clear()
-                return True
-            except Exception as e:
-                self.lastErrorMsg = f"Error occurred while setting {self.objByIndex(index).objectName}: {e}"
-                self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
         elif role == Qt.EditRole:
             try:
                 value = None if str(value) == "None" else value
