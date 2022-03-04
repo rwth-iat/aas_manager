@@ -15,7 +15,7 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-
+import copy
 from collections import namedtuple, deque
 from enum import Enum
 from typing import Any, Iterable, Union, AbstractSet, List
@@ -255,11 +255,11 @@ class StandardTable(QAbstractItemModel):
             return self.getLinkedItem(index)
         if role == COPY_ROLE:
             if index.column() in (ATTRIBUTE_COLUMN, VALUE_COLUMN):
-                return index.data(OBJECT_ROLE)
+                return copy.deepcopy(index.data(OBJECT_ROLE))
             elif index.column() in (TYPE_COLUMN, TYPE_HINT_COLUMN):
                 return index.data(Qt.DisplayRole)
             else:
-                return index.data(Qt.EditRole)
+                return copy.deepcopy(index.data(Qt.EditRole))
         else:
             item = self.objByIndex(index)
             column = index.column()
