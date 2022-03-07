@@ -224,7 +224,6 @@ class TreeView(BasicTreeView):
 
         self.editAct = QAction("&Edit", self,
                                statusTip="Edit selected item",
-                               shortcut=Qt.Key_Enter,
                                triggered=lambda: self.edit(self.currentIndex()),
                                enabled=False)
         self.addAction(self.editAct)
