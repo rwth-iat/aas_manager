@@ -29,7 +29,7 @@ from aas_editor.settings.app_settings import *
 from aas_editor.settings.icons import COPY_ICON, PASTE_ICON, CUT_ICON, ADD_ICON, DEL_ICON, UNDO_ICON, REDO_ICON, \
     ZOOM_IN_ICON, ZOOM_OUT_ICON, EXPAND_ALL_ICON, COLLAPSE_ALL_ICON, UPDATE_ICON, EDIT_ICON
 from aas_editor.settings.shortcuts import SC_COPY, SC_CUT, SC_PASTE, SC_DELETE, SC_NEW, SC_REDO, SC_UNDO, SC_ZOOM_IN, \
-    SC_ZOOM_OUT, SC_EXPAND_RECURS, SC_EXPAND_ALL, SC_COLLAPSE_RECURS, SC_COLLAPSE_ALL
+    SC_ZOOM_OUT, SC_EXPAND_RECURS, SC_EXPAND_ALL, SC_COLLAPSE_RECURS, SC_COLLAPSE_ALL, SC_EXPAND, SC_COLLAPSE
 from aas_editor.utils.util import getDefaultVal, getReqParams4init, delAASParents
 from aas_editor.utils.util_type import checkType, isSimpleIterable, isIterable, getIterItemTypeHint, isoftype
 
@@ -261,6 +261,7 @@ class TreeView(BasicTreeView):
         self.addAction(self.redoAct)
 
         self.collapseAct = QAction("Collapse", self,
+                                   shortcut=SC_COLLAPSE,
                                    statusTip="Collapse selected item",
                                    shortcutContext=Qt.WidgetWithChildrenShortcut,
                                    triggered=lambda: self.collapse(self.currentIndex()))
@@ -281,6 +282,7 @@ class TreeView(BasicTreeView):
         self.addAction(self.collapseAllAct)
 
         self.expandAct = QAction("Expand", self,
+                                 shortcut=SC_EXPAND,
                                  statusTip="Expand selected item",
                                  shortcutContext=Qt.WidgetWithChildrenShortcut,
                                  triggered=lambda: self.expand(self.currentIndex()))
