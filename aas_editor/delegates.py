@@ -16,7 +16,6 @@ from PyQt5.QtWidgets import QWidget, QStyledItemDelegate, QStyleOptionViewItem, 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex
 
-from enum import Enum
 from aas.model.aas import *
 from aas.model.base import *
 from aas.model.concept import *
@@ -35,16 +34,26 @@ class ColorDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.indexColors: Dict[QModelIndex, QBrush] = {}
+        self.hoverIndex = QModelIndex()
 
     def paint(self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex):
+        opt = QStyleOptionViewItem(option)
+        if not opt.state & QStyle.State_HasFocus:
+            view = opt.styleObject
+            hoverIndex: QModelIndex = view.currentIndex()
+            if index.siblingAtColumn(0) == hoverIndex.siblingAtColumn(0):
+                opt.state |= QStyle.State_MouseOver
+                model = view.model()
+                model.dataChanged.emit(index, index)
+
         if index.isValid() and index in self.indexColors:
-            self.initStyleOption(option, index)
-            option.backgroundBrush = self.indexColors[index]
-            widget = option.widget
+            self.initStyleOption(opt, index)
+            opt.backgroundBrush = self.indexColors[index]
+            widget = opt.widget
             style = widget.style()
-            style.drawControl(QStyle.CE_ItemViewItem, option, painter, widget)
+            style.drawControl(QStyle.CE_ItemViewItem, opt, painter, widget)
         else:
-            super(ColorDelegate, self).paint(painter, option, index)
+            super(ColorDelegate, self).paint(painter, opt, index)
 
     def setBgColor(self, index: QModelIndex, val: QBrush):
         self.indexColors[index] = val
@@ -61,7 +70,7 @@ class ColorDelegate(QStyledItemDelegate):
 
 class EditDelegate(ColorDelegate):
     # FIXME check if other types are also editable
-    editableTypesInTable = (bool, int, float, str, Enum, Type,      DictItem, bytes, type(None), dict, list, AbstractSet)
+    editableTypesInTable = (bool, int, float, str, Enum, Type, DictItem, bytes, type(None), dict, list, AbstractSet)
 
     def createEditor(self, parent: QWidget, option: 'QStyleOptionViewItem',
                      index: QtCore.QModelIndex) -> QWidget:

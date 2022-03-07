@@ -166,7 +166,7 @@ class TreeView(BasicTreeView):
 
     def __init__(self, parent=None, **kwargs):
         super(TreeView, self).__init__(parent, **kwargs)
-        self.setAlternatingRowColors(False)
+        self.setAlternatingRowColors(True)
         self.setAnimated(True)
         self.initActions()
         self.initMenu()
@@ -383,7 +383,7 @@ class TreeView(BasicTreeView):
         self.itemDataChangeFailed(topLeft, bottomRight, roles)
         # completion list will be hidden now; we will show it again after a delay
         QTimer.singleShot(100, self.updateUndoRedoActs)
-        self.setCurrentIndex(bottomRight)
+        #self.setCurrentIndex(bottomRight)
 
     def onRowsInserted(self, parent: QModelIndex, first: int, last: int):
         index = parent.child(last, 0)
