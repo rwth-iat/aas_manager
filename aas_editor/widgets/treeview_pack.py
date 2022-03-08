@@ -19,6 +19,7 @@ import typing
 from pathlib import Path
 from typing import Optional
 
+from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex, QSettings, QPoint
 from PyQt5.QtGui import QDropEvent, QDragEnterEvent, QKeyEvent
 from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QMenu, QWidget
@@ -550,6 +551,14 @@ class PackTreeView(TreeView):
             self.recentFileActs[i].setVisible(False)
 
         self.recentFilesSeparator.setVisible(bool(files))
+
+    def collapse(self, index: QtCore.QModelIndex) -> None:
+        newIndex = index.siblingAtColumn(0)
+        if not self.isExpanded(index) or not index.child(0,0).isValid():
+            if newIndex.parent() != self.rootIndex():
+                newIndex = newIndex.parent()
+        self.setCurrentIndex(newIndex)
+        super(PackTreeView, self).collapse(newIndex)
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() in (Qt.Key_Right, Qt.Key_Left):
