@@ -254,12 +254,19 @@ class StandardTable(QAbstractItemModel):
         if role == LINKED_ITEM_ROLE:
             return self.getLinkedItem(index)
         if role == COPY_ROLE:
-            if index.column() in (ATTRIBUTE_COLUMN, VALUE_COLUMN):
-                return copy.deepcopy(index.data(OBJECT_ROLE))
-            elif index.column() in (TYPE_COLUMN, TYPE_HINT_COLUMN):
-                return index.data(Qt.DisplayRole)
-            else:
-                return copy.deepcopy(index.data(Qt.EditRole))
+            try:
+                if index.column() in (ATTRIBUTE_COLUMN, VALUE_COLUMN):
+                    objToCopy = index.data(OBJECT_ROLE)
+                    return copy.deepcopy(objToCopy) #FIXME
+                elif index.column() in (TYPE_COLUMN, TYPE_HINT_COLUMN):
+                    return index.data(Qt.DisplayRole)
+                else:
+                    objToCopy = index.data(Qt.EditRole)
+                    return copy.deepcopy(objToCopy)
+            except Exception as e:
+                self.lastErrorMsg = f"Error occurred copying {index.data(NAME_ROLE)}: {e}"
+                print(self.lastErrorMsg)
+                self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
         else:
             item = self.objByIndex(index)
             column = index.column()
