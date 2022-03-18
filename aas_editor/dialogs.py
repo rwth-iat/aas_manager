@@ -8,7 +8,7 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
-from aas.model.base import *
+from basyx.aas.model.base import *
 
 from enum import Enum, unique
 from inspect import isabstract

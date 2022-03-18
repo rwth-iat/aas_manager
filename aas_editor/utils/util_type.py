@@ -23,7 +23,7 @@ from collections import abc
 from enum import Enum
 from typing import Union, Tuple, Iterable
 
-from aas.model import AASReference
+from basyx.aas.model import AASReference
 
 from aas_editor import settings
 import aas_editor.settings.aas_settings as aas_settings

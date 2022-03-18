@@ -16,10 +16,10 @@ from PyQt5.QtWidgets import QWidget, QStyledItemDelegate, QStyleOptionViewItem, 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex
 
-from aas.model.aas import *
-from aas.model.base import *
-from aas.model.concept import *
-from aas.model.submodel import *
+from basyx.aas.model.aas import *
+from basyx.aas.model.base import *
+from basyx.aas.model.concept import *
+from basyx.aas.model.submodel import *
 
 from aas_editor.settings import DEFAULT_COMPLETIONS
 from aas_editor.utils.util import inheritors

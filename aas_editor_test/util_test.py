@@ -15,9 +15,9 @@ from enum import Enum
 from typing import List, Optional, Set, Type, Union, Dict, TypeVar
 from unittest import TestCase
 
-import aas
+import basyx.aas as aas
 import dateutil
-from aas.model import AASReference, Reference, Submodel, IdentifierType, Referable
+from basyx.aas.model import AASReference, Reference, Submodel, IdentifierType, Referable
 
 from aas_editor.utils.util_type import checkType, issubtype, isoftype
 

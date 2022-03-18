@@ -8,8 +8,8 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 from PyQt5.QtWidgets import QDialog, QLabel, QComboBox, QPushButton, QVBoxLayout, QFileDialog, QMessageBox
-from aas.compliance_tool import compliance_check_xml, compliance_check_json, compliance_check_aasx
-from aas.compliance_tool.state_manager import ComplianceToolStateManager
+from basyx.aas.compliance_tool import compliance_check_xml, compliance_check_json, compliance_check_aasx
+from basyx.aas.compliance_tool.state_manager import ComplianceToolStateManager
 
 from aas_editor.settings import FILTER_AAS_FILES
 from aas_editor.widgets.lineEdit import DropFilePlainTextEdit

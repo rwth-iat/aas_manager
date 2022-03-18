@@ -15,9 +15,9 @@ from typing import Union, Iterable, Optional
 import mimetypes
 
 import pyecma376_2
-from aas.adapter import aasx
-from aas.adapter.aasx import DictSupplementaryFileContainer
-from aas.model import AssetAdministrationShell, Asset, Submodel, ConceptDescription, \
+from basyx.aas.adapter import aasx
+from basyx.aas.adapter.aasx import DictSupplementaryFileContainer
+from basyx.aas.model import AssetAdministrationShell, Asset, Submodel, ConceptDescription, \
     DictObjectStore, Key, AASReference
 
 from aas_editor.settings import DEFAULT_COMPLETIONS, AppSettings
