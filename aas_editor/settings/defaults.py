@@ -16,9 +16,9 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
-from aas.model import Key, KeyType, Asset, AssetKind, Identifier, IdentifierType, File, Blob, SubmodelElement, Property, \
+from basyx.aas.model import Key, KeyType, Asset, AssetKind, Identifier, IdentifierType, File, Blob, SubmodelElement, Property, \
     Constraint, Qualifier, AASReference, Identifiable
-from aas.model.datatypes import String
+from basyx.aas.model.datatypes import String
 
 MIME_TYPES = [
     "application/graphql",

@@ -21,12 +21,12 @@ from abc import ABCMeta
 from enum import Enum
 from pathlib import Path
 
-from aas.model import AssetAdministrationShell, Asset, ConceptDescription, Submodel, Property, \
+from basyx.aas.model import AssetAdministrationShell, Asset, ConceptDescription, Submodel, Property, \
     Entity, Capability, Event, Operation, RelationshipElement, AnnotatedRelationshipElement, \
     SubmodelElementCollectionUnordered, SubmodelElementCollectionOrdered, Range, Blob, File, \
     ReferenceElement, DataElement, AdministrativeInformation, Identifier, AbstractObjectStore, \
     Namespace, SubmodelElementCollection, SubmodelElement, AASReference, ConceptDictionary, Referable, Identifiable
-from aas.model.datatypes import Decimal
+from basyx.aas.model.datatypes import Decimal
 
 import aas_editor.package
 from aas_editor.settings.util_constants import HIDDEN_ATTRS, CHANGED_PARENT_OBJ, ADD_ACT_AAS_TXT, \

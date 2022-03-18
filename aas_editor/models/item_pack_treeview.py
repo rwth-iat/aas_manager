@@ -19,8 +19,8 @@
 from types import GeneratorType
 
 from PyQt5.QtCore import Qt
-from aas.adapter.aasx import DictSupplementaryFileContainer
-from aas.model import AASReference
+from basyx.aas.adapter.aasx import DictSupplementaryFileContainer
+from basyx.aas.model import AASReference
 
 from aas_editor.models import StandardItem
 from aas_editor.settings.app_settings import PACKAGE_ROLE, ATTRIBUTE_COLUMN

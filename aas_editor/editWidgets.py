@@ -22,7 +22,7 @@ from PyQt5.QtGui import QIntValidator, QDoubleValidator
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QDateTimeEdit, QCheckBox, QLineEdit, QCompleter, \
     QComboBox, QDateEdit, QSpinBox, QHBoxLayout, QPlainTextEdit, QPushButton, \
     QFileDialog
-from aas.model.datatypes import Date
+from basyx.aas.model.datatypes import Date
 
 from aas_editor.utils.util import inheritors
 from aas_editor.utils.util_type import issubtype, getTypeName, isoftype

@@ -21,9 +21,9 @@ from typing import Optional
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex, QSettings, QPoint
-from PyQt5.QtGui import QDropEvent, QDragEnterEvent, QKeyEvent
-from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QMenu, QWidget
-from aas.model import AssetAdministrationShell
+from PyQt5.QtGui import QDropEvent, QDragEnterEvent, QMouseEvent, QColor, QPalette, QPainter, QKeyEvent
+from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QStyleOptionViewItem, QMenu, QWidget
+from basyx.aas.model import AssetAdministrationShell
 
 from aas_editor.delegates import EditDelegate
 from aas_editor.package import Package, StoredFile
