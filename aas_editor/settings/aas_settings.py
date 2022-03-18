@@ -55,7 +55,7 @@ MEDIA_TYPES = (File, Blob, aas_editor.package.StoredFile)
 
 # AnyXSDType = Base64Binary, HexBinary
 
-from aas import model
+from basyx.aas import model
 
 TYPE_NAMES_DICT = {
     model.datatypes.String: "String",
