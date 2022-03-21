@@ -81,8 +81,8 @@ TYPE_HINT_COLUMN = 3
 # Themes
 import os
 files = os.listdir("themes")
-THEMES = {"standard": ""}
-DEFAULT_THEME = "standard"
+THEMES = {"default": "default.qss"}
+DEFAULT_THEME = "default"
 for file in files:
     if file.endswith(".qss"):
         themename = file.rstrip(".qss")
