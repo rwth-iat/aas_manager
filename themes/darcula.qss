@@ -49,9 +49,17 @@ QMdiArea {
     border-color: #2b2b2b;
     selection-background-color: #2f65ca;
     selection-color: #bbbbbb;
-    alternate-background-color: #3c3f41;
+    border-right: 0.2ex solid rgba(118, 121, 124, 0.4);
+    border-bottom: 0.2ex solid rgba(118, 121, 124, 0.4);
 }
 
+QTableView::item:!selected:hover,
+QListView::item:!selected:hover,
+QTreeView::item:!selected:hover
+{
+    background-color: rgba(61, 173, 232, 0.2);
+    color: #eff0f1;
+}
 
 QAbstractItemView {
     border: none;
