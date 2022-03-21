@@ -9,7 +9,6 @@ QFrame {
 
 QScrollArea {
     color: #bbbbbb;
-    background-color: #3c3f41;
     border: none;
     border-top: 1px solid #2b2b2b;
     selection-background-color: #2f65ca;
@@ -43,7 +42,6 @@ QToolBox,
 QQuickWidget,
 QMdiArea {
     color: #bbbbbb;
-    background: #3c3f41;
     font-size: 13px;
     border-color: #2b2b2b;
     selection-background-color: #2f65ca;
@@ -71,7 +69,6 @@ QTreeView * {
     font-size: 13px;
     selection-background-color: #2f65ca;
     selection-color: #bbbbbb;
-    alternate-background-color: #3c3f41;
 }
 QDialog QAbstractItemView {
     border: 1px solid #2b2b2b;
@@ -172,7 +169,6 @@ QDialog, QDialogButtonBox {
 }
 
 QTabBar::tab {
-    border: 1px solid #2b2b2b;
     border-radius: 0;
     font-size: 13px;
     color: #bbb;
