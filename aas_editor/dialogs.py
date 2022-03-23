@@ -187,6 +187,9 @@ class AddObjDialog(AddDialog):
     def getObj2add(self):
         return self.inputWidget.getObj2add()
 
+    @checkIfAccepted
+    def getTypeArgsKwargs(self):
+        return self.inputWidget.getTypeArgsKwargs()
 
 @unique
 class GroupBoxType(Enum):
@@ -293,22 +296,26 @@ class ObjGroupBox(GroupBox):
             layout.addWidget(widget)
             return layoutWidget
 
-    def getObj2add(self):
-        """Return resulting obj due to user input data"""
+    def getTypeArgsKwargs(self):
         paramValueDict = {}
         for param, widget in self.paramWidgetDict.items():
             paramValueDict[param] = widget.getObj2add()
         for param, value in self.paramsToHide.items():
             paramValueDict[param] = value
+        return self.objType, (), paramValueDict
+
+    def getObj2add(self):
+        """Return resulting obj due to user input data"""
+        type, _, paramValueDict = self.getTypeArgsKwargs()
         try:
-            obj = self.objType(**paramValueDict)
+            obj = type(**paramValueDict)
         except TypeError:
             for key in ClassesInfo.default_params_to_hide(object):
                 try:
                     paramValueDict.pop(key)
                 except KeyError:
                     continue
-            obj = self.objType(**paramValueDict)
+            obj = type(**paramValueDict)
         return obj
 
     def delInputWidget(self, widget: QWidget):
@@ -338,6 +345,9 @@ class SingleWidgetGroupBox(GroupBox):
         super(SingleWidgetGroupBox, self).__init__(widget.objType, parent)
         self.inputWidget = widget
         self.layout().addWidget(widget)
+
+    def getTypeArgsKwargs(self):
+        return self.getTypeArgsKwargs()
 
     def getObj2add(self):
         """Return resulting obj due to user input data"""
@@ -399,11 +409,15 @@ class IterableGroupBox(GroupBox):
         self.adjustSize()
         self.window().adjustSize()
 
-    def getObj2add(self):
-        """Return resulting obj due to user input data"""
+    def getTypeArgsKwargs(self):
         listObj = []
         for widget in self.inputWidgets:
             listObj.append(widget.getObj2add())
+        return self.objType, (listObj,), {}
+
+    def getObj2add(self):
+        """Return resulting obj due to user input data"""
+        _, listObj, _ = self.getTypeArgsKwargs()
         if issubtype(self.objType, tuple):
             obj = tuple(listObj)
         elif issubtype(self.objType, list):
@@ -487,6 +501,9 @@ class TypeOptionObjGroupBox(GroupBox):
         if isinstance(self.widget, (ObjGroupBox, IterableGroupBox)) and not self.widget.inputWidgets:
             self.widget.hide()
         self.window().adjustSize()
+
+    def getTypeArgsKwargs(self):
+        return self.widget.getTypeArgsKwargs()
 
     def getObj2add(self):
         """Return resulting obj due to user input data"""

@@ -56,15 +56,18 @@ class BytesEdit(QWidget):
         layout.addWidget(self)
         self.setLayout(layout)
 
-    def getObj2add(self):
+    def getTypeArgsKwargs(self):
         text = self.plainTextEdit.toPlainText()
         if not text:
-            return None
+            return type(None), (), {}
         elif text.startswith(("b'", 'b"')) and text.endswith(("'", '"')):
-            obj = eval(text)
+            return eval, (text,), {}
         else:
             raise ValueError("Value must be of type: b'text'")
-        return obj
+
+    def getObj2add(self):
+        typ, args, kwargs = self.getTypeArgsKwargs()
+        return typ(*args, **kwargs)
 
     def setPlainText(self, text):
         self.plainTextEdit.setPlainText(text)
@@ -290,6 +293,22 @@ class StandardInputWidget(QWidget):
             obj = self.widget.currentData()
         return obj
 
+    def getTypeArgsKwargs(self):
+        if issubtype(self.objType, bool):
+            return bool, (self.widget.isChecked(),), {}
+        elif issubtype(self.objType, str):
+            return str, (self.widget.text(),), {}
+        elif issubtype(self.objType, int):
+            return int, (self.widget.text(),), {}
+        elif issubtype(self.objType, float):
+            return float, (self.widget.text(),), {}
+        elif issubtype(self.objType, (Enum, Type)):
+            return lambda i: i, (self.widget.currentData(),), {}
+
+    def getObj2add(self):
+        typ, args, kwargs = self.getTypeArgsKwargs()
+        return typ(*args, **kwargs)
+
     def setVal(self, val):
         if issubtype(self.objType, bool) and isoftype(val, bool):
             self.widget.setChecked(bool(val))
@@ -331,6 +350,29 @@ class SpecialInputWidget(StandardInputWidget):
         elif issubtype(self.objType, (bytes, bytearray)):
             widget = BytesEdit(self)
         return widget
+
+    def getTypeArgsKwargs(self):
+        if issubtype(self.objType, datetime.tzinfo):
+            text = self.widget.currentData()
+            if text is not None:
+                return pytz.timezone, (text,), {}
+            else:
+                return type(None), (), {}
+        elif issubtype(self.objType, datetime.datetime):
+            raise NotImplementedError(f"The function for the type {self.objType} is notimplemented yet")
+        elif issubtype(self.objType, datetime.date):
+            raise NotImplementedError(f"The function for the type {self.objType} is notimplemented yet")
+            obj = self.widget.date()
+        elif issubtype(self.objType, datetime.time):
+            raise NotImplementedError(f"The function for the type {self.objType} is notimplemented yet")
+        elif issubtype(self.objType, dateutil.relativedelta.relativedelta):
+            raise NotImplementedError(f"The function for the type {self.objType} is notimplemented yet")
+        elif issubtype(self.objType, decimal.Decimal):
+            return decimal.Decimal.from_float, (float(self.widget.text()),), {}
+        elif issubtype(self.objType, bytes):
+            return self.widget.getTypeArgsKwargs()
+        elif issubtype(self.objType, bytearray):
+            return self.widget.getTypeArgsKwargs()
 
     def getObj2add(self):
         """Return resulting obj due to user input data"""
