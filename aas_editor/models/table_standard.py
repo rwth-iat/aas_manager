@@ -197,6 +197,9 @@ class StandardTable(QAbstractItemModel):
         else:
             raise AttributeError(
                 f"Object couldn't be added: parent obj type is not appendable: {type(parentObj)}")
+        return self._addItem(parent, itemTyp, kwargs)
+
+    def _addItem(self, parent: QModelIndex, itemTyp, kwargs):
         self.beginInsertRows(parent, self.rowCount(parent), self.rowCount(parent))
         item = itemTyp(**kwargs)
         self.endInsertRows()
