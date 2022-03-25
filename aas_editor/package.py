@@ -130,27 +130,19 @@ class Package:
 
     @property
     def shells(self) -> Iterable[AssetAdministrationShell]:
-        for obj in self.objStore:
-            if isinstance(obj, AssetAdministrationShell):
-                yield obj
+        return self._iter_objects(AssetAdministrationShell)
 
     @property
     def assets(self) -> Iterable[Asset]:
-        for obj in self.objStore:
-            if isinstance(obj, Asset):
-                yield obj
+        return self._iter_objects(Asset)
 
     @property
     def submodels(self) -> Iterable[Submodel]:
-        for obj in self.objStore:
-            if isinstance(obj, Submodel):
-                yield obj
+        return self._iter_objects(Submodel)
 
     @property
     def concept_descriptions(self) -> Iterable[ConceptDescription]:
-        for obj in self.objStore:
-            if isinstance(obj, ConceptDescription):
-                yield obj
+        return self._iter_objects(ConceptDescription)
 
     # @property
     # def others(self):
@@ -158,6 +150,11 @@ class Package:
     #         if not isinstance(obj,
     #                           (AssetAdministrationShell, Asset, Submodel, ConceptDescription)):
     #             yield obj
+
+    def _iter_objects(self, objtype):
+        for obj in self.objStore:
+            if isinstance(obj, objtype):
+                yield obj
 
     @property
     def files(self):
