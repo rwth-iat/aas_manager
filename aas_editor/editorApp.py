@@ -23,6 +23,7 @@ from aas_editor.widgets.compliance_tool import ComplianceToolDialog
 from aas_editor.widgets import SearchBar, AddressLine
 from aas_editor import design
 from aas_editor.models import DetailedInfoTable, PacksTable
+from aas_editor.models.table_import import ImportTable
 from aas_editor.utils.util import toggleStylesheet
 from aas_editor.widgets.tab import Tab
 from aas_editor import dialogs

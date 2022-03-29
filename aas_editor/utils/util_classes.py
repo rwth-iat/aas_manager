@@ -40,16 +40,18 @@ class DictItem(NamedTuple):
 class ClassesInfo:
     @staticmethod
     def hasPackViewAttrs(cls) -> bool:
-        if cls in s.CLASSES_INFO and PACKVIEW_ATTRS_INFO in s.CLASSES_INFO[cls]:
-            return True
+        for typ in s.CLASSES_INFO:
+            if issubclass(cls, typ) and PACKVIEW_ATTRS_INFO in s.CLASSES_INFO[typ]:
+                return True
         return False
 
     @staticmethod
     def packViewAttrs(cls) -> List[str]:
-        attrs = []
-        if cls in s.CLASSES_INFO and PACKVIEW_ATTRS_INFO in s.CLASSES_INFO[cls]:
-            attrs = list(s.CLASSES_INFO[cls][PACKVIEW_ATTRS_INFO].keys())
-        return attrs
+        attrs = set()
+        for typ in s.CLASSES_INFO:
+            if issubclass(cls, typ) and PACKVIEW_ATTRS_INFO in s.CLASSES_INFO[typ]:
+                attrs.update(s.CLASSES_INFO[typ][PACKVIEW_ATTRS_INFO].keys())
+        return list(attrs)
 
     @staticmethod
     def hiddenAttrs(cls) -> Tuple[str]:

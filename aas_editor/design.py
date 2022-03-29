@@ -47,7 +47,7 @@ class Ui_MainWindow(object):
         self.leftVerticalLayout.setSpacing(5)
         self.leftVerticalLayout.setObjectName("verticalLayout")
 
-        self.packTreeView = PackTreeView(self.leftLayoutWidget)
+        self.packTreeView = ImportTreeView(self.leftLayoutWidget)
         self.packTreeView.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.packTreeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.packTreeView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
