@@ -37,7 +37,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         columns_in_packs_table = list(DEFAULT_COLUMNS_IN_PACKS_TABLE)
         columns_in_packs_table.extend(EXTENDED_COLUMNS_IN_PACK_TABLE)
-        self.packTreeModel = PacksTable(columns_in_packs_table)
+        self.packTreeModel = ImportTable(columns_in_packs_table)
         self.packTreeView.setModelWithProxy(self.packTreeModel)
         for column in range(len(columns_in_packs_table), 2, -1):
             self.packTreeView.hideColumn(column)

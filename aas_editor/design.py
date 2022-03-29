@@ -23,6 +23,7 @@ from PyQt5.QtWidgets import QFrame, QWidget, QHBoxLayout
 
 from aas_editor.settings.app_settings import APPLICATION_NAME, TOOLBARS_HEIGHT, ATTRIBUTE_COLUMN, AppSettings
 from aas_editor.widgets import ToolBar, PackTreeView, TabWidget, SearchBar
+from aas_editor.widgets.treeview_import import ImportTreeView
 
 
 class Ui_MainWindow(object):
