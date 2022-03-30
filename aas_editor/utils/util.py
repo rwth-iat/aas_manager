@@ -92,20 +92,22 @@ def getAttrsOfCls(cls) -> Set[str]:
     return attrs
 
 
-
 def simplifyInfo(obj, attrName: str = "") -> str:
     res = str(obj)
-    if isinstance(obj, settings.ATTR_INFOS_TO_SIMPLIFY):
-        res = re.sub("^[A-Z]\w*[(]", "", res)
-        res = res.rstrip(")")
-    elif inspect.isclass(obj):
-        res = util_type.getTypeName(obj)
-    elif isinstance(obj, Enum):
-        res = obj.name
-    elif isinstance(obj, dict) and attrName == "description":
-        res = getDescription(obj)
-    elif res.startswith("<") and res.endswith(">"):  # if no repr for obj
-        return ""
+    try:
+        if isinstance(obj, settings.ATTR_INFOS_TO_SIMPLIFY):
+            res = re.sub("^[A-Z]\w*[(]", "", res)
+            res = res.rstrip(")")
+        elif inspect.isclass(obj):
+            res = util_type.getTypeName(obj)
+        elif isinstance(obj, Enum):
+            res = obj.name
+        elif isinstance(obj, dict) and attrName == "description":
+            res = getDescription(obj)
+        elif res.startswith("<") and res.endswith(">"):  # if no repr for obj
+            return ""
+    except Exception:
+        return str(obj)
     return res
 
 
@@ -214,11 +216,11 @@ def getReqParams4init(objType: Type, rmDefParams=True,
     return params
 
 
-def delAASParents(aasObj): #TODO change if aas changes
+def delAASParents(aasObj):  # TODO change if aas changes
     params, defaults = getParams4init(type(aasObj))
 
     if hasattr(aasObj, "parent"):
-       aasObj.parent = None
+        aasObj.parent = None
 
     for param in params.keys():
         if hasattr(aasObj, param.rstrip("_")):
@@ -336,7 +338,7 @@ def absRow(index: QModelIndex):
     row = 0
     while index.isValid():
         row /= maxChildren
-        row += index.row()+1
+        row += index.row() + 1
         index = index.parent()
     return row
 
