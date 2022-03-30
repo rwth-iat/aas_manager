@@ -15,8 +15,8 @@ from basyx.aas.model import AssetAdministrationShell, Asset, Submodel, ConceptDe
 
 from aas_editor.package import Package, StoredFile
 from aas_editor.utils.util import getParams4init
-from aas_editor.utils.util_classes import ClassesInfo
-from aas_editor.utils.util_type import getAttrTypeHint, isIterableType, isIterable, checkType, isOptional
+from aas_editor.utils.util_classes import ClassesInfo, PreObject
+from aas_editor.utils.util_type import getAttrTypeHint, isIterableType, isIterable, checkType, isOptional, getTypeName
 
 
 class KwargPackage(Package):
@@ -58,9 +58,7 @@ class KwargPackage(Package):
                 yield obj
 
 
-
 class KwargObject:
-
     @staticmethod
     def getAttrTypeHint(obj, attr, delOptional=True):
         if isinstance(obj, KwargObject):
@@ -83,8 +81,13 @@ class KwargObject:
 
         self.iterAttr = None
 
-        if isIterableType(objtype):
-            iterAttr = ClassesInfo.changedParentObject(objtype)
+        self._checkIterability()
+        self._fromPreObjs2KwargObjs()
+        #self.__class__ = self.objtype
+
+    def _checkIterability(self):
+        if isIterableType(self.objtype):
+            iterAttr = ClassesInfo.changedParentObject(self.objtype)
             iterAttrObj = self.kwargs[iterAttr]
             if not isIterable(iterAttrObj):
                 if checkType(dict(), self.kwargsTypehints[iterAttr]):
@@ -95,7 +98,25 @@ class KwargObject:
                     raise TypeError("Unknown iterable type:", self.kwargsTypehints[iterAttr])
             self.setIterable(iterAttr)
 
-        #self.__class__ = self.objtype
+    def _fromPreObjs2KwargObjs(self):
+        args = []
+        for arg in self.args:
+            if isinstance(arg, PreObject):
+                arg = KwargObject(arg.objType, arg.args, arg.kwargs)
+            args.append(arg)
+
+        kwargs = {}
+        for key in self.kwargs:
+            value = self.kwargs[key]
+            if isinstance(value, PreObject):
+                value = KwargObject(value.objType, value.args, value.kwargs)
+            if isinstance(key, PreObject):
+                key = KwargObject(key.objType, key.args, key.kwargs)
+            kwargs[key] = value
+
+        object.__setattr__(self, "args", args)
+        object.__setattr__(self, "kwargs", kwargs)
+
 
     @property
     def __class__(self):
@@ -169,6 +190,19 @@ class KwargObject:
         names.update(self.kwargs.keys())
         return names
 
+    def __str__(self):
+        typename = getTypeName(self.objtype)
+        args = str(self.args if self.args else '')
+        kwargs = ""
+        for key in self.kwargs:
+            kwargs = f"{kwargs}{key}={self.kwargs[key]}, "
+        kwargs.strip(" ").strip(",")
+        if kwargs:
+            kwargs = f"{kwargs})"
+        return f"{typename}({args}{kwargs})"
+
+    def __repr__(self):
+        return self.__str__()
 
     # @property
     # def __class__(self):
