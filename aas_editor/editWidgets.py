@@ -25,6 +25,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QDateTimeEdit, QCheckBox, QLin
 from basyx.aas.model.datatypes import Date
 
 from aas_editor.utils.util import inheritors
+from aas_editor.utils.util_classes import PreObject
 from aas_editor.utils.util_type import issubtype, getTypeName, isoftype
 from aas_editor.widgets import CompleterComboBox
 from aas_editor.widgets.lineEdit import LineEdit
@@ -56,18 +57,17 @@ class BytesEdit(QWidget):
         layout.addWidget(self)
         self.setLayout(layout)
 
-    def getTypeArgsKwargs(self):
+    def getPreObj(self):
         text = self.plainTextEdit.toPlainText()
         if not text:
-            return type(None), (), {}
+            return PreObject(type(None), (), {})
         elif text.startswith(("b'", 'b"')) and text.endswith(("'", '"')):
-            return eval, (text,), {}
+            return PreObject(eval, (text,), {})
         else:
             raise ValueError("Value must be of type: b'text'")
 
     def getObj2add(self):
-        typ, args, kwargs = self.getTypeArgsKwargs()
-        return typ(*args, **kwargs)
+        return self.getPreObj().init()
 
     def setPlainText(self, text):
         self.plainTextEdit.setPlainText(text)
@@ -279,35 +279,18 @@ class StandardInputWidget(QWidget):
 
         return widget
 
-    def getObj2add(self):
-        """Return resulting obj due to user input data"""
+    def getPreObj(self):
         if issubtype(self.objType, bool):
-            obj = self.widget.isChecked()
-        elif issubtype(self.objType, str):
-            obj = self.widget.text()
-        elif issubtype(self.objType, int):
-            obj = int(self.widget.text())
-        elif issubtype(self.objType, float):
-            obj = float(self.widget.text())
-        elif issubtype(self.objType, (Enum, Type)):
-            obj = self.widget.currentData()
-        return obj
-
-    def getTypeArgsKwargs(self):
-        if issubtype(self.objType, bool):
-            return bool, (self.widget.isChecked(),), {}
-        elif issubtype(self.objType, str):
-            return str, (self.widget.text(),), {}
-        elif issubtype(self.objType, int):
-            return int, (self.widget.text(),), {}
-        elif issubtype(self.objType, float):
-            return float, (self.widget.text(),), {}
-        elif issubtype(self.objType, (Enum, Type)):
-            return lambda i: i, (self.widget.currentData(),), {}
+            return PreObject(self.objType, (self.widget.isChecked(),), {})
+        elif issubtype(self.objType, (str, int, float)):
+            return PreObject(self.objType, (self.widget.text(),), {})
+        elif issubtype(self.objType, Enum):
+            return PreObject(self.objType, (self.widget.currentData(),), {})
+        elif issubtype(self.objType, Type):
+            return PreObject.create_object(self.widget.currentData())
 
     def getObj2add(self):
-        typ, args, kwargs = self.getTypeArgsKwargs()
-        return typ(*args, **kwargs)
+        return self.getPreObj().init()
 
     def setVal(self, val):
         if issubtype(self.objType, bool) and isoftype(val, bool):
@@ -351,13 +334,13 @@ class SpecialInputWidget(StandardInputWidget):
             widget = BytesEdit(self)
         return widget
 
-    def getTypeArgsKwargs(self):
+    def getPreObj(self):
         if issubtype(self.objType, datetime.tzinfo):
             text = self.widget.currentData()
             if text is not None:
-                return pytz.timezone, (text,), {}
+                return PreObject(pytz.timezone, (text,), {})
             else:
-                return type(None), (), {}
+                return PreObject(type(None), (), {})
         elif issubtype(self.objType, datetime.datetime):
             raise NotImplementedError(f"The function for the type {self.objType} is notimplemented yet")
         elif issubtype(self.objType, datetime.date):
@@ -368,11 +351,11 @@ class SpecialInputWidget(StandardInputWidget):
         elif issubtype(self.objType, dateutil.relativedelta.relativedelta):
             raise NotImplementedError(f"The function for the type {self.objType} is notimplemented yet")
         elif issubtype(self.objType, decimal.Decimal):
-            return decimal.Decimal.from_float, (float(self.widget.text()),), {}
+            return PreObject(decimal.Decimal.from_float, (float(self.widget.text()),), {})
         elif issubtype(self.objType, bytes):
-            return self.widget.getTypeArgsKwargs()
+            return self.widget.getPreObj()
         elif issubtype(self.objType, bytearray):
-            return self.widget.getTypeArgsKwargs()
+            return self.widget.getPreObj()
 
     def getObj2add(self):
         """Return resulting obj due to user input data"""

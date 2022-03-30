@@ -26,6 +26,50 @@ from aas_editor.settings import aas_settings as s
 from aas_editor.utils.util_type import issubtype
 
 
+class PreObject:
+    def __init__(self, objType, args, kwargs):
+        self.objType = objType
+        self.args: List = list(args)
+        self.kwargs: Dict[str, object] = kwargs
+
+    @classmethod
+    def create_object(cls, object):
+        """If object already exists and no PreObject needed"""
+        c = PreObject(type(object), [], {})
+        c.object = object
+        return c
+
+    def init(self):
+        """Return initialized object"""
+        if hasattr(self, "object"):
+            return self.object
+
+        args = []
+        for arg in self.args:
+            if isinstance(arg, PreObject):
+                arg = arg.init()
+            args.append(arg)
+
+        kwargs = {}
+        for key in self.kwargs:
+            value = self.kwargs[key]
+            if isinstance(value, PreObject):
+                value = value.init()
+            if isinstance(key, PreObject):
+                key = key.init()
+            kwargs[key] = value
+
+        try:
+            return self.objType(*args, **self.kwargs)
+        except TypeError:
+            for key in ClassesInfo.default_params_to_hide(object):
+                try:
+                    self.kwargs.pop(key)
+                except KeyError:
+                    continue
+            return self.objType(*args, **self.kwargs)
+
+
 class DictItem(NamedTuple):
     key: Any
     value: Any
