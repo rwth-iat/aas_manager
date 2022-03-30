@@ -79,8 +79,11 @@ class ImportTreeView(PackTreeView):
         result = False
         while not result and dialog.exec_() == QDialog.Accepted:
             try:
-                objtype, args, kwargs = dialog.getTypeArgsKwargs()
-                obj = KwargObject(objtype, args, kwargs)
+                preobj = dialog.getPreObj()
+                if hasattr(preobj, "object"):
+                    obj = preobj.object
+                else:
+                    obj = KwargObject(preobj.objType, preobj.args, preobj.kwargs)
             except Exception as e:
                 QMessageBox.critical(self, "Error", str(e))
                 continue
