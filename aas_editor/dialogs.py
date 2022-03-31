@@ -378,7 +378,7 @@ class IterableGroupBox(GroupBox):
 
         self.kwargs.update({
             "objType": argType,
-            "title": f"{getTypeName(argType)} {len(self.inputWidgets)}",
+            "title": f"{getTypeName(argType)} {len(self.inputWidgets)+1}",
             "rmDefParams": self.rmDefParams,
             "objVal": objVal
         })
@@ -395,7 +395,9 @@ class IterableGroupBox(GroupBox):
         self.layout().removeWidget(widget)
         widget.close()
         self.inputWidgets.remove(widget)
-
+        for i, widget in enumerate(self.inputWidgets):
+            res: str = widget.title().rstrip("0123456789")
+            widget.setTitle(f"{res}{i+1}")
         self.adjustSize()
         self.window().adjustSize()
 
