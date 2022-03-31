@@ -7,6 +7,7 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
+import copy
 
 from basyx.aas.model.base import *
 
@@ -24,7 +25,7 @@ from aas_editor.settings import DEFAULTS, DEFAULT_COMPLETIONS, ATTRIBUTE_COLUMN,
     APPLICATION_NAME, CONTRIBUTORS, CONTACT, COPYRIGHT_YEAR, VERSION, DEFAULT_INHERITOR
 from aas_editor.delegates import ColorDelegate
 from aas_editor.utils.util import inheritors, getReqParams4init, getParams4init, getDefaultVal, \
-    getAttrDoc
+    getAttrDoc, delAASParents
 from aas_editor.utils.util_type import getTypeName, issubtype, isoftype, isSimpleIterableType, \
     isIterableType, isIterable
 from aas_editor.utils.util_classes import DictItem, ClassesInfo
@@ -181,6 +182,9 @@ class AddObjDialog(AddDialog):
         title = title if title else f"Add {getTypeName(objType)}"
         AddDialog.__init__(self, parent, title=title)
         self.buttonOk.setEnabled(True)
+
+        objVal = copy.deepcopy(objVal)
+        delAASParents(objVal)
 
         kwargs = {
             "rmDefParams": rmDefParams,
