@@ -122,20 +122,34 @@ def getInputWidget(objType, rmDefParams=True, title="", paramsToHide: dict = Non
         **kwargs
     }
 
-    # if obj is given and rmDefParams = True, save all init params of obj in paramsToHide
+    # if obj is given and rmDefParams = True, save all not mandatory init params of obj with val in paramsToHide
+    # if obj is given and rmDefParams = False, save all hidden init params of obj with val in paramsToHide
     # and show user only required params to set
-    if objVal and rmDefParams:
-        params, defaults = getParams4init(objType)
-        reqParams = getReqParams4init(objType, rmDefParams=True)
+    params, defaults = getParams4init(objType)
+    if defaults:
+        prms = list(params.keys())[len(params)-len(defaults):]
+        paramsDefaults = dict(zip(prms, defaults))
+    else:
+        paramsDefaults = dict()
+    reqParams = getReqParams4init(objType, rmDefParams=True)
+    hiddenAttrs = ClassesInfo.hiddenAttrs(objType)
 
-        for param in params.keys():
+    for param in params.keys():
+        attr = paramsToAttrs.get(param, param)
+
+        if rmDefParams and objVal:
             if param in reqParams:
                 continue
-            attr = paramsToAttrs.get(param, param)
-            try:
-                paramsToHide[param] = getattr(objVal, attr.rstrip("_"))  # TODO fix if aas changes
-            except AttributeError:
+            else:
+                try:
+                    paramsToHide[param] = getattr(objVal, attr.rstrip("_"))  # TODO fix if aas changes
+                except AttributeError:
+                    paramsToHide[param] = getattr(objVal, attr)
+        elif attr in hiddenAttrs and param not in paramsToHide:
+            if objVal:
                 paramsToHide[param] = getattr(objVal, attr)
+            elif param in paramsDefaults:
+                paramsToHide[param] = paramsDefaults[param]
 
     if isabstract(objType) and not isIterableType(objType):
         objTypes = inheritors(objType)
