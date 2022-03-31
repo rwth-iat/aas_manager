@@ -331,6 +331,11 @@ QGroupBox {
     outline: none;
     spacing: 0px;
 }
+QGroupBox:flat
+{
+    border: none;
+    border-top: 1px solid #2d2d2d;
+}
 QGroupBox::title {
     color: #bbb;
     font-size: 14px;
