@@ -426,6 +426,7 @@ CLASSES_INFO = {
         }
     },
     AssetAdministrationShell: {
+        HIDDEN_ATTRS: ("concept_dictionary",),
         CHANGED_PARENT_OBJ: "concept_dictionary",
         ADD_ACT_AAS_TXT: "Add concept dictionary",
         ADD_TYPE: ConceptDictionary,
