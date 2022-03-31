@@ -55,7 +55,7 @@ class ClassesInfo:
     def hiddenAttrs(cls) -> Tuple[str]:
         res = set()
         for typ in s.CLASSES_INFO:
-            if issubclass(cls, typ):
+            if issubtype(cls, typ):
                 try:
                     res.update(s.CLASSES_INFO[typ][HIDDEN_ATTRS])
                 except KeyError:
@@ -97,7 +97,7 @@ class ClassesInfo:
 
         if not res:
             for typ in s.CLASSES_INFO:
-                if issubclass(cls, typ):
+                if issubtype(cls, typ):
                     try:
                         clsInfo = s.CLASSES_INFO[typ]
                         if attr is None:
@@ -114,7 +114,7 @@ class ClassesInfo:
         res = clsInfo.get(CHANGED_PARENT_OBJ, "")
         if not res:
             for typ in s.CLASSES_INFO:
-                if issubclass(cls, typ):
+                if issubtype(cls, typ):
                     try:
                         res = s.CLASSES_INFO[typ][CHANGED_PARENT_OBJ]
                         if cls is typ:
@@ -135,7 +135,7 @@ class ClassesInfo:
 
         if not res:
             for typ in s.CLASSES_INFO:
-                if issubclass(cls, typ):
+                if issubtype(cls, typ):
                     try:
                         clsInfo = s.CLASSES_INFO[typ]
                         if attr is None:
