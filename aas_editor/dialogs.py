@@ -18,7 +18,7 @@ from typing import Union, List, Dict, Optional
 from PyQt5.QtCore import Qt, QRect, QSize
 from PyQt5.QtGui import QPaintEvent, QPixmap
 from PyQt5.QtWidgets import QLabel, QPushButton, QDialog, QDialogButtonBox, \
-    QGroupBox, QWidget, QVBoxLayout, QHBoxLayout, QMessageBox, QScrollArea, QFrame
+    QGroupBox, QWidget, QVBoxLayout, QHBoxLayout, QMessageBox, QScrollArea, QFrame, QFormLayout
 
 from aas_editor.editWidgets import StandardInputWidget, SpecialInputWidget
 from aas_editor.settings import DEFAULTS, DEFAULT_COMPLETIONS, ATTRIBUTE_COLUMN, OBJECT_ROLE, \
@@ -195,7 +195,7 @@ class AddObjDialog(AddDialog):
         self.inputWidget = getInputWidget(objType, **kwargs)
         self.inputWidget.setObjectName("mainBox")
         self.inputWidget.setStyleSheet("#mainBox{border:0;}") #FIXME
-        self.layout().insertWidget(0, self.inputWidget)
+        self.layout().addWidget(self.inputWidget)
         self.adjustSize()
 
     def getInputWidget(self):
@@ -228,8 +228,7 @@ class GroupBox(QGroupBox):
         self.objVal = objVal
 
         self.setAlignment(Qt.AlignLeft)
-        layout = QVBoxLayout(self)
-        self.setLayout(layout)
+        self.setLayout(QFormLayout(self))
         self.type = GroupBoxType.SIMPLE
 
     def paintEvent(self, a0: QPaintEvent) -> None:
@@ -285,9 +284,7 @@ class ObjGroupBox(GroupBox):
                 val = getattr(self.objVal, attr.rstrip("_"),
                               DEFAULTS.get(self.objType, {}).get(attr, getDefaultVal(self.objType, param, None)))
                 self.kwargs["completions"] = DEFAULT_COMPLETIONS.get(self.objType, {}).get(param, [])
-                inputWidget = self.getInputWidget(param, paramType, val, **self.kwargs)
-                self.inputWidgets.append(inputWidget)
-                self.layout().addWidget(inputWidget)
+                self.getInputWidget(param, paramType, val, **self.kwargs)
         # else: # TODO check if it works ok
         #     inputWidget = self.getInputWidget(objName, objType, rmDefParams, objVal)
         #     self.layout().addWidget(inputWidget)
@@ -298,17 +295,11 @@ class ObjGroupBox(GroupBox):
         self.paramWidgetDict[param] = widget
 
         if isinstance(widget, QGroupBox):
-            widget.setTitle(f"{param}:")
-            return widget
+            widget.setTitle(param)
+            self.layout().addRow(widget)
         else:
-            label = QLabel(f"{param}:", toolTip=getAttrDoc(param, self.objType))
-            layoutWidget = QWidget()
-            layout = QHBoxLayout(layoutWidget)
-            layout.setContentsMargins(0, 0, 0, 0)
-            layout.setSpacing(0)
-            layout.addWidget(label)
-            layout.addWidget(widget)
-            return layoutWidget
+            self.layout().addRow(param, widget)
+        self.inputWidgets.append(widget)
 
     def getObj2add(self):
         """Return resulting obj due to user input data"""
@@ -406,7 +397,7 @@ class IterableGroupBox(GroupBox):
         widget.setFlat(True)
         widget.toggled.connect(lambda: self.delInputWidget(widget))
         self.inputWidgets.append(widget)
-        self.layout().insertWidget(self.layout().count()-1, widget)
+        self.layout().addWidget(widget)
 
     def delInputWidget(self, widget: QWidget):
         self.layout().removeWidget(widget)
@@ -490,7 +481,7 @@ class TypeOptionObjGroupBox(GroupBox):
             self.typeComboBox.setCurrentIndex(self.typeComboBox.findData(type(self.objVal)))
         else:
             self.typeComboBox.setCurrentIndex(0)
-        self.layout().insertWidget(0, self.typeComboBox)
+        self.layout().addWidget(self.typeComboBox)
 
     def replaceGroupBoxWidget(self, objType, **kwargs):
         """Changes input GroupBox due to objType structure"""
@@ -574,7 +565,7 @@ class AASReferenceGroupBox(ObjGroupBox):
             plusButton = QPushButton(f"Choose from local", self,
                                      toolTip="Choose element for reference",
                                      clicked=self.chooseFromLocal)
-            self.layout().insertWidget(0, plusButton)
+            self.layout().addWidget(plusButton)
 
     def chooseFromLocal(self):
         tree = widgets.PackTreeView()
