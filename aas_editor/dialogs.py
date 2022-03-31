@@ -257,7 +257,6 @@ class ObjGroupBox(GroupBox):
 
         self.reqParamsDict = getReqParams4init(self.objType, self.rmDefParams, self.paramsToHide)
         self.kwargs = kwargs.copy() if kwargs else {}
-        self.kwargs.pop("objVal", None)
         self.initLayout()
 
     def initLayout(self):
