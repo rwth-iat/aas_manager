@@ -103,16 +103,16 @@ def checkIfAccepted(func):
     return wrap
 
 
-def getInputWidget(objType, rmDefParams=True, title="", paramsToHide: dict = None,
+def getInputWidget(objTypeHint, rmDefParams=True, title="", paramsToHide: dict = None,
                    parent=None, objVal=None, paramsToAttrs=None, includeInheritedTyps=True, **kwargs) -> QWidget:
-    print(objType, objType.__str__, objType.__repr__, objType.__class__)
+    print(objTypeHint, objTypeHint.__str__, objTypeHint.__repr__, objTypeHint.__class__)
 
-    if objVal and not isoftype(objVal, objType):
-        print("Given object type does not match to real object type:", objType, objVal)
+    if objVal and not isoftype(objVal, objTypeHint):
+        print("Given object type does not match to real object type:", objTypeHint, objVal)
         objVal = None
 
-    paramsToHide = paramsToHide if paramsToHide else ClassesInfo.default_params_to_hide(objType)
-    paramsToAttrs = paramsToAttrs if paramsToAttrs else ClassesInfo.params_to_attrs(objType)
+    paramsToHide = paramsToHide if paramsToHide else ClassesInfo.default_params_to_hide(objTypeHint)
+    paramsToAttrs = paramsToAttrs if paramsToAttrs else ClassesInfo.params_to_attrs(objTypeHint)
     kwargs = {
         "rmDefParams": rmDefParams,
         "title": title,
@@ -126,14 +126,14 @@ def getInputWidget(objType, rmDefParams=True, title="", paramsToHide: dict = Non
     # if obj is given and rmDefParams = True, save all not mandatory init params of obj with val in paramsToHide
     # if obj is given and rmDefParams = False, save all hidden init params of obj with val in paramsToHide
     # and show user only required params to set
-    params, defaults = getParams4init(objType)
+    params, defaults = getParams4init(objTypeHint)
     if defaults:
         prms = list(params.keys())[len(params)-len(defaults):]
         paramsDefaults = dict(zip(prms, defaults))
     else:
         paramsDefaults = dict()
-    reqParams = getReqParams4init(objType, rmDefParams=True)
-    hiddenAttrs = ClassesInfo.hiddenAttrs(objType)
+    reqParams = getReqParams4init(objTypeHint, rmDefParams=True)
+    hiddenAttrs = ClassesInfo.hiddenAttrs(objTypeHint)
 
     for param in params.keys():
         attr = paramsToAttrs.get(param, param)
@@ -152,34 +152,34 @@ def getInputWidget(objType, rmDefParams=True, title="", paramsToHide: dict = Non
             elif param in paramsDefaults:
                 paramsToHide[param] = paramsDefaults[param]
 
-    if isabstract(objType) and not isIterableType(objType):
-        objTypes = inheritors(objType)
-        kwargs["defType"] = DEFAULT_INHERITOR.get(objType, None)
+    if isabstract(objTypeHint) and not isIterableType(objTypeHint):
+        objTypes = inheritors(objTypeHint)
+        kwargs["defType"] = DEFAULT_INHERITOR.get(objTypeHint, None)
         widget = TypeOptionObjGroupBox(objTypes, **kwargs)
-    elif isSimpleIterableType(objType):
-        widget = IterableGroupBox(objType, **kwargs)
-    elif issubtype(objType, Union):
-        objTypes = objType.__args__
+    elif isSimpleIterableType(objTypeHint):
+        widget = IterableGroupBox(objTypeHint, **kwargs)
+    elif issubtype(objTypeHint, Union):
+        objTypes = objTypeHint.__args__
         widget = TypeOptionObjGroupBox(objTypes, **kwargs)
-    elif issubtype(objType, AASReference):
-        widget = AASReferenceGroupBox(objType, **kwargs)
-    elif issubtype(objType, SpecialInputWidget.types):
-        widget = SpecialInputWidget(objType, **kwargs)
-    elif issubtype(objType, StandardInputWidget.types):
-        widget = StandardInputWidget(objType, **kwargs)
-    elif includeInheritedTyps and inheritors(objType):
-        objTypes = list(inheritors(objType))
-        objTypes.append(objType)
-        kwargs["defType"] = DEFAULT_INHERITOR.get(objType, None)
+    elif issubtype(objTypeHint, AASReference):
+        widget = AASReferenceGroupBox(objTypeHint, **kwargs)
+    elif issubtype(objTypeHint, SpecialInputWidget.types):
+        widget = SpecialInputWidget(objTypeHint, **kwargs)
+    elif issubtype(objTypeHint, StandardInputWidget.types):
+        widget = StandardInputWidget(objTypeHint, **kwargs)
+    elif includeInheritedTyps and inheritors(objTypeHint):
+        objTypes = list(inheritors(objTypeHint))
+        objTypes.append(objTypeHint)
+        kwargs["defType"] = DEFAULT_INHERITOR.get(objTypeHint, None)
         widget = TypeOptionObjGroupBox(objTypes, **kwargs)
     else:
-        widget = ObjGroupBox(objType, **kwargs)
+        widget = ObjGroupBox(objTypeHint, **kwargs)
     return widget
 
 
 class AddObjDialog(AddDialog):
-    def __init__(self, objType, parent: 'TreeView', title="", rmDefParams=True, objVal=None):
-        title = title if title else f"Add {getTypeName(objType)}"
+    def __init__(self, objTypeHint, parent: 'TreeView', title="", rmDefParams=True, objVal=None):
+        title = title if title else f"Add {getTypeName(objTypeHint)}"
         AddDialog.__init__(self, parent, title=title)
         self.buttonOk.setEnabled(True)
 
@@ -192,7 +192,7 @@ class AddObjDialog(AddDialog):
             "parent": self,
         }
 
-        self.inputWidget = getInputWidget(objType, **kwargs)
+        self.inputWidget = getInputWidget(objTypeHint, **kwargs)
         self.inputWidget.setObjectName("mainBox")
         self.inputWidget.setStyleSheet("#mainBox{border:0;}") #FIXME
         self.layout().addWidget(self.inputWidget)
@@ -215,15 +215,15 @@ class GroupBoxType(Enum):
 
 class GroupBox(QGroupBox):
     """Groupbox which also can be closable groupbox"""
-    def __init__(self, objType, parent=None, title="", paramsToHide: dict = None, rmDefParams=True,
+    def __init__(self, objTypeHint, parent=None, title="", paramsToHide: dict = None, rmDefParams=True,
                  objVal=None, paramsToAttrs=None, **kwargs):
         super().__init__(parent)
         if title:
             self.setTitle(title)
 
-        self.objType = objType
-        self.paramsToHide = paramsToHide if paramsToHide else ClassesInfo.default_params_to_hide(objType)
-        self.paramsToAttrs = paramsToAttrs if paramsToAttrs else ClassesInfo.params_to_attrs(objType)
+        self.objTypeHint = objTypeHint
+        self.paramsToHide = paramsToHide if paramsToHide else ClassesInfo.default_params_to_hide(objTypeHint)
+        self.paramsToAttrs = paramsToAttrs if paramsToAttrs else ClassesInfo.params_to_attrs(objTypeHint)
         self.rmDefParams = rmDefParams
         self.objVal = objVal
 
@@ -266,13 +266,13 @@ class GroupBox(QGroupBox):
 
 
 class ObjGroupBox(GroupBox):
-    def __init__(self, objType, parent=None, paramsToHide: dict = None, objVal=None, paramsToAttrs: dict = None, **kwargs):
-        super().__init__(objType, objVal=objVal, parent=parent, paramsToHide=paramsToHide, paramsToAttrs=paramsToAttrs, **kwargs)
+    def __init__(self, objTypeHint, parent=None, paramsToHide: dict = None, objVal=None, paramsToAttrs: dict = None, **kwargs):
+        super().__init__(objTypeHint, objVal=objVal, parent=parent, paramsToHide=paramsToHide, paramsToAttrs=paramsToAttrs, **kwargs)
 
         self.inputWidgets: List[QWidget] = []
         self.paramWidgetDict: Dict[str, QWidget] = {}
 
-        self.reqParamsDict = getReqParams4init(self.objType, self.rmDefParams, self.paramsToHide)
+        self.reqParamsDict = getReqParams4init(self.objTypeHint, self.rmDefParams, self.paramsToHide)
         self.kwargs = kwargs.copy() if kwargs else {}
         self.initLayout()
 
@@ -282,8 +282,8 @@ class ObjGroupBox(GroupBox):
                 # TODO delete when right _ will be deleted in aas models
                 attr = self.paramsToAttrs.get(param, param)
                 val = getattr(self.objVal, attr.rstrip("_"),
-                              DEFAULTS.get(self.objType, {}).get(attr, getDefaultVal(self.objType, param, None)))
-                self.kwargs["completions"] = DEFAULT_COMPLETIONS.get(self.objType, {}).get(param, [])
+                              DEFAULTS.get(self.objTypeHint, {}).get(attr, getDefaultVal(self.objTypeHint, param, None)))
+                self.kwargs["completions"] = DEFAULT_COMPLETIONS.get(self.objTypeHint, {}).get(param, [])
                 self.getInputWidget(param, paramType, val, **self.kwargs)
         # else: # TODO check if it works ok
         #     inputWidget = self.getInputWidget(objName, objType, rmDefParams, objVal)
@@ -309,14 +309,14 @@ class ObjGroupBox(GroupBox):
         for param, value in self.paramsToHide.items():
             paramValueDict[param] = value
         try:
-            obj = self.objType(**paramValueDict)
+            obj = self.objTypeHint(**paramValueDict)
         except TypeError:
             for key in ClassesInfo.default_params_to_hide(object):
                 try:
                     paramValueDict.pop(key)
                 except KeyError:
                     continue
-            obj = self.objType(**paramValueDict)
+            obj = self.objTypeHint(**paramValueDict)
         return obj
 
     def delInputWidget(self, widget: QWidget):
@@ -332,13 +332,13 @@ class ObjGroupBox(GroupBox):
         paramWidget.setVal(val)
 
     def setVal(self, val):
-        if val and isoftype(val, self.objType):
+        if val and isoftype(val, self.objTypeHint):
             self.objVal = val
             for widget in reversed(self.inputWidgets):
                 self.delInputWidget(widget)
             self.initLayout()
         else:
-            print("Value does not fit to req obj type", type(val), self.objType)
+            print("Value does not fit to req obj type", type(val), self.objTypeHint)
 
 
 class SingleWidgetGroupBox(GroupBox):
@@ -356,9 +356,9 @@ class SingleWidgetGroupBox(GroupBox):
 
 
 class IterableGroupBox(GroupBox):
-    def __init__(self, objType, **kwargs):
-        super().__init__(objType, **kwargs)
-        self.argTypes = list(self.objType.__args__)
+    def __init__(self, objTypeHint, **kwargs):
+        super().__init__(objTypeHint, **kwargs)
+        self.argTypes = list(self.objTypeHint.__args__)
         self.kwargs = kwargs.copy() if kwargs else {}
         plusButton = QPushButton(f"+ Element", self,
                                  toolTip="Add element",
@@ -371,7 +371,7 @@ class IterableGroupBox(GroupBox):
         if ... in self.argTypes:
             self.argTypes.remove(...)
 
-        if not issubtype(self.objType, dict):
+        if not issubtype(self.objTypeHint, dict):
             if len(self.argTypes) == 1:
                 argType = self.argTypes[0]
             else:
@@ -414,13 +414,13 @@ class IterableGroupBox(GroupBox):
         listObj = []
         for widget in self.inputWidgets:
             listObj.append(widget.getObj2add())
-        if issubtype(self.objType, tuple):
+        if issubtype(self.objTypeHint, tuple):
             obj = tuple(listObj)
-        elif issubtype(self.objType, list):
+        elif issubtype(self.objTypeHint, list):
             obj = list(listObj)
-        elif issubtype(self.objType, set):
+        elif issubtype(self.objTypeHint, set):
             obj = set(listObj)
-        elif issubtype(self.objType, dict):
+        elif issubtype(self.objTypeHint, dict):
             obj = dict(listObj)
         else:
             obj = list(listObj)
@@ -558,8 +558,8 @@ class AASReferenceGroupBox(ObjGroupBox):
     # can be changed outside of class
     CHOOSE_FRM_VIEW = None
 
-    def __init__(self, objType, chooseFrmView=None, **kwargs):
-        super(AASReferenceGroupBox, self).__init__(objType, **kwargs)
+    def __init__(self, objTypeHint, chooseFrmView=None, **kwargs):
+        super(AASReferenceGroupBox, self).__init__(objTypeHint, **kwargs)
         self.chooseFrmView: 'TreeView' = chooseFrmView if chooseFrmView else self.CHOOSE_FRM_VIEW
         if self.chooseFrmView:
             plusButton = QPushButton(f"Choose from local", self,
