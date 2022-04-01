@@ -7,11 +7,12 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-from PyQt5.QtWidgets import QDialog, QLabel, QComboBox, QPushButton, QVBoxLayout, QFileDialog, QMessageBox
+from PyQt5.QtWidgets import QDialog, QLabel, QPushButton, QVBoxLayout, QFileDialog, QMessageBox
 from basyx.aas.compliance_tool import compliance_check_xml, compliance_check_json, compliance_check_aasx
 from basyx.aas.compliance_tool.state_manager import ComplianceToolStateManager
 
 from aas_editor.settings import FILTER_AAS_FILES
+from aas_editor.widgets.combobox import ComboBox
 from aas_editor.widgets.lineEdit import DropFilePlainTextEdit
 
 
@@ -32,7 +33,7 @@ class ComplianceToolDialog(QDialog):
         #self.plainTextEdit.setEnabled(False)
         self.plainTextEdit.fileDropped.connect(self.checkFile)
 
-        self.optionsComboBox = QComboBox(self)
+        self.optionsComboBox = ComboBox(self)
         self.optionsComboBox.addItem("Show all Logs", 2)
         self.optionsComboBox.addItem("Show only Errors", 1)
         self.optionsComboBox.addItem("Show no Logs", 0)

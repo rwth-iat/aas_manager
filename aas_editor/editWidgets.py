@@ -19,14 +19,14 @@ import pytz
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIntValidator, QDoubleValidator
 
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QDateTimeEdit, QCheckBox, QLineEdit, QCompleter, \
-    QComboBox, QDateEdit, QSpinBox, QHBoxLayout, QPlainTextEdit, QPushButton, \
-    QFileDialog
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QDateTimeEdit, QCheckBox, QCompleter, \
+    QDateEdit, QSpinBox, QHBoxLayout, QPlainTextEdit, QPushButton, QFileDialog
 from basyx.aas.model.datatypes import Date
 
 from aas_editor.utils.util import inheritors
 from aas_editor.utils.util_type import issubtype, getTypeName, isoftype
 from aas_editor.widgets import CompleterComboBox
+from aas_editor.widgets.combobox import ComboBox
 from aas_editor.widgets.lineEdit import LineEdit
 
 
@@ -263,7 +263,7 @@ class StandardInputWidget(QWidget):
                     types = union.__args__
 
             if len(types) <= 6:
-                widget = QComboBox(self)
+                widget = ComboBox(self)
             else:
                 widget = CompleterComboBox(self)
 

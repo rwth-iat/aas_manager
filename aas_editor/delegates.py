@@ -12,7 +12,7 @@ from typing import AbstractSet
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPainter, QBrush, QDoubleValidator, QIntValidator
 from PyQt5.QtWidgets import QWidget, QStyledItemDelegate, QStyleOptionViewItem, QStyle, \
-    QCompleter, QCheckBox, QComboBox
+    QCompleter, QCheckBox
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex
 
@@ -26,6 +26,7 @@ from aas_editor.utils.util import inheritors
 from aas_editor.utils.util_classes import DictItem
 from aas_editor.utils.util_type import issubtype, getTypeName, isoftype
 from aas_editor.widgets import CompleterComboBox
+from aas_editor.widgets.combobox import ComboBox
 from aas_editor.widgets.dictItemEdit import DictItemEdit
 from aas_editor.widgets.lineEdit import LineEdit
 
@@ -106,7 +107,7 @@ class EditDelegate(ColorDelegate):
                     types = union.__args__
 
             if len(types) <= 6:
-                widget = QComboBox(parent)
+                widget = ComboBox(parent)
             else:
                 widget = CompleterComboBox(parent)
             widget.setAutoFillBackground(True)
