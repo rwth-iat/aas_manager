@@ -92,7 +92,7 @@ class StandardTable(QAbstractItemModel):
         if not index.isValid() or index.data(Qt.DisplayRole) is None:
             return Qt.NoItemFlags
 
-        if index.column() in (ATTRIBUTE_COLUMN, TYPE_COLUMN, TYPE_HINT_COLUMN):
+        if index.column() in (TYPE_COLUMN, TYPE_HINT_COLUMN):
             return Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
         return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
