@@ -385,12 +385,11 @@ class IterableGroupBox(GroupBox):
                 raise TypeError(f"expected 2 arguments, got {len(self.argTypes)}", self.argTypes)
 
         self.kwargs.update({
-            "objType": argType,
             "title": f"{getTypeName(argType)} {len(self.inputWidgets)+1}",
             "rmDefParams": self.rmDefParams,
             "objVal": objVal
         })
-        widget = getInputWidget(**self.kwargs)
+        widget = getInputWidget(argType, **self.kwargs)
         if not isinstance(widget, GroupBox):
             widget = SingleWidgetGroupBox(widget)
         widget.setClosable(True)
