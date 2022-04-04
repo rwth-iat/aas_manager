@@ -564,7 +564,7 @@ class AASReferenceGroupBox(ObjGroupBox):
             plusButton = QPushButton(f"Choose from local", self,
                                      toolTip="Choose element for reference",
                                      clicked=self.chooseFromLocal)
-            self.layout().addWidget(plusButton)
+            self.layout().addRow(plusButton)
 
     def chooseFromLocal(self):
         tree = widgets.PackTreeView()
