@@ -20,7 +20,7 @@ import inspect
 import re
 from abc import ABCMeta
 from enum import Enum
-from typing import List, Dict, Type, Set
+from typing import List, Dict, Type, Set, Any, Tuple
 
 from PyQt5.QtCore import Qt, QFile, QTextStream, QModelIndex
 from PyQt5.QtWidgets import QApplication
@@ -134,21 +134,10 @@ def getDefaultVal(objType: Type, param: str, default=settings.NOT_GIVEN):
     :raise AttributeError if no default value found and default is not given
     :return: default value for the given attribute for type init
     """
-    params, defaults = getParams4init(objType)
-    if params and defaults:
-        params = list(params.keys())
-        revParams = reversed(params)
-        revDefaults = list(reversed(defaults))
-        for n, par in enumerate(revParams):
-            try:
-                if par == param:
-                    defValue = revDefaults[n]
-                    return defValue
-                elif par.rstrip('_') == param:  # TODO change if aas changes
-                    defValue = revDefaults[n]
-                    return defValue
-            except IndexError:
-                pass
+    paramsTypehints, paramsDefaults = getParams4init(objType)
+    if paramsTypehints and paramsDefaults:
+        paramsDefaults: Dict
+        paramsDefaults.get(param, settings.NOT_GIVEN)
 
     if default == settings.NOT_GIVEN:
         raise AttributeError("No such default parameter found:", param)
@@ -163,16 +152,16 @@ def getParams4init(objType: Type, withDefaults=True):
 
     if hasattr(objType, "_field_types"):
         # for NamedTuple
-        params = objType._field_types.copy()
+        paramsTypehints = objType._field_types.copy()
         defaults = objType._field_defaults if hasattr(objType, "_field_defaults") else {}
     elif hasattr(objType, "__init__") or hasattr(objType, "__new__"):
         if hasattr(objType, "__init__"):
             g = inspect.getfullargspec(objType.__init__)
-            params = g.annotations.copy()
+            paramsTypehints = g.annotations.copy()
             defaults = g.defaults
-        if not params and hasattr(objType, "__new__"):
+        if not paramsTypehints and hasattr(objType, "__new__"):
             g = inspect.getfullargspec(objType.__new__)
-            params = g.annotations.copy()
+            paramsTypehints = g.annotations.copy()
             defaults = g.defaults
         if g.kwonlydefaults:
             defaults = defaults + tuple(g.kwonlydefaults.values())
@@ -180,47 +169,57 @@ def getParams4init(objType: Type, withDefaults=True):
         raise TypeError(f"no init or new func in objectType: {objType}")
 
     try:
-        params.pop('return')
+        paramsTypehints.pop('return')
     except KeyError:
         pass
 
     if withDefaults:
-        return params, defaults
+        paramsDefaults = _getParamsDefaults(paramsTypehints, defaults)
+        return paramsTypehints, paramsDefaults
     else:
-        return params
+        return paramsTypehints
+
+
+def _getParamsDefaults(paramsTypehints: Dict[str, Any], defaults: Tuple[Any]) -> Dict[str, Any]:
+    if paramsTypehints and defaults:
+        prms = list(paramsTypehints.keys())[len(paramsTypehints) - len(defaults):]
+        paramsDefaults = dict(zip(prms, defaults))
+    else:
+        paramsDefaults = {}
+    return paramsDefaults
 
 
 def getReqParams4init(objType: Type, rmDefParams=True,
                       attrsToHide: dict = None, delOptional=True) -> Dict[str, Type]:
     """Return required params for init with their type"""
-    params, defaults = getParams4init(objType)
+    paramsTypehints, paramasDefaults = getParams4init(objType)
 
-    if rmDefParams and defaults:
-        for i in range(len(defaults)):
-            params.popitem()
+    if rmDefParams and paramasDefaults:
+        for i in range(len(paramasDefaults)):
+            paramsTypehints.popitem()
 
     if delOptional:
-        for param in params:
-            typeHint = params[param]
-            params[param] = util_type.removeOptional(typeHint)
+        for param in paramsTypehints:
+            typeHint = paramsTypehints[param]
+            paramsTypehints[param] = util_type.removeOptional(typeHint)
 
     if attrsToHide:
         for attr in attrsToHide:
             try:
-                params.pop(attr)
+                paramsTypehints.pop(attr)
             except KeyError:
                 continue
 
-    return params
+    return paramsTypehints
 
 
 def delAASParents(aasObj): #TODO change if aas changes
-    params, defaults = getParams4init(type(aasObj))
+    paramsTypehints = getParams4init(type(aasObj), withDefaults=False)
 
     if hasattr(aasObj, "parent"):
        aasObj.parent = None
 
-    for param in params.keys():
+    for param in paramsTypehints.keys():
         if hasattr(aasObj, param.rstrip("_")):
             attr = getattr(aasObj, param.rstrip("_"))
         elif hasattr(aasObj, param):

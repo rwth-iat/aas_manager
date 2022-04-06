@@ -126,12 +126,7 @@ def getInputWidget(objTypeHint, rmDefParams=True, title="", paramsToHide: dict =
     # if obj is given and rmDefParams = True, save all not mandatory init params of obj with val in paramsToHide
     # if obj is given and rmDefParams = False, save all hidden init params of obj with val in paramsToHide
     # and show user only required params to set
-    params, defaults = getParams4init(objTypeHint)
-    if defaults:
-        prms = list(params.keys())[len(params)-len(defaults):]
-        paramsDefaults = dict(zip(prms, defaults))
-    else:
-        paramsDefaults = dict()
+    params, paramsDefaults = getParams4init(objTypeHint)
     reqParams = getReqParams4init(objTypeHint, rmDefParams=True)
     hiddenAttrs = ClassesInfo.hiddenAttrs(objTypeHint)
 
