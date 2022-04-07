@@ -381,7 +381,7 @@ class ObjGroupBox(GroupBox):
                 createBtn: CreateOptionalParamBtn = item.widget()
                 kwargs = copy.copy(self.kwargs)
                 kwargs.update({"optional": True})
-                widget = self.getInputWidget(createBtn.paramName, createBtn.paramTypehint, val=None, **kwargs)
+                widget = self.getInputWidget(createBtn.paramName, val=None, **kwargs)
                 layout.removeRow(row)
                 self.insertInputWidget(widget, createBtn.paramName, row)
                 break
