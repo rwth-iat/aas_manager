@@ -224,9 +224,10 @@ class TimeEdit(WidgetWithTZinfo):
 class StandardInputWidget(QWidget):
     types = (bool, str, int, float, Enum, Type)
 
-    def __init__(self, attrType, parent=None, objVal=None, **kwargs):
+    def __init__(self, attrType, parent=None, objVal=None, optional=False, **kwargs):
         super(StandardInputWidget, self).__init__(parent)
         self.objType = attrType
+        self.optional = optional
         self.widget = self._initWidget(**kwargs)
         self.setVal(objVal)
         widgetLayout = QVBoxLayout(self)
@@ -377,3 +378,9 @@ class SpecialInputWidget(StandardInputWidget):
                 text = val.decode("utf-8")
                 self.widget.setPlainText(text)
 
+
+class CreateOptionalParamBtn(QPushButton):
+    def __init__(self, title, paramName, objTypehint, **kwargs):
+        super(CreateOptionalParamBtn, self).__init__(title, **kwargs)
+        self.paramName = paramName
+        self.paramTypehint = objTypehint

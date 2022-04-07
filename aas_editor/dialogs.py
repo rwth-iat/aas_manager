@@ -17,17 +17,17 @@ from typing import Union, List, Dict, Optional
 
 from PyQt5.QtCore import Qt, QRect, QSize
 from PyQt5.QtGui import QPaintEvent, QPixmap
-from PyQt5.QtWidgets import QLabel, QPushButton, QDialog, QDialogButtonBox, \
-    QGroupBox, QWidget, QVBoxLayout, QHBoxLayout, QMessageBox, QScrollArea, QFrame, QFormLayout
+from PyQt5.QtWidgets import QPushButton, QDialog, QDialogButtonBox, \
+    QGroupBox, QWidget, QVBoxLayout, QMessageBox, QScrollArea, QFrame, QFormLayout
 
-from aas_editor.editWidgets import StandardInputWidget, SpecialInputWidget
+from aas_editor.editWidgets import StandardInputWidget, SpecialInputWidget, CreateOptionalParamBtn
 from aas_editor.settings import DEFAULTS, DEFAULT_COMPLETIONS, ATTRIBUTE_COLUMN, OBJECT_ROLE, \
     APPLICATION_NAME, CONTRIBUTORS, CONTACT, COPYRIGHT_YEAR, VERSION, DEFAULT_INHERITOR
 from aas_editor.delegates import ColorDelegate
 from aas_editor.utils.util import inheritors, getReqParams4init, getParams4init, getDefaultVal, \
-    getAttrDoc, delAASParents
+    delAASParents
 from aas_editor.utils.util_type import getTypeName, issubtype, isoftype, isSimpleIterableType, \
-    isIterableType, isIterable
+    isIterableType, isIterable, isOptional, removeOptional
 from aas_editor.utils.util_classes import DictItem, ClassesInfo
 from aas_editor.widgets import *
 from aas_editor import widgets
@@ -107,6 +107,9 @@ def getInputWidget(objTypeHint, rmDefParams=True, title="", paramsToHide: dict =
                    parent=None, objVal=None, paramsToAttrs=None, includeInheritedTyps=True, **kwargs) -> QWidget:
     print(objTypeHint, objTypeHint.__str__, objTypeHint.__repr__, objTypeHint.__class__)
 
+    optional = True if isOptional(objTypeHint) else False
+    objTypeHint = removeOptional(objTypeHint)
+
     if objVal and not isoftype(objVal, objTypeHint):
         print("Given object type does not match to real object type:", objTypeHint, objVal)
         objVal = None
@@ -122,6 +125,7 @@ def getInputWidget(objTypeHint, rmDefParams=True, title="", paramsToHide: dict =
         "objVal": objVal,
         **kwargs
     }
+    kwargs.update(optional=optional)
 
     # if obj is given and rmDefParams = True, save all not mandatory init params of obj with val in paramsToHide
     # if obj is given and rmDefParams = False, save all hidden init params of obj with val in paramsToHide
@@ -211,7 +215,7 @@ class GroupBoxType(Enum):
 class GroupBox(QGroupBox):
     """Groupbox which also can be closable groupbox"""
     def __init__(self, objTypeHint, parent=None, title="", paramsToHide: dict = None, rmDefParams=True,
-                 objVal=None, paramsToAttrs=None, **kwargs):
+                 objVal=None, paramsToAttrs=None, optional=False, **kwargs):
         super().__init__(parent)
         if title:
             self.setTitle(title)
@@ -221,6 +225,7 @@ class GroupBox(QGroupBox):
         self.paramsToAttrs = paramsToAttrs if paramsToAttrs else ClassesInfo.params_to_attrs(objTypeHint)
         self.rmDefParams = rmDefParams
         self.objVal = objVal
+        self.optional = optional
 
         self.setAlignment(Qt.AlignLeft)
         self.setLayout(QFormLayout(self))
@@ -267,34 +272,58 @@ class ObjGroupBox(GroupBox):
         self.inputWidgets: List[QWidget] = []
         self.paramWidgetDict: Dict[str, QWidget] = {}
 
-        self.reqParamsDict = getReqParams4init(self.objTypeHint, self.rmDefParams, self.paramsToHide)
+        reqParamsDict: Dict = getReqParams4init(self.objTypeHint, self.rmDefParams, self.paramsToHide, delOptional=False)
+        sortedReqParams = sorted(reqParamsDict.items(), key=lambda x: isOptional(x[1]))
+        self.reqParamsDict = dict(sortedReqParams)
         self.kwargs = kwargs.copy() if kwargs else {}
         self.initLayout()
 
     def initLayout(self):
         if self.reqParamsDict:
-            for param, paramType in self.reqParamsDict.items():
+            for param in self.reqParamsDict:
                 # TODO delete when right _ will be deleted in aas models
                 attr = self.paramsToAttrs.get(param, param)
                 val = getattr(self.objVal, attr.rstrip("_"),
                               DEFAULTS.get(self.objTypeHint, {}).get(attr, getDefaultVal(self.objTypeHint, param, None)))
                 self.kwargs["completions"] = DEFAULT_COMPLETIONS.get(self.objTypeHint, {}).get(param, [])
-                self.getInputWidget(param, paramType, val, **self.kwargs)
-        # else: # TODO check if it works ok
-        #     inputWidget = self.getInputWidget(objName, objType, rmDefParams, objVal)
-        #     self.layout().addWidget(inputWidget)
 
-    def getInputWidget(self, param: str, paramType, val, **kwargs) -> QHBoxLayout:
-        print(f"Getting widget for param: {param} of type: {paramType}")
-        widget = getInputWidget(paramType, objVal=val, **kwargs)
+                widget = self.getInitialInputWidget(param, val, **self.kwargs)
+                self.insertInputWidget(widget, param)
+
+    def getInitialInputWidget(self, param: str, val, **kwargs) -> QWidget:
+        paramTypeHint = self.reqParamsDict[param]
+        if isOptional(paramTypeHint) and not val:
+            widget = self.getCreatePushBtn(param)
+        else:
+            widget = self.getInputWidget(param, val, **kwargs)
+        return widget
+
+    def getInputWidget(self, param: str, val, **kwargs) -> QWidget:
+        paramTypeHint = self.reqParamsDict[param]
+        print(f"Getting widget for param: {param} of type: {paramTypeHint}")
+        widget = getInputWidget(paramTypeHint, objVal=val, **kwargs)
         self.paramWidgetDict[param] = widget
 
+        if isinstance(widget, GroupBox):
+            if widget.optional:
+                widget.setClosable(True)
+                widget.toggled.connect(self.rmOptionalGroupBox)
+        return widget
+
+    def insertInputWidget(self, widget: QWidget, param: str, row: int = -1):
+        title = self.getWidgetTitle(param)
         if isinstance(widget, QGroupBox):
-            widget.setTitle(param)
-            self.layout().addRow(widget)
+            widget.setTitle(title)
+            self.layout().insertRow(row, widget)
         else:
-            self.layout().addRow(param, widget)
+            self.layout().insertRow(row, title, widget)
         self.inputWidgets.append(widget)
+
+    def getWidgetTitle(self, param: str):
+        title = param.strip("_")
+        if not isOptional(self.reqParamsDict[param]):
+            title = f"{title}*"
+        return title
 
     def getObj2add(self):
         """Return resulting obj due to user input data"""
@@ -315,12 +344,47 @@ class ObjGroupBox(GroupBox):
         return obj
 
     def delInputWidget(self, widget: QWidget):
-        self.layout().removeWidget(widget)
-        widget.close()
         self.inputWidgets.remove(widget)
-
+        for paramName, paramWidget in self.paramWidgetDict.items():
+            if widget is paramWidget:
+                self.paramWidgetDict.pop(paramName)
+                break
+        self.layout().removeRow(widget)
         self.adjustSize()
         self.window().adjustSize()
+
+    def rmOptionalGroupBox(self):
+        widget: GroupBox = self.sender()
+        layout: QFormLayout = self.layout()
+        for row in range(layout.rowCount()):
+            item = layout.itemAt(row, QFormLayout.FieldRole)
+            if widget == item.widget():
+                for paramName, paramWidget in self.paramWidgetDict.items():
+                    if paramWidget is widget:
+                        btn = self.getCreatePushBtn(paramName, widget.objTypeHint)
+                        self.layout().insertRow(row, widget.title(), btn)
+                        self.delInputWidget(widget)
+                        break
+        layout.update()
+
+    def getCreatePushBtn(self, paramName: str):
+        btn = CreateOptionalParamBtn("Create (optional)", paramName=paramName,
+                                     objTypehint=self.reqParamsDict[paramName],
+                                     parent=self, clicked=self.addWidget4optionalParam)
+        return btn
+
+    def addWidget4optionalParam(self):
+        layout: QFormLayout = self.layout()
+        for row in range(layout.rowCount()):
+            item = layout.itemAt(row, QFormLayout.FieldRole)
+            if self.sender() == item.widget():
+                createBtn: CreateOptionalParamBtn = item.widget()
+                kwargs = copy.copy(self.kwargs)
+                kwargs.update({"optional": True})
+                widget = self.getInputWidget(createBtn.paramName, createBtn.paramTypehint, val=None, **kwargs)
+                layout.removeRow(row)
+                self.insertInputWidget(widget, createBtn.paramName, row)
+                break
 
     def setVal4param(self, param: str, val):
         paramWidget = self.paramWidgetDict[param]

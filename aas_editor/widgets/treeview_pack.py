@@ -340,11 +340,9 @@ class PackTreeView(TreeView):
 
         if objVal:
             kwargs = {"parent": parent,
-                      "rmDefParams": False,
                       "objVal": objVal}
         else:
-            kwargs = {"parent": parent,
-                      "rmDefParams": True}
+            kwargs = {"parent": parent}
 
         try:
             if not parent.isValid():

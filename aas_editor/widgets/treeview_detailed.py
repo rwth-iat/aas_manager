@@ -93,9 +93,9 @@ class AttrsTreeView(TreeView):
             attribute = index.data(NAME_ROLE)
             attrTypeHint = getAttrTypeHint(type(index.data(PARENT_OBJ_ROLE)), attribute) #FIXME
             if objVal:
-                self.addItemWithDialog(index, attrTypeHint, objVal=objVal, title=f"Add {attribute} element", rmDefParams=True)
+                self.addItemWithDialog(index, attrTypeHint, objVal=objVal, title=f"Add {attribute} element")
             else:
-                self.addItemWithDialog(index, attrTypeHint, title=f"Add {attribute} element", rmDefParams=True)
+                self.addItemWithDialog(index, attrTypeHint, title=f"Add {attribute} element")
         except Exception as e:
             print(e)
             QMessageBox.critical(self, "Error", str(e))
