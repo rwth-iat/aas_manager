@@ -318,7 +318,6 @@ class ObjGroupBox(GroupBox):
         else:
             self.layout().insertRow(row, title, widget)
         self.inputWidgets.append(widget)
-        widget.setFocus()
 
     def getWidgetTitle(self, param: str):
         title = param.strip("_")
