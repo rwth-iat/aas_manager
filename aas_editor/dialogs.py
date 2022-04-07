@@ -318,6 +318,7 @@ class ObjGroupBox(GroupBox):
         else:
             self.layout().insertRow(row, title, widget)
         self.inputWidgets.append(widget)
+        widget.setFocus()
 
     def getWidgetTitle(self, param: str):
         title = param.strip("_")
@@ -361,7 +362,7 @@ class ObjGroupBox(GroupBox):
             if widget == item.widget():
                 for paramName, paramWidget in self.paramWidgetDict.items():
                     if paramWidget is widget:
-                        btn = self.getCreatePushBtn(paramName, widget.objTypeHint)
+                        btn = self.getCreatePushBtn(paramName)
                         self.layout().insertRow(row, widget.title(), btn)
                         self.delInputWidget(widget)
                         break
