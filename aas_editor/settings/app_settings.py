@@ -19,11 +19,11 @@ from aas_editor.settings import NOT_GIVEN
 
 AAS_CREATOR = "PyI40AAS Testing Framework"
 APPLICATION_NAME = "AAS Manager"
-COPYRIGHT_YEAR = 2021
+COPYRIGHT_YEAR = 2022
 CONTRIBUTORS = "Igor Garmaev"
 CONTACT = "garmaev@gmx.net"
 ACPLT = "ACPLT"
-VERSION = "0.1.2"
+VERSION = "0.2.1"
 
 TOOLBARS_HEIGHT = 30
 ATTR_COLUMN_WIDTH = 200
