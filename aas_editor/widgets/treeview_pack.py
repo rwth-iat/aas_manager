@@ -221,13 +221,13 @@ class PackTreeView(TreeView):
             attribute = index.data(COLUMN_NAME_ROLE)
             parentObj = index.data(OBJECT_ROLE)
             try:
-                attrType = getAttrTypeHint(type(parentObj), attribute)
+                attrTypeHint = getAttrTypeHint(type(parentObj), attribute)
             except KeyError as e:
                 if objVal:
-                    attrType = type(objVal)
+                    attrTypeHint = type(objVal)
                 else:
                     raise KeyError("No typehint found for the given item", attribute)
-            self.replItemWithDialog(index, attrType, title=f"Edit/Create {attribute}", objVal=objVal)
+            self.replItemWithDialog(index, attrTypeHint, title=f"Edit/Create {attribute}", objVal=objVal)
 
     def toggleDefNewFileType(self):
         # FIXME refactor
@@ -340,34 +340,32 @@ class PackTreeView(TreeView):
 
         if objVal:
             kwargs = {"parent": parent,
-                      "rmDefParams": False,
                       "objVal": objVal}
         else:
-            kwargs = {"parent": parent,
-                      "rmDefParams": True}
+            kwargs = {"parent": parent}
 
         try:
             if not parent.isValid():
                 self.newPackWithDialog()
             elif name in Package.addableAttrs():
-                self.addItemWithDialog(objType=ClassesInfo.addType(Package, name), **kwargs)
+                self.addItemWithDialog(objTypeHint=ClassesInfo.addType(Package, name), **kwargs)
             elif ClassesInfo.addType(type(parentObj)):
-                self.addItemWithDialog(objType=ClassesInfo.addType(type(parentObj)), **kwargs)
+                self.addItemWithDialog(objTypeHint=ClassesInfo.addType(type(parentObj)), **kwargs)
             else:
                 raise TypeError("Parent type is not extendable:", type(parent.data(OBJECT_ROLE)))
         except Exception as e:
             print(e)
             QMessageBox.critical(self, "Error", str(e))
 
-    def addItemWithDialog(self, parent: QModelIndex, objType, objVal=None,
+    def addItemWithDialog(self, parent: QModelIndex, objTypeHint, objVal=None,
                           title="", rmDefParams=False):
-        if objType is Package:
+        if objTypeHint is Package:
             self.newPackWithDialog()
             return
-        elif objType is StoredFile:
+        elif objTypeHint is StoredFile:
             self.addFileWithDialog(parent)
             return
-        super(PackTreeView, self).addItemWithDialog(parent, objType, objVal, title, rmDefParams)
+        super(PackTreeView, self).addItemWithDialog(parent, objTypeHint, objVal, title, rmDefParams)
 
     def newPackWithDialog(self):
         saved = False

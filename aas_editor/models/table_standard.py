@@ -33,6 +33,7 @@ from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_C
     LINKED_ITEM_ROLE, COPY_ROLE
 from aas_editor.settings import NOT_GIVEN
 from aas_editor.settings.colors import LINK_BLUE, CHANGED_BLUE, RED, NEW_GREEN
+from aas_editor.utils.util import delAASParents
 
 from aas_editor.utils.util_classes import DictItem, ClassesInfo
 from aas_editor.utils.util_type import isIterable
@@ -91,7 +92,7 @@ class StandardTable(QAbstractItemModel):
         if not index.isValid() or index.data(Qt.DisplayRole) is None:
             return Qt.NoItemFlags
 
-        if index.column() in (ATTRIBUTE_COLUMN, TYPE_COLUMN, TYPE_HINT_COLUMN):
+        if index.column() in (TYPE_COLUMN, TYPE_HINT_COLUMN):
             return Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
         return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
@@ -257,11 +258,13 @@ class StandardTable(QAbstractItemModel):
             try:
                 if index.column() in (ATTRIBUTE_COLUMN, VALUE_COLUMN):
                     objToCopy = index.data(OBJECT_ROLE)
+                    delAASParents(objToCopy)  # TODO check if there is a better solution to del aas parents
                     return copy.deepcopy(objToCopy) #FIXME
                 elif index.column() in (TYPE_COLUMN, TYPE_HINT_COLUMN):
                     return index.data(Qt.DisplayRole)
                 else:
                     objToCopy = index.data(Qt.EditRole)
+                    delAASParents(objToCopy)  # TODO check if there is a better solution to del aas parents
                     return copy.deepcopy(objToCopy)
             except Exception as e:
                 self.lastErrorMsg = f"Error occurred copying {index.data(NAME_ROLE)}: {e}"
