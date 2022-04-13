@@ -18,12 +18,25 @@
 
 from typing import Optional
 
+from PyQt5 import QtGui
 from PyQt5.QtCore import Qt, pyqtSignal, QTimer
 from PyQt5.QtGui import QMouseEvent
 from PyQt5.QtWidgets import QComboBox, QWidget, QLineEdit, QCompleter
 
 
-class CompleterComboBox(QComboBox):
+class ComboBox(QComboBox):
+    def __init__(self, parent: Optional[QWidget] = ...):
+        super(ComboBox, self).__init__(parent)
+        self.setFocusPolicy(Qt.StrongFocus)
+
+    def wheelEvent(self, e: QtGui.QWheelEvent) -> None:
+        if not self.hasFocus():
+            e.ignore()
+        else:
+            super(ComboBox, self).wheelEvent(e)
+
+
+class CompleterComboBox(ComboBox):
     def __init__(self, parent: Optional[QWidget] = ...):
         super(CompleterComboBox, self).__init__(parent)
         lineEdit = CompleterLineEdit()

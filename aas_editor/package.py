@@ -18,7 +18,7 @@ import pyecma376_2
 from basyx.aas.adapter import aasx
 from basyx.aas.adapter.aasx import DictSupplementaryFileContainer
 from basyx.aas.model import AssetAdministrationShell, Asset, Submodel, ConceptDescription, \
-    DictObjectStore, Key, AASReference
+    DictObjectStore, Key, AASReference, concept
 
 from aas_editor.settings import DEFAULT_COMPLETIONS, AppSettings
 from aas_editor.utils.util_classes import ClassesInfo
@@ -60,6 +60,10 @@ class Package:
     def allSubmodelRefsToAas(self):
         return AppSettings.ALL_SUBMODEL_REFS_TO_AAS.value()
 
+    @property
+    def allCDRefsToAas(self):
+        return AppSettings.ALL_CD_REFS_TO_AAS.value()
+
     def __str__(self):
         return self.name
 
@@ -82,6 +86,8 @@ class Package:
     def write(self, file: str = None):
         if self.allSubmodelRefsToAas:
             self.all_submodels_to_aas()
+        if self.allCDRefsToAas:
+            self.all_concept_descriptions_to_aas()
         if file:
             self.file: Path = file
 
@@ -118,6 +124,17 @@ class Package:
             for submodel in self.submodels:
                 reference = AASReference.from_referable(submodel)
                 shell.submodel.add(reference)
+            break
+
+    def all_concept_descriptions_to_aas(self):
+        """Add references of all existing CD to concept dictionary in existing AAS."""
+        #TODO: fix if pyi40aas changes
+        for shell in self.shells:
+            dictionary = concept.ConceptDictionary(id_short="ConceptDictionary")
+            for cd in self.concept_descriptions:
+                reference = AASReference.from_referable(cd)
+                dictionary.concept_description.add(reference)
+            shell.concept_dictionary.add(dictionary)
             break
 
     @property

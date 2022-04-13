@@ -86,7 +86,11 @@ class SettingsDialog(QDialog):
                               appSetting=AppSettings.SUBMODEL_SPLIT_PARTS),
             RadioBtnsGroupBox(self, title="Automatically add references of existing submodels to the first AAS when saving file",
                               options={"Yes": True, "No": False},
-                              appSetting=AppSettings.ALL_SUBMODEL_REFS_TO_AAS)
+                              appSetting=AppSettings.ALL_SUBMODEL_REFS_TO_AAS),
+            RadioBtnsGroupBox(self,
+                              title="Automatically add references of existing concept descriptions to the first AAS when saving file",
+                              options={"Yes": True, "No": False},
+                              appSetting=AppSettings.ALL_CD_REFS_TO_AAS)
             ]
 
         self.layout = QVBoxLayout()

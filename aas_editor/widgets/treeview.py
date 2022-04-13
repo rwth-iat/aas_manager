@@ -30,7 +30,7 @@ from aas_editor.settings.icons import COPY_ICON, PASTE_ICON, CUT_ICON, ADD_ICON,
     ZOOM_IN_ICON, ZOOM_OUT_ICON, EXPAND_ALL_ICON, COLLAPSE_ALL_ICON, UPDATE_ICON, EDIT_ICON
 from aas_editor.settings.shortcuts import SC_COPY, SC_CUT, SC_PASTE, SC_DELETE, SC_NEW, SC_REDO, SC_UNDO, SC_ZOOM_IN, \
     SC_ZOOM_OUT, SC_EXPAND_RECURS, SC_EXPAND_ALL, SC_COLLAPSE_RECURS, SC_COLLAPSE_ALL, SC_EXPAND, SC_COLLAPSE
-from aas_editor.utils.util import getDefaultVal, getReqParams4init, delAASParents
+from aas_editor.utils.util import getDefaultVal, getReqParams4init
 from aas_editor.utils.util_type import checkType, isSimpleIterable, isIterable, getIterItemTypeHint, isoftype
 
 from aas_editor.utils.util_classes import DictItem, ClassesInfo
@@ -495,7 +495,6 @@ class TreeView(BasicTreeView):
     def onCopy(self):
         index = self.currentIndex()
         data2copy = index.data(COPY_ROLE)
-        delAASParents(data2copy)  # TODO check if there is a better solution to del aas parents
         self.treeObjClipboard.clear()
         self.treeObjClipboard.append(data2copy)
         clipboard = QApplication.clipboard()
@@ -564,10 +563,10 @@ class TreeView(BasicTreeView):
         self.onCopy()
         self.onDelClear()
 
-    def addItemWithDialog(self, parent: QModelIndex, objType, objVal=None,
+    def addItemWithDialog(self, parent: QModelIndex, objTypeHint, objVal=None,
                           title="", rmDefParams=False):
         try:
-            dialog = dialogs.AddObjDialog(objType, self, rmDefParams=rmDefParams, objVal=objVal, title=title)
+            dialog = dialogs.AddObjDialog(objTypeHint, self, rmDefParams=rmDefParams, objVal=objVal, title=title)
         except Exception as e:
             QMessageBox.critical(self, "Error", str(e))
             return False
@@ -594,10 +593,10 @@ class TreeView(BasicTreeView):
         self.setFocus()
         return result
 
-    def replItemWithDialog(self, index, objType, objVal=None, title="", rmDefParams=False):
+    def replItemWithDialog(self, index, objTypeHint, objVal=None, title="", rmDefParams=False):
         title = title if title else f"Edit {index.data(NAME_ROLE)}"
         try:
-            dialog = dialogs.AddObjDialog(objType, self, rmDefParams=rmDefParams, objVal=objVal, title=title)
+            dialog = dialogs.AddObjDialog(objTypeHint, self, rmDefParams=rmDefParams, objVal=objVal, title=title)
         except Exception as e:
             QMessageBox.critical(self, "Error", str(e))
             return False

@@ -91,11 +91,11 @@ class AttrsTreeView(TreeView):
         try:
             index = self.currentIndex()
             attribute = index.data(NAME_ROLE)
-            attrType = getAttrTypeHint(type(index.data(PARENT_OBJ_ROLE)), attribute) #FIXME
+            attrTypeHint = getAttrTypeHint(type(index.data(PARENT_OBJ_ROLE)), attribute) #FIXME
             if objVal:
-                self.addItemWithDialog(index, attrType, objVal=objVal, title=f"Add {attribute} element", rmDefParams=True)
+                self.addItemWithDialog(index, attrTypeHint, objVal=objVal, title=f"Add {attribute} element")
             else:
-                self.addItemWithDialog(index, attrType, title=f"Add {attribute} element", rmDefParams=True)
+                self.addItemWithDialog(index, attrTypeHint, title=f"Add {attribute} element")
         except Exception as e:
             print(e)
             QMessageBox.critical(self, "Error", str(e))
@@ -112,13 +112,13 @@ class AttrsTreeView(TreeView):
             attribute = index.data(NAME_ROLE)
             parentObj = index.data(PARENT_OBJ_ROLE)
             try:
-                attrType = getAttrTypeHint(type(parentObj), attribute)
+                attrTypeHint = getAttrTypeHint(type(parentObj), attribute)
             except KeyError as e:
                 if objVal:
-                    attrType = type(objVal)
+                    attrTypeHint = type(objVal)
                 else:
                     raise KeyError("No typehint found for the given item", attribute)
-            self.replItemWithDialog(index, attrType, title=f"Edit/Create {attribute}", objVal=objVal)
+            self.replItemWithDialog(index, attrTypeHint, title=f"Edit/Create {attribute}", objVal=objVal)
 
     def currentIndex(self) -> QtCore.QModelIndex:
         return super(AttrsTreeView, self).currentIndex().siblingAtColumn(VALUE_COLUMN)

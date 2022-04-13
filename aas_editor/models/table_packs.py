@@ -62,7 +62,7 @@ class PacksTable(StandardTable):
             index = QModelIndex(index)
         if not index.isValid() and role not in (Qt.FontRole, ADD_ITEM_ROLE, UNDO_ROLE, REDO_ROLE):
             return QVariant()
-        elif role == Qt.EditRole and index.column() not in DEFAULT_COLUMNS_IN_PACKS_TABLE:  # TODO refactor
+        elif role == Qt.EditRole and index.data(COLUMN_NAME_ROLE) not in DEFAULT_COLUMNS_IN_PACKS_TABLE:  # TODO refactor
             try:
                 value = None if str(value) == "None" else value
 

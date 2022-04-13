@@ -76,3 +76,8 @@ class PackTreeViewItem(StandardItem):
         for name in fileContainer:
             itemObj = StoredFile(name, fileContainer)
             PackTreeViewItem(itemObj, **kwargs)
+
+    def _getEditRoleData(self, column, column_name):
+        if column == ATTRIBUTE_COLUMN:
+            return self.obj
+        return super(PackTreeViewItem, self)._getEditRoleData(column, column_name)

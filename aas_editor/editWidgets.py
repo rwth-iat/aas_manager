@@ -19,15 +19,15 @@ import pytz
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIntValidator, QDoubleValidator
 
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QDateTimeEdit, QCheckBox, QLineEdit, QCompleter, \
-    QComboBox, QDateEdit, QSpinBox, QHBoxLayout, QPlainTextEdit, QPushButton, \
-    QFileDialog
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QDateTimeEdit, QCheckBox, QCompleter, \
+    QDateEdit, QSpinBox, QHBoxLayout, QPlainTextEdit, QPushButton, QFileDialog
 from basyx.aas.model.datatypes import Date
 
 from aas_editor.utils.util import inheritors
 from aas_editor.utils.util_classes import PreObject
 from aas_editor.utils.util_type import issubtype, getTypeName, isoftype
 from aas_editor.widgets import CompleterComboBox
+from aas_editor.widgets.combobox import ComboBox
 from aas_editor.widgets.lineEdit import LineEdit
 
 
@@ -227,9 +227,10 @@ class TimeEdit(WidgetWithTZinfo):
 class StandardInputWidget(QWidget):
     types = (bool, str, int, float, Enum, Type)
 
-    def __init__(self, attrType, parent=None, objVal=None, **kwargs):
+    def __init__(self, attrType, parent=None, objVal=None, optional=False, **kwargs):
         super(StandardInputWidget, self).__init__(parent)
         self.objType = attrType
+        self.optional = optional
         self.widget = self._initWidget(**kwargs)
         self.setVal(objVal)
         widgetLayout = QVBoxLayout(self)
@@ -266,7 +267,7 @@ class StandardInputWidget(QWidget):
                     types = union.__args__
 
             if len(types) <= 6:
-                widget = QComboBox(self)
+                widget = ComboBox(self)
             else:
                 widget = CompleterComboBox(self)
 
@@ -402,3 +403,9 @@ class SpecialInputWidget(StandardInputWidget):
                 text = val.decode("utf-8")
                 self.widget.setPlainText(text)
 
+
+class CreateOptionalParamBtn(QPushButton):
+    def __init__(self, title, paramName, objTypehint, **kwargs):
+        super(CreateOptionalParamBtn, self).__init__(title, **kwargs)
+        self.paramName = paramName
+        self.paramTypehint = objTypehint
