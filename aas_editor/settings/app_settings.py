@@ -8,22 +8,25 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 import typing
+import json
 from dataclasses import dataclass
 
 from PyQt5.QtCore import QSize, QSettings
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QFileDialog
 from PyQt5 import QtCore
 
 from aas_editor.settings import NOT_GIVEN
 
-AAS_CREATOR = "PyI40AAS Testing Framework"
-APPLICATION_NAME = "AAS Manager"
-COPYRIGHT_YEAR = 2022
-CONTRIBUTORS = "Igor Garmaev"
-CONTACT = "garmaev@gmx.net"
-ACPLT = "ACPLT"
-VERSION = "0.2.1"
+with open("aas_editor/settings/app_info.json") as jsonFile:
+    appInfo = json.load(jsonFile)
+
+AAS_CREATOR = appInfo["AAS_CREATOR"]
+APPLICATION_NAME = appInfo["APPLICATION_NAME"]
+COPYRIGHT_YEAR = appInfo["COPYRIGHT_YEAR"]
+CONTRIBUTORS = appInfo["CONTRIBUTORS"]
+CONTACT = appInfo["CONTACT"]
+ACPLT = appInfo["ACPLT"]
+VERSION = appInfo["VERSION"]
 
 TOOLBARS_HEIGHT = 30
 ATTR_COLUMN_WIDTH = 200
