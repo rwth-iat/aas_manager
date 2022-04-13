@@ -20,9 +20,9 @@
 
 |                                                      Screenshots                                                      |                                                                                                                   |
 | :--------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------: |
-|   ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/dark_theme.PNG) Grey theme        |        ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/light_theme.png) Light theme        |
-|   ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/add_dialog.PNG) Dialog for creating objects   |   ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/edit_in_dialog.png) Dialog for value editing   |
-|   ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/edit_in_cell.PNG) Edit value in the treetable cell   |   ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/columns_management.png) Columns management in the treetable   |
+|   ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/dark_theme.PNG) Grey theme        |        ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/light_theme.PNG) Light theme        |
+|   ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/add_dialog.PNG) Dialog for creating objects   |   ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/edit_in_dialog.PNG) Dialog for value editing   |
+|   ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/edit_in_cell.PNG) Edit value in the treetable cell   |   ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/columns_management.PNG) Columns management in the treetable   |
 |   ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/context_menu.PNG) Context menu of object in the treetable  |  |
 
 
