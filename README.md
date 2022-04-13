@@ -18,9 +18,13 @@
 
 
 
-![screenshot](
-https://github.com/zrgt/pygui40aas/raw/master/viewer.png
-)
+|                                                      Screenshots                                                      |                                                                                                                   |
+| :--------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------: |
+|   ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/dark_theme.PNG) Grey theme        |        ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/light_theme.png) Light theme        |
+|   ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/add_dialog.PNG) Dialog for creating objects   |   ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/edit_in_dialog.png) Dialog for value editing   |
+|   ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/edit_in_cell.PNG) Edit value in the treetable cell   |   ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/columns_management.png) Columns management in the treetable   |
+|   ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/context_menu.PNG) Context menu of object in the treetable  |  |
+
 
 For further information about the Asset Administration Shell, see the publication "Details of the Asset Administration Shell" [(Version 3.0RC01) ](
 https://www.plattform-i40.de/PI40/Redaktion/EN/Downloads/Publikation/Details_of_the_Asset_Administration_Shell_Part1_V3.html
