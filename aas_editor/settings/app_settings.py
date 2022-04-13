@@ -134,4 +134,5 @@ class AppSettings:
     # instead of being included in the AAS part with in the AASX package.
     SUBMODEL_SPLIT_PARTS = Setting('submodelSplitParts', False, bool)
     ALL_SUBMODEL_REFS_TO_AAS = Setting('allSubmodelRefsToAas', True, bool)
+    ALL_CD_REFS_TO_AAS = Setting('allConceptDescriptionRefsToAas', True, bool)
 
