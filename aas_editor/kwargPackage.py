@@ -138,7 +138,8 @@ class KwargObject:
         if params and defaults:
             params = list(params.keys())
             revParams = list(reversed(params))
-            revDefaults = list(reversed(defaults))
+            defValues = list(defaults.values())
+            revDefaults = list(reversed(defValues))
             for n, default in enumerate(revDefaults):
                 param = revParams[n]
                 if param not in self.kwargs:
