@@ -391,3 +391,18 @@ def getIterItemTypeHint(iterableTypehint):
         raise TypeError("Found value is not type or typehint:", attrType)
 
     return attrType
+
+
+def typeHintToType(typeHint):
+    if issubtype(typeHint, typing.Dict):
+        return dict
+    elif issubtype(typeHint, typing.List):
+        return list
+    elif issubtype(typeHint, typing.Tuple):
+        return tuple
+    elif issubtype(typeHint, typing.Set):
+        return set
+    elif issubtype(typeHint, typing.Iterable):
+        return list
+    else:
+        return typeHint
