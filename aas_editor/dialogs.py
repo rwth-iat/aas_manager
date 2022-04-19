@@ -193,7 +193,7 @@ class AddObjDialog(AddDialog):
 
         self.inputWidget = getInputWidget(objTypeHint, **kwargs)
         self.inputWidget.setObjectName("mainBox")
-        self.inputWidget.setStyleSheet("#mainBox{border:0;}") #FIXME
+        self.inputWidget.setStyleSheet("#mainBox{border:0;}")  # FIXME
         self.layout().addWidget(self.inputWidget)
         self.adjustSize()
 
@@ -208,6 +208,7 @@ class AddObjDialog(AddDialog):
     def getPreObj(self):
         return self.inputWidget.getPreObj()
 
+
 @unique
 class GroupBoxType(Enum):
     SIMPLE = 0
@@ -217,6 +218,7 @@ class GroupBoxType(Enum):
 
 class GroupBox(QGroupBox):
     """Groupbox which also can be closable groupbox"""
+
     def __init__(self, objTypeHint, parent=None, title="", paramsToHide: dict = None, rmDefParams=True,
                  objVal=None, paramsToAttrs=None, optional=False, **kwargs):
         super().__init__(parent)
@@ -269,13 +271,16 @@ class GroupBox(QGroupBox):
 
 
 class ObjGroupBox(GroupBox):
-    def __init__(self, objTypeHint, parent=None, paramsToHide: dict = None, objVal=None, paramsToAttrs: dict = None, **kwargs):
-        super().__init__(objTypeHint, objVal=objVal, parent=parent, paramsToHide=paramsToHide, paramsToAttrs=paramsToAttrs, **kwargs)
+    def __init__(self, objTypeHint, parent=None, paramsToHide: dict = None, objVal=None, paramsToAttrs: dict = None,
+                 **kwargs):
+        super().__init__(objTypeHint, objVal=objVal, parent=parent, paramsToHide=paramsToHide,
+                         paramsToAttrs=paramsToAttrs, **kwargs)
 
         self.inputWidgets: List[QWidget] = []
         self.paramWidgetDict: Dict[str, QWidget] = {}
 
-        reqParamsDict: Dict = getReqParams4init(self.objTypeHint, self.rmDefParams, self.paramsToHide, delOptional=False)
+        reqParamsDict: Dict = getReqParams4init(self.objTypeHint, self.rmDefParams, self.paramsToHide,
+                                                delOptional=False)
         sortedReqParams = sorted(reqParamsDict.items(), key=lambda x: isOptional(x[1]))
         self.reqParamsDict = dict(sortedReqParams)
         self.kwargs = kwargs.copy() if kwargs else {}
@@ -443,7 +448,7 @@ class IterableGroupBox(GroupBox):
                 argType = self.argTypes[0]
             else:
                 raise TypeError(f"expected 1 argument, got {len(self.argTypes)}", self.argTypes)
-        else: #  if parentType = dict
+        else:  # if parentType = dict
             if len(self.argTypes) == 2:
                 DictItem._field_types["key"] = self.argTypes[0]
                 DictItem._field_types["value"] = self.argTypes[1]
@@ -452,7 +457,7 @@ class IterableGroupBox(GroupBox):
                 raise TypeError(f"expected 2 arguments, got {len(self.argTypes)}", self.argTypes)
 
         self.kwargs.update({
-            "title": f"{getTypeName(argType)} {len(self.inputWidgets)+1}",
+            "title": f"{getTypeName(argType)} {len(self.inputWidgets) + 1}",
             "rmDefParams": self.rmDefParams,
             "objVal": objVal
         })
@@ -471,7 +476,7 @@ class IterableGroupBox(GroupBox):
         self.inputWidgets.remove(widget)
         for i, widget in enumerate(self.inputWidgets):
             res: str = widget.title().rstrip("0123456789")
-            widget.setTitle(f"{res}{i+1}")
+            widget.setTitle(f"{res}{i + 1}")
         self.adjustSize()
         self.window().adjustSize()
 
@@ -503,6 +508,7 @@ class IterableGroupBox(GroupBox):
 
 class TypeOptionObjGroupBox(GroupBox):
     """GroupBox with option to choose widget for which type will be generated"""
+
     def __init__(self, objTypes: List, defType=None, **kwargs):
         objTypes = list(objTypes)
         super(TypeOptionObjGroupBox, self).__init__(objTypes[0], **kwargs)
