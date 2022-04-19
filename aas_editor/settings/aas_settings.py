@@ -25,7 +25,8 @@ from basyx.aas.model import AssetAdministrationShell, Asset, ConceptDescription,
     Entity, Capability, Event, Operation, RelationshipElement, AnnotatedRelationshipElement, \
     SubmodelElementCollectionUnordered, SubmodelElementCollectionOrdered, Range, Blob, File, \
     ReferenceElement, DataElement, AdministrativeInformation, Identifier, AbstractObjectStore, \
-    Namespace, SubmodelElementCollection, SubmodelElement, AASReference, ConceptDictionary, Referable, Identifiable
+    Namespace, SubmodelElementCollection, SubmodelElement, AASReference, ConceptDictionary, Referable, Identifiable, \
+    Key, Qualifier
 from basyx.aas.model.datatypes import Decimal
 
 import aas_editor.package
@@ -393,7 +394,6 @@ PREFERED_LANGS_ORDER = ("en-us", "en", "de")
 CLASSES_INFO = {
     object: {
         HIDDEN_ATTRS: ("namespace_element_sets", "parent", "security", "source"),
-        DEFAULT_PARAMS_TO_HIDE: {"parent": None}
     },
     datetime.datetime: {
         HIDDEN_ATTRS: ("min", "max", "resolution"),
@@ -424,6 +424,9 @@ CLASSES_INFO = {
                 ADD_TYPE: aas_editor.package.StoredFile,
             },
         }
+    },
+    Referable: {
+        DEFAULT_PARAMS_TO_HIDE: {"parent": None}
     },
     AssetAdministrationShell: {
         HIDDEN_ATTRS: ("concept_dictionary",),
@@ -461,6 +464,21 @@ CLASSES_INFO = {
             "target_type": "type"
         },
     },
+    Key: {
+        PARAMS_TO_ATTRS: {
+            "type_": "type"
+        },
+    },
+    Qualifier: {
+        PARAMS_TO_ATTRS: {
+            "type_": "type"
+        },
+    },
+    Identifier: {
+        PARAMS_TO_ATTRS: {
+            "id_": "id"
+        },
+    }
 }
 
 EXTENDED_COLUMNS_IN_PACK_TABLE = list(util.getAttrs4inheritors(Referable))
