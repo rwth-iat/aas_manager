@@ -23,31 +23,55 @@ from aas_editor.settings import aas_settings as s
 
 
 # DictItem = NamedTuple("DictItem", key=Any, value=Any)
-from aas_editor.utils.util_type import issubtype
+from aas_editor.utils.util_type import issubtype, getTypeName
 
 
 class PreObject:
     def __init__(self, objType, args, kwargs):
-        self.objType = objType
-        self.args: List = list(args)
         self.kwargs: Dict[str, object] = kwargs
+        self.args: List = list(args)
+        self.objType: Type = objType
+
+    def __getattr__(self, item):
+        if item in self.kwargs:
+            return self.kwargs[item]
+        else:
+            return object.__getattr__(PreObject, item)
+
+    def __str__(self):
+        args = str(self.args).strip("[]")
+        kwargs = ""
+        for key, value in self.kwargs.items():
+            kwargs = kwargs.join((f"{key}={value}",))
+        try:
+            typ = getTypeName(self.objType)
+        except Exception as e:
+            typ = str(self.objType)
+
+        return f"PreObject({typ}, {args}, {kwargs})"
+
+    def __repr__(self):
+        return self.__str__()
+
 
     @classmethod
-    def create_object(cls, object):
+    def create_object(cls, obj):
         """If object already exists and no PreObject needed"""
-        c = PreObject(type(object), [], {})
-        c.object = object
+        c = PreObject(type(obj), [], {})
+        c.obj = obj
         return c
 
     def init(self):
         """Return initialized object"""
         if hasattr(self, "object"):
-            return self.object
+            return self.obj
 
         args = []
         for arg in self.args:
             if isinstance(arg, PreObject):
                 arg = arg.init()
+            elif arg and type(arg) == list and isinstance(arg[0], PreObject):
+                arg = [i.init() for i in arg]
             args.append(arg)
 
         kwargs = {}
@@ -60,14 +84,14 @@ class PreObject:
             kwargs[key] = value
 
         try:
-            return self.objType(*args, **self.kwargs)
+            return self.objType(*args, **kwargs)
         except TypeError:
             for key in ClassesInfo.default_params_to_hide(object):
                 try:
-                    self.kwargs.pop(key)
+                    kwargs.pop(key)
                 except KeyError:
                     continue
-            return self.objType(*args, **self.kwargs)
+            return self.objType(*args, **kwargs)
 
 
 class DictItem(NamedTuple):
