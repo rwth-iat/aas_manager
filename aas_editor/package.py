@@ -130,7 +130,8 @@ class Package:
         """Add references of all existing CD to concept dictionary in existing AAS."""
         #TODO: fix if pyi40aas changes
         for shell in self.shells:
-            dictionary = concept.ConceptDictionary(id_short="ConceptDictionary")
+            dictionary = shell.concept_dictionary.get("ConceptDictionary",
+                                                      concept.ConceptDictionary(id_short="ConceptDictionary"))
             for cd in self.concept_descriptions:
                 reference = AASReference.from_referable(cd)
                 dictionary.concept_description.add(reference)
