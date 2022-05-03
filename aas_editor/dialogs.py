@@ -585,7 +585,6 @@ class ChooseItemDialog(AddDialog):
         self.validator = validator
         self.view = view
         self.view.setParent(self)
-        self.view.setItemDelegate(ColorDelegate(view))
         self.view.setModelWithProxy(self.view.sourceModel())
         self.view.expandAll()
         self.view.setHeaderHidden(True)
