@@ -27,11 +27,19 @@ from aas_editor.delegates import ColorDelegate
 from aas_editor.utils.util import inheritors, getReqParams4init, getParams4init, getDefaultVal, \
     delAASParents
 from aas_editor.utils.util_type import getTypeName, issubtype, isoftype, isSimpleIterableType, \
-    isIterableType, isIterable, isOptional, removeOptional
+    isIterableType, isIterable, isOptional, removeOptional, typeHintToType
 from aas_editor.utils.util_classes import DictItem, ClassesInfo, PreObject
 from aas_editor.widgets import *
 from aas_editor import widgets
 
+
+def isValOk4Typehint(val, typehint):
+    if isoftype(val, typehint):
+        return True
+    elif isoftype(val, PreObject) and issubtype(val.objType, typehint):
+        return True
+    else:
+        return False
 
 class AboutDialog(QMessageBox):
     def __init__(self, parent=None):  # <1>
@@ -76,7 +84,7 @@ class AddDialog(QDialog):
         self.verticalLayout.addWidget(self.scrollArea)
         self.verticalLayout.addWidget(self.buttonBox)
         self.verticalLayoutScroll = QVBoxLayout(self.scrollAreaWidgetContents)
-        self.verticalLayoutScroll.setContentsMargins(0,0,0,0)
+        self.verticalLayoutScroll.setContentsMargins(0, 0, 0, 0)
 
     def adjustSize(self) -> None:
         layoutSize = self.layout().sizeHint()
@@ -110,7 +118,7 @@ def getInputWidget(objTypeHint, rmDefParams=True, title="", paramsToHide: dict =
     optional = True if isOptional(objTypeHint) else False
     objTypeHint = removeOptional(objTypeHint)
 
-    if objVal and not isoftype(objVal, objTypeHint):
+    if objVal and not isValOk4Typehint(objVal, objTypeHint):
         print("Given object type does not match to real object type:", objTypeHint, objVal)
         objVal = None
 
@@ -141,10 +149,7 @@ def getInputWidget(objTypeHint, rmDefParams=True, title="", paramsToHide: dict =
             if param in reqParams:
                 continue
             else:
-                try:
-                    paramsToHide[param] = getattr(objVal, attr.rstrip("_"))  # TODO fix if aas changes
-                except AttributeError:
-                    paramsToHide[param] = getattr(objVal, attr)
+                paramsToHide[param] = getattr(objVal, attr)
         elif attr in hiddenAttrs and param not in paramsToHide:
             if objVal:
                 paramsToHide[param] = getattr(objVal, attr)
@@ -182,7 +187,8 @@ class AddObjDialog(AddDialog):
         AddDialog.__init__(self, parent, title=title)
         self.buttonOk.setEnabled(True)
 
-        objVal = copy.deepcopy(objVal)
+        if not isoftype(objVal, PreObject):
+            objVal = copy.deepcopy(objVal)
         delAASParents(objVal)
 
         kwargs = {
@@ -289,14 +295,18 @@ class ObjGroupBox(GroupBox):
     def initLayout(self):
         if self.reqParamsDict:
             for param in self.reqParamsDict:
-                # TODO delete when right _ will be deleted in aas models
-                attr = self.paramsToAttrs.get(param, param)
-                val = getattr(self.objVal, attr.rstrip("_"),
-                              DEFAULTS.get(self.objTypeHint, {}).get(attr, getDefaultVal(self.objTypeHint, param, None)))
                 self.kwargs["completions"] = DEFAULT_COMPLETIONS.get(self.objTypeHint, {}).get(param, [])
-
+                val = self.getVal4param(param)
                 widget = self.getInitialInputWidget(param, val, **self.kwargs)
                 self.insertInputWidget(widget, param)
+
+    def getVal4param(self, param):
+        attr = self.paramsToAttrs.get(param, param)
+        if hasattr(self.objVal, attr):
+            val = getattr(self.objVal, attr)
+        else:
+            val = DEFAULTS.get(self.objTypeHint, {}).get(attr, getDefaultVal(self.objTypeHint, param, None))
+        return val
 
     def getInitialInputWidget(self, param: str, val, **kwargs) -> QWidget:
         paramTypeHint = self.reqParamsDict[param]
@@ -401,7 +411,7 @@ class ObjGroupBox(GroupBox):
         paramWidget.setVal(val)
 
     def setVal(self, val):
-        if val and isoftype(val, self.objTypeHint):
+        if val and isValOk4Typehint(val, self.objTypeHint):
             self.objVal = val
             for widget in reversed(self.inputWidgets):
                 self.delInputWidget(widget)
@@ -484,7 +494,8 @@ class IterableGroupBox(GroupBox):
         listObj = []
         for widget in self.inputWidgets:
             listObj.append(widget.getPreObj())
-        return PreObject(self.objTypeHint, (listObj,), {})
+        typ = typeHintToType(self.objTypeHint)
+        return PreObject(typ, (listObj,), {})
 
     def getObj2add(self):
         """Return resulting obj due to user input data"""
@@ -493,8 +504,12 @@ class IterableGroupBox(GroupBox):
     def setVal(self, val):
         if isinstance(val, dict):
             val = [DictItem(key, value) for key, value in val.items()]
+        elif isoftype(val, PreObject) and issubtype(val.objType, dict):
+            val = [DictItem(item.key, item.value) for item in val]
 
-        if val and isIterable(val):
+        if val and \
+                (isIterable(val) or
+                 (isoftype(val, PreObject) and isIterableType(val.objType))):
             for widget in reversed(self.inputWidgets):
                 self.delInputWidget(widget)
             self.objVal = val
@@ -543,7 +558,8 @@ class TypeOptionObjGroupBox(GroupBox):
             self.typeComboBox.addItem(getTypeName(typ), typ)
             self.typeComboBox.model().sort(0, Qt.AscendingOrder)
         if self.objVal:
-            self.typeComboBox.setCurrentIndex(self.typeComboBox.findData(type(self.objVal)))
+            objValType = self.objVal.objType if isoftype(self.objVal, PreObject) else type(self.objVal)
+            self.typeComboBox.setCurrentIndex(self.typeComboBox.findData(objValType))
         else:
             self.typeComboBox.setCurrentIndex(0)
         self.layout().addWidget(self.typeComboBox)
@@ -571,7 +587,8 @@ class TypeOptionObjGroupBox(GroupBox):
         return self.widget.getObj2add()
 
     def setVal(self, val):
-        if val and type(val) in self.objTypes:
+        valType = val.objType if isoftype(val, PreObject) else type(val)
+        if valType in self.objTypes:
             self.objVal = val
             self.typeComboBox.setCurrentIndex(self.typeComboBox.findData(type(self.objVal)))
 

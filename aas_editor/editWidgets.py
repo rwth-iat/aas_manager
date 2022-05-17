@@ -294,13 +294,15 @@ class StandardInputWidget(QWidget):
         return self.getPreObj().init()
 
     def setVal(self, val):
+        if isoftype(val, PreObject):
+            if hasattr(val, "obj") and val.obj:
+                val = val.obj
+            else:
+                val = val.args[0]
+
         if issubtype(self.objType, bool) and isoftype(val, bool):
             self.widget.setChecked(bool(val))
-        elif issubtype(self.objType, str) and isoftype(val, str):
-            self.widget.setText(val)
-        elif issubtype(self.objType, int) and isoftype(val, int):
-            self.widget.setText(str(val))
-        elif issubtype(self.objType, float) and isoftype(val, (int, float)):
+        elif issubtype(self.objType, (str, int, float)) and isoftype(val, (str, int, float)):
             self.widget.setText(str(val))
         elif issubtype(self.objType, (Enum, Type)):
             index = self.widget.findData(val)
@@ -385,7 +387,11 @@ class SpecialInputWidget(StandardInputWidget):
         return obj
 
     def setVal(self, val):
-        if val is not None:
+        if not issubtype(val, PreObject):
+            if issubtype(self.objType, bytes) and issubtype(val.objType, bytes):
+                self.widget.setPlainText(val.args[0])
+                # TODO: impement for date types
+        elif val is not None:
             if issubtype(self.objType, datetime.datetime) and isoftype(val, datetime.datetime):
                 self.widget.setDateTime(val)
             elif issubtype(self.objType, datetime.date) and isoftype(val, datetime.date):
