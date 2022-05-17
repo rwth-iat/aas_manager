@@ -25,10 +25,10 @@ class TestUi(TestCase):
         self.app = QApplication(sys.argv)
 
         self.window = EditorApp()
-        self.window.packTreeView.openPack("aas_files/TestPackage.aasx")
+        self.window.mainTreeView.openPack("aas_files/TestPackage.aasx")
         self.window.show()
 
-        self.packTreeView: PackTreeView = self.window.packTreeView
+        self.packTreeView: PackTreeView = self.window.mainTreeView
         self.packTreeView.expandAll()
         self.tab1: Tab = self.window.mainTabWidget.widget(0)
         self.attrsTreeView = self.tab1.attrsTreeView

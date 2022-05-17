@@ -16,8 +16,10 @@ from PyQt5 import QtWidgets
 def main():
     app = QtWidgets.QApplication(sys.argv)
 
-    from aas_editor.editorApp import EditorApp
-    window = EditorApp()
+    #from aas_editor.editorApp import EditorApp
+    from aas_editor.importApp import ImportApp
+    #window = EditorApp()
+    window = ImportApp()
     window.show()
 
     app.exec_()

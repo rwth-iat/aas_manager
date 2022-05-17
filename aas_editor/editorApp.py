@@ -14,7 +14,7 @@ from PyQt5.QtCore import QModelIndex
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from aas_editor.settings import EXTENDED_COLUMNS_IN_PACK_TABLE
+import aas_editor
 from aas_editor.settings.app_settings import *
 from aas_editor.settings.icons import APP_ICON, EXIT_ICON, SETTINGS_ICON
 from aas_editor.settings_dialog import SettingsDialog
@@ -30,21 +30,13 @@ from aas_editor import dialogs
 
 
 class EditorApp(QMainWindow, design.Ui_MainWindow):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
         self.setupUi(self)
         self.currTheme = DEFAULT_THEME
 
-        columns_in_packs_table = list(DEFAULT_COLUMNS_IN_PACKS_TABLE)
-        columns_in_packs_table.extend(EXTENDED_COLUMNS_IN_PACK_TABLE)
-        self.packTreeModel = ImportTable(columns_in_packs_table)
-        self.packTreeView.setModelWithProxy(self.packTreeModel)
-        for column in range(len(columns_in_packs_table), 2, -1):
-            self.packTreeView.hideColumn(column)
-        dialogs.AASReferenceGroupBox.CHOOSE_FRM_VIEW = self.packTreeView
-
-        AddressLine.setModel(self.packTreeView.model())
-
+        dialogs.AASReferenceGroupBox.CHOOSE_FRM_VIEW = self.mainTreeView
+        AddressLine.setModel(self.mainTreeView.model())
         welcomeTab = self.mainTabWidget.addTab(Tab(parent=self.mainTabWidget), "Welcome")
         self.mainTabWidget.widget(welcomeTab).searchBar.showFocused()
 
@@ -69,6 +61,10 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                                       statusTip="Open compliance tool",
                                       triggered=lambda: ComplianceToolDialog(self).exec())
 
+        self.importToolAct = QAction("Table import tool", self,
+                                      statusTip="Switch to table import mode",
+                                      triggered=self.showImportApp)
+
         self.settingsDialogAct = QAction(SETTINGS_ICON, "Settings", self,
                                          statusTip=f"Edit application settings",
                                          triggered=lambda: SettingsDialog(self).exec())
@@ -88,31 +84,35 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                                           statusTip=f"Set vertical orientation",
                                           triggered=lambda: self.setOrientation(QtCore.Qt.Vertical))
 
+    def showImportApp(self):
+        from aas_editor.importApp import ImportApp
+        ImportApp(parent=self).show()
+
     def initMenu(self):
         self.menubar = QMenuBar(self)
         self.menubar.setObjectName("menubar")
         self.setMenuBar(self.menubar)
 
         self.menuFile = QMenu("&File", self.menubar)
-        self.menuFile.addAction(self.packTreeView.newPackAct)
-        self.menuFile.addAction(self.packTreeView.openPackAct)
+        self.menuFile.addAction(self.mainTreeView.newPackAct)
+        self.menuFile.addAction(self.mainTreeView.openPackAct)
 
         self.menuFile.addSeparator()
         self.menuOpenRecent = QMenu("Open Recent", self.menuFile)
-        for recentFileAct in self.packTreeView.recentFileActs:
+        for recentFileAct in self.mainTreeView.recentFileActs:
             self.menuOpenRecent.addAction(recentFileAct)
         self.menuFile.addAction(self.menuOpenRecent.menuAction())
-        self.packTreeView.recentFilesSeparator = self.menuFile.addSeparator()
-        self.packTreeView.updateRecentFileActs()
+        self.mainTreeView.recentFilesSeparator = self.menuFile.addSeparator()
+        self.mainTreeView.updateRecentFileActs()
 
-        self.menuFile.addAction(self.packTreeView.saveAct)
-        self.menuFile.addAction(self.packTreeView.saveAsAct)
-        self.menuFile.addAction(self.packTreeView.saveAllAct)
+        self.menuFile.addAction(self.mainTreeView.saveAct)
+        self.menuFile.addAction(self.mainTreeView.saveAsAct)
+        self.menuFile.addAction(self.mainTreeView.saveAllAct)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.settingsDialogAct)
         self.menuFile.addSeparator()
-        self.menuFile.addAction(self.packTreeView.closeAct)
-        self.menuFile.addAction(self.packTreeView.closeAllAct)
+        self.menuFile.addAction(self.mainTreeView.closeAct)
+        self.menuFile.addAction(self.mainTreeView.closeAllAct)
         self.menuFile.addAction(self.exitAct)
 
         self.menuView = QMenu("&View", self.menubar)
@@ -129,23 +129,24 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menuAppearance.addAction(self.setVOrientationAct)
         self.menuView.addAction(self.menuAppearance.menuAction())
         self.menuView.addSection("AAS file view")
-        self.menuView.addAction(self.packTreeView.zoomInAct)
-        self.menuView.addAction(self.packTreeView.zoomOutAct)
+        self.menuView.addAction(self.mainTreeView.zoomInAct)
+        self.menuView.addAction(self.mainTreeView.zoomOutAct)
         self.menuView.addSection("Detailed view")
         self.menuView.addAction(self.mainTabWidget.zoomInAct)
         self.menuView.addAction(self.mainTabWidget.zoomOutAct)
 
         self.menuNavigate = QMenu("&Navigate", self.menubar)
-        self.menuNavigate.addAction(self.packTreeView.autoScrollToSrcAct)
-        self.menuNavigate.addAction(self.packTreeView.autoScrollFromSrcAct)
+        self.menuNavigate.addAction(self.mainTreeView.autoScrollToSrcAct)
+        self.menuNavigate.addAction(self.mainTreeView.autoScrollFromSrcAct)
         self.menuNavigate.addSeparator()
-        self.menuNavigate.addAction(self.packTreeView.openInNewTabAct)
-        self.menuNavigate.addAction(self.packTreeView.openInCurrTabAct)
-        self.menuNavigate.addAction(self.packTreeView.openInBackgroundAct)
-        self.menuNavigate.addAction(self.packTreeView.openInNewWindowAct)
+        self.menuNavigate.addAction(self.mainTreeView.openInNewTabAct)
+        self.menuNavigate.addAction(self.mainTreeView.openInCurrTabAct)
+        self.menuNavigate.addAction(self.mainTreeView.openInBackgroundAct)
+        self.menuNavigate.addAction(self.mainTreeView.openInNewWindowAct)
 
         self.menuTools = QMenu("&Tools", self.menubar)
         self.menuTools.addAction(self.complToolDialogAct)
+        self.menuTools.addAction(self.importToolAct)
 
         self.menuHelp = QMenu("&Help", self.menubar)
         self.menuHelp.addAction(self.aboutDialogAct)
@@ -160,25 +161,25 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         settingsBtn = QToolButton(icon=SETTINGS_ICON)
         settingsBtn.setPopupMode(QToolButton.InstantPopup)
         menuSettings = QMenu("Settings")
-        menuSettings.addAction(self.packTreeView.zoomInAct)
-        menuSettings.addAction(self.packTreeView.zoomOutAct)
-        menuSettings.addAction(self.packTreeView.autoScrollToSrcAct)
-        menuSettings.addAction(self.packTreeView.autoScrollFromSrcAct)
+        menuSettings.addAction(self.mainTreeView.zoomInAct)
+        menuSettings.addAction(self.mainTreeView.zoomOutAct)
+        menuSettings.addAction(self.mainTreeView.autoScrollToSrcAct)
+        menuSettings.addAction(self.mainTreeView.autoScrollFromSrcAct)
         settingsBtn.setMenu(menuSettings)
 
         self.toolBar.addWidget(settingsBtn)
         self.toolBar.addSeparator()
-        self.toolBar.addAction(self.packTreeView.saveAllAct)
-        self.toolBar.addAction(self.packTreeView.saveAct)
-        self.toolBar.addAction(self.packTreeView.openPackAct)
-        self.toolBar.addAction(self.packTreeView.newPackAct)
+        self.toolBar.addAction(self.mainTreeView.saveAllAct)
+        self.toolBar.addAction(self.mainTreeView.saveAct)
+        self.toolBar.addAction(self.mainTreeView.openPackAct)
+        self.toolBar.addAction(self.mainTreeView.newPackAct)
         self.toolBar.addSeparator()
-        self.toolBar.addAction(self.packTreeView.collapseAllAct)
-        self.toolBar.addAction(self.packTreeView.expandAllAct)
+        self.toolBar.addAction(self.mainTreeView.collapseAllAct)
+        self.toolBar.addAction(self.mainTreeView.expandAllAct)
         self.toolBar.addSeparator()
-        self.toolBar.addAction(self.packTreeView.addAct)
+        self.toolBar.addAction(self.mainTreeView.addAct)
         self.toolBar.addSeparator()
-        self.toolBar.addAction(self.packTreeView.shellViewAct)
+        self.toolBar.addAction(self.mainTreeView.shellViewAct)
 
     @staticmethod
     def iterItems(root):
@@ -195,28 +196,28 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
     def buildHandlers(self):
         self.mainTabWidget.currItemChanged.connect(self.onCurrTabItemChanged)
-        self.packTreeView.selectionModel().currentChanged.connect(self.onSelectedPackItemChanged)
-        self.packTreeView.doubleClicked.connect(self.onDoubleClicked)
+        self.mainTreeView.selectionModel().currentChanged.connect(self.onSelectedPackItemChanged)
+        self.mainTreeView.doubleClicked.connect(self.onDoubleClicked)
 
-        self.packTreeView.wheelClicked.connect(self.mainTabWidget.openItemInBgTab)
-        self.packTreeView.openInBgTabClicked.connect(self.mainTabWidget.openItemInBgTab)
-        self.packTreeView.openInNewTabClicked.connect(self.mainTabWidget.openItemInNewTab)
-        self.packTreeView.openInCurrTabClicked.connect(self.mainTabWidget.openItem)
-        self.packTreeView.openInNewWindowClicked.connect(self.mainTabWidget.openItemInNewWindow)
+        self.mainTreeView.wheelClicked.connect(self.mainTabWidget.openItemInBgTab)
+        self.mainTreeView.openInBgTabClicked.connect(self.mainTabWidget.openItemInBgTab)
+        self.mainTreeView.openInNewTabClicked.connect(self.mainTabWidget.openItemInNewTab)
+        self.mainTreeView.openInCurrTabClicked.connect(self.mainTabWidget.openItem)
+        self.mainTreeView.openInNewWindowClicked.connect(self.mainTabWidget.openItemInNewWindow)
 
         self.packTreeModel.rowsRemoved.connect(self.mainTabWidget.removePackTab)
 
     def onCurrTabItemChanged(self, item: QModelIndex):
-        if self.packTreeView.autoScrollFromSrcAct.isChecked():
-            if not item.siblingAtColumn(0) == self.packTreeView.currentIndex().siblingAtColumn(0):
-                self.packTreeView.setCurrentIndex(item)
+        if self.mainTreeView.autoScrollFromSrcAct.isChecked():
+            if not item.siblingAtColumn(0) == self.mainTreeView.currentIndex().siblingAtColumn(0):
+                self.mainTreeView.setCurrentIndex(item)
 
     def onSelectedPackItemChanged(self, item: QModelIndex):
-        if self.packTreeView.autoScrollToSrcAct.isChecked():
+        if self.mainTreeView.autoScrollToSrcAct.isChecked():
             self.mainTabWidget.openItem(item)
 
     def onDoubleClicked(self, item: QModelIndex):
-        if not self.packTreeView.autoScrollToSrcAct.isChecked():
+        if not self.mainTreeView.autoScrollToSrcAct.isChecked():
             self.mainTabWidget.openItemInNewTab(item)
 
     def removeTabsOfClosedRows(self, parent: QModelIndex, first: int, last: int):
@@ -245,7 +246,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                                          QMessageBox.No)
 
             if reply == QMessageBox.Yes:
-                self.packTreeView.saveAll()
+                self.mainTreeView.saveAll()
                 self.writeSettings()
                 a0.accept()
             elif reply == QMessageBox.No:
@@ -268,8 +269,8 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         # set previously used sizes of right ans left layouts
         splitterLeftSize = AppSettings.LEFT_ZONE_SIZE.value()
         splitterRightSize = AppSettings.RIGHT_ZONE_SIZE.value()
-        self.leftLayoutWidget.resize(splitterLeftSize)
-        self.rightLayoutWidget.resize(splitterRightSize)
+        self.mainLayoutWidget.resize(splitterLeftSize)
+        self.subLayoutWidget.resize(splitterRightSize)
 
         # set previously used fontsizes in trees
         fontSizeFilesView = AppSettings.FONTSIZE_FILES_VIEW.value()
@@ -281,13 +282,13 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         openedAasFiles = AppSettings.OPENED_AAS_FILES.value()
         for file in openedAasFiles:
             try:
-                self.packTreeView.openPack(file)
+                self.mainTreeView.openPack(file)
             except OSError:
                 pass
             self.packTreeModel.setData(QModelIndex(), [], UNDO_ROLE)
 
         # set previous tree states
-        packTreeViewHeader = self.packTreeView.header()
+        packTreeViewHeader = self.mainTreeView.header()
         packTreeViewHeaderState = AppSettings.PACKTREEVIEW_HEADER_STATE.value()
         if packTreeViewHeaderState:
             packTreeViewHeader.restoreState(packTreeViewHeaderState)
@@ -303,12 +304,12 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
     def writeSettings(self):
         AppSettings.THEME.setValue(self.currTheme)
         AppSettings.SIZE.setValue(self.size())
-        AppSettings.LEFT_ZONE_SIZE.setValue(self.leftLayoutWidget.size())
-        AppSettings.RIGHT_ZONE_SIZE.setValue(self.rightLayoutWidget.size())
+        AppSettings.LEFT_ZONE_SIZE.setValue(self.mainLayoutWidget.size())
+        AppSettings.RIGHT_ZONE_SIZE.setValue(self.subLayoutWidget.size())
         AppSettings.OPENED_AAS_FILES.setValue(self.packTreeModel.openedFiles())
         AppSettings.FONTSIZE_FILES_VIEW.setValue(PacksTable.currFont.pointSize())
         AppSettings.FONTSIZE_DETAILED_VIEW.setValue(DetailedInfoTable.currFont.pointSize())
-        AppSettings.PACKTREEVIEW_HEADER_STATE.setValue(self.packTreeView.header().saveState())
+        AppSettings.PACKTREEVIEW_HEADER_STATE.setValue(self.mainTreeView.header().saveState())
         AppSettings.TABTREEVIEW_HEADER_STATE.setValue(self.mainTabWidget.currentWidget().attrsTreeView.header().saveState())
         # AppSettings.DEFAULT_NEW_FILETYPE_FILTER.setValue(self.packTreeView.defaultNewFileTypeFilter)
 
