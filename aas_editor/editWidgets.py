@@ -387,7 +387,7 @@ class SpecialInputWidget(StandardInputWidget):
         return obj
 
     def setVal(self, val):
-        if not issubtype(val, PreObject):
+        if not isoftype(val, PreObject):
             if issubtype(self.objType, bytes) and issubtype(val.objType, bytes):
                 self.widget.setPlainText(val.args[0])
                 # TODO: impement for date types
