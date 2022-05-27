@@ -133,6 +133,17 @@ class ClassesInfo:
         return tuple(res)
 
     @staticmethod
+    def iterAttrs(cls) -> Tuple[str]:
+        res = set()
+        for typ in s.CLASSES_INFO:
+            if issubtype(cls, typ):
+                try:
+                    res.update(s.CLASSES_INFO[typ][ITERABLE_ATTRS])
+                except KeyError:
+                    continue
+        return tuple(res)
+
+    @staticmethod
     def default_params_to_hide(cls) -> Dict[str, str]:
         res = dict()
         for typ in s.CLASSES_INFO:

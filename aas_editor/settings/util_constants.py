@@ -17,6 +17,7 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
 HIDDEN_ATTRS = "attrs_not_in_detailed_info"  # params, which will be hide from user
+ITERABLE_ATTRS = "iter_attrs"
 CHANGED_PARENT_OBJ = "changed_parent_obj"
 ADD_ACT_AAS_TXT = "add_act_aas_txt"
 ADD_TYPE = "add_type"

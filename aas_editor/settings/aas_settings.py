@@ -31,7 +31,7 @@ from basyx.aas.model.datatypes import Decimal
 
 import aas_editor.package
 from aas_editor.settings.util_constants import HIDDEN_ATTRS, CHANGED_PARENT_OBJ, ADD_ACT_AAS_TXT, \
-    ADD_TYPE, PACKVIEW_ATTRS_INFO, PARAMS_TO_ATTRS, DEFAULT_PARAMS_TO_HIDE
+    ADD_TYPE, PACKVIEW_ATTRS_INFO, PARAMS_TO_ATTRS, DEFAULT_PARAMS_TO_HIDE, ITERABLE_ATTRS
 from aas_editor.settings.icons import getCharsIcon
 from aas_editor.utils import util_classes, util_type
 import aas_editor.utils.util as util
@@ -430,30 +430,35 @@ CLASSES_INFO = {
     },
     AssetAdministrationShell: {
         HIDDEN_ATTRS: ("concept_dictionary",),
+        ITERABLE_ATTRS: ("concept_dictionary",),
         CHANGED_PARENT_OBJ: "concept_dictionary",
         ADD_ACT_AAS_TXT: "Add concept dictionary",
         ADD_TYPE: ConceptDictionary,
     },
     Submodel: {
         HIDDEN_ATTRS: ("submodel_element",),
+        ITERABLE_ATTRS: ("submodel_element",),
         CHANGED_PARENT_OBJ: "submodel_element",
         ADD_ACT_AAS_TXT: "Add submodel element",
         ADD_TYPE: SubmodelElement,
     },
     AnnotatedRelationshipElement: {
         HIDDEN_ATTRS: ("annotation",),
+        ITERABLE_ATTRS: ("annotation",),
         CHANGED_PARENT_OBJ: "annotation",
         ADD_ACT_AAS_TXT: "Add annotation",
         ADD_TYPE: DataElement,
     },
     SubmodelElementCollection: {
         HIDDEN_ATTRS: ("value",),
+        ITERABLE_ATTRS: ("value",),
         CHANGED_PARENT_OBJ: "value",
         ADD_ACT_AAS_TXT: "Add collection submodel element",
         ADD_TYPE: SubmodelElement,
     },
     Entity: {
         HIDDEN_ATTRS: ("statement",),
+        ITERABLE_ATTRS: ("statement",),
         CHANGED_PARENT_OBJ: "statement",
         ADD_ACT_AAS_TXT: "Add statement",
         ADD_TYPE: SubmodelElement,
