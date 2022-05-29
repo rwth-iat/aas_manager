@@ -220,7 +220,8 @@ class TabBar(QTabBar):
 class Tab(QWidget):
     currItemChanged = pyqtSignal(['QModelIndex'])
 
-    def __init__(self, packItem=QModelIndex(), parent: 'TabWidget' = None):
+    def __init__(self, packItem=QModelIndex(), parent: 'TabWidget' = None,
+                 treeViewCls = AttrsTreeView, treeViewClsKwargs = None):
         super(Tab, self).__init__(parent)
         self.tabWidget = parent
         self.icon = QIcon()
@@ -257,8 +258,7 @@ class Tab(QWidget):
         mediaViewWidgetLayout.addWidget(self.saveMediaAsBtn)
         self.mediaViewWidget.hide()
 
-
-        self.attrsTreeView = AttrsTreeView(self)
+        self.attrsTreeView = treeViewCls(self) if not treeViewClsKwargs else treeViewCls(self, **treeViewClsKwargs)
         self.attrsTreeView.setFrameShape(QFrame.NoFrame)
 
         self.initToolbar()
@@ -473,20 +473,23 @@ class TabWidget(QTabWidget):
     currItemChanged = pyqtSignal(['QModelIndex'])
     openedTabWidgets = []
 
-    def __init__(self, parent: QWidget = None, unclosable=False, tabBarCls=TabBar, tabCls=Tab):
+    def __init__(self, parent: QWidget = None, unclosable=False,
+                 tabBarCls=TabBar, tabBarClsKwargs = None,
+                 tabCls=Tab, tabClsKwargs = None):
         super(TabWidget, self).__init__(parent)
         self.unclosable = unclosable
 
         self.initActions()
         self.buildHandlers()
 
-        self.setTabBar(tabBarCls(self))
+        self.setTabBar(tabBarCls(self) if not tabBarClsKwargs else tabBarCls(self, **tabBarClsKwargs))
         self.setAcceptDrops(True)
         self.setStyleSheet("QTabBar::tab { height: 25px; width: 200px}")
         self.setCurrentIndex(-1)
         self.resize(QSize(800, 500))
         TabWidget.openedTabWidgets.append(self)
         self.tabCls = tabCls
+        self.tabClsKwargs = tabClsKwargs
 
     def closeEvent(self, a0: QCloseEvent) -> None:
         TabWidget.openedTabWidgets.remove(self)
@@ -553,14 +556,16 @@ class TabWidget(QTabWidget):
         return tabWindow
 
     def openItemInNewTab(self, packItem: QModelIndex, afterCurrent: bool = True) -> int:
-        tab = self.tabCls(packItem, parent=self)
+        kwargs = self.tabClsKwargs if self.tabClsKwargs else {}
+        tab = self.tabCls(packItem, parent=self, **kwargs)
         tabIndex = self.newTab(tab, afterCurrent)
         self.setCurrentWidget(tab)
         self.currItemChanged.emit(packItem)
         return tabIndex
 
     def openItemInBgTab(self, packItem: QModelIndex) -> int:
-        tab = self.tabCls(packItem, parent=self)
+        kwargs = self.tabClsKwargs if self.tabClsKwargs else {}
+        tab = self.tabCls(packItem, parent=self, **kwargs)
         tabIndex = self.newTab(tab, afterCurrent=True)
         return tabIndex
 
