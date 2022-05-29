@@ -7,88 +7,76 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-#
-#  This program is made available under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-#  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-#
-#  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-#
-#  This program is made available under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-#  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-#
-#  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-#
-#  This program is made available under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-#  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-#
-#  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 import json
 import traceback
 
 from PyQt5.QtCore import Qt, QModelIndex
-from PyQt5.QtWidgets import QMessageBox, QDialog
+from PyQt5.QtWidgets import QMessageBox, QDialog, QAction
+from basyx.aas import model
 from basyx.aas.model import AASReference
 
 from aas_editor import dialogs
 from aas_editor.import_feature.preobjectAdvanced import PreObjectImport
-from aas_editor.import_feature.import_settings import PREOBJECT_ATTR
+from aas_editor.import_feature.import_settings import MAPPING_ATTR
 from aas_editor.package import Package
-from aas_editor.settings.app_settings import ADD_ITEM_ROLE, COLUMN_NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE
-from aas_editor.utils.util_classes import DictItem, PreObject
-from aas_editor.utils.util_type import isSimpleIterable, getAttrTypeHint, issubtype, isoftype, getTypeName
+from aas_editor.settings import NEW_PACK_ICON, OPEN_ICON, SC_OPEN, AAS_FILES_FILTER, ALL_FILES_FILTER
+from aas_editor.settings.app_settings import COLUMN_NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE, \
+    DEFAULT_COLUMNS_IN_PACKS_TABLE, ATTRIBUTE_COLUMN
+from aas_editor.utils.util_type import isIterable
 from aas_editor.widgets import PackTreeView
+import basyx
+from basyx.aas.model import *
 
 
 class ImportTreeView(PackTreeView):
-#    def onEditCreate(self, objVal=None, index=QModelIndex()):
 #    def updateActions(self, index: QModelIndex):
 #    def onAddAct(self, objVal=None, parent: QModelIndex = None):
+#    def onEdit
 
-    def addItemWithDialog(self, parent: QModelIndex, objTypeHint, objVal=None,
-                          title="", rmDefParams=False):
-        try:
-            dialog = dialogs.AddObjDialog(objTypeHint, self, rmDefParams=rmDefParams, objVal=objVal, title=title)
-        except Exception as e:
-            QMessageBox.critical(self, "Error", str(e))
-            return False
+    def __init__(self, parent=None, *, importManageWidget):
+        super(ImportTreeView, self).__init__(parent)
+        self.importManageWidget = importManageWidget
 
-        result = False
-        while not result and dialog.exec_() == QDialog.Accepted:
-            try:
-                preobj = dialog.getPreObj()
-                importPreObj = PreObjectImport.fromPreObject(preobj)
-                obj = importPreObj.initWithImport()
-                setattr(obj, PREOBJECT_ATTR, importPreObj)
-            except Exception as e:
-                tb = traceback.format_exc()
-                err_msg = f"{e}\n\n{tb}".replace("_", "\\_").replace("*", "\\*").replace("[", "\\[").replace("`", "\\`")
-                QMessageBox.critical(self, "Error", err_msg)
-                continue
+    def initActions(self):
+        super(ImportTreeView, self).initActions()
+        aasx_filter = f"{AAS_FILES_FILTER};;{ALL_FILES_FILTER}"
+        self.newPackAct = QAction(NEW_PACK_ICON, "&New AASX Import Mapping file", self,
+                                  statusTip="Create new AAS file for import mapping",
+                                  triggered=lambda: self.newPackWithDialog(filter=aasx_filter),
+                                  enabled=True)
 
-            if isinstance(obj, dict):
-                for key, value in obj.items():
-                    result = self.model().setData(parent, DictItem(key, value), ADD_ITEM_ROLE)
-            elif isSimpleIterable(obj):
-                for i in obj:
-                    result = self.model().setData(parent, i, ADD_ITEM_ROLE)
-            else:
-                result = self.model().setData(parent, obj, ADD_ITEM_ROLE)
-        if dialog.result() == QDialog.Rejected:
-            print("Item adding cancelled")
-        dialog.deleteLater()
-        self.setFocus()
+        self.openPackAct = QAction(OPEN_ICON, "&Open AASX/AASX Import Mapping file", self,
+                                   shortcut=SC_OPEN,
+                                   statusTip="Open AASX file or AASX import mapping file",
+                                   triggered=lambda: self.openPackWithDialog(filter=aasx_filter),
+                                   enabled=True)
+
+        self.saveAsAct = QAction("Save As...", self,
+                                 statusTip="Save current AASX Import Mapping file as..",
+                                 triggered=lambda: self.savePackAsWithDialog(filter=aasx_filter),
+                                 enabled=False)
+
+    def _getObjFromDialog(self, dialog):
+        importPreObj = PreObjectImport.fromPreObject(dialog.getPreObj())
+        obj = importPreObj.initWithImport()
+        self.lastMapping = importPreObj.getMapping()
+        return obj
+
+    def _setData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
+        result = super(ImportTreeView, self)._setData(index, value, role)
+        if isinstance(value, Referable):
+            setattr(value, MAPPING_ATTR, self.lastMapping)
+            self.lastMapping = None
+        else:
+            parentObj = self.model().data(index, OBJECT_ROLE)
+            attrName = self.model().data(index, COLUMN_NAME_ROLE)
+            if isinstance(parentObj, Referable):
+                mapping = getattr(parentObj, MAPPING_ATTR, {})
+                mapping[attrName] = self.lastMapping
+        self.lastMapping = None
         return result
 
-    def onEditCreate(self, objVal=None, index=QModelIndex()):
+    def onEditCreate(self, objVal=None, index=QModelIndex()) -> bool:
         """
         :param objVal: value to set in dialog input widgets
         :raise KeyError if no typehint found and no objVal was given
@@ -96,41 +84,30 @@ class ImportTreeView(PackTreeView):
         if not index.isValid():
             index = self.currentIndex()
         if index.isValid():
-            objVal = objVal if objVal else index.data(Qt.EditRole)
-            if hasattr(objVal, PREOBJECT_ATTR):
-                objVal = getattr(objVal, PREOBJECT_ATTR)
-            attribute = index.data(COLUMN_NAME_ROLE)
-            parentObj = index.data(OBJECT_ROLE)
-            try:
-                attrTypeHint = getAttrTypeHint(type(parentObj), attribute)
-            except KeyError as e:
-                if objVal:
-                    if isoftype(objVal, PreObject):
-                        attrTypeHint = objVal.objType
-                    else:
-                        attrTypeHint = type(objVal)
-                else:
-                    raise KeyError("No typehint found for the given item", attribute)
-            self.replItemWithDialog(index, attrTypeHint, title=f"Edit/Create {attribute}", objVal=objVal)
+            if index.column() == ATTRIBUTE_COLUMN:
+                objVal = objVal if objVal else index.data(Qt.EditRole)
+                preObj = PreObjectImport.fromObject(objVal)
+                mapping = getattr(objVal, MAPPING_ATTR, {})
+                preObj.setMapping(mapping)
+                return self._onEditCreate(preObj, index)
+            elif index.data(COLUMN_NAME_ROLE) not in DEFAULT_COLUMNS_IN_PACKS_TABLE:
+                objVal = objVal if objVal else index.data(Qt.EditRole)
+                preObj = PreObjectImport.fromObject(objVal)
+                parentObj = index.data(OBJECT_ROLE)
+                attr = index.data(COLUMN_NAME_ROLE)
+                mapping = getattr(parentObj, MAPPING_ATTR, {})
+                if attr in mapping:
+                    preObj.setMapping(mapping[attr])
+                return self._onEditCreate(preObj, index)
 
-    def savePack(self, pack: Package = None, file: str = None) -> bool:
+    def saveMapping(self, pack: Package = None, file: str = None) -> bool:
         pack = self.currentIndex().data(PACKAGE_ROLE) if pack is None else pack
         try:
-            pack.write(file)
-            self.updateRecentFiles(pack.file.absolute().as_posix())
-
-            res = dict()
+            mapDict = dict()
             for obj in pack.objStore:
-                reference = repr(AASReference.from_referable(obj))
-                if hasattr(obj, PREOBJECT_ATTR):
-                    preObj = getattr(obj, PREOBJECT_ATTR)
-                    mappings = preObj.mappingList(reference, "")
-                    res[reference] = mappings
-            for refObjMap in res:
-                for attr in res[refObjMap]:
-                    attr["value_type"] = getTypeName(attr["value_type"])
-            with open('writed_json.json', 'w') as jsonFile:
-                json.dump(res, jsonFile)
+                self._saveMapping(obj, mapDict)
+            with open(file, 'w') as jsonFile:
+                json.dump(mapDict, jsonFile)
                 jsonFile.close()
             return True
         except (TypeError, ValueError, KeyError) as e:
@@ -139,29 +116,35 @@ class ImportTreeView(PackTreeView):
             QMessageBox.critical(self, "Error", f"No chosen package to save: {e}")
         return False
 
-    def saveMapping(self, pack: Package = None, file: str = None) -> bool:
+    def _saveMapping(self, obj, mapDict):
+        self._saveMapping4referable(obj, mapDict)
+        if isIterable(obj):
+            for i in obj:
+                self._saveMapping(i, mapDict)
+
+    def _saveMapping4referable(self, obj, mapDict):
+        mapping = getattr(obj, MAPPING_ATTR, {})
+        if mapping:
+            ref = AASReference.from_referable(obj)
+            keys = ','.join([f"Key(type_={i.type}, local={i.local}, id_type={i.id_type}, value='{i.value}')" for i in ref.key])
+            target_type = repr(ref.type).lstrip("<class '").rstrip("'>")
+            mapDict[f"AASReference(target_type={target_type}, key=({keys},))"] = mapping
+
+    def setMapping(self, pack: Package=None, file: str=None) -> bool:
         pack = self.currentIndex().data(PACKAGE_ROLE) if pack is None else pack
-        try:
-            res = dict()
-            for obj in pack.objStore:
-                reference = repr(AASReference.from_referable(obj))
-                if hasattr(obj, PREOBJECT_ATTR):
-                    preObj = getattr(obj, PREOBJECT_ATTR)
-                    mappings = preObj.mappingList(reference, "")
-                    res[reference] = mappings
-            for refObjMap in res:
-                for attr in res[refObjMap]:
-                    if isinstance(attr, dict):
-                        attr["value_type"] = getTypeName(attr["value_type"])
-                    else:
-                        for i in attr:
-                            i["value_type"] = getTypeName(i["value_type"])
-            with open(file, 'w') as jsonFile:
-                json.dump(res, jsonFile)
-                jsonFile.close()
-            return True
-        #except (TypeError, ValueError, KeyError) as e:
-        #    QMessageBox.critical(self, "Error", f"Package couldn't be saved: {file}: {e}")
-        except AttributeError as e:
-            QMessageBox.critical(self, "Error", f"No chosen package to save: {e}")
-        return False
+
+        with open(file, 'r') as jsonFile:
+            mapDict = json.load(jsonFile)
+
+        for refRepr in mapDict:
+            aasref: AASReference = eval(refRepr, {
+                "KeyElements": model.KeyElements,
+                "KeyType": model.KeyType,
+                "Key": Key,
+                "AASReference": AASReference,
+                "basyx": basyx,
+            })
+            refObj = aasref.resolve(pack.objStore)
+            mapping = mapDict[refRepr]
+            setattr(refObj, MAPPING_ATTR, mapping)
+
