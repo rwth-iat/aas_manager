@@ -217,139 +217,10 @@ class TabBar(QTabBar):
         self.menu.exec_(self.mapToGlobal(point))
 
 
-class TabWidget(QTabWidget):
-    # signal for changing current item in packet treeview
-    currItemChanged = pyqtSignal(['QModelIndex'])
-    openedTabWidgets = []
-
-    def __init__(self, parent: QWidget = None, unclosable=False, tabBar=TabBar):
-        super(TabWidget, self).__init__(parent)
-        self.unclosable = unclosable
-
-        self.initActions()
-        self.buildHandlers()
-
-        self.setTabBar(tabBar(self))
-        self.setAcceptDrops(True)
-        self.setStyleSheet("QTabBar::tab { height: 25px; width: 200px}")
-        self.setCurrentIndex(-1)
-        self.resize(QSize(800, 500))
-        TabWidget.openedTabWidgets.append(self)
-
-    def closeEvent(self, a0: QCloseEvent) -> None:
-        TabWidget.openedTabWidgets.remove(self)
-        super(TabWidget, self).closeEvent(a0)
-
-    # noinspection PyArgumentList
-    def initActions(self):
-        self.zoomInAct = QAction(ZOOM_IN_ICON, "Zoom in", self,
-                                 statusTip="Zoom in detailed info",
-                                 triggered=self.zoomIn)
-
-        self.zoomOutAct = QAction(ZOOM_OUT_ICON, "Zoom out", self,
-                                  statusTip="Zoom out detailed info",
-                                  triggered=self.zoomOut)
-
-    def zoomIn(self):
-        if isinstance(self.currentWidget(), Tab):
-            self.currentWidget().attrsTreeView.zoomIn()
-
-    def zoomOut(self):
-        if isinstance(self.currentWidget(), Tab):
-            self.currentWidget().attrsTreeView.zoomOut()
-
-    def buildHandlers(self):
-        self.tabCloseRequested.connect(self.removeTab)
-        self.currentChanged.connect(self.onCurrTabChanged)
-
-    def tabInserted(self, index):
-        super(TabWidget, self).tabInserted(index)
-        tab: Tab = self.widget(index)
-        tab.windowTitleChanged.connect(lambda text: self.setTabText(self.indexOf(tab), text))
-        tab.windowIconChanged.connect(lambda icon: self.setTabIcon(self.indexOf(tab), icon))
-        tab.currItemChanged.connect(lambda packItem: self.onCurrTabItemChanged(tab, packItem))
-        tab.attrsTreeView.openInCurrTabClicked.connect(self.openItem)
-        tab.attrsTreeView.openInNewTabClicked.connect(self.openItemInNewTab)
-        tab.attrsTreeView.openInBgTabClicked.connect(self.openItemInBgTab)
-        tab.attrsTreeView.openInNewWindowClicked.connect(TabWidget.openItemInNewWindow)
-
-    def onCurrTabItemChanged(self, tab: 'Tab', packItem: QModelIndex):
-        if tab == self.currentWidget():
-            self.currItemChanged.emit(packItem)
-
-    def onCurrTabChanged(self, index: int):
-        if index >= 0:
-            packItem = QModelIndex(self.widget(index).packItem)
-            self.currItemChanged.emit(packItem)
-        else:
-            self.currItemChanged.emit(QModelIndex())
-
-    def openItem(self, packItem: QModelIndex = QModelIndex()) -> int:
-        if not self.count():
-            return self.openItemInNewTab(packItem)
-        else:
-            self.currentWidget().openItem(packItem)
-            return self.currentIndex()
-
-    @classmethod
-    def openItemInNewWindow(cls, packItem: QModelIndex) -> int:
-        tabWindow = cls()
-        tabWindow.openItemInNewTab(packItem)
-        tabWindow.setWindowModality(Qt.NonModal)
-        tabWindow.setWindowTitle("Tabs")
-        tabWindow.show()
-        return tabWindow
-
-    def openItemInNewTab(self, packItem: QModelIndex, afterCurrent: bool = True) -> int:
-        tab = type(self)(packItem, parent=self)
-        tabIndex = self.newTab(tab, afterCurrent)
-        self.setCurrentWidget(tab)
-        self.currItemChanged.emit(packItem)
-        return tabIndex
-
-    def openItemInBgTab(self, packItem: QModelIndex) -> int:
-        tab = type(self)(packItem, parent=self)
-        tabIndex = self.newTab(tab, afterCurrent=True)
-        return tabIndex
-
-    def newTab(self, widget: QWidget, afterCurrent: bool = False) -> int:
-        icon = widget.windowIcon() if widget.windowIcon() else QIcon()
-        label = widget.windowTitle() if widget.windowTitle() else ""
-        if afterCurrent:
-            tabIndex = self.insertTab(self.currentIndex()+1, widget, icon, label)
-        else:
-            tabIndex = self.addTab(widget, icon, label)
-        return tabIndex
-
-    def setCurrentTab(self, tabName: str):
-        for index in range(self.count()):
-            if self.tabText(index) == tabName:
-                tab = self.widget(index)
-                self.setCurrentWidget(tab)
-                return True
-        return False
-
-    def removeTab(self, index: int):
-        if self.unclosable and self.count() == 1:
-            return
-        widget = self.widget(index)
-        if widget is not None:
-            widget.deleteLater()
-        super(TabWidget, self).removeTab(index)
-        if not self.unclosable and not self.count():
-            self.deleteLater()
-
-    def removePackTab(self, packItem: QModelIndex):
-        for tabIndex in range(self.count()-1, -1, -1):
-            tab: Tab = self.widget(tabIndex)
-            if QModelIndex(tab.packItem).siblingAtColumn(0) == packItem.siblingAtColumn(0):
-                self.removeTab(tabIndex)
-
-
 class Tab(QWidget):
     currItemChanged = pyqtSignal(['QModelIndex'])
 
-    def __init__(self, packItem=QModelIndex(), parent: TabWidget = None):
+    def __init__(self, packItem=QModelIndex(), parent: 'TabWidget' = None):
         super(Tab, self).__init__(parent)
         self.tabWidget = parent
         self.icon = QIcon()
@@ -595,3 +466,133 @@ class Tab(QWidget):
         layout.addWidget(self.splitter)
         layout.setSpacing(2)
         layout.setContentsMargins(0, 2, 0, 2)
+
+
+class TabWidget(QTabWidget):
+    # signal for changing current item in packet treeview
+    currItemChanged = pyqtSignal(['QModelIndex'])
+    openedTabWidgets = []
+
+    def __init__(self, parent: QWidget = None, unclosable=False, tabBarCls=TabBar, tabCls=Tab):
+        super(TabWidget, self).__init__(parent)
+        self.unclosable = unclosable
+
+        self.initActions()
+        self.buildHandlers()
+
+        self.setTabBar(tabBarCls(self))
+        self.setAcceptDrops(True)
+        self.setStyleSheet("QTabBar::tab { height: 25px; width: 200px}")
+        self.setCurrentIndex(-1)
+        self.resize(QSize(800, 500))
+        TabWidget.openedTabWidgets.append(self)
+        self.tabCls = tabCls
+
+    def closeEvent(self, a0: QCloseEvent) -> None:
+        TabWidget.openedTabWidgets.remove(self)
+        super(TabWidget, self).closeEvent(a0)
+
+    # noinspection PyArgumentList
+    def initActions(self):
+        self.zoomInAct = QAction(ZOOM_IN_ICON, "Zoom in", self,
+                                 statusTip="Zoom in detailed info",
+                                 triggered=self.zoomIn)
+
+        self.zoomOutAct = QAction(ZOOM_OUT_ICON, "Zoom out", self,
+                                  statusTip="Zoom out detailed info",
+                                  triggered=self.zoomOut)
+
+    def zoomIn(self):
+        if isinstance(self.currentWidget(), Tab):
+            self.currentWidget().attrsTreeView.zoomIn()
+
+    def zoomOut(self):
+        if isinstance(self.currentWidget(), Tab):
+            self.currentWidget().attrsTreeView.zoomOut()
+
+    def buildHandlers(self):
+        self.tabCloseRequested.connect(self.removeTab)
+        self.currentChanged.connect(self.onCurrTabChanged)
+
+    def tabInserted(self, index):
+        super(TabWidget, self).tabInserted(index)
+        tab: Tab = self.widget(index)
+        tab.windowTitleChanged.connect(lambda text: self.setTabText(self.indexOf(tab), text))
+        tab.windowIconChanged.connect(lambda icon: self.setTabIcon(self.indexOf(tab), icon))
+        tab.currItemChanged.connect(lambda packItem: self.onCurrTabItemChanged(tab, packItem))
+        tab.attrsTreeView.openInCurrTabClicked.connect(self.openItem)
+        tab.attrsTreeView.openInNewTabClicked.connect(self.openItemInNewTab)
+        tab.attrsTreeView.openInBgTabClicked.connect(self.openItemInBgTab)
+        tab.attrsTreeView.openInNewWindowClicked.connect(TabWidget.openItemInNewWindow)
+
+    def onCurrTabItemChanged(self, tab: 'Tab', packItem: QModelIndex):
+        if tab == self.currentWidget():
+            self.currItemChanged.emit(packItem)
+
+    def onCurrTabChanged(self, index: int):
+        if index >= 0:
+            packItem = QModelIndex(self.widget(index).packItem)
+            self.currItemChanged.emit(packItem)
+        else:
+            self.currItemChanged.emit(QModelIndex())
+
+    def openItem(self, packItem: QModelIndex = QModelIndex()) -> int:
+        if not self.count():
+            return self.openItemInNewTab(packItem)
+        else:
+            self.currentWidget().openItem(packItem)
+            return self.currentIndex()
+
+    @classmethod
+    def openItemInNewWindow(cls, packItem: QModelIndex) -> int:
+        tabWindow = cls()
+        tabWindow.openItemInNewTab(packItem)
+        tabWindow.setWindowModality(Qt.NonModal)
+        tabWindow.setWindowTitle("Tabs")
+        tabWindow.show()
+        return tabWindow
+
+    def openItemInNewTab(self, packItem: QModelIndex, afterCurrent: bool = True) -> int:
+        tab = self.tabCls(packItem, parent=self)
+        tabIndex = self.newTab(tab, afterCurrent)
+        self.setCurrentWidget(tab)
+        self.currItemChanged.emit(packItem)
+        return tabIndex
+
+    def openItemInBgTab(self, packItem: QModelIndex) -> int:
+        tab = self.tabCls(packItem, parent=self)
+        tabIndex = self.newTab(tab, afterCurrent=True)
+        return tabIndex
+
+    def newTab(self, widget: QWidget, afterCurrent: bool = False) -> int:
+        icon = widget.windowIcon() if widget.windowIcon() else QIcon()
+        label = widget.windowTitle() if widget.windowTitle() else ""
+        if afterCurrent:
+            tabIndex = self.insertTab(self.currentIndex()+1, widget, icon, label)
+        else:
+            tabIndex = self.addTab(widget, icon, label)
+        return tabIndex
+
+    def setCurrentTab(self, tabName: str):
+        for index in range(self.count()):
+            if self.tabText(index) == tabName:
+                tab = self.widget(index)
+                self.setCurrentWidget(tab)
+                return True
+        return False
+
+    def removeTab(self, index: int):
+        if self.unclosable and self.count() == 1:
+            return
+        widget = self.widget(index)
+        if widget is not None:
+            widget.deleteLater()
+        super(TabWidget, self).removeTab(index)
+        if not self.unclosable and not self.count():
+            self.deleteLater()
+
+    def removePackTab(self, packItem: QModelIndex):
+        for tabIndex in range(self.count()-1, -1, -1):
+            tab: Tab = self.widget(tabIndex)
+            if QModelIndex(tab.packItem).siblingAtColumn(0) == packItem.siblingAtColumn(0):
+                self.removeTab(tabIndex)
