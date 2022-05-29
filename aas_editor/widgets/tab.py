@@ -222,14 +222,14 @@ class TabWidget(QTabWidget):
     currItemChanged = pyqtSignal(['QModelIndex'])
     openedTabWidgets = []
 
-    def __init__(self, parent: QWidget = None, unclosable=False):
+    def __init__(self, parent: QWidget = None, unclosable=False, tabBar=TabBar):
         super(TabWidget, self).__init__(parent)
         self.unclosable = unclosable
 
         self.initActions()
         self.buildHandlers()
 
-        self.setTabBar(TabBar(self))
+        self.setTabBar(tabBar(self))
         self.setAcceptDrops(True)
         self.setStyleSheet("QTabBar::tab { height: 25px; width: 200px}")
         self.setCurrentIndex(-1)
@@ -291,9 +291,9 @@ class TabWidget(QTabWidget):
             self.currentWidget().openItem(packItem)
             return self.currentIndex()
 
-    @staticmethod
-    def openItemInNewWindow(packItem: QModelIndex) -> int:
-        tabWindow = TabWidget()
+    @classmethod
+    def openItemInNewWindow(cls, packItem: QModelIndex) -> int:
+        tabWindow = cls()
         tabWindow.openItemInNewTab(packItem)
         tabWindow.setWindowModality(Qt.NonModal)
         tabWindow.setWindowTitle("Tabs")
@@ -301,14 +301,14 @@ class TabWidget(QTabWidget):
         return tabWindow
 
     def openItemInNewTab(self, packItem: QModelIndex, afterCurrent: bool = True) -> int:
-        tab = Tab(packItem, parent=self)
+        tab = type(self)(packItem, parent=self)
         tabIndex = self.newTab(tab, afterCurrent)
         self.setCurrentWidget(tab)
         self.currItemChanged.emit(packItem)
         return tabIndex
 
     def openItemInBgTab(self, packItem: QModelIndex) -> int:
-        tab = Tab(packItem, parent=self)
+        tab = type(self)(packItem, parent=self)
         tabIndex = self.newTab(tab, afterCurrent=True)
         return tabIndex
 
