@@ -209,7 +209,7 @@ class PackTreeView(TreeView):
         else:
             return False
 
-    def onEditCreate(self, objVal=None, index=QModelIndex()):
+    def onEditCreate(self, objVal=None, index=QModelIndex()) -> bool:
         """
         :param objVal: value to set in dialog input widgets
         :raise KeyError if no typehint found and no objVal was given
@@ -218,16 +218,22 @@ class PackTreeView(TreeView):
             index = self.currentIndex()
         if index.isValid():
             objVal = objVal if objVal else index.data(Qt.EditRole)
-            attribute = index.data(COLUMN_NAME_ROLE)
-            parentObj = index.data(OBJECT_ROLE)
-            try:
+            return self._onEditCreate(objVal, index)
+
+    def _onEditCreate(self, objVal, index) -> bool:
+        attribute = index.data(COLUMN_NAME_ROLE)
+        parentObj = index.data(OBJECT_ROLE)
+        try:
+            if attribute == OBJECT_COLUMN_NAME:
+                attrTypeHint = type(parentObj)
+            else:
                 attrTypeHint = getAttrTypeHint(type(parentObj), attribute)
-            except KeyError as e:
-                if objVal:
-                    attrTypeHint = type(objVal)
-                else:
-                    raise KeyError("No typehint found for the given item", attribute)
-            self.replItemWithDialog(index, attrTypeHint, title=f"Edit/Create {attribute}", objVal=objVal)
+        except KeyError as e:
+            if objVal:
+                attrTypeHint = type(objVal)
+            else:
+                raise KeyError("No typehint found for the given item", attribute)
+        return self.replItemWithDialog(index, attrTypeHint, title=f"Edit/Create {attribute}", objVal=objVal)
 
     def toggleDefNewFileType(self):
         # FIXME refactor
@@ -367,13 +373,13 @@ class PackTreeView(TreeView):
             return
         super(PackTreeView, self).addItemWithDialog(parent, objTypeHint, objVal, title, rmDefParams)
 
-    def newPackWithDialog(self):
+    def newPackWithDialog(self, filter=FILTER_AAS_FILES):
         saved = False
         file = 'new_aas_file.aasx'
 
         while not saved:
             file, _ = QFileDialog.getSaveFileName(self, 'Create new AAS File', file,
-                                                  filter=FILTER_AAS_FILES,
+                                                  filter=filter,
                                                   initialFilter=self.defaultNewFileTypeFilter)
             if file:
                 pack = Package()
@@ -384,12 +390,12 @@ class PackTreeView(TreeView):
                 # cancel pressed
                 return
 
-    def openPackWithDialog(self):
+    def openPackWithDialog(self, filter=FILTER_AAS_FILES):
         opened = False
         file = ""
         while not opened:
             file, _ = QFileDialog.getOpenFileName(self, "Open AAS file", file,
-                                                  filter=FILTER_AAS_FILES)
+                                                  filter=filter)
             if file:
                 opened = self.openPack(file)
             else:
@@ -437,14 +443,14 @@ class PackTreeView(TreeView):
             QMessageBox.critical(self, "Error", f"No chosen package to save: {e}")
         return False
 
-    def savePackAsWithDialog(self, pack: Package = None) -> bool:
+    def savePackAsWithDialog(self, pack: Package = None, filter=FILTER_AAS_FILES) -> bool:
         pack = self.currentIndex().data(PACKAGE_ROLE) if pack is None else pack
         saved = False
         file = pack.file.as_posix()
         while not saved:
             try:
                 file, _ = QFileDialog.getSaveFileName(self, 'Save AAS File', file,
-                                                      filter=FILTER_AAS_FILES)
+                                                      filter=filter)
             except AttributeError as e:
                 QMessageBox.critical(self, "Error", f"No chosen package to save: {e}")
             else:

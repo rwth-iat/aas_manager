@@ -15,7 +15,7 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-from typing import Optional
+from typing import Optional, Any
 
 from PyQt5.QtCore import Qt, pyqtSignal, QModelIndex, QTimer, QAbstractItemModel, QPoint
 from PyQt5.QtGui import QClipboard, QPalette, QColor, QMouseEvent, QKeyEvent
@@ -574,19 +574,11 @@ class TreeView(BasicTreeView):
         result = False
         while not result and dialog.exec_() == QDialog.Accepted:
             try:
-                obj = dialog.getObj2add()
+                obj = self._getObjFromDialog(dialog)
             except Exception as e:
                 QMessageBox.critical(self, "Error", str(e))
                 continue
-
-            if isinstance(obj, dict):
-                for key, value in obj.items():
-                    result = self.model().setData(parent, DictItem(key, value), ADD_ITEM_ROLE)
-            elif isSimpleIterable(obj):
-                for i in obj:
-                    result = self.model().setData(parent, i, ADD_ITEM_ROLE)
-            else:
-                result = self.model().setData(parent, obj, ADD_ITEM_ROLE)
+            result = self._setData(parent, obj, ADD_ITEM_ROLE)
         if dialog.result() == QDialog.Rejected:
             print("Item adding cancelled")
         dialog.deleteLater()
@@ -603,17 +595,35 @@ class TreeView(BasicTreeView):
         result = False
         while not result and dialog.exec_() == QDialog.Accepted:
             try:
-                obj = dialog.getObj2add()
+                obj = self._getObjFromDialog(dialog)
             except Exception as e:
                 QMessageBox.critical(self, "Error", str(e))
                 continue
-
-            result = self.model().setData(index, obj, Qt.EditRole)
+            result = self._setData(index, obj, Qt.EditRole)
         if dialog.result() == QDialog.Rejected:
             print("Item editing cancelled")
         dialog.deleteLater()
         self.setFocus()
         self.setCurrentIndex(index)
+        return result
+
+    def _getObjFromDialog(self, dialog):
+        return dialog.getObj2add()
+
+    def _setData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
+        if role == Qt.EditRole:
+            result = self.model().setData(index, value, Qt.EditRole)
+        elif role == ADD_ITEM_ROLE:
+            if isinstance(value, dict):
+                for key, value in value.items():
+                    result = self.model().setData(index, DictItem(key, value), ADD_ITEM_ROLE)
+            elif isSimpleIterable(value):
+                for i in value:
+                    result = self.model().setData(index, i, ADD_ITEM_ROLE)
+            else:
+                result = self.model().setData(index, value, ADD_ITEM_ROLE)
+        else:
+            raise ValueError("Role can be only of type EditRole or AddItemRole")
         return result
 
     def itemDataChangeFailed(self, topLeft, bottomRight, roles):
