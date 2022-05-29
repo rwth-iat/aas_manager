@@ -18,13 +18,12 @@ from aas_editor.import_feature.table_import import ImportTable
 from aas_editor.import_feature.treeview_import import ImportTreeView
 from aas_editor import design
 from aas_editor.editorApp import EditorApp
-from aas_editor.widgets.lineEdit import LineEdit
-from aas_editor.import_feature.import_file_widget import ImportFileWidget
+from aas_editor.import_feature.import_file_widget import ImportManageWidget
 
 
 class ImportApp(EditorApp):
     def setupMainTreeView(self, parent, model: StandardTable) -> ImportTreeView:
-        mainTreeView = ImportTreeView(parent)
+        mainTreeView = ImportTreeView(parent, importManageWidget=self.importWidget)
         mainTreeView.setFocusPolicy(QtCore.Qt.StrongFocus)
         mainTreeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         mainTreeView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
@@ -46,7 +45,8 @@ class ImportApp(EditorApp):
         self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar"))
 
     def setupUi(self, MainWindow):
+        self.importWidget = ImportManageWidget(self)
         super(ImportApp, self).setupUi(MainWindow)
-        self.importWidget = ImportFileWidget(self, self.mainTreeView)
+        self.importWidget.setTreeView(self.mainTreeView)
         self.mainVerticalLayout.insertWidget(1, self.importWidget)
 

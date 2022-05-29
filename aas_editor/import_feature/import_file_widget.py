@@ -15,23 +15,27 @@ from aas_editor.settings import TOOLBARS_HEIGHT, FILTER_AAS_FILES, JSON_FILES_FI
 from aas_editor.widgets.lineEdit import LineEdit
 
 
-class ImportFileWidget(QWidget):
+class ImportManageWidget(QWidget):
     def __init__(self, parent=None, mainTreeView=None):
-        super(ImportFileWidget, self).__init__(parent)
+        super(ImportManageWidget, self).__init__(parent)
         self.setupLayout()
 
         self.importFileLine = LineEdit(self, placeholderText="Choose the file to import from")
         self.importFileLine.setReadOnly(True)
         self.chooseFileBtn = QPushButton("Choose file", self, clicked=self.chooseImportFileDialog)
         self.saveMappingBtn = QPushButton("Save mapping", self, clicked=self.saveMappingFileDialog)
+        self.useMappingBtn = QPushButton("Use mapping...", self, clicked=self.useMappingFileDialog)
         self.importSettingsBtn = QPushButton("Settings", self)
         self.importBtn = QPushButton("Run Import", self)
-        for widget in (self.importFileLine, self.chooseFileBtn, self.saveMappingBtn, self.importBtn, self.importSettingsBtn):
+        for widget in (self.importFileLine, self.chooseFileBtn, self.saveMappingBtn, self.useMappingBtn, self.importBtn, self.importSettingsBtn):
             self.layout().addWidget(widget)
 
         self.mainTreeView: ImportTreeView = mainTreeView
         self.importFile: str = ""
         self.fileType: str = ""
+
+    def setTreeView(self, treeview):
+        self.mainTreeView = treeview
 
     def setupLayout(self):
         toolBarHLayout = QHBoxLayout()
@@ -55,3 +59,11 @@ class ImportFileWidget(QWidget):
 
     def saveMappingFile(self, file):
         self.mainTreeView.saveMapping(file=file)
+
+    def useMappingFileDialog(self):
+        file, _ = QFileDialog.getOpenFileName(self, 'Open and use Mapping File', filter=JSON_FILES_FILTER)
+        if file:
+            self.useMappingFile(file)
+
+    def useMappingFile(self, file):
+        self.mainTreeView.setMapping(file=file)
