@@ -187,7 +187,7 @@ class TabBar(QTabBar):
 
         tab: Tab = tabWidget.widget(self.menuIndexTab)
         packItem = QModelIndex(tab.packItem)
-        newTabWidget = TabWidget()
+        newTabWidget = type(tabWidget)()
         newTabWidget.openItem(packItem)
 
         if orientation == Qt.Horizontal:
