@@ -67,12 +67,17 @@ class PreObjectImport(PreObject):
         else:
             kwargs = {}
             params = list(getReqParams4init(objType, rmDefParams=False, attrsToHide=ClassesInfo.default_params_to_hide(objType), delOptional=False).keys())
+            iterParams = ClassesInfo.iterAttrs(objType)
+            [params.remove(i) for i in iterParams]
             paramsToAttrs = ClassesInfo.params_to_attrs(objType)
             for param in params:
                 attr = paramsToAttrs.get(param, param)
                 val = getattr(obj, attr)
                 val = PreObjectImport.fromObject(val)
                 kwargs[param] = val
+            for iterParam in iterParams:
+                iterAttr = paramsToAttrs.get(iterParam, param)
+                kwargs[param] = getattr(obj, iterAttr)
             return PreObjectImport(objType, [], kwargs)
 
     @staticmethod
@@ -174,32 +179,37 @@ class PreObjectImport(PreObject):
         else:
             raise AttributeError(f"{self.objType} has no attribute 'items'")
 
-    def mappingList(self, reference: str, name):
-        # res = dict()
-        params_list = list()
-        # if self.kwargs:
-        #     for key, value in self.kwargs.items():
-        #         extension = {"name": key, "value": str(value), "value_type": value.objType}
-        #         key: repr(value)
-        #
-        # res[reference] = params_list
-
-        mappingList = []
+    def getMapping(self) -> Dict[str, str]:
+        mapping = {}
         if self.obj and isinstance(self.obj, str) and self.isValueToImport(self.obj):
-            mappingList.append({"name": name, "value": str(self.obj), "value_type": self.objType})
+            return str(self.obj)
         elif self.args:
-            for value in self.args:
+            if len(self.args) > 1:
+                raise NotImplementedError
+
+            for i, value in enumerate(self.args):
                 if isinstance(value, PreObjectImport):
-                    mappingList.extend(value.mappingList(reference, name))
+                    return value.getMapping()
                 elif isinstance(value, str) and self.isValueToImport(value):
-                    mappingList.append({"name": name, "value": str(value), "value_type": self.objType})
+                    return str(value)
                 elif value and type(value) == list and isinstance(value[0], PreObjectImport):
-                    mappingList.extend([obj.mappingList(reference, name+f".[{i}]") for i, obj in enumerate(value)])
+                    for i, obj in enumerate(value):
+                        mapping[i] = value.getMapping()
         elif self.kwargs:
             for key, value in self.kwargs.items():
-                keyName = name + f".{key}"
                 if isinstance(value, PreObjectImport):
-                    mappingList.extend(value.mappingList(reference, keyName))
+                    map = value.getMapping()
+                    if map:
+                        mapping[key] = map
                 elif isinstance(value, str) and self.isValueToImport(value):
-                    mappingList.append({"name": keyName, "value": str(value), "value_type": self.objType})
-        return mappingList
+                    mapping[key] = str(value)
+        return mapping
+
+    def setMapping(self, mapping: Dict[str, str]):
+        if mapping:
+            if isinstance(mapping, dict):
+                for attr in mapping:
+                    preObj = self.kwargs[attr]
+                    preObj.setMapping(mapping[attr])
+            else:
+                self.args = [mapping]
