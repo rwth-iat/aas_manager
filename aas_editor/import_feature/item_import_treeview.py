@@ -20,14 +20,13 @@ from types import GeneratorType
 from PyQt5.QtCore import QVariant, Qt
 from PyQt5.QtWidgets import QMessageBox, QDialog
 from basyx.aas.adapter.aasx import DictSupplementaryFileContainer
-from basyx.aas.model import AASReference
+from basyx.aas.model import AASReference, Referable
 
 from aas_editor import dialogs
-from aas_editor.import_feature.preobjectAdvanced import PreObjectImport
-from aas_editor.import_feature.import_settings import PREOBJECT_ATTR
+from aas_editor.import_feature.import_settings import MAPPING_ATTR
 from aas_editor.models import PackTreeViewItem, StandardItem
 from aas_editor.package import Package
-from aas_editor.settings import PACKAGE_ROLE, VALUE_COLUMN, ATTRIBUTE_COLUMN, NAME_ROLE
+from aas_editor.settings import PACKAGE_ROLE
 from aas_editor.utils.util_classes import ClassesInfo
 from aas_editor.utils.util_type import isIterable
 
@@ -41,14 +40,14 @@ class ImportTreeViewItem(PackTreeViewItem):
         else:
             self.package = parent.data(PACKAGE_ROLE)
 
+        if isinstance(obj, Referable):
+            setattr(obj, MAPPING_ATTR, {})
+
         try:
             if isinstance(obj, AASReference):
                 obj = obj.resolve(self.package.objStore)
         except KeyError as e:
             print(e)
-        # if not isinstance(obj, (Package, GeneratorType, DictSupplementaryFileContainer)):
-        #     preobj = PreObjectImport.fromObject(obj)
-        #     setattr(obj, PREOBJECT_ATTR, preobj)
         self.obj = obj
         self.populate()
 
@@ -75,46 +74,3 @@ class ImportTreeViewItem(PackTreeViewItem):
         for sub_item_obj in obj:
             ImportTreeViewItem(sub_item_obj, **kwargs)
 
-
-    # def _getEditRoleData(self, column, column_name):
-    #     if column == ATTRIBUTE_COLUMN:
-    #         if hasattr(self.obj, PREOBJECT_ATTR):
-    #             return getattr(self.obj, PREOBJECT_ATTR)
-    #         return self.obj
-    #     if column == VALUE_COLUMN:
-    #         if hasattr(self.obj, PREOBJECT_ATTR):
-    #             return getattr(self.obj, PREOBJECT_ATTR)
-    #         return self.obj
-    #     if column_name:
-    #         try:
-    #             if hasattr(self.obj, PREOBJECT_ATTR):
-    #                 preObj = getattr(self.obj, PREOBJECT_ATTR)
-    #                 if column_name in preObj.kwargs:
-    #                     return preObj.kwargs[column_name]
-    #             return getattr(self.obj, column_name)
-    #         except AttributeError:
-    #             return QVariant()
-
-    # def replItemWithDialog(self, index, objTypeHint, objVal=None, title="", rmDefParams=False):
-    #     title = title if title else f"Edit {index.data(NAME_ROLE)}"
-    #     try:
-    #         objVal = index.data(Qt.)
-    #         dialog = dialogs.AddObjDialog(objTypeHint, self, rmDefParams=rmDefParams, objVal=objVal, title=title)
-    #     except Exception as e:
-    #         QMessageBox.critical(self, "Error", str(e))
-    #         return False
-    #     result = False
-    #     while not result and dialog.exec_() == QDialog.Accepted:
-    #         try:
-    #             obj = dialog.getObj2add()
-    #         except Exception as e:
-    #             QMessageBox.critical(self, "Error", str(e))
-    #             continue
-    #
-    #         result = self.model().setData(index, obj, Qt.EditRole)
-    #     if dialog.result() == QDialog.Rejected:
-    #         print("Item editing cancelled")
-    #     dialog.deleteLater()
-    #     self.setFocus()
-    #     self.setCurrentIndex(index)
-    #     return result

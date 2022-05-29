@@ -17,7 +17,7 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
 
-PREOBJECT_ATTR = "_preobject_data"
+MAPPING_ATTR = "_mapping_data"
 
 IMPORT_FILES_FILTER = "Import files (*.csv *.xlsx *.xls)"
 CSV_FILES_FILTER = "CSV files (*.csv)"
