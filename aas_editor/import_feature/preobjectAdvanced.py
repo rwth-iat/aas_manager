@@ -41,6 +41,11 @@ class PreObjectImport(PreObject):
     def fromObject(obj):
         objType = type(obj)
 
+        if isinstance(obj, PreObjectImport):
+            return obj
+        elif isinstance(obj, PreObject):
+            return PreObjectImport.fromPreObject(obj)
+
         if obj is None:
             return PreObjectImport(objType, [], {})
         elif issubtype(objType, bool):
