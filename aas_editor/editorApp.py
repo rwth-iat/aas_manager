@@ -7,9 +7,7 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-import json
 
-from PyQt5 import QtCore
 from PyQt5.QtCore import QModelIndex
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -20,10 +18,9 @@ from aas_editor.settings.icons import APP_ICON, EXIT_ICON, SETTINGS_ICON
 from aas_editor.settings_dialog import SettingsDialog
 from aas_editor.dialogs import AboutDialog
 from aas_editor.widgets.compliance_tool import ComplianceToolDialog
-from aas_editor.widgets import SearchBar, AddressLine
+from aas_editor.widgets import AddressLine
 from aas_editor import design
 from aas_editor.models import DetailedInfoTable, PacksTable
-from aas_editor.models.table_import import ImportTable
 from aas_editor.utils.util import toggleStylesheet
 from aas_editor.widgets.tab import Tab
 from aas_editor import dialogs
