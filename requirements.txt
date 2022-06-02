@@ -1,7 +1,7 @@
 git+https://github.com/zrgt/basyx-python-sdk@main#egg=basyx-python-sdk
-qtawesome == 1.0.3
-pytz == 2021.1
-PyQt5 == 5.15.4
-qpageview == 0.6.0
-PyQtWebEngine == 5.15.4
+qtawesome==1.0.3
+pytz==2021.1
+PyQt5==5.15.4
+qpageview==0.6.0
+PyQtWebEngine==5.15.4
 pyinstaller
