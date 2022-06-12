@@ -71,7 +71,7 @@ class PreObjectImport(PreObject):
             return PreObjectImport(objType, (listObj,), {})
         else:
             kwargs = {}
-            params = list(getReqParams4init(objType, rmDefParams=False, attrsToHide=ClassesInfo.default_params_to_hide(objType), delOptional=False).keys())
+            params = list(getReqParams4init(objType, rmDefParams=False, delOptional=False).keys())
             iterParams = ClassesInfo.iterAttrs(objType)
             [params.remove(i) for i in iterParams]
             paramsToAttrs = ClassesInfo.params_to_attrs(objType)
@@ -81,8 +81,11 @@ class PreObjectImport(PreObject):
                 val = PreObjectImport.fromObject(val)
                 kwargs[param] = val
             for iterParam in iterParams:
-                iterAttr = paramsToAttrs.get(iterParam, param)
-                kwargs[param] = getattr(obj, iterAttr)
+                iterAttr = paramsToAttrs.get(iterParam, iterParam)
+                kwargs[iterParam] = getattr(obj, iterAttr)
+
+            defaultAttrs2hide = dict((paramsToAttrs.get(k,k), v) for k, v in ClassesInfo.default_params_to_hide(objType).items())
+            kwargs.update(defaultAttrs2hide)
             return PreObjectImport(objType, [], kwargs)
 
     @staticmethod
