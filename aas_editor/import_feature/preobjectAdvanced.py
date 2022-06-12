@@ -214,7 +214,10 @@ class PreObjectImport(PreObject):
         if mapping:
             if isinstance(mapping, dict):
                 for attr in mapping:
-                    preObj = self.kwargs[attr]
+                    if isinstance(attr, str):
+                        preObj = self.kwargs[attr]
+                    elif isinstance(attr, int):
+                        preObj = self.args[0][attr]
                     preObj.setMapping(mapping[attr])
             else:
                 self.args = [mapping]
