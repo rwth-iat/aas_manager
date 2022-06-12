@@ -7,7 +7,7 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QPushButton, QFileDialog
+from PyQt5.QtWidgets import QWidget, QHBoxLayout, QPushButton, QFileDialog, QMessageBox
 
 from aas_editor.import_feature.import_settings import FILTER_IMPORT_FILES
 from aas_editor.import_feature.treeview_import import ImportTreeView
@@ -58,7 +58,10 @@ class ImportManageWidget(QWidget):
             self.saveMappingFile(file)
 
     def saveMappingFile(self, file):
-        self.mainTreeView.saveMapping(file=file)
+        try:
+            self.mainTreeView.saveMapping(file=file)
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Error occurred while saving: {e}")
 
     def useMappingFileDialog(self):
         file, _ = QFileDialog.getOpenFileName(self, 'Open and use Mapping File', filter=JSON_FILES_FILTER)
@@ -66,4 +69,7 @@ class ImportManageWidget(QWidget):
             self.useMappingFile(file)
 
     def useMappingFile(self, file):
-        self.mainTreeView.setMapping(file=file)
+        try:
+            self.mainTreeView.setMapping(file=file)
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Mapping couldn't be used, probably no package was chosen: {e}")
