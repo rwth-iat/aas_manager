@@ -676,14 +676,12 @@ class TreeView(BasicTreeView):
         else:
             self.editCreateInDialog(index=index)
 
-    def isEditableInsideCell(self, index):
-        data = index.data(OBJECT_ROLE)
-        if index.flags() & Qt.ItemIsEditable \
-                and isoftype(data, self.itemDelegate().editableTypesInTable) \
-                and data not in EMPTY_VALUES:
-            return True
-        else:
-            return False
+    def isEditableInsideCell(self, index: QModelIndex):
+        if index.flags() & Qt.ItemIsEditable:
+            data = index.data(Qt.EditRole)
+            if isoftype(data, self.itemDelegate().editableTypesInTable) and data not in EMPTY_VALUES:
+                return True
+        return False
 
     def editCreateInDialog(self, objVal=None, index=QModelIndex()):
         try:
