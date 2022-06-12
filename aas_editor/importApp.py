@@ -19,6 +19,8 @@ from aas_editor.import_feature.treeview_import import ImportTreeView
 from aas_editor import design
 from aas_editor.editorApp import EditorApp
 from aas_editor.import_feature.import_file_widget import ImportManageWidget
+from aas_editor.widgets import TabWidget
+from aas_editor.import_feature.table_import_detailed_info import DetailedInfoImportTable
 
 
 class ImportApp(EditorApp):
@@ -47,6 +49,9 @@ class ImportApp(EditorApp):
     def setupUi(self, MainWindow):
         self.importWidget = ImportManageWidget(self)
         super(ImportApp, self).setupUi(MainWindow)
+        self.mainTabWidget.deleteLater()
+        self.mainTabWidget = TabWidget(self.splitterTabWidgets, unclosable=True,
+                                       tabClsKwargs={"treeViewClsKwargs": {"treeModel": DetailedInfoImportTable}})
         self.importWidget.setTreeView(self.mainTreeView)
         self.mainVerticalLayout.insertWidget(1, self.importWidget)
 

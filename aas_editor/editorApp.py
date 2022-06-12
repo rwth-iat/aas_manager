@@ -34,7 +34,9 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         dialogs.AASReferenceGroupBox.CHOOSE_FRM_VIEW = self.mainTreeView
         AddressLine.setModel(self.mainTreeView.model())
-        welcomeTab = self.mainTabWidget.addTab(Tab(parent=self.mainTabWidget), "Welcome")
+        welcomeTabKwargs = self.mainTabWidget.tabClsKwargs if self.mainTabWidget.tabClsKwargs else {}
+        welcomeTab = self.mainTabWidget.addTab(self.mainTabWidget.tabCls(parent=self.mainTabWidget, **welcomeTabKwargs),
+                                               "Welcome")
         self.mainTabWidget.widget(welcomeTab).searchBar.showFocused()
 
         self.initActions()

@@ -23,13 +23,17 @@ from PyQt5.QtWidgets import QAction, QAbstractScrollArea, QAbstractItemView, QMe
 from aas_editor.models import DetailedInfoTable
 from aas_editor.delegates import EditDelegate
 from aas_editor.settings import EMPTY_VALUES
-from aas_editor.settings.app_settings import ATTR_COLUMN_WIDTH, NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
+from aas_editor.settings.app_settings import ATTR_COLUMN_WIDTH, NAME_ROLE, ATTRIBUTE_COLUMN, \
     VALUE_COLUMN, LINKED_ITEM_ROLE, IS_LINK_ROLE, PARENT_OBJ_ROLE
 from aas_editor.utils.util_type import getAttrTypeHint, isoftype
 from aas_editor.widgets import TreeView
 
 
 class AttrsTreeView(TreeView):
+    def __init__(self, parent=None, treeModel = DetailedInfoTable, **kwargs):
+        super(AttrsTreeView, self).__init__(parent, **kwargs)
+        self.treeModel = treeModel
+
     # noinspection PyUnresolvedReferences
     def newPackItem(self, packItem):
         self.initTreeView(packItem)
@@ -40,7 +44,7 @@ class AttrsTreeView(TreeView):
         self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
         self.setObjectName("attrsTreeView")
-        self.setModelWithProxy(DetailedInfoTable(packItem))
+        self.setModelWithProxy(self.treeModel(packItem))
         self.setColumnWidth(ATTRIBUTE_COLUMN, ATTR_COLUMN_WIDTH)
         self.setItemDelegate(EditDelegate(self))
 
@@ -108,7 +112,7 @@ class AttrsTreeView(TreeView):
         if not index.isValid():
             index = self.currentIndex()
         if index.isValid():
-            objVal = objVal if objVal else index.data(OBJECT_ROLE)
+            objVal = objVal if objVal else index.siblingAtColumn(VALUE_COLUMN).data(Qt.EditRole)
             attribute = index.data(NAME_ROLE)
             parentObj = index.data(PARENT_OBJ_ROLE)
             try:
