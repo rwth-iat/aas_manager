@@ -11,17 +11,15 @@ import json
 import traceback
 
 from PyQt5.QtCore import Qt, QModelIndex
-from PyQt5.QtWidgets import QMessageBox, QDialog, QAction
+from PyQt5.QtWidgets import QMessageBox, QAction
 from basyx.aas import model
-from basyx.aas.model import AASReference
 
 from aas_editor import dialogs
 from aas_editor.import_feature.preobjectAdvanced import PreObjectImport
 from aas_editor.import_feature.import_settings import MAPPING_ATTR
 from aas_editor.package import Package
 from aas_editor.settings import NEW_PACK_ICON, OPEN_ICON, SC_OPEN, AAS_FILES_FILTER, ALL_FILES_FILTER
-from aas_editor.settings.app_settings import COLUMN_NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE, \
-    DEFAULT_COLUMNS_IN_PACKS_TABLE, ATTRIBUTE_COLUMN
+from aas_editor.settings.app_settings import PACKAGE_ROLE
 from aas_editor.utils.util_type import isIterable
 from aas_editor.widgets import PackTreeView
 import basyx
@@ -57,48 +55,7 @@ class ImportTreeView(PackTreeView):
                                  enabled=False)
 
     def _getObjFromDialog(self, dialog):
-        importPreObj = PreObjectImport.fromPreObject(dialog.getPreObj())
-        obj = importPreObj.initWithImport()
-        self.lastMapping = importPreObj.getMapping()
-        return obj
-
-    def _setData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
-        result = super(ImportTreeView, self)._setData(index, value, role)
-        if isinstance(value, Referable):
-            setattr(value, MAPPING_ATTR, self.lastMapping)
-            self.lastMapping = None
-        else:
-            parentObj = self.model().data(index, OBJECT_ROLE)
-            attrName = self.model().data(index, COLUMN_NAME_ROLE)
-            if isinstance(parentObj, Referable):
-                mapping = getattr(parentObj, MAPPING_ATTR, {})
-                mapping[attrName] = self.lastMapping
-        self.lastMapping = None
-        return result
-
-    def onEditCreate(self, objVal=None, index=QModelIndex()) -> bool:
-        """
-        :param objVal: value to set in dialog input widgets
-        :raise KeyError if no typehint found and no objVal was given
-        """
-        if not index.isValid():
-            index = self.currentIndex()
-        if index.isValid():
-            if index.column() == ATTRIBUTE_COLUMN:
-                objVal = objVal if objVal else index.data(Qt.EditRole)
-                preObj = PreObjectImport.fromObject(objVal)
-                mapping = getattr(objVal, MAPPING_ATTR, {})
-                preObj.setMapping(mapping)
-                return self._onEditCreate(preObj, index)
-            elif index.data(COLUMN_NAME_ROLE) not in DEFAULT_COLUMNS_IN_PACKS_TABLE:
-                objVal = objVal if objVal else index.data(Qt.EditRole)
-                preObj = PreObjectImport.fromObject(objVal)
-                parentObj = index.data(OBJECT_ROLE)
-                attr = index.data(COLUMN_NAME_ROLE)
-                mapping = getattr(parentObj, MAPPING_ATTR, {})
-                if attr in mapping:
-                    preObj.setMapping(mapping[attr])
-                return self._onEditCreate(preObj, index)
+        return PreObjectImport.fromPreObject(dialog.getPreObj())
 
     def saveMapping(self, pack: Package = None, file: str = None) -> bool:
         pack = self.currentIndex().data(PACKAGE_ROLE) if pack is None else pack
