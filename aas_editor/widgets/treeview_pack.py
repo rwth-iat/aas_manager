@@ -200,15 +200,6 @@ class PackTreeView(TreeView):
 
         self.setItemDelegate(EditDelegate(self))
 
-    def isEditableInsideCell(self, index: QModelIndex):
-        data = index.data(Qt.EditRole)
-        if index.flags() & Qt.ItemIsEditable \
-                and isoftype(data, self.itemDelegate().editableTypesInTable) \
-                and data not in EMPTY_VALUES:
-            return True
-        else:
-            return False
-
     def onEditCreate(self, objVal=None, index=QModelIndex()) -> bool:
         """
         :param objVal: value to set in dialog input widgets
