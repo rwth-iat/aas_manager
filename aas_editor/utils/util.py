@@ -190,7 +190,7 @@ def _getParamsDefaults(paramsTypehints: Dict[str, Any], defaults: Tuple[Any]) ->
 
 
 def getReqParams4init(objType: Type, rmDefParams=True,
-                      attrsToHide: dict = None, delOptional=True) -> Dict[str, Type]:
+                      attrsToHide = None, delOptional=True) -> Dict[str, Type]:
     """Return required params for init with their type"""
     paramsTypehints, paramasDefaults = getParams4init(objType)
 
