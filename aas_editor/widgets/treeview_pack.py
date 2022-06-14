@@ -492,12 +492,14 @@ class PackTreeView(TreeView):
         if res == QMessageBox.Save:
             for pack in self.model().data(QModelIndex(), OPENED_PACKS_ROLE):
                 self.savePack(pack)
-                packItem, = self.model().match(QModelIndex(), OBJECT_ROLE, pack, hits=1)
-                self.closeFile(packItem)
+            self.closeAllFiles()
         elif res == QMessageBox.Discard:
-            for pack in self.model().data(QModelIndex(), OPENED_PACKS_ROLE):
-                packItem, = self.model().match(QModelIndex(), OBJECT_ROLE, pack, hits=1)
-                self.closeFile(packItem)
+            self.closeAllFiles()
+
+    def closeAllFiles(self):
+        for pack in self.model().data(QModelIndex(), OPENED_PACKS_ROLE):
+            packItem, = self.model().match(QModelIndex(), OBJECT_ROLE, pack, hits=1)
+            self.closeFile(packItem)
 
     def closeFile(self, packItem: QModelIndex):
         self.model().setData(packItem, NOT_GIVEN, CLEAR_ROW_ROLE)
