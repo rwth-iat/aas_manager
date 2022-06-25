@@ -652,7 +652,7 @@ class AASReferenceGroupBox(ObjGroupBox):
             self.layout().addRow(plusButton)
 
     def chooseFromLocal(self):
-        tree = widgets.PackTreeView()
+        tree = widgets.PackTreeView(editEnabled=False)
         sourceModel = self.chooseFrmView.sourceModel()
         tree.setModel(sourceModel)
 
