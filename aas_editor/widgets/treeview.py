@@ -687,10 +687,12 @@ class TreeView(BasicTreeView):
             self.toggleFold(index)
 
     def editInCellOrInDialog(self, index: QModelIndex) -> None:
-        if self.isEditableInsideCell(index):
-            self.edit(index)
-        else:
-            self.editCreateInDialog(index=index)
+        self.setCurrentIndex(index)
+        # edit acts will be actually triggered only if enabled
+        if self.isEditableInsideCell(index) and self.editAct.isEnabled():
+            self.editAct.trigger()
+        elif self.editCreateInDialogAct.isEnabled():
+            self.editCreateInDialogAct.trigger()
 
     def isEditableInsideCell(self, index: QModelIndex):
         if index.flags() & Qt.ItemIsEditable:
