@@ -108,10 +108,10 @@ class PackTreeView(TreeView):
     EMPTY_VIEW_MSG = "Drop AAS files here"
     EMPTY_VIEW_ICON = OPEN_DRAG_ICON
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, **kwargs):
         super(PackTreeView, self).__init__(parent,
                                            emptyViewMsg=self.EMPTY_VIEW_MSG,
-                                           emptyViewIcon=self.EMPTY_VIEW_ICON)
+                                           emptyViewIcon=self.EMPTY_VIEW_ICON, **kwargs)
         PackTreeView.__instance = self
         self.recentFilesSeparator = None
         self.setAcceptDrops(True)
