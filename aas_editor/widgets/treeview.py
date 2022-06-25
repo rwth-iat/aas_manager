@@ -45,7 +45,7 @@ class HeaderView(QHeaderView):
         self.setStretchLastSection(True)
         self.setFixedHeight(TOOLBARS_HEIGHT)
 
-        self.sortIndicatorChanged.connect(lambda a,b: print(a,b))
+        self.sortIndicatorChanged.connect(lambda a, b: print(a, b))
         self.currSortSection = self.sortIndicatorSection()
         self.currOrder = self.sortIndicatorOrder()
         self.sectionActions = {}
@@ -164,8 +164,9 @@ class TreeView(BasicTreeView):
 
     treeObjClipboard = []
 
-    def __init__(self, parent=None, **kwargs):
+    def __init__(self, parent=None, editEnabled: bool = True, **kwargs):
         super(TreeView, self).__init__(parent, **kwargs)
+        self.editEnabled = editEnabled
         self.setAlternatingRowColors(True)
         self.setAnimated(True)
         self.initActions()
@@ -216,7 +217,7 @@ class TreeView(BasicTreeView):
         self.editCreateInDialogAct = QAction("E&dit/create in dialog", self,
                                              icon=EDIT_ICON,
                                              statusTip="Edit/create selected item in dialog",
-                                             shortcut=Qt.CTRL+Qt.Key_E,
+                                             shortcut=Qt.CTRL + Qt.Key_E,
                                              shortcutContext=Qt.WidgetWithChildrenShortcut,
                                              triggered=self.editCreateInDialog,
                                              enabled=False)
@@ -384,7 +385,7 @@ class TreeView(BasicTreeView):
         self.itemDataChangeFailed(topLeft, bottomRight, roles)
         # completion list will be hidden now; we will show it again after a delay
         QTimer.singleShot(100, self.updateUndoRedoActs)
-        #self.setCurrentIndex(bottomRight)
+        # self.setCurrentIndex(bottomRight)
 
     def onRowsInserted(self, parent: QModelIndex, first: int, last: int):
         index = parent.child(last, 0)
@@ -396,10 +397,25 @@ class TreeView(BasicTreeView):
         QTimer.singleShot(100, self.updateUndoRedoActs)
 
     def updateActions(self, index: QModelIndex):
-        # update paste action
-        self.pasteAct.setEnabled(self.isPasteOk(index))
+        if self.editEnabled:
+            self.pasteAct.setEnabled(self.isPasteOk(index))
+            self.updateCopyCutDelActs(index)
+            self.updateEditActs(index)
+            self.updateAddAct(index)
+        else:
+            self.disableAllEditingActs()
 
-        # update copy/cut/delete actions
+    def disableAllEditingActs(self):
+        self.copyAct.setEnabled(False)
+        self.cutAct.setEnabled(False)
+        self.delClearAct.setEnabled(False)
+        self.editCreateInDialogAct.setEnabled(False)
+        self.editAct.setEnabled(False)
+        self.addAct.setEnabled(False)
+        self.undoAct.setEnabled(False)
+        self.redoAct.setEnabled(False)
+
+    def updateCopyCutDelActs(self, index: QModelIndex):
         if index.isValid():
             self.copyAct.setEnabled(True)
             self.cutAct.setEnabled(True)
@@ -409,6 +425,7 @@ class TreeView(BasicTreeView):
             self.cutAct.setEnabled(False)
             self.delClearAct.setEnabled(False)
 
+    def updateEditActs(self, index: QModelIndex):
         if index.flags() & Qt.ItemIsEditable:
             self.editCreateInDialogAct.setEnabled(True)
         else:
@@ -419,13 +436,12 @@ class TreeView(BasicTreeView):
         else:
             self.editAct.setEnabled(False)
 
-        # update add action
+    def updateAddAct(self, index: QModelIndex):
         obj = index.data(OBJECT_ROLE)
-        objType = type(obj)
         attrName = index.data(NAME_ROLE)
 
-        if ClassesInfo.addActText(objType):
-            addActText = ClassesInfo.addActText(objType)
+        if ClassesInfo.addActText(type(obj)):
+            addActText = ClassesInfo.addActText(type(obj))
             enabled = True
         elif attrName in Package.addableAttrs():
             addActText = ClassesInfo.addActText(Package, attrName)

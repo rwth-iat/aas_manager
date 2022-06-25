@@ -290,6 +290,8 @@ class PackTreeView(TreeView):
         self.closeAct.setEnabled(self.isCloseOk())
         self.closeAllAct.setEnabled(self.isCloseAllOk())
 
+    def updateAddAct(self, index: QModelIndex):
+        super().updateAddAct(index)
         # update add action
         if not index.isValid():
             self.addAct.setEnabled(True)
@@ -405,7 +407,7 @@ class PackTreeView(TreeView):
                 # cancel pressed
                 return
 
-    def openPack(self, file: str) -> bool:
+    def openPack(self, file: str) -> typing.Union[bool, Package]:
         try:
             pack = Package(file)
             absFile = pack.file.absolute().as_posix()
@@ -419,7 +421,7 @@ class PackTreeView(TreeView):
                 QMessageBox.critical(self, "Error", f"Package {file} is already opened")
             else:
                 self.model().setData(QModelIndex(), pack, ADD_ITEM_ROLE)
-                return True
+                return pack
         return False
 
     def savePack(self, pack: Package = None, file: str = None) -> bool:

@@ -67,18 +67,7 @@ class AttrsTreeView(TreeView):
             lambda: self.openRef(self.currentIndex().siblingAtColumn(VALUE_COLUMN), newWindow=True))
 
     def updateActions(self, index: QModelIndex):
-        super(AttrsTreeView, self).updateActions(index)
-
-        # update edit action
-        if index.flags() & Qt.ItemIsEditable:
-            self.editAct.setEnabled(True)
-        elif index.siblingAtColumn(VALUE_COLUMN).flags() & Qt.ItemIsEditable:
-            valColIndex = index.siblingAtColumn(VALUE_COLUMN)
-            self.setCurrentIndex(valColIndex)
-            self.editAct.setEnabled(True)
-        else:
-            self.editAct.setEnabled(False)
-
+        super().updateActions(index)
         # update open actions
         indexIsLink = bool(index.data(IS_LINK_ROLE))
         self.openInCurrTabAct.setEnabled(indexIsLink)
@@ -90,6 +79,17 @@ class AttrsTreeView(TreeView):
         self.openInBackgroundAct.setVisible(indexIsLink)
         self.openInNewTabAct.setVisible(indexIsLink)
         self.openInNewWindowAct.setVisible(indexIsLink)
+
+    def updateEditActs(self, index: QModelIndex):
+        super().updateActions(index)
+        # update edit action
+        valColIndex = index.siblingAtColumn(VALUE_COLUMN)
+        if valColIndex.flags() & Qt.ItemIsEditable:
+            self.setCurrentIndex(valColIndex)
+            self.editCreateInDialogAct.setEnabled(True)
+        if self.isEditableInsideCell(valColIndex):
+            self.setCurrentIndex(valColIndex)
+            self.editAct.setEnabled(True)
 
     def onAddAct(self, objVal=None):
         try:
