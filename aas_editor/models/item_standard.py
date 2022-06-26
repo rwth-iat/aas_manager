@@ -23,14 +23,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QObject, QVariant
 
 from aas_editor.package import StoredFile
-from aas_editor.settings import NOT_GIVEN
-from aas_editor.settings.app_settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, \
-    ATTRIBUTE_COLUMN, \
-    VALUE_COLUMN, IS_LINK_ROLE, TYPE_HINT_ROLE, PARENT_OBJ_ROLE, TYPE_COLUMN, \
-    TYPE_HINT_COLUMN, TYPE_CHECK_ROLE, IS_MEDIA_ROLE, IS_URL_MEDIA_ROLE, MEDIA_CONTENT_ROLE, \
-    TYPE_ROLE
-from aas_editor.settings.aas_settings import TYPE_ICON_DICT, LINK_TYPES, MEDIA_TYPES
-from aas_editor.settings.icons import FILE_ICON, MIME_TYPE_ICON_DICT
+from aas_editor import settings
 from aas_editor.utils.util import getAttrDoc, simplifyInfo, getLimitStr
 from aas_editor.utils.util_type import checkType, getTypeName, getTypeHintName, isIterable, \
     getAttrTypeHint, getIterItemTypeHint
@@ -132,44 +125,44 @@ class StandardItem(QObject):
             try:
                 self.obj: StoredFile
                 mime_type: str = self.obj.mime_type
-                self.icon = QIcon(MIME_TYPE_ICON_DICT[mime_type])
+                self.icon = QIcon(settings.MIME_TYPE_ICON_DICT[mime_type])
             except KeyError:
                 mime_type = mime_type.rsplit("/")[0]
-                self.icon = QIcon(MIME_TYPE_ICON_DICT.get(mime_type, FILE_ICON))
+                self.icon = QIcon(settings.MIME_TYPE_ICON_DICT.get(mime_type, settings.FILE_ICON))
         else:
             try:
-                self.icon = QIcon(TYPE_ICON_DICT[type(self.obj)])
+                self.icon = QIcon(settings.TYPE_ICON_DICT[type(self.obj)])
             except KeyError:
-                for cls in TYPE_ICON_DICT:
+                for cls in settings.TYPE_ICON_DICT:
                     if isinstance(self.obj, cls):
-                        self.icon = QIcon(TYPE_ICON_DICT[cls])
+                        self.icon = QIcon(settings.TYPE_ICON_DICT[cls])
 
-    def data(self, role, column=ATTRIBUTE_COLUMN, column_name=""):
+    def data(self, role, column=settings.ATTRIBUTE_COLUMN, column_name=""):
         # custom roles
-        if role == NAME_ROLE:
+        if role == settings.NAME_ROLE:
             return self.objectName
-        if role == OBJECT_ROLE:
+        if role == settings.OBJECT_ROLE:
             return self.obj
-        if role == TYPE_ROLE:
+        if role == settings.TYPE_ROLE:
             return type(self.obj)
-        if role == TYPE_HINT_ROLE:
+        if role == settings.TYPE_HINT_ROLE:
             return self.typehint
-        if role == TYPE_CHECK_ROLE:
+        if role == settings.TYPE_CHECK_ROLE:
             return self.typecheck
-        if role == PARENT_OBJ_ROLE:
+        if role == settings.PARENT_OBJ_ROLE:
             return self.parentObj
-        if role == PACKAGE_ROLE:
+        if role == settings.PACKAGE_ROLE:
             return self.package
-        if role == IS_LINK_ROLE:
+        if role == settings.IS_LINK_ROLE:
             return self.isLink(column, column_name)
-        if role == IS_MEDIA_ROLE:
+        if role == settings.IS_MEDIA_ROLE:
             return self.isMedia
-        if role == IS_URL_MEDIA_ROLE:
+        if role == settings.IS_URL_MEDIA_ROLE:
             return self.isUrlMedia
-        if role == MEDIA_CONTENT_ROLE:
+        if role == settings.MEDIA_CONTENT_ROLE:
             return self.getMediaContent()
         # qt roles
-        if role == Qt.DecorationRole and column == ATTRIBUTE_COLUMN:
+        if role == Qt.DecorationRole and column == settings.ATTRIBUTE_COLUMN:
             return self.icon
         if role == Qt.WhatsThisRole:
             return self.doc
@@ -182,7 +175,7 @@ class StandardItem(QObject):
         return QVariant()
 
     def _getEditRoleData(self, column, column_name):
-        if column == VALUE_COLUMN:
+        if column == settings.VALUE_COLUMN:
             return self.obj
         if column_name:
             try:
@@ -191,14 +184,14 @@ class StandardItem(QObject):
                 return QVariant()
 
     def _getDisplayRoleData(self, column, column_name):
-        data = NOT_GIVEN
-        if column == ATTRIBUTE_COLUMN:
+        data = settings.NOT_GIVEN
+        if column == settings.ATTRIBUTE_COLUMN:
             data = self.objectName
-        if column == VALUE_COLUMN:
+        if column == settings.VALUE_COLUMN:
             data = self.displayValue
-        if column == TYPE_COLUMN:
+        if column == settings.TYPE_COLUMN:
             data = self.objTypeName
-        if column == TYPE_HINT_COLUMN:
+        if column == settings.TYPE_HINT_COLUMN:
             data = self.typehintName
         if column_name:
             try:
@@ -209,29 +202,29 @@ class StandardItem(QObject):
             except Exception as e:
                 data = e
 
-        if data != NOT_GIVEN:
+        if data != settings.NOT_GIVEN:
             return getLimitStr(data)
         else:
             return QVariant()
 
     def _getTooltipRoleData(self, column):
         tooltip = ""
-        if column == ATTRIBUTE_COLUMN:
+        if column == settings.ATTRIBUTE_COLUMN:
             if self.doc:
                 tooltip = self.doc.replace(": ", "\n\n", 1)
             else:
                 tooltip = self.objectName
-        elif column == VALUE_COLUMN:
+        elif column == settings.VALUE_COLUMN:
             if self.typecheck:
                 tooltip = self.displayValue
             else:
                 tooltip = f"{self.displayValue}\n\nThe value must be of type '{self.typehintName}', not of type '{self.objTypeName}'!"
-        elif column == TYPE_COLUMN:
+        elif column == settings.TYPE_COLUMN:
             if self.typecheck:
                 tooltip = self.objTypeName
             else:
                 tooltip = f"{self.objTypeName}\n\nThe value must be of type '{self.typehintName}', not of type '{self.objTypeName}'!"
-        elif column == TYPE_HINT_COLUMN:
+        elif column == settings.TYPE_HINT_COLUMN:
             tooltip = self.typehintName
 
         tooltip = getLimitStr(tooltip)
@@ -241,9 +234,9 @@ class StandardItem(QObject):
         super().setParent(a0)
         if a0 is None:
             return
-        if a0.data(PACKAGE_ROLE):
+        if a0.data(settings.PACKAGE_ROLE):
             try:
-                self.package = a0.data(PACKAGE_ROLE)
+                self.package = a0.data(settings.PACKAGE_ROLE)
             except AttributeError:
                 return
 
@@ -256,7 +249,7 @@ class StandardItem(QObject):
 
     def isLink(self, column: int, column_name: str) -> bool:
         data = self._getEditRoleData(column, column_name)
-        if self.package and isinstance(data, LINK_TYPES):
+        if self.package and isinstance(data, settings.LINK_TYPES):
             try:
                 data.resolve(self.package.objStore)
                 return True
@@ -267,7 +260,7 @@ class StandardItem(QObject):
 
     @property
     def isMedia(self) -> bool:
-        if self.obj and isinstance(self.obj, MEDIA_TYPES):
+        if self.obj and isinstance(self.obj, settings.MEDIA_TYPES):
             return True
         return False
 
@@ -284,7 +277,7 @@ class StandardItem(QObject):
 
     def getTypeHint(self):
         attrTypehint = None
-        attrName = self.data(NAME_ROLE)
+        attrName = self.data(settings.NAME_ROLE)
 
         try:
             attrTypehint = getAttrTypeHint(type(self.parentObj), attrName, delOptional=False)
@@ -294,8 +287,8 @@ class StandardItem(QObject):
 
         if isIterable(self.parentObj):
             attrTypehint = ClassesInfo.addType(type(self.parentObj))
-            if not attrTypehint and self.parent().data(TYPE_HINT_ROLE):
-                parentTypehint = self.parent().data(TYPE_HINT_ROLE)
+            if not attrTypehint and self.parent().data(settings.TYPE_HINT_ROLE):
+                parentTypehint = self.parent().data(settings.TYPE_HINT_ROLE)
                 try:
                     attrTypehint = getIterItemTypeHint(parentTypehint)
                 except KeyError:
@@ -313,4 +306,3 @@ class StandardItem(QObject):
             return MediaContent(b"Value is not given", "text/plain")
         else:
             return MediaContent(b"Media not found", "text/plain")
-

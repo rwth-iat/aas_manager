@@ -17,9 +17,7 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
 from aas_editor.models import StandardItem
-from aas_editor.settings.app_settings import PACKAGE_ROLE
-from aas_editor.settings.aas_settings import TYPES_WITH_INSTANCES_NOT_TO_POPULATE, \
-    TYPES_NOT_TO_POPULATE
+from aas_editor import settings
 from aas_editor.utils.util import getAttrs4detailInfo
 from aas_editor.utils.util_type import getTypeName, isSimpleIterable
 from aas_editor.utils.util_classes import DictItem
@@ -30,14 +28,14 @@ class DetailedInfoItem(StandardItem):
     def __init__(self, obj, name="", parent=None, package: Package = None, **kwargs):
         super().__init__(obj, name, parent, **kwargs)
         if parent and not package:
-            self.package = parent.data(PACKAGE_ROLE)
+            self.package = parent.data(settings.PACKAGE_ROLE)
         else:
             self.package = package
         self.populate()
 
     def populate(self):
-        if isinstance(self.obj, TYPES_WITH_INSTANCES_NOT_TO_POPULATE) \
-                or type(self.obj) in TYPES_NOT_TO_POPULATE:
+        if isinstance(self.obj, settings.TYPES_WITH_INSTANCES_NOT_TO_POPULATE) \
+                or type(self.obj) in settings.TYPES_NOT_TO_POPULATE:
             return
 
         kwargs = {
