@@ -82,8 +82,8 @@ class PreObjectImport(PreObject):
                 iterAttr = paramsToAttrs.get(iterParam, iterParam)
                 kwargs[iterParam] = getattr(obj, iterAttr)
 
-            defaultAttrs2hide = dict((paramsToAttrs.get(k,k), v) for k, v in ClassesInfo.default_params_to_hide(objType).items())
-            kwargs.update(defaultAttrs2hide)
+            defaultParams2hide = dict(ClassesInfo.default_params_to_hide(objType))
+            kwargs.update(defaultParams2hide)
             return PreObjectImport(objType, [], kwargs)
 
     @staticmethod
