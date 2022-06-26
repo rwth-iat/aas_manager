@@ -81,7 +81,7 @@ class AttrsTreeView(TreeView):
         self.openInNewWindowAct.setVisible(indexIsLink)
 
     def updateEditActs(self, index: QModelIndex):
-        super().updateActions(index)
+        super().updateEditActs(index)
         # update edit action
         valColIndex = index.siblingAtColumn(VALUE_COLUMN)
         if valColIndex.flags() & Qt.ItemIsEditable:
