@@ -19,14 +19,12 @@ import re
 from enum import Enum
 from typing import Dict, List, Type
 
-import openpyxl
-
+from aas_editor.import_feature import import_util
 from aas_editor.utils.util import getReqParams4init
 from aas_editor.utils.util_classes import PreObject, ClassesInfo
 from aas_editor.utils.util_type import issubtype, isSimpleIterableType, getTypeName, isIterableType, isSimpleIterable
 
 IMPORT_FILE = "Motor Daten aus EMSRDB.xlsx"
-COLUMNS_PATTERN = re.compile(r"\$[A-Z][A-Z]?\$")
 
 
 class PreObjectImport(PreObject):
@@ -113,29 +111,29 @@ class PreObjectImport(PreObject):
         self.args = args
         self.kwargs = kwargs
 
-    def initWithImport(self):
+    def initWithImport(self, rowNum, sourcefile):
         if self.obj:
             if isinstance(self.obj, str):
-                if self.isValueToImport(self.obj):
-                    self.obj = self.importValue(self.obj)
+                if import_util.isValueToImport(self.obj):
+                    self.obj = import_util.importValue(self.obj, sourcefile=sourcefile, row=rowNum)
             return self.obj
 
         args = []
         for value in self.args:
             if isinstance(value, PreObjectImport):
-                value = value.initWithImport()
-            elif isinstance(value, str) and self.isValueToImport(value):
-                value = self.importValue(value)
+                value = value.initWithImport(rowNum, sourcefile)
+            elif isinstance(value, str) and import_util.isValueToImport(value):
+                value = import_util.importValue(value, sourcefile=sourcefile, row=rowNum)
             elif value and type(value) == list and isinstance(value[0], PreObjectImport):
-                value = [i.initWithImport() for i in value]
+                value = [i.initWithImport(rowNum, sourcefile) for i in value]
             args.append(value)
 
         kwargs = {}
         for key, value in self.kwargs.items():
             if isinstance(value, PreObjectImport):
-                value = value.initWithImport()
-            elif isinstance(value, str) and self.isValueToImport(value):
-                value = self.importValue(value)
+                value = value.initWithImport(rowNum, sourcefile)
+            elif isinstance(value, str) and import_util.isValueToImport(value):
+                value = import_util.importValue(value, sourcefile=sourcefile, row=rowNum)
             kwargs[key] = value
         return self.objType(*args, **kwargs)
 
@@ -189,7 +187,7 @@ class PreObjectImport(PreObject):
 
     def getMapping(self) -> Dict[str, str]:
         mapping = {}
-        if self.obj and isinstance(self.obj, str) and self.isValueToImport(self.obj):
+        if self.obj and isinstance(self.obj, str) and import_util.isValueToImport(self.obj):
             return str(self.obj)
         elif self.args:
             if len(self.args) > 1:
@@ -198,7 +196,7 @@ class PreObjectImport(PreObject):
             for i, value in enumerate(self.args):
                 if isinstance(value, PreObjectImport):
                     return value.getMapping()
-                elif isinstance(value, str) and self.isValueToImport(value):
+                elif isinstance(value, str) and import_util.isValueToImport(value):
                     return str(value)
                 elif value and type(value) == list and isinstance(value[0], PreObjectImport):
                     for i, obj in enumerate(value):
@@ -209,7 +207,7 @@ class PreObjectImport(PreObject):
                     map = value.getMapping()
                     if map:
                         mapping[key] = map
-                elif isinstance(value, str) and self.isValueToImport(value):
+                elif isinstance(value, str) and import_util.isValueToImport(value):
                     mapping[key] = str(value)
         return mapping
 
