@@ -17,7 +17,7 @@ from aas_editor.import_feature.item_import_treeview import ImportTreeViewItem
 from aas_editor.import_feature.preobjectAdvanced import PreObjectImport
 from aas_editor.models import PacksTable, PackTreeViewItem, SetDataItem
 from aas_editor.settings import ATTRIBUTE_COLUMN, OBJECT_ROLE, COLUMN_NAME_ROLE, EXTENDED_COLUMNS_IN_PACK_TABLE, \
-    ADD_ITEM_ROLE, CLEAR_ROW_ROLE
+    ADD_ITEM_ROLE, CLEAR_ROW_ROLE, DATA_CHANGE_FAILED_ROLE
 
 
 class ImportTable(PacksTable):
@@ -47,28 +47,34 @@ class ImportTable(PacksTable):
         return super(ImportTable, self).data(index, role)
 
     def setData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
-        preObject = None
-        if isinstance(value, PreObjectImport):
-            preObject = value
-            value = preObject.initWithImport()
+        try:
+            preObject = None
+            if isinstance(value, PreObjectImport):
+                preObject = value
+                value = preObject.initWithExampleRowImport()
 
-        result = super(ImportTable, self).setData(index, value, role)
+            result = super(ImportTable, self).setData(index, value, role)
 
-        if preObject and result and role in (Qt.EditRole, ADD_ITEM_ROLE):
-            if isinstance(value, Referable):
-                setattr(value, MAPPING_ATTR, preObject.getMapping())
-            elif isinstance(self.data(index, OBJECT_ROLE), Referable):
-                parentObj = self.model().data(index, OBJECT_ROLE)
-                attrName = self.model().data(index, COLUMN_NAME_ROLE)
-                mapping = getattr(parentObj, MAPPING_ATTR, {})
-                mapping[attrName] = preObject.getMapping()
+            if preObject and result and role in (Qt.EditRole, ADD_ITEM_ROLE):
+                if isinstance(value, Referable):
+                    setattr(value, MAPPING_ATTR, preObject.getMapping())
+                elif isinstance(self.data(index, OBJECT_ROLE), Referable):
+                    parentObj = self.model().data(index, OBJECT_ROLE)
+                    attrName = self.model().data(index, COLUMN_NAME_ROLE)
+                    mapping = getattr(parentObj, MAPPING_ATTR, {})
+                    mapping[attrName] = preObject.getMapping()
 
-        if preObject and result:
-            if role == Qt.EditRole:
-                self.undo.pop()
-                self.undo.append(SetDataItem(index=QPersistentModelIndex(index), value=preObject, role=role))
-            elif role == CLEAR_ROW_ROLE:
-                self.undo.pop()
-                self.undo.append(SetDataItem(index=QPersistentModelIndex(index), value=preObject, role=ADD_ITEM_ROLE))
+            if preObject and result:
+                if role == Qt.EditRole:
+                    self.undo.pop()
+                    self.undo.append(SetDataItem(index=QPersistentModelIndex(index), value=preObject, role=role))
+                elif role == CLEAR_ROW_ROLE:
+                    self.undo.pop()
+                    self.undo.append(SetDataItem(index=QPersistentModelIndex(index), value=preObject, role=ADD_ITEM_ROLE))
 
-        return result
+            return result
+        except Exception as e:
+            self.lastErrorMsg = f"Error occurred: {e}"
+            print(self.lastErrorMsg)
+            self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
+            return False
