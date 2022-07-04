@@ -85,6 +85,7 @@ class EditDelegate(ColorDelegate):
             completions = DEFAULT_COMPLETIONS.get(objType, {}).get(attr, [])
             if completions:
                 completer = QCompleter(parent, completions=completions)
+                completer.setCaseSensitivity(Qt.CaseInsensitive)
                 widget.setCompleter(completer)
         elif issubtype(objType, int):
             widget = LineEdit(parent)
