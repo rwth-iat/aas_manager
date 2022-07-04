@@ -8,15 +8,11 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-
 from aas_editor.settings.app_settings import *
 from aas_editor.settings import EXTENDED_COLUMNS_IN_PACK_TABLE
 from aas_editor.models import StandardTable
 from aas_editor.import_feature.table_import import ImportTable
-from aas_editor.import_feature.treeview_import import ImportTreeView
-from aas_editor import design
+from aas_editor.import_feature.treeview_import import ImportTreeView, DetailImportTreeView
 from aas_editor.editorApp import EditorApp
 from aas_editor.import_feature.import_file_widget import ImportManageWidget
 from aas_editor.widgets import TabWidget
@@ -24,6 +20,10 @@ from aas_editor.import_feature.table_import_detailed_info import DetailedInfoImp
 
 
 class ImportApp(EditorApp):
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        self.importWidget.initImportSettingsDialog()
+
     def setupMainTreeView(self, parent, model: StandardTable) -> ImportTreeView:
         mainTreeView = ImportTreeView(parent, importManageWidget=self.importWidget)
         mainTreeView.setFocusPolicy(QtCore.Qt.StrongFocus)
@@ -51,7 +51,7 @@ class ImportApp(EditorApp):
         super(ImportApp, self).setupUi(MainWindow)
         self.mainTabWidget.deleteLater()
         self.mainTabWidget = TabWidget(self.splitterTabWidgets, unclosable=True,
-                                       tabClsKwargs={"treeViewClsKwargs": {"treeModel": DetailedInfoImportTable}})
+                                       tabClsKwargs={"treeViewCls": DetailImportTreeView,
+                                                     "treeViewClsKwargs": {"treeModel": DetailedInfoImportTable}})
         self.importWidget.setTreeView(self.mainTreeView)
         self.mainVerticalLayout.insertWidget(1, self.importWidget)
-
