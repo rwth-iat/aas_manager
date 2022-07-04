@@ -16,9 +16,22 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
-from basyx.aas.model import Key, KeyType, Asset, AssetKind, Identifier, IdentifierType, File, Blob, SubmodelElement, Property, \
-    Constraint, Qualifier, AASReference, Identifiable
+from basyx.aas.model import Key, KeyType, Asset, AssetKind, Identifier, IdentifierType, File, Blob, SubmodelElement, \
+    Property, \
+    Constraint, Qualifier, Referable
 from basyx.aas.model.datatypes import String
+
+from aas_editor.additional.classes import DictItem
+
+CATEGORIES = ["CONSTANT", "PARAMETER"]
+
+LANGUAGES = [
+    "DE",
+    "EN",
+    "FR",
+    "IT",
+    "JA",
+]
 
 MIME_TYPES = [
     "application/graphql",
@@ -86,4 +99,10 @@ DEFAULT_COMPLETIONS = {
     Blob: {
         "mime_type": MIME_TYPES
     },
+    DictItem: {
+        "key": LANGUAGES
+    },
+    Property: {
+        "category": CATEGORIES
+    }
 }
