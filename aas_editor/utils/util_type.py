@@ -80,7 +80,7 @@ def removeOptional(typehint):
     if isOptional(typehint):
         args = list(getArgs(typehint))
         args.remove(type(None))
-        typehint = args[0]
+        typehint = args[0] if len(args) == 1 else typing.Union[tuple(args)]
     return typehint
 
 
