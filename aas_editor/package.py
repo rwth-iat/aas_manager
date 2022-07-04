@@ -128,7 +128,7 @@ class Package:
 
     def all_concept_descriptions_to_aas(self):
         """Add references of all existing CD to concept dictionary in existing AAS."""
-        #TODO: fix if pyi40aas changes
+        #FIXME: save all concept descriptions to AASX or JSON or XML even if they are not referenced in ConceptDict
         for shell in self.shells:
             dictionary = shell.concept_dictionary if shell.concept_dictionary else concept.ConceptDictionary("CD")
             for cd in self.concept_descriptions:
