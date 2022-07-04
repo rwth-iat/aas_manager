@@ -5,7 +5,7 @@
     <img src="aas_editor/icons/full_logo.svg" alt="Logo" width="240" height="80">
   </a>
   <p align="center">
-    AAS Manager is a free, open source, cross-platform visual viewer/editor based on <a href="https://www.riverbankcomputing.com/software/pyqt/"><strong>PyQt</strong></a> Framework and <a href="https://git.rwth-aachen.de/acplt/pyi40aas"><strong>PyI40AAS</strong></a> SDK.
+    AAS Manager is a free, open source, cross-platform visual viewer/editor based on <a href="https://www.riverbankcomputing.com/software/pyqt/"><strong>PyQt</strong></a> Framework and <a href="https://github.com/eclipse-basyx/basyx-python-sdk"><strong>Eclipse BaSyx Python SDK</strong></a>
     <br />
     <br />
     <a href="https://github.com/zrgt/pygui40aas/releases">Download</a>
@@ -26,9 +26,9 @@
 |   ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/context_menu.PNG) Context menu of object in the treetable  |  |
 
 
-For further information about the Asset Administration Shell, see the publication "Details of the Asset Administration Shell" [(Version 3.0RC01) ](
+For further information about the Asset Administration Shell, see the publication "Details of the Asset Administration Shell" [(Version 3) ](
 https://www.plattform-i40.de/PI40/Redaktion/EN/Downloads/Publikation/Details_of_the_Asset_Administration_Shell_Part1_V3.html
-) or [(Version 2.0.1)](
+) or [(Version 2)](
 https://www.plattform-i40.de/PI40/Redaktion/EN/Downloads/Publikation/Details_of_the_Asset_Administration_Shell_Part1_V2.html
 ) by Plattform Industrie 4.0.
 
@@ -45,6 +45,13 @@ You can find binaries of the editor for Windows or Linux systems in [the release
    ```sh
    pip install -r requirements.txt
    ```
+   Note: If errors occur, try installing the packages one by one in the same order linke in requirements.txt 
+
+
+3. Run ``main.py``
+
+OR
+
 3. Freeze an application into stand-alone executable
    ```sh
    pyinstaller aas_manager.spec
