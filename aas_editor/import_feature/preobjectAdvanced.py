@@ -21,6 +21,7 @@ from typing import Dict, List, Type
 
 from aas_editor.import_feature import import_util
 from aas_editor.utils.util import getReqParams4init
+from aas_editor.import_feature import import_file_widget
 from aas_editor.utils.util_classes import PreObject, ClassesInfo
 from aas_editor.utils.util_type import issubtype, isSimpleIterableType, getTypeName, isIterableType, isSimpleIterable
 
@@ -36,7 +37,7 @@ class PreObjectImport(PreObject):
         self.attrsToParams: Dict[str, str] = dict((v, k) for k, v in paramsToAttrs.items())
 
     @staticmethod
-    def fromObject(obj):
+    def fromObject(obj, withIterParams=True):
         objType = type(obj)
 
         if isinstance(obj, PreObjectImport):
@@ -52,7 +53,7 @@ class PreObjectImport(PreObject):
             return PreObjectImport(objType, (str(obj),), {})
         elif issubtype(objType, Enum):
             return PreObjectImport(objType, (obj,), {})
-        elif issubtype(objType, Type):
+        elif issubtype(objType, Type) or objType == type:
             return PreObjectImport(objType, [], {}, obj=obj)
         elif issubtype(objType, dict):
             listObj = []
@@ -78,9 +79,10 @@ class PreObjectImport(PreObject):
                 val = getattr(obj, attr)
                 val = PreObjectImport.fromObject(val)
                 kwargs[param] = val
-            for iterParam in iterParams:
-                iterAttr = paramsToAttrs.get(iterParam, iterParam)
-                kwargs[iterParam] = getattr(obj, iterAttr)
+            if withIterParams:
+                for iterParam in iterParams:
+                    iterAttr = paramsToAttrs.get(iterParam, iterParam)
+                    kwargs[iterParam] = getattr(obj, iterAttr)
 
             defaultParams2hide = dict(ClassesInfo.default_params_to_hide(objType))
             kwargs.update(defaultParams2hide)
@@ -111,47 +113,62 @@ class PreObjectImport(PreObject):
         self.args = args
         self.kwargs = kwargs
 
-    def initWithImport(self, rowNum, sourcefile):
+    def initWithImport(self, rowNum, sourceWB, sheetname):
         if self.obj:
             if isinstance(self.obj, str):
                 if import_util.isValueToImport(self.obj):
-                    self.obj = import_util.importValue(self.obj, sourcefile=sourcefile, row=rowNum)
+                    self.obj = import_util.importValueFromExcelWB(self.obj, workbook=sourceWB, row=rowNum, sheetname=sheetname)
             return self.obj
 
         args = []
         for value in self.args:
             if isinstance(value, PreObjectImport):
-                value = value.initWithImport(rowNum, sourcefile)
+                value = value.initWithImport(rowNum, sourceWB, sheetname)
             elif isinstance(value, str) and import_util.isValueToImport(value):
-                value = import_util.importValue(value, sourcefile=sourcefile, row=rowNum)
+                value = import_util.importValueFromExcelWB(value, workbook=sourceWB, row=rowNum, sheetname=sheetname)
             elif value and type(value) == list and isinstance(value[0], PreObjectImport):
-                value = [i.initWithImport(rowNum, sourcefile) for i in value]
+                value = [i.initWithImport(rowNum, sourceWB, sheetname) for i in value]
             args.append(value)
 
         kwargs = {}
         for key, value in self.kwargs.items():
             if isinstance(value, PreObjectImport):
-                value = value.initWithImport(rowNum, sourcefile)
+                value = value.initWithImport(rowNum, sourceWB, sheetname)
             elif isinstance(value, str) and import_util.isValueToImport(value):
-                value = import_util.importValue(value, sourcefile=sourcefile, row=rowNum)
+                value = import_util.importValueFromExcelWB(value, workbook=sourceWB, row=rowNum, sheetname=sheetname)
+            kwargs[key] = value
+        try:
+            return self.objType(*args, **kwargs)
+        except Exception as e:
+            raise e
+
+    def initWithExampleRowImport(self):
+        exampleRow = import_file_widget.ImportManageWidget.IMPORT_SETTINGS.exampleRowValue
+
+        if self.obj:
+            if isinstance(self.obj, str):
+                if import_util.isValueToImport(self.obj):
+                    self.obj = import_util.importValueFromExampleRow(self.obj, row=exampleRow)
+            return self.obj
+
+        args = []
+        for value in self.args:
+            if isinstance(value, PreObjectImport):
+                value = value.initWithExampleRowImport()
+            elif isinstance(value, str) and import_util.isValueToImport(value):
+                value = import_util.importValueFromExampleRow(value, row=exampleRow)
+            elif value and type(value) == list and isinstance(value[0], PreObjectImport):
+                value = [i.initWithExampleRowImport() for i in value]
+            args.append(value)
+
+        kwargs = {}
+        for key, value in self.kwargs.items():
+            if isinstance(value, PreObjectImport):
+                value = value.initWithExampleRowImport()
+            elif isinstance(value, str) and import_util.isValueToImport(value):
+                value = import_util.importValueFromExampleRow(value, row=exampleRow)
             kwargs[key] = value
         return self.objType(*args, **kwargs)
-
-    def isValueToImport(self, value):
-        if re.search(COLUMNS_PATTERN, value):
-            return True
-        return False
-
-    def importValue(self, value):
-        excel_file = openpyxl.load_workbook(IMPORT_FILE, data_only=True)
-        sheet = excel_file.sheetnames[0]
-
-        columns: List[str] = re.findall(COLUMNS_PATTERN, value)
-        for col in columns:
-            colName = col.strip("$")
-            importedVal = excel_file[sheet][f"{colName}3"].value
-            value = value.replace(f"${colName}$", importedVal, -1)
-        return value
 
     def __str__(self):
         if self.obj:
