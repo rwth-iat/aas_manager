@@ -35,6 +35,7 @@ from aas_editor.settings.util_constants import HIDDEN_ATTRS, CHANGED_PARENT_OBJ,
 from aas_editor.settings.icons import getCharsIcon
 from aas_editor.utils import util_classes, util_type
 import aas_editor.utils.util as util
+from aas_editor.import_feature.preobjectAdvanced import PreObjectImport
 
 AAS_FILES_FILTER = "AAS files (*.aasx *.xml *.json)"
 AASX_FILES_FILTER = "AASX files (*.aasx)"
@@ -429,8 +430,8 @@ CLASSES_INFO = {
         DEFAULT_PARAMS_TO_HIDE: {"parent": None}
     },
     AssetAdministrationShell: {
-        HIDDEN_ATTRS: ("concept_dictionary",),
-        ITERABLE_ATTRS: ("concept_dictionary",),
+        HIDDEN_ATTRS: ("concept_dictionary", "view"),
+        ITERABLE_ATTRS: ("concept_dictionary", "view"),
         CHANGED_PARENT_OBJ: "concept_dictionary",
         ADD_ACT_AAS_TXT: "Add concept dictionary",
         ADD_TYPE: ConceptDictionary,
@@ -500,7 +501,7 @@ ATTR_INFOS_TO_SIMPLIFY = (AdministrativeInformation, Identifier,)
 TYPES_NOT_TO_POPULATE = (type, ABCMeta)
 TYPES_WITH_INSTANCES_NOT_TO_POPULATE = (
     AbstractObjectStore, str, int, float, bool, Enum, Path, util_classes.DictItem, Decimal, type, datetime.date)  # '+ TYPES_IN_ONE_ROW
-COMPLEX_ITERABLE_TYPES = (Namespace,)
+COMPLEX_ITERABLE_TYPES = (Namespace, PreObjectImport)
 
 TYPE_SHORTS_DICT = {
     AssetAdministrationShell: "aas",
