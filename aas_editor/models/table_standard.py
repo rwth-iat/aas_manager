@@ -35,7 +35,8 @@ from aas_editor.settings import NOT_GIVEN
 from aas_editor.settings.colors import LINK_BLUE, CHANGED_BLUE, RED, NEW_GREEN
 from aas_editor.utils.util import delAASParents
 
-from aas_editor.utils.util_classes import DictItem, ClassesInfo
+from aas_editor.utils.util_classes import ClassesInfo
+from aas_editor.additional.classes import DictItem
 from aas_editor.utils.util_type import isIterable
 
 SetDataItem = namedtuple("SetDataItem", ("index", "value", "role"))

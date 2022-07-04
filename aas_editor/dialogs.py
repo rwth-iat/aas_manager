@@ -28,7 +28,8 @@ from aas_editor.utils.util import inheritors, getReqParams4init, getParams4init,
     delAASParents
 from aas_editor.utils.util_type import getTypeName, issubtype, isoftype, isSimpleIterableType, \
     isIterableType, isIterable, isOptional, removeOptional
-from aas_editor.utils.util_classes import DictItem, ClassesInfo
+from aas_editor.utils.util_classes import ClassesInfo
+from aas_editor.additional.classes import DictItem
 from aas_editor.widgets import *
 from aas_editor import widgets
 

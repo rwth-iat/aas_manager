@@ -28,6 +28,7 @@ from basyx.aas.model import AssetAdministrationShell, Asset, ConceptDescription,
     Namespace, SubmodelElementCollection, SubmodelElement, AASReference, ConceptDictionary, Referable, Identifiable
 from basyx.aas.model.datatypes import Decimal
 
+import aas_editor.additional.classes
 import aas_editor.package
 from aas_editor.settings.util_constants import HIDDEN_ATTRS, CHANGED_PARENT_OBJ, ADD_ACT_AAS_TXT, \
     ADD_TYPE, PACKVIEW_ATTRS_INFO, PARAMS_TO_ATTRS, DEFAULT_PARAMS_TO_HIDE
@@ -476,7 +477,7 @@ ATTR_INFOS_TO_SIMPLIFY = (AdministrativeInformation, Identifier,)
 
 TYPES_NOT_TO_POPULATE = (type, ABCMeta)
 TYPES_WITH_INSTANCES_NOT_TO_POPULATE = (
-    AbstractObjectStore, str, int, float, bool, Enum, Path, util_classes.DictItem, Decimal, type, datetime.date)  # '+ TYPES_IN_ONE_ROW
+    AbstractObjectStore, str, int, float, bool, Enum, Path, aas_editor.additional.classes.DictItem, Decimal, type, datetime.date)  # '+ TYPES_IN_ONE_ROW
 COMPLEX_ITERABLE_TYPES = (Namespace,)
 
 TYPE_SHORTS_DICT = {

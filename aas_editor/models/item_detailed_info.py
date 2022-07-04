@@ -22,7 +22,7 @@ from aas_editor.settings.aas_settings import TYPES_WITH_INSTANCES_NOT_TO_POPULAT
     TYPES_NOT_TO_POPULATE
 from aas_editor.utils.util import getAttrs4detailInfo
 from aas_editor.utils.util_type import getTypeName, isSimpleIterable
-from aas_editor.utils.util_classes import DictItem
+from aas_editor.additional.classes import DictItem
 from aas_editor.package import Package
 
 

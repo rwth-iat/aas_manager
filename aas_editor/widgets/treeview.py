@@ -33,7 +33,8 @@ from aas_editor.settings.shortcuts import SC_COPY, SC_CUT, SC_PASTE, SC_DELETE, 
 from aas_editor.utils.util import getDefaultVal, getReqParams4init
 from aas_editor.utils.util_type import checkType, isSimpleIterable, isIterable, getIterItemTypeHint, isoftype
 
-from aas_editor.utils.util_classes import DictItem, ClassesInfo
+from aas_editor.utils.util_classes import ClassesInfo
+from aas_editor.additional.classes import DictItem
 from aas_editor.package import Package
 from aas_editor.widgets.treeview_basic import BasicTreeView
 

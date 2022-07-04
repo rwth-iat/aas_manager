@@ -16,7 +16,7 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
-from typing import NamedTuple, Any, Type, Tuple, Optional, List, Dict
+from typing import Type, Tuple, Optional, List, Dict
 
 from aas_editor.settings.util_constants import *
 from aas_editor.settings import aas_settings as s
@@ -24,17 +24,6 @@ from aas_editor.settings import aas_settings as s
 
 # DictItem = NamedTuple("DictItem", key=Any, value=Any)
 from aas_editor.utils.util_type import issubtype
-
-
-class DictItem(NamedTuple):
-    key: Any
-    value: Any
-
-    def __str__(self):
-        return self.__repr__()
-
-    def __repr__(self):
-        return f"{self.key}: {self.value}"
 
 
 class ClassesInfo:
