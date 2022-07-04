@@ -71,8 +71,7 @@ def isOptional(typeHint):
     if isUnion(typeHint):
         args = getArgs(typeHint)
         if type(None) in args:
-            if len(args) == 2:
-                return True
+            return True
     return False
 
 
