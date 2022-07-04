@@ -25,9 +25,8 @@ from basyx.aas.model import Referable
 from aas_editor.import_feature.import_settings import MAPPING_ATTR
 from aas_editor.import_feature.preobjectAdvanced import PreObjectImport
 from aas_editor.models import DetailedInfoItem, DetailedInfoTable, SetDataItem
-from aas_editor.settings import EXTENDED_COLUMNS_IN_PACK_TABLE
 from aas_editor.settings.app_settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, DEFAULT_COLUMNS_IN_DETAILED_INFO, \
-    PACK_ITEM_ROLE, DEFAULT_FONT, COLUMN_NAME_ROLE, ATTRIBUTE_COLUMN, ADD_ITEM_ROLE, CLEAR_ROW_ROLE, PARENT_OBJ_ROLE
+    DEFAULT_FONT, COLUMN_NAME_ROLE, ADD_ITEM_ROLE, CLEAR_ROW_ROLE, PARENT_OBJ_ROLE
 
 MAPPING_COLUMN_NAME = "mapping"
 
@@ -71,35 +70,34 @@ class DetailedInfoImportTable(DetailedInfoTable):
         return mapping
 
     def data(self, index: QModelIndex, role: int = ...) -> Any:
-        if role == Qt.DisplayRole and super(DetailedInfoImportTable, self).data(index, COLUMN_NAME_ROLE) == MAPPING_COLUMN_NAME:
+        if role == Qt.DisplayRole and super().data(index, COLUMN_NAME_ROLE) == MAPPING_COLUMN_NAME:
             objPath = self.getChildPath(index)
             mapping = self.getMapping4ChildPath(objPath)
             return mapping
         elif role == Qt.EditRole and isinstance(self.mainObj, Referable):
-            objVal = super(DetailedInfoImportTable, self).data(index, OBJECT_ROLE)
+            objVal = super().data(index, OBJECT_ROLE)
             preObj = PreObjectImport.fromObject(objVal)
             objPath = self.getChildPath(index)
             mapping = self.getMapping4ChildPath(objPath)
             preObj.setMapping(mapping)
             return preObj
-        return super(DetailedInfoTable, self).data(index, role)
+        return super().data(index, role)
 
     def setData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
         preObject = None
         if isinstance(value, PreObjectImport):
             preObject = value
-            value = preObject.initWithImport()
+            value = preObject.initWithExampleRowImport()
 
-        result = super(DetailedInfoTable, self).setData(index, value, role)
+        result = super().setData(index, value, role)
 
         if preObject and result and role in (Qt.EditRole, ADD_ITEM_ROLE) and isinstance(self.mainObj, Referable):
             mapping = getattr(self.mainObj, MAPPING_ATTR)
             childPath = self.getChildPath(index)
             for attr in childPath:
-                if attr not in mapping:
-                    mapping[attr] = {}
+                if attr not in mapping or childPath[-1] == attr:
+                    mapping[attr] = preObject.getMapping()
                 mapping = mapping[attr]
-            mapping.update(preObject.getMapping())
 
         if preObject and result:
             if role == Qt.EditRole:
