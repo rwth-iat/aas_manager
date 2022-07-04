@@ -62,7 +62,7 @@ TYPE_NAMES_DICT = {
     model.datatypes.Boolean: "Boolean",
     model.datatypes.Double: "Double",
     model.datatypes.Decimal: "Decimal",
-    model.datatypes.Int: "Integer",
+    model.datatypes.Int: "Int",
     int: "Integer",
     model.datatypes.Duration: "Duration",
     model.datatypes.DateTime: "DateTime",
