@@ -8,29 +8,26 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 import typing
-import json
 from dataclasses import dataclass
 
 from PyQt5.QtCore import QSize, QSettings
 from PyQt5.QtGui import QFont
 from PyQt5 import QtCore
 
-from aas_editor.settings import NOT_GIVEN
+from aas_editor.settings.util_constants import NOT_GIVEN
 
-with open("aas_editor/settings/app_info.json") as jsonFile:
-    appInfo = json.load(jsonFile)
-
-AAS_CREATOR = appInfo["AAS_CREATOR"]
-APPLICATION_NAME = appInfo["APPLICATION_NAME"]
-APPLICATION_INFO = appInfo["INFO"]
-COPYRIGHT_YEAR = appInfo["COPYRIGHT_YEAR"]
-CONTRIBUTORS = appInfo["CONTRIBUTORS"]
-DEVELOPER_WEB = appInfo["WEB"]
-CONTACT = appInfo["CONTACT"]
-APPLICATION_LINK = appInfo["PROJECT_LINK"]
-ACPLT = appInfo["ACPLT"]
-VERSION = appInfo["VERSION"]
-LICENSE = appInfo["LICENSE"]
+AAS_CREATOR = "PyI40AAS Testing Framework"
+APPLICATION_NAME = "AAS Manager"
+APPLICATION_INFO = "Free, open source, cross-platform viewer/editor based on PyQt Framework and Eclipse BaSyx Python SDK.\n" \
+                   "Developed at the Chair of Information and Automation Systems for Process and Material Technology at RWTH Aachen."
+COPYRIGHT_YEAR = 2022
+CONTRIBUTORS = "Igor Garmaev"
+DEVELOPER_WEB = "plt.rwth-aachen.de"
+CONTACT = "i.garmaev@plt.rwth-aachen.de"
+APPLICATION_LINK = "https://github.com/zrgt/aas_manager"
+ACPLT = "ACPLT"
+VERSION = "0.2.1"
+LICENSE = "GNU General Public License v3.0"
 
 TOOLBARS_HEIGHT = 30
 ATTR_COLUMN_WIDTH = 200
@@ -87,6 +84,7 @@ TYPE_HINT_COLUMN = 3
 
 # Themes
 import os
+
 files = os.listdir("themes")
 THEMES = {"default": "default.qss"}
 DEFAULT_THEME = "default"
@@ -95,9 +93,8 @@ for file in files:
         themename = file.rstrip(".qss")
         THEMES[themename] = f"themes/{file}"
 
-
-
 SETTINGS = QSettings("settings.ini", QSettings.IniFormat)
+
 
 @dataclass(order=True)
 class Setting:
@@ -139,4 +136,3 @@ class AppSettings:
     SUBMODEL_SPLIT_PARTS = Setting('submodelSplitParts', False, bool)
     ALL_SUBMODEL_REFS_TO_AAS = Setting('allSubmodelRefsToAas', True, bool)
     ALL_CD_REFS_TO_AAS = Setting('allConceptDescriptionRefsToAas', True, bool)
-
