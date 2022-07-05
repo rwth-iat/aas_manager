@@ -15,11 +15,16 @@ from PyQt5 import QtWidgets
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
-
     #from aas_editor.editorApp import EditorApp as CurrentApp
     from aas_editor.importApp import ImportApp as CurrentApp
+    from aas_editor.splash import Splash
+    splash = Splash()
+    splash.show()
+
     window = CurrentApp()
     window.show()
+
+    splash.setFocus()
 
     app.exec_()
 

@@ -245,6 +245,7 @@ class StandardInputWidget(QWidget):
             widget = LineEdit(self)
             if kwargs.get("completions"):
                 completer = QCompleter(kwargs["completions"], self)
+                completer.setCaseSensitivity(Qt.CaseInsensitive)
                 widget.setCompleter(completer)
         elif issubtype(self.objType, int):
             widget = LineEdit(self)

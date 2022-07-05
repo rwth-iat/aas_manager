@@ -29,6 +29,7 @@ from basyx.aas.model import AssetAdministrationShell, Asset, ConceptDescription,
     Key, Qualifier
 from basyx.aas.model.datatypes import Decimal
 
+import aas_editor.additional.classes
 import aas_editor.package
 from aas_editor.settings.util_constants import HIDDEN_ATTRS, CHANGED_PARENT_OBJ, ADD_ACT_AAS_TXT, \
     ADD_TYPE, PACKVIEW_ATTRS_INFO, PARAMS_TO_ATTRS, DEFAULT_PARAMS_TO_HIDE, ITERABLE_ATTRS
@@ -64,7 +65,7 @@ TYPE_NAMES_DICT = {
     model.datatypes.Boolean: "Boolean",
     model.datatypes.Double: "Double",
     model.datatypes.Decimal: "Decimal",
-    model.datatypes.Int: "Integer",
+    model.datatypes.Int: "Int",
     int: "Integer",
     model.datatypes.Duration: "Duration",
     model.datatypes.DateTime: "DateTime",
@@ -500,7 +501,7 @@ ATTR_INFOS_TO_SIMPLIFY = (AdministrativeInformation, Identifier,)
 
 TYPES_NOT_TO_POPULATE = (type, ABCMeta)
 TYPES_WITH_INSTANCES_NOT_TO_POPULATE = (
-    AbstractObjectStore, str, int, float, bool, Enum, Path, util_classes.DictItem, Decimal, type, datetime.date)  # '+ TYPES_IN_ONE_ROW
+    AbstractObjectStore, str, int, float, bool, Enum, Path, aas_editor.additional.classes.DictItem, Decimal, type, datetime.date)  # '+ TYPES_IN_ONE_ROW
 COMPLEX_ITERABLE_TYPES = (Namespace, PreObjectImport)
 
 TYPE_SHORTS_DICT = {

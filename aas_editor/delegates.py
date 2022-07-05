@@ -23,7 +23,7 @@ from basyx.aas.model.submodel import *
 
 from aas_editor.settings import DEFAULT_COMPLETIONS
 from aas_editor.utils.util import inheritors
-from aas_editor.utils.util_classes import DictItem
+from aas_editor.additional.classes import DictItem
 from aas_editor.utils.util_type import issubtype, getTypeName, isoftype
 from aas_editor.widgets import CompleterComboBox
 from aas_editor.widgets.combobox import ComboBox
@@ -85,6 +85,7 @@ class EditDelegate(ColorDelegate):
             completions = DEFAULT_COMPLETIONS.get(objType, {}).get(attr, [])
             if completions:
                 completer = QCompleter(parent, completions=completions)
+                completer.setCaseSensitivity(Qt.CaseInsensitive)
                 widget.setCompleter(completer)
         elif issubtype(objType, int):
             widget = LineEdit(parent)

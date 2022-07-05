@@ -553,7 +553,7 @@ class PackTreeView(TreeView):
 
     def collapse(self, index: QtCore.QModelIndex) -> None:
         newIndex = index.siblingAtColumn(0)
-        if not self.isExpanded(index) or not index.child(0,0).isValid():
+        if not self.isExpanded(index) or not index.child(0, 0).isValid():
             if newIndex.parent() != self.rootIndex():
                 newIndex = newIndex.parent()
         self.setCurrentIndex(newIndex)
@@ -562,25 +562,29 @@ class PackTreeView(TreeView):
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() in (Qt.Key_Right, Qt.Key_Left):
             self.setFocus()
-            if event.key() == Qt.Key_Right:
-                delta = +1
-            else:
-                delta = -1
             currIndex = self.currentIndex()
-            currCol=currIndex.column()
-            if currIndex.isValid():
-                visCol=self.header().visualIndex(currCol)
-                i = delta
-                while True:
-                    newLogCol = self.header().logicalIndex(visCol+i)
-                    if visCol+i < 0 or visCol+i >= self.header().count():
-                        break
-                    if not self.header().isSectionHidden(newLogCol):
-                        self.setCurrentIndex(currIndex.siblingAtColumn(newLogCol))
-                        break
-                    i+=delta
+            if event.key() == Qt.Key_Right:
+                self.navigate2nextEnabledItemInRow(currIndex)
+            else:
+                self.navigate2nextEnabledItemInRow(currIndex, leftDirection=True)
         else:
             super(PackTreeView, self).keyPressEvent(event)
+
+    def navigate2nextEnabledItemInRow(self, index: QModelIndex, leftDirection = False):
+        delta = -1 if leftDirection else +1
+        currCol = index.column()
+        if index.isValid():
+            visCol = self.header().visualIndex(currCol)
+            i = delta
+            while True:
+                newLogCol = self.header().logicalIndex(visCol + i)
+                nextItem = index.siblingAtColumn(newLogCol)
+                if visCol + i < 0 or visCol + i >= self.header().count():
+                    break
+                if not self.header().isSectionHidden(newLogCol) and nextItem.flags() & Qt.ItemIsEnabled:
+                    self.setCurrentIndex(index.siblingAtColumn(newLogCol))
+                    break
+                i += delta
 
     def dragEnterEvent(self, event: QDragEnterEvent):
         if event.mimeData().hasUrls:

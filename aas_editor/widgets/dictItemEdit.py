@@ -10,7 +10,7 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QFormLayout
 
-from aas_editor.utils.util_classes import DictItem
+from aas_editor.additional.classes import DictItem
 from aas_editor.widgets.lineEdit import LineEdit
 
 

@@ -25,6 +25,7 @@ from typing import Union, Tuple, Iterable
 
 from basyx.aas.model import AASReference
 
+import aas_editor.additional.classes
 from aas_editor import settings
 import aas_editor.settings.aas_settings as aas_settings
 from aas_editor.utils import util
@@ -71,8 +72,7 @@ def isOptional(typeHint):
     if isUnion(typeHint):
         args = getArgs(typeHint)
         if type(None) in args:
-            if len(args) == 2:
-                return True
+            return True
     return False
 
 
@@ -81,7 +81,7 @@ def removeOptional(typehint):
     if isOptional(typehint):
         args = list(getArgs(typehint))
         args.remove(type(None))
-        typehint = args[0]
+        typehint = args[0] if len(args) == 1 else typing.Union[tuple(args)]
     return typehint
 
 
@@ -328,7 +328,7 @@ def isSimpleIterable(obj):
 
 def isIterableType(objType):
     return issubtype(objType, Iterable) \
-           and not issubtype(objType, (str, bytes, bytearray, util_classes.DictItem))
+           and not issubtype(objType, (str, bytes, bytearray, aas_editor.additional.classes.DictItem))
 
 
 def isIterable(obj):
@@ -377,9 +377,9 @@ def getIterItemTypeHint(iterableTypehint):
     args = getArgs(iterableTypehint)
 
     if issubtype(iterableTypehint, dict):
-        util_classes.DictItem._field_types["key"] = iterableTypehint.__args__[0]
-        util_classes.DictItem._field_types["value"] = iterableTypehint.__args__[1]
-        attrType = util_classes.DictItem
+        aas_editor.additional.classes.DictItem._field_types["key"] = iterableTypehint.__args__[0]
+        aas_editor.additional.classes.DictItem._field_types["value"] = iterableTypehint.__args__[1]
+        attrType = aas_editor.additional.classes.DictItem
     elif args:
         if len(args) > 1:
             raise KeyError("Typehint of iterable has more then one attribute:", args)

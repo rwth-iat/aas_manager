@@ -137,12 +137,13 @@ def getDefaultVal(objType: Type, param: str, default=settings.NOT_GIVEN):
     :return: default value for the given attribute for type init
     """
     paramsTypehints, paramsDefaults = getParams4init(objType)
-    paramsDefaults.get(param, settings.NOT_GIVEN)
-
-    if default == settings.NOT_GIVEN:
-        raise AttributeError("No such default parameter found:", param)
-    else:
-        return default
+    try:
+        return paramsDefaults[param]
+    except KeyError:
+        if default == settings.NOT_GIVEN:
+            raise AttributeError("No such default parameter found:", param)
+        else:
+            return default
 
 
 def getParams4init(objType: Type, withDefaults=True):

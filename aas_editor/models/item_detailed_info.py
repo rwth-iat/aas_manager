@@ -20,7 +20,7 @@ from aas_editor.models import StandardItem
 from aas_editor import settings
 from aas_editor.utils.util import getAttrs4detailInfo
 from aas_editor.utils.util_type import getTypeName, isSimpleIterable
-from aas_editor.utils.util_classes import DictItem
+from aas_editor.additional.classes import DictItem
 from aas_editor.package import Package
 
 
