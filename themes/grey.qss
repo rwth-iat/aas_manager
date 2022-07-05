@@ -50,6 +50,11 @@ QMdiArea {
     border-bottom: 0.2ex solid rgba(118, 121, 124, 0.4);
 }
 
+QTreeView::item:!enabled
+{
+    background: rgba(255, 255, 255, 0.05);
+}
+
 QTableView::item:!selected:hover,
 QListView::item:!selected:hover,
 QTreeView::item:!selected:hover
