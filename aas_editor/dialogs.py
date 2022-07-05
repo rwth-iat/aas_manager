@@ -22,7 +22,8 @@ from PyQt5.QtWidgets import QPushButton, QDialog, QDialogButtonBox, \
 
 from aas_editor.editWidgets import StandardInputWidget, SpecialInputWidget, CreateOptionalParamBtn
 from aas_editor.settings import DEFAULTS, DEFAULT_COMPLETIONS, ATTRIBUTE_COLUMN, OBJECT_ROLE, \
-    APPLICATION_NAME, CONTRIBUTORS, CONTACT, COPYRIGHT_YEAR, VERSION, DEFAULT_INHERITOR
+    APPLICATION_NAME, CONTRIBUTORS, CONTACT, COPYRIGHT_YEAR, VERSION, DEFAULT_INHERITOR, APPLICATION_INFO, \
+    DEVELOPER_WEB, APPLICATION_LINK, LICENSE
 from aas_editor.delegates import ColorDelegate
 from aas_editor.utils.util import inheritors, getReqParams4init, getParams4init, getDefaultVal, \
     delAASParents
@@ -38,11 +39,16 @@ class AboutDialog(QMessageBox):
     def __init__(self, parent=None):  # <1>
         super().__init__(parent)
         self.setWindowTitle("About")
+        self.setTextFormat(Qt.RichText)
         self.setText(
-            f"{APPLICATION_NAME}\n"
-            f"Version: {VERSION}\n"
-            f"Contributors: {CONTRIBUTORS}\n"
-            f"Contact: {CONTACT}\n"
+            f"{APPLICATION_NAME}<br>"
+            f"{APPLICATION_INFO}<br><br>"
+            f"Website: <a href='{DEVELOPER_WEB}'>{DEVELOPER_WEB}</a><br>"
+            f"Project Homepage: <a href='{APPLICATION_LINK}'>{APPLICATION_LINK}</a><br>"
+            f"Version: {VERSION}<br>"
+            f"Contributors: {CONTRIBUTORS}<br>"
+            f"Contact: {CONTACT}<br>"
+            f"License: {LICENSE}<br>"
             f"Copyright (C) {COPYRIGHT_YEAR}"
         )
         self.setIconPixmap(QPixmap("aas_editor/icons/logo.svg"))
