@@ -570,7 +570,7 @@ class PackTreeView(TreeView):
             super(PackTreeView, self).keyPressEvent(event)
 
     def navigate2nextEnabledItemInRow(self, index: QModelIndex, leftDirection = False):
-        delta = -1 if leftDirection else -1
+        delta = -1 if leftDirection else +1
         currCol = index.column()
         if index.isValid():
             visCol = self.header().visualIndex(currCol)
