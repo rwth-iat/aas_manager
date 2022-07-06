@@ -581,9 +581,10 @@ class TreeView(BasicTreeView):
         self.onDelClear()
 
     def addItemWithDialog(self, parent: QModelIndex, objTypeHint, objVal=None,
-                          title="", rmDefParams=False):
+                          title="", rmDefParams=False, **kwargs):
         try:
-            dialog = dialogs.AddObjDialog(objTypeHint, self, rmDefParams=rmDefParams, objVal=objVal, title=title)
+            dialog = dialogs.AddObjDialog(objTypeHint, self, rmDefParams=rmDefParams,
+                                          objVal=objVal, title=title, **kwargs)
         except Exception as e:
             QMessageBox.critical(self, "Error", str(e))
             return False
@@ -602,10 +603,11 @@ class TreeView(BasicTreeView):
         self.setFocus()
         return result
 
-    def replItemWithDialog(self, index, objTypeHint, objVal=None, title="", rmDefParams=False):
+    def replItemWithDialog(self, index, objTypeHint, objVal=None, title="", rmDefParams=False, **kwargs):
         title = title if title else f"Edit {index.data(NAME_ROLE)}"
         try:
-            dialog = dialogs.AddObjDialog(objTypeHint, self, rmDefParams=rmDefParams, objVal=objVal, title=title)
+            dialog = dialogs.AddObjDialog(objTypeHint, self, rmDefParams=rmDefParams,
+                                          objVal=objVal, title=title, **kwargs)
         except Exception as e:
             QMessageBox.critical(self, "Error", str(e))
             return False

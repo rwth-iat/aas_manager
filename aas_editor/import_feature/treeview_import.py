@@ -7,6 +7,8 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
+from PyQt5.QtCore import QModelIndex
+
 from aas_editor.import_feature.preobjectAdvanced import PreObjectImport
 from aas_editor.widgets import PackTreeView, AttrsTreeView
 
@@ -23,7 +25,29 @@ class ImportTreeView(PackTreeView):
     def _getObjFromDialog(self, dialog):
         return PreObjectImport.fromPreObject(dialog.getPreObj())
 
+    def addItemWithDialog(self, parent: QModelIndex, objTypeHint, objVal=None,
+                          title="", rmDefParams=False, **kwargs):
+        kwargs["useValidators"] = False
+        return super().addItemWithDialog(parent=parent, objTypeHint=objTypeHint, objVal=objVal, title=title,
+                                         rmDefParams=rmDefParams, **kwargs)
+
+    def replItemWithDialog(self, index, objTypeHint, objVal=None, title="", rmDefParams=False, **kwargs):
+        kwargs["useValidators"] = False
+        return super().replItemWithDialog(index=index, objTypeHint=objTypeHint, objVal=objVal,
+                                          title=title, rmDefParams=rmDefParams, **kwargs)
+
 
 class DetailImportTreeView(AttrsTreeView):
     def _getObjFromDialog(self, dialog):
         return PreObjectImport.fromPreObject(dialog.getPreObj())
+
+    def addItemWithDialog(self, parent: QModelIndex, objTypeHint, objVal=None,
+                          title="", rmDefParams=False, **kwargs):
+        kwargs["useValidators"] = False
+        return super().addItemWithDialog(parent=parent, objTypeHint=objTypeHint, objVal=objVal, title=title,
+                                         rmDefParams=rmDefParams, **kwargs)
+
+    def replItemWithDialog(self, index, objTypeHint, objVal=None, title="", rmDefParams=False, **kwargs):
+        kwargs["useValidators"] = False
+        return super().replItemWithDialog(index=index, objTypeHint=objTypeHint, objVal=objVal,
+                                          title=title, rmDefParams=rmDefParams, **kwargs)

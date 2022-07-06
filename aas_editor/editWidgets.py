@@ -227,10 +227,11 @@ class TimeEdit(WidgetWithTZinfo):
 class StandardInputWidget(QWidget):
     types = (bool, str, int, float, Enum, Type)
 
-    def __init__(self, attrType, parent=None, objVal=None, optional=False, **kwargs):
+    def __init__(self, attrType, parent=None, objVal=None, optional=False, useValidators=True, **kwargs):
         super(StandardInputWidget, self).__init__(parent)
         self.objType = attrType
         self.optional = optional
+        self.useValidators = useValidators
         self.widget = self._initWidget(**kwargs)
         self.setVal(objVal)
         widgetLayout = QVBoxLayout(self)
@@ -249,10 +250,12 @@ class StandardInputWidget(QWidget):
                 widget.setCompleter(completer)
         elif issubtype(self.objType, int):
             widget = LineEdit(self)
-            widget.setValidator(QIntValidator())
+            if self.useValidators:
+                widget.setValidator(QIntValidator())
         elif issubtype(self.objType, float):
             widget = LineEdit(self)
-            widget.setValidator(QDoubleValidator())
+            if self.useValidators:
+                widget.setValidator(QDoubleValidator())
         elif issubtype(self.objType, (Enum, Type)):
             if issubtype(self.objType, Enum):
                 # add enum types to types
@@ -267,10 +270,7 @@ class StandardInputWidget(QWidget):
                     # add Union Type attrs to types
                     types = union.__args__
 
-            if len(types) <= 6:
-                widget = ComboBox(self)
-            else:
-                widget = CompleterComboBox(self)
+            widget = ComboBox(self) if len(types) <= 6 else CompleterComboBox(self)
 
             for typ in types:
                 widget.addItem(getTypeName(typ), typ)

@@ -118,8 +118,8 @@ def checkIfAccepted(func):
     return wrap
 
 
-def getInputWidget(objTypeHint, rmDefParams=True, title="", paramsToHide: dict = None,
-                   parent=None, objVal=None, paramsToAttrs=None, includeInheritedTyps=True, **kwargs) -> QWidget:
+def getInputWidget(objTypeHint, rmDefParams=True, title="", paramsToHide: dict = None, parent=None, objVal=None,
+                   paramsToAttrs=None, includeInheritedTyps=True, **kwargs) -> QWidget:
     print(objTypeHint, objTypeHint.__str__, objTypeHint.__repr__, objTypeHint.__class__)
 
     optional = True if isOptional(objTypeHint) else False
@@ -132,15 +132,15 @@ def getInputWidget(objTypeHint, rmDefParams=True, title="", paramsToHide: dict =
     paramsToHide = paramsToHide if paramsToHide else ClassesInfo.default_params_to_hide(objTypeHint)
     paramsToAttrs = paramsToAttrs if paramsToAttrs else ClassesInfo.params_to_attrs(objTypeHint)
     kwargs = {
+        **kwargs,
         "rmDefParams": rmDefParams,
         "title": title,
         "paramsToHide": paramsToHide,
         "paramsToAttrs": paramsToAttrs,
         "parent": parent,
         "objVal": objVal,
-        **kwargs
+        "optional": optional
     }
-    kwargs.update(optional=optional)
 
     # if obj is given and rmDefParams = True, save all not mandatory init params of obj with val in paramsToHide
     # if obj is given and rmDefParams = False, save all hidden init params of obj with val in paramsToHide
@@ -189,7 +189,7 @@ def getInputWidget(objTypeHint, rmDefParams=True, title="", paramsToHide: dict =
 
 
 class AddObjDialog(AddDialog):
-    def __init__(self, objTypeHint, parent: 'TreeView', title="", rmDefParams=True, objVal=None):
+    def __init__(self, objTypeHint, parent: 'TreeView', title="", rmDefParams=True, objVal=None, **kwargs):
         title = title if title else f"Add {getTypeName(objTypeHint)}"
         AddDialog.__init__(self, parent, title=title)
         self.buttonOk.setEnabled(True)
@@ -199,6 +199,7 @@ class AddObjDialog(AddDialog):
         delAASParents(objVal)
 
         kwargs = {
+            **kwargs,
             "rmDefParams": rmDefParams,
             "objVal": objVal,
             "parent": self,

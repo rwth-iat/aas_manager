@@ -357,14 +357,14 @@ class PackTreeView(TreeView):
             QMessageBox.critical(self, "Error", str(e))
 
     def addItemWithDialog(self, parent: QModelIndex, objTypeHint, objVal=None,
-                          title="", rmDefParams=False):
+                          title="", rmDefParams=False, **kwargs):
         if objTypeHint is Package:
             self.newPackWithDialog()
             return
         elif objTypeHint is StoredFile:
             self.addFileWithDialog(parent)
             return
-        super(PackTreeView, self).addItemWithDialog(parent, objTypeHint, objVal, title, rmDefParams)
+        super(PackTreeView, self).addItemWithDialog(parent, objTypeHint, objVal, title, rmDefParams, **kwargs)
 
     def newPackWithDialog(self, filter=FILTER_AAS_FILES):
         saved = False
