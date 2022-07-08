@@ -65,6 +65,7 @@ class CompleterLineEdit(QLineEdit):
             self.clicked.emit()
             self.completer().setCompletionMode(QCompleter.UnfilteredPopupCompletion)
             self.callPopup()
+            self.selectAll()
         super(CompleterLineEdit, self).mouseReleaseEvent(a0)
 
     def onTextEdited(self):
