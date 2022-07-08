@@ -51,11 +51,11 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
     def initActions(self):
         self.exitAct = QAction(EXIT_ICON, "E&xit", self,
                                statusTip="Exit the application",
-                               triggered=self.close)
+                               triggered=lambda: self.close())
 
         self.aboutDialogAct = QAction("About", self,
                                       statusTip=f"Show information about {APPLICATION_NAME}",
-                                      triggered=AboutDialog(self).exec)
+                                      triggered=lambda: AboutDialog(self).exec())
 
         self.complToolDialogAct = QAction("Compliance tool", self,
                                       statusTip="Open compliance tool",
@@ -63,7 +63,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.importToolAct = QAction("Table import tool", self,
                                       statusTip="Switch to table import mode",
-                                      triggered=self.showImportApp)
+                                      triggered=lambda: self.showImportApp())
 
         self.settingsDialogAct = QAction(SETTINGS_ICON, "Settings", self,
                                          statusTip=f"Edit application settings",
@@ -74,7 +74,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         for theme in THEMES:
             themeAct = QAction(theme, self,
                                statusTip=f"Choose {theme} theme",
-                               triggered=self.toggleThemeSlot)
+                               triggered=lambda: self.toggleThemeSlot())
             self.themeActs.append(themeAct)
 
         self.setHOrientationAct = QAction("Horizontal", self,

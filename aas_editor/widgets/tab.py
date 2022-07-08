@@ -132,24 +132,24 @@ class TabBar(QTabBar):
 
         self.closeOthersAct = QAction("Close others", self,
                                    statusTip="Close all tabs except selected",
-                                   triggered=self.closeOthers)
+                                   triggered=lambda: self.closeOthers())
 
         self.closeAllRightAct = QAction("Close all to the right", self,
                                         statusTip="Close all tabs to the right",
-                                        triggered=self.closeAllRight)
+                                        triggered=lambda: self.closeAllRight())
 
         self.closeAllLeftAct = QAction("Close all to the left", self,
                                        statusTip="Close all tabs to the left",
-                                       triggered=self.closeAllLeft)
+                                       triggered=lambda: self.closeAllLeft())
 
         self.splitVerticallyAct = QAction(SPLIT_VERT_ICON,
                                           "Split vertically", self,
                                           statusTip="Split editor area into 2 tab groups",
-                                          triggered=self.splitVertically)
+                                          triggered=lambda: self.splitVertically())
 
         self.splitHorizontallyAct = QAction(SPLIT_HORIZ_ICON, "Split horizontally", self,
                                             statusTip="Split editor area into 2 tab groups",
-                                            triggered=self.splitHorizontally)
+                                            triggered=lambda: self.splitHorizontally())
 
 
     def closeOthers(self):
@@ -310,14 +310,14 @@ class Tab(QWidget):
                                statusTip=f"Go back one item",
                                toolTip=f"Go back one item",
                                shortcut=SC_BACK,
-                               triggered=self.openPrevItem,
+                               triggered=lambda: self.openPrevItem(),
                                enabled=False)
 
         self.forwardAct = QAction(FORWARD_ICON, "Forward", self,
                                   statusTip=f"Go forward one item",
                                   toolTip=f"Go forward one item",
                                   shortcut=SC_FORWARD,
-                                  triggered=self.openNextItem,
+                                  triggered=lambda: self.openNextItem(),
                                   enabled=False)
 
     def windowTitle(self) -> str:
@@ -499,11 +499,11 @@ class TabWidget(QTabWidget):
     def initActions(self):
         self.zoomInAct = QAction(ZOOM_IN_ICON, "Zoom in", self,
                                  statusTip="Zoom in detailed info",
-                                 triggered=self.zoomIn)
+                                 triggered=lambda: self.zoomIn())
 
         self.zoomOutAct = QAction(ZOOM_OUT_ICON, "Zoom out", self,
                                   statusTip="Zoom out detailed info",
-                                  triggered=self.zoomOut)
+                                  triggered=lambda: self.zoomOut())
 
     def zoomIn(self):
         if isinstance(self.currentWidget(), Tab):

@@ -67,7 +67,7 @@ class PackHeaderView(HeaderView):
             showColumnsAct = QAction(f"{clsname}", self,
                                      toolTip=f"Show attributes of Type: {clsname}",
                                      statusTip=f"Show attributes of Type: {clsname}",
-                                     triggered=self.onShowListOfSectionsAct)
+                                     triggered=lambda: self.onShowListOfSectionsAct())
             showColumnsAct.setData(sectionNames)
             showColumns4typeMenu.addAction(showColumnsAct)
 
@@ -77,7 +77,7 @@ class PackHeaderView(HeaderView):
             showColumnsAct = QAction(f"{listname}", self,
                                      toolTip=f"Show custom list {listname}: {sectionNames}. To manage custom lists, edit custom_column_lists.json",
                                      statusTip=f"Show custom list {listname}: {sectionNames}. To manage custom lists, edit custom_column_lists.json",
-                                     triggered=self.onShowListOfSectionsAct)
+                                     triggered=lambda: self.onShowListOfSectionsAct())
             showColumnsAct.setData(sectionNames)
             showColumnsListMenu.addAction(showColumnsAct)
 
@@ -85,7 +85,7 @@ class PackHeaderView(HeaderView):
         unchooseAllAct = QAction("Hide all columns", self,
                                  toolTip="Hide all columns",
                                  statusTip="Hide all columns",
-                                 triggered=self.hideAllSections)
+                                 triggered=lambda: self.hideAllSections())
         self.menu.addAction(unchooseAllAct)
 
     def onShowListOfSectionsAct(self):
@@ -135,13 +135,13 @@ class PackTreeView(TreeView):
 
         self.newPackAct = QAction(NEW_PACK_ICON, "&New AAS file", self,
                                   statusTip="Create new AAS file",
-                                  triggered=self.newPackWithDialog,
+                                  triggered=lambda: self.newPackWithDialog(),
                                   enabled=True)
 
         self.openPackAct = QAction(OPEN_ICON, "&Open AAS file", self,
                                    shortcut=SC_OPEN,
                                    statusTip="Open AAS file",
-                                   triggered=self.openPackWithDialog,
+                                   triggered=lambda: self.openPackWithDialog(),
                                    enabled=True)
 
         # Recent files actions
@@ -149,7 +149,7 @@ class PackTreeView(TreeView):
         for i in range(MAX_RECENT_FILES):
             recentFileAct = QAction("", self,
                                     statusTip=f"Open recent file",
-                                    triggered=self.openRecentSlot,
+                                    triggered=lambda: self.openRecentSlot(),
                                     visible=False)
             self.recentFileActs.append(recentFileAct)
 
@@ -166,17 +166,17 @@ class PackTreeView(TreeView):
         self.saveAllAct = QAction(SAVE_ALL_ICON, "&Save All", self,
                                   shortcut=SC_SAVE_ALL,
                                   statusTip="Save all files",
-                                  triggered=self.saveAll,
+                                  triggered=lambda: self.saveAll(),
                                   enabled=True)
 
         self.closeAct = QAction("Close AAS file", self,
                                 statusTip="Close current file",
-                                triggered=self.closeFileWithDialog,
+                                triggered=lambda: self.closeFileWithDialog(),
                                 enabled=False)
 
         self.closeAllAct = QAction("Close all", self,
                                    statusTip="Close all files",
-                                   triggered=self.closeAllFilesWithDialog,
+                                   triggered=lambda: self.closeAllFilesWithDialog(),
                                    enabled=False)
 
         self.autoScrollToSrcAct = QAction("Autoscroll to source", self,
@@ -195,7 +195,7 @@ class PackTreeView(TreeView):
         self.shellViewAct = QAction(VIEW_ICON, "Shell view", self,
                                     toolTip="Shell view",
                                     statusTip="Change to shell view",
-                                    triggered=self.onShellViewPushed,
+                                    triggered=lambda: self.onShellViewPushed(),
                                     checkable=True)
 
         self.setItemDelegate(EditDelegate(self))

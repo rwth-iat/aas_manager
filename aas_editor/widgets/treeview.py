@@ -187,7 +187,7 @@ class TreeView(BasicTreeView):
                                statusTip="Copy selected item",
                                shortcut=SC_COPY,
                                shortcutContext=Qt.WidgetWithChildrenShortcut,
-                               triggered=self.onCopy,
+                               triggered=lambda: self.onCopy(),
                                enabled=False)
         self.addAction(self.copyAct)
 
@@ -195,7 +195,7 @@ class TreeView(BasicTreeView):
                                 statusTip="Paste from clipboard",
                                 shortcut=SC_PASTE,
                                 shortcutContext=Qt.WidgetWithChildrenShortcut,
-                                triggered=self.onPaste,
+                                triggered=lambda: self.onPaste(),
                                 enabled=False)
         self.addAction(self.pasteAct)
 
@@ -203,7 +203,7 @@ class TreeView(BasicTreeView):
                               statusTip="Cut selected item",
                               shortcut=SC_CUT,
                               shortcutContext=Qt.WidgetWithChildrenShortcut,
-                              triggered=self.onCut,
+                              triggered=lambda: self.onCut(),
                               enabled=False)
         self.addAction(self.cutAct)
 
@@ -211,7 +211,7 @@ class TreeView(BasicTreeView):
                               statusTip="Add item to selected",
                               shortcut=SC_NEW,
                               shortcutContext=Qt.WidgetWithChildrenShortcut,
-                              triggered=self.onAddAct,
+                              triggered=lambda: self.onAddAct(),
                               enabled=False)
         self.addAction(self.addAct)
 
@@ -220,7 +220,7 @@ class TreeView(BasicTreeView):
                                              statusTip="Edit/create selected item in dialog",
                                              shortcut=Qt.CTRL + Qt.Key_E,
                                              shortcutContext=Qt.WidgetWithChildrenShortcut,
-                                             triggered=self.editCreateInDialog,
+                                             triggered=lambda: self.editCreateInDialog(),
                                              enabled=False)
         self.addAction(self.editCreateInDialogAct)
 
@@ -234,14 +234,14 @@ class TreeView(BasicTreeView):
                                    statusTip="Delete/clear selected item",
                                    shortcut=SC_DELETE,
                                    shortcutContext=Qt.WidgetWithChildrenShortcut,
-                                   triggered=self.onDelClear,
+                                   triggered=lambda: self.onDelClear(),
                                    enabled=False)
         self.addAction(self.delClearAct)
 
         self.updateAct = QAction(UPDATE_ICON, "Update/reload", self,
                                  statusTip="Update/reload selected item",
                                  shortcutContext=Qt.WidgetWithChildrenShortcut,
-                                 triggered=self.onUpdate,
+                                 triggered=lambda: self.onUpdate(),
                                  enabled=True)
         self.addAction(self.updateAct)
 
@@ -249,7 +249,7 @@ class TreeView(BasicTreeView):
                                statusTip="Undo last edit action",
                                shortcut=SC_UNDO,
                                shortcutContext=Qt.WidgetWithChildrenShortcut,
-                               triggered=self.onUndo,
+                               triggered=lambda: self.onUndo(),
                                enabled=False)
         self.addAction(self.undoAct)
 
@@ -257,7 +257,7 @@ class TreeView(BasicTreeView):
                                statusTip="Redo last edit action",
                                shortcut=SC_REDO,
                                shortcutContext=Qt.WidgetWithChildrenShortcut,
-                               triggered=self.onRedo,
+                               triggered=lambda: self.onRedo(),
                                enabled=False)
         self.addAction(self.redoAct)
 
@@ -279,7 +279,7 @@ class TreeView(BasicTreeView):
                                       shortcut=SC_COLLAPSE_ALL,
                                       shortcutContext=Qt.WidgetWithChildrenShortcut,
                                       statusTip="Collapse all items",
-                                      triggered=self.collapseAll)
+                                      triggered=lambda: self.collapseAll())
         self.addAction(self.collapseAllAct)
 
         self.expandAct = QAction("Expand", self,
@@ -300,7 +300,7 @@ class TreeView(BasicTreeView):
                                     shortcut=SC_EXPAND_ALL,
                                     shortcutContext=Qt.WidgetWithChildrenShortcut,
                                     statusTip="Expand all items",
-                                    triggered=self.expandAll)
+                                    triggered=lambda: self.expandAll())
         self.addAction(self.expandAllAct)
 
         self.openInCurrTabAct = QAction("Open in current ta&b", self,
@@ -323,14 +323,14 @@ class TreeView(BasicTreeView):
                                  shortcut=SC_ZOOM_IN,
                                  shortcutContext=Qt.WidgetShortcut,
                                  statusTip="Zoom in",
-                                 triggered=self.zoomIn)
+                                 triggered=lambda: self.zoomIn())
         self.addAction(self.zoomInAct)
 
         self.zoomOutAct = QAction(ZOOM_OUT_ICON, "Zoom out", self,
                                   shortcut=SC_ZOOM_OUT,
                                   shortcutContext=Qt.WidgetShortcut,
                                   statusTip="Zoom out",
-                                  triggered=self.zoomOut)
+                                  triggered=lambda: self.zoomOut())
         self.addAction(self.zoomOutAct)
 
     def initMenu(self) -> None:
