@@ -123,6 +123,8 @@ class Package:
         for shell in self.shells:
             for submodel in self.submodels:
                 reference = AASReference.from_referable(submodel)
+                if shell.submodel is None:
+                    shell.submodel = set()
                 shell.submodel.add(reference)
             break
 
