@@ -24,7 +24,7 @@ from aas_editor.models import DetailedInfoTable
 from aas_editor.delegates import EditDelegate
 from aas_editor.settings import EMPTY_VALUES
 from aas_editor.settings.app_settings import ATTR_COLUMN_WIDTH, NAME_ROLE, ATTRIBUTE_COLUMN, \
-    VALUE_COLUMN, LINKED_ITEM_ROLE, IS_LINK_ROLE, PARENT_OBJ_ROLE
+    VALUE_COLUMN, LINKED_ITEM_ROLE, IS_LINK_ROLE, PARENT_OBJ_ROLE, OBJECT_ROLE
 from aas_editor.utils.util_type import getAttrTypeHint, isoftype
 from aas_editor.widgets import TreeView
 
