@@ -87,7 +87,7 @@ def saveMapping(pack: Package, file: str) -> bool:
 def usedColumnsInMapping(mapDict) -> List[str]:
     mapping = str(mapDict)
     columns: List[str] = re.findall(COLUMNS_PATTERN, mapping)
-    columns.sort()
+    columns.sort(key=len)
     columns = list(set([col.strip("$") for col in columns]))
     return columns
 
@@ -102,7 +102,7 @@ def unusedColumnsInMapping(mapDict, sourcefile, sheetname: Worksheet) -> List[st
     columns = colLettersInExcelSheet(sheet)
     for col in usedColumns:
         columns.remove(col)
-    columns.sort()
+    columns.sort(key=len)
     return columns
 
 
