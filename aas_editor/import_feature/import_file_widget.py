@@ -359,13 +359,9 @@ class RunImportDialog(QDialog):
         self.nameScheme = QLineEdit(self, placeholderText="Export file names scheme (e.g. 'AAS_file_$A$')")
 
         packMapping = getMapping(importSettings.mappingPackage)
-        self.usedColsLine = QLineEdit(str(usedColumnsInMapping(packMapping)).strip("[]"), self)
-        self.usedColsLine.setReadOnly(True)
-        self.unusedColsLine = QLineEdit(str(unusedColumnsInMapping(packMapping,
-                                                                   sourcefile=importSettings.sourceFile,
-                                                                   sheetname=importSettings.sheetname)).strip("[]"),
-                                        self)
-        self.unusedColsLine.setReadOnly(True)
+        self.usedColsLine = QLabel(str(usedColumnsInMapping(packMapping)).strip("[]").replace("'", ""), self)
+        self.unusedColsLine = QLabel(str(unusedColumnsInMapping(packMapping, sourcefile=importSettings.sourceFile,
+                                     sheetname=importSettings.sheetname)).strip("[]").replace("'", ""), self)
 
         layout.addRow("Start Row", self.minRow)
         layout.addRow("End Row", self.maxRow)
@@ -374,7 +370,6 @@ class RunImportDialog(QDialog):
         hbox.addWidget(self.chooseExportFolderBtn)
         layout.addRow("Export Folder", hbox)
         layout.addRow("AAS Filename Scheme", self.nameScheme)
-        layout.addRow(QLabel("Mapping statistics:"))
         layout.addRow("Used columns", self.usedColsLine)
         layout.addRow("Unused columns", self.unusedColsLine)
 
