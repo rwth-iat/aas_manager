@@ -63,7 +63,7 @@ class PreObject:
 
     def init(self):
         """Return initialized object"""
-        if hasattr(self, "object"):
+        if hasattr(self, "obj"):
             return self.obj
 
         args = []
