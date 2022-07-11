@@ -183,7 +183,7 @@ class StandardTable(QAbstractItemModel):
             package: Package = parent.data(PACKAGE_ROLE)
             package.add(obj)
             itemTyp = PackTreeViewItem
-        elif ClassesInfo.changedParentObject(parentObjCls):
+        elif ClassesInfo.changedParentObject(parentObjCls): #FIXME: Refactor
             parentObj = getattr(parentObj, ClassesInfo.changedParentObject(parentObjCls))
             parentObj.add(obj)
             itemTyp = PackTreeViewItem
@@ -346,39 +346,7 @@ class StandardTable(QAbstractItemModel):
                 self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
         elif role == Qt.EditRole:
             try:
-                value = None if str(value) == "None" else value
-                item = self.objByIndex(index)
-                if isinstance(index.parent().data(OBJECT_ROLE), list):
-                    parentList: List = item.parentObj
-                    oldValue = item.obj
-                    objIndex = parentList.index(item.obj)
-                    parentList[objIndex] = value
-                    item.obj = value
-                elif isinstance(index.parent().data(OBJECT_ROLE), AbstractSet):
-                    parentSet: AbstractSet = item.parentObj
-                    oldValue = item.obj
-                    parentSet.remove(item.obj)
-                    parentSet.add(value)
-                    item.obj = value
-                elif isinstance(index.data(OBJECT_ROLE), DictItem):
-                    oldValue: DictItem = item.obj
-                    item.obj = value
-                    if value.key != oldValue.key:
-                        item.parentObj.pop(oldValue.key)
-                    item.parentObj.update([item.obj])
-                else:
-                    oldValue = getattr(item.parentObj, item.objName)
-                    try:
-                        setattr(item.parentObj, item.objName, value)
-                    except TypeError as e:
-                        #FIXME: Warning:pyi40aas specific code part for setting Property.value
-                        try:
-                            valueTypeItem = self.match(QModelIndex(), Qt.DisplayRole, "value_type", 1)[0]
-                            self.setData(valueTypeItem, type(value), Qt.EditRole)
-                        except IndexError:
-                            raise e
-                        setattr(item.parentObj, item.objName, value)
-                    item.obj = getattr(item.parentObj, item.objName)
+                newValue, oldValue = self.editItem(index, value)
                 self.setChanged(index)
                 self.update(index)
                 self.undo.append(SetDataItem(index=QPersistentModelIndex(index), value=oldValue, role=role))
@@ -416,6 +384,45 @@ class StandardTable(QAbstractItemModel):
             raise ValueError(f"Unknown role: {role}")
         return False
 
+    def editItem(self, index: QModelIndex, value):
+        newValue = None if str(value) == "None" else value
+        item = self.objByIndex(index)
+
+        parentObj = item.parentObj
+        if ClassesInfo.changedParentObject(type(parentObj)):
+            parentObj = getattr(parentObj, ClassesInfo.changedParentObject(type(parentObj)))
+
+        if isinstance(parentObj, list):
+            oldValue = item.obj
+            objIndex = parentObj.index(item.obj)
+            parentObj[objIndex] = newValue
+            item.obj = newValue
+        elif isinstance(parentObj, AbstractSet):
+            oldValue = item.obj
+            parentObj.remove(item.obj)
+            parentObj.add(newValue)
+            item.obj = newValue
+        elif isinstance(item.obj, DictItem):
+            oldValue: DictItem = item.obj
+            item.obj = newValue
+            if newValue.key != oldValue.key:
+                parentObj.pop(oldValue.key)
+            parentObj.update([item.obj])
+        else:
+            oldValue = getattr(parentObj, item.objName)
+            try:
+                setattr(parentObj, item.objName, newValue)
+            except TypeError as e:
+                # FIXME: Warning:pyi40aas specific code part for setting Property.value
+                try:
+                    valueTypeItem = self.match(QModelIndex(), Qt.DisplayRole, "value_type", 1)[0]
+                    self.setData(valueTypeItem, type(newValue), Qt.EditRole)
+                except IndexError:
+                    raise e
+                setattr(parentObj, item.objName, newValue)
+            item.obj = getattr(parentObj, item.objName)
+        return newValue, oldValue
+
     def setChanged(self, topLeft: QModelIndex, bottomRight: QModelIndex = None):
         """Set the item and all parents as changed"""
         bottomRight = topLeft if bottomRight is None else bottomRight
@@ -451,7 +458,7 @@ class StandardTable(QAbstractItemModel):
         # set submodel_element as parentObj
         if parent.isValid():
             try:
-                parentAttr = ClassesInfo.changedParentObject(type(parentObj)) #FIXME delete if Namespace.discard() works
+                parentAttr = ClassesInfo.changedParentObject(type(parentObj))
                 parentObj = getattr(parentObj, parentAttr)
             except AttributeError:
                 pass
