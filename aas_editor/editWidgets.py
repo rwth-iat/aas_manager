@@ -289,7 +289,7 @@ class StandardInputWidget(QWidget):
         elif issubtype(self.objType, Enum):
             return PreObject(self.objType, (self.widget.currentData(),), {})
         elif issubtype(self.objType, Type):
-            return PreObject.create_object(self.widget.currentData())
+            return PreObject.useExistingObject(self.widget.currentData())
 
     def getObj2add(self):
         return self.getPreObj().init()

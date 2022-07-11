@@ -32,6 +32,9 @@ class PreObject:
         self.args: List = list(args)
         self.objType: Type = objType
 
+        self.existingObjUsed: bool = False
+        self.existingObj = None
+
     def __getattr__(self, item):
         if item in self.kwargs:
             return self.kwargs[item]
@@ -53,18 +56,18 @@ class PreObject:
     def __repr__(self):
         return self.__str__()
 
-
     @classmethod
-    def create_object(cls, obj):
+    def useExistingObject(cls, obj):
         """If object already exists and no PreObject needed"""
         c = PreObject(type(obj), [], {})
-        c.obj = obj
+        c.existingObjUsed = True
+        c.existingObj = obj
         return c
 
     def init(self):
         """Return initialized object"""
-        if hasattr(self, "obj"):
-            return self.obj
+        if self.existingObjUsed:
+            return self.existingObj
 
         args = []
         for arg in self.args:
