@@ -51,3 +51,6 @@ class DetailImportTreeView(AttrsTreeView):
         kwargs["useValidators"] = False
         return super().replItemWithDialog(index=index, objTypeHint=objTypeHint, objVal=objVal,
                                           title=title, rmDefParams=rmDefParams, **kwargs)
+
+    def isEditableInsideCell(self, index: QModelIndex):
+        return False
