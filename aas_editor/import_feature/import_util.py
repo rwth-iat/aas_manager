@@ -145,7 +145,7 @@ def importValueFromExampleRow(rawValue: str, row: Dict):
     for col in columns:
         column = col.strip("$")
         importedVal = row[column]
-        value = rawValue.replace(f"${column}$", importedVal, -1)
+        value = value.replace(f"${column}$", importedVal, -1)
     return value
 
 
