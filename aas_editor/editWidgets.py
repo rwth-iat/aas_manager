@@ -296,8 +296,8 @@ class StandardInputWidget(QWidget):
 
     def setVal(self, val):
         if isoftype(val, PreObject):
-            if hasattr(val, "obj") and val.obj:
-                val = val.obj
+            if val.existingObjUsed:
+                val = val.existingObject
             else:
                 val = val.args[0]
 

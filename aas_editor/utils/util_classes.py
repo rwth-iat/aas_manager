@@ -59,7 +59,7 @@ class PreObject:
     @classmethod
     def useExistingObject(cls, obj):
         """If object already exists and no PreObject needed"""
-        c = PreObject(type(obj), [], {})
+        c = cls(type(obj), [], {})
         c.existingObjUsed = True
         c.existingObj = obj
         return c
