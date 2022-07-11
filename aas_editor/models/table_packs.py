@@ -57,4 +57,4 @@ class PacksTable(StandardTable):
             setattr(parentObj, objName, value)
             return value, oldValue
         else:
-            super().editItem(index, value)
+            return super().editItem(index, value)
