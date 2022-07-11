@@ -128,13 +128,8 @@ class AttrsTreeView(TreeView):
         return super(AttrsTreeView, self).currentIndex().siblingAtColumn(VALUE_COLUMN)
 
     def isEditableInsideCell(self, index: QModelIndex):
-        data = index.data(OBJECT_ROLE)
-        if index.siblingAtColumn(VALUE_COLUMN).flags() & Qt.ItemIsEditable \
-                and isoftype(data, self.itemDelegate().editableTypesInTable) \
-                and data not in EMPTY_VALUES:
-            return True
-        else:
-            return False
+        index = index.siblingAtColumn(VALUE_COLUMN)
+        return super().isEditableInsideCell(index)
 
     def openRef(self, detailInfoItem: QModelIndex, newTab=True, setCurrent=True, newWindow=False):
         """Open referenced item if clicked on Reference and item is saved locally"""
