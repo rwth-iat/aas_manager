@@ -59,8 +59,8 @@ class ImportTable(PacksTable):
                 if isinstance(value, Referable):
                     setattr(value, MAPPING_ATTR, preObject.getMapping())
                 elif isinstance(self.data(index, OBJECT_ROLE), Referable):
-                    parentObj = self.model().data(index, OBJECT_ROLE)
-                    attrName = self.model().data(index, COLUMN_NAME_ROLE)
+                    parentObj = index.data(OBJECT_ROLE)
+                    attrName = index.data(COLUMN_NAME_ROLE)
                     mapping = getattr(parentObj, MAPPING_ATTR, {})
                     mapping[attrName] = preObject.getMapping()
 
