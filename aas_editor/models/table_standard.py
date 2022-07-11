@@ -389,7 +389,7 @@ class StandardTable(QAbstractItemModel):
         item = self.objByIndex(index)
 
         parentObj = item.parentObj
-        if ClassesInfo.changedParentObject(type(parentObj)):
+        if ClassesInfo.changedParentObject(type(parentObj)) and index.parent().isValid():
             parentObj = getattr(parentObj, ClassesInfo.changedParentObject(type(parentObj)))
 
         if isinstance(parentObj, list):
