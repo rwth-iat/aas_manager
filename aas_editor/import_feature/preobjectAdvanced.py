@@ -29,11 +29,8 @@ IMPORT_FILE = "Motor Daten aus EMSRDB.xlsx"
 
 
 class PreObjectImport(PreObject):
-    def __init__(self, objType, args, kwargs: Dict[str, object], obj=None):
+    def __init__(self, objType, args, kwargs: Dict[str, object]):
         super(PreObjectImport, self).__init__(objType, args, kwargs)
-        if obj is not None:
-            self.existingObjUsed = True
-            self.existingObject = obj
         self._fromPreObjs2KwargObjs()
         paramsToAttrs: Dict[str, str] = ClassesInfo.params_to_attrs(objType)
         self.attrsToParams: Dict[str, str] = dict((v, k) for k, v in paramsToAttrs.items())
@@ -48,7 +45,7 @@ class PreObjectImport(PreObject):
             return PreObjectImport.fromPreObject(obj)
 
         if obj is None:
-            return PreObjectImport(objType, [], {})
+            return PreObjectImport.useExistingObject(obj)
         elif issubtype(objType, bool):
             return PreObjectImport(objType, (obj,), {})
         elif issubtype(objType, (str, int, float, bytes)):
@@ -56,7 +53,7 @@ class PreObjectImport(PreObject):
         elif issubtype(objType, Enum):
             return PreObjectImport(objType, (obj,), {})
         elif issubtype(objType, Type) or objType == type:
-            return PreObjectImport(objType, [], {}, obj=obj)
+            return PreObjectImport.useExistingObject(obj)
         elif issubtype(objType, dict):
             listObj = []
             for item in obj:
@@ -92,35 +89,38 @@ class PreObjectImport(PreObject):
 
     @staticmethod
     def fromPreObject(preObj: PreObject):
-        return PreObjectImport(preObj.objType, preObj.args, preObj.kwargs, obj=getattr(preObj, "existingObj", None))
+        if preObj.existingObjUsed:
+            return PreObjectImport.useExistingObject(preObj.existingObj)
+        else:
+            return PreObjectImport(preObj.objType, preObj.args, preObj.kwargs)
 
     def _fromPreObjs2KwargObjs(self):
         args = []
         for arg in self.args:
             if isinstance(arg, PreObject):
-                arg = PreObjectImport(arg.objType, arg.args, arg.kwargs, obj=getattr(arg, "existingObj", None))
+                arg = PreObjectImport.fromPreObject(arg)
             elif arg and type(arg) == list and isinstance(arg[0], PreObject):
-                arg = [PreObjectImport(i.objType, i.args, i.kwargs, obj=getattr(i, "existingObj", None)) for i in arg]
+                arg = [PreObjectImport.fromPreObject(i) for i in arg]
             args.append(arg)
 
         kwargs = {}
         for key in self.kwargs:
             value = self.kwargs[key]
             if isinstance(value, PreObject):
-                value = PreObjectImport(value.objType, value.args, value.kwargs, obj=getattr(value, "existingObj", None))
+                value = PreObjectImport.fromPreObject(value)
             if isinstance(key, PreObject):
-                key = PreObjectImport(key.objType, key.args, key.kwargs, obj=getattr(key, "existingObj", None))
+                key = PreObjectImport.fromPreObject(key)
             kwargs[key] = value
 
         self.args = args
         self.kwargs = kwargs
 
     def initWithImport(self, rowNum, sourceWB, sheetname):
-        if self.existingObject:
-            if isinstance(self.existingObject, str):
-                if import_util.isValueToImport(self.existingObject):
-                    self.existingObject = import_util.importValueFromExcelWB(self.existingObject, workbook=sourceWB, row=rowNum, sheetname=sheetname)
-            return self.existingObject
+        if self.existingObjUsed:
+            if isinstance(self.existingObj, str):
+                if import_util.isValueToImport(self.existingObj):
+                    self.existingObj = import_util.importValueFromExcelWB(self.existingObj, workbook=sourceWB, row=rowNum, sheetname=sheetname)
+            return self.existingObj
 
         args = []
         for value in self.args:
@@ -147,11 +147,11 @@ class PreObjectImport(PreObject):
     def initWithExampleRowImport(self):
         exampleRow = import_file_widget.ImportManageWidget.IMPORT_SETTINGS.exampleRowValue
 
-        if self.existingObject:
-            if isinstance(self.existingObject, str):
-                if import_util.isValueToImport(self.existingObject):
-                    self.existingObject = import_util.importValueFromExampleRow(self.existingObject, row=exampleRow)
-            return self.existingObject
+        if self.existingObjUsed:
+            if isinstance(self.existingObj, str):
+                if import_util.isValueToImport(self.existingObj):
+                    self.existingObj = import_util.importValueFromExampleRow(self.existingObj, row=exampleRow)
+            return self.existingObj
 
         args = []
         for value in self.args:
@@ -173,8 +173,8 @@ class PreObjectImport(PreObject):
         return self.objType(*args, **kwargs)
 
     def __str__(self):
-        if self.existingObject:
-            return str(self.existingObject)
+        if self.existingObjUsed:
+            return str(self.existingObj)
         else:
             args = str(self.args).strip("[]")
             kwargs = ""
@@ -206,8 +206,8 @@ class PreObjectImport(PreObject):
 
     def getMapping(self) -> Dict[str, str]:
         mapping = {}
-        if self.existingObject and isinstance(self.existingObject, str) and import_util.isValueToImport(self.existingObject):
-            return str(self.existingObject)
+        if self.existingObjUsed and isinstance(self.existingObj, str) and import_util.isValueToImport(self.existingObj):
+            return str(self.existingObj)
         elif self.args:
             if len(self.args) > 1:
                 raise NotImplementedError

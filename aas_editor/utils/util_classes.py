@@ -32,7 +32,7 @@ class PreObject:
         self.args: List = list(args)
         self.objType: Type = objType
 
-        self.existingObjUsed: bool = False
+        self.existingObjUsed: bool = False if objType is not type(None) else True
         self.existingObj = None
 
     def __getattr__(self, item):

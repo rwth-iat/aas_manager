@@ -38,8 +38,11 @@ from aas_editor import widgets
 def isValOk4Typehint(val, typehint):
     if isoftype(val, typehint):
         return True
-    elif isoftype(val, PreObject) and issubtype(val.objType, typehint):
-        return True
+    elif isoftype(val, PreObject):
+        if val.existingObjUsed:
+            return isoftype(val.existingObj, typehint)
+        else:
+            return issubtype(val.objType, typehint)
     else:
         return False
 
@@ -318,11 +321,13 @@ class ObjGroupBox(GroupBox):
 
     def getInitialInputWidget(self, param: str, val, **kwargs) -> QWidget:
         paramTypeHint = self.reqParamsDict[param]
-        if isOptional(paramTypeHint) and not val:
-            widget = self.getCreatePushBtn(param)
-        else:
-            widget = self.getInputWidget(param, val, **kwargs)
-        return widget
+        if isOptional(paramTypeHint):
+            if val is None or \
+                    (isinstance(val, PreObject) and
+                     val.existingObjUsed and
+                     val.existingObj is None):
+                return self.getCreatePushBtn(param)
+        return self.getInputWidget(param, val, **kwargs)
 
     def getInputWidget(self, param: str, val, **kwargs) -> QWidget:
         paramTypeHint = self.reqParamsDict[param]
