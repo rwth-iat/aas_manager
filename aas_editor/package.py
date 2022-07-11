@@ -83,7 +83,17 @@ class Package:
         else:
             raise TypeError("Wrong file type:", self.file.suffix)
 
+    def _update_objstore(self):
+        old_identifiers = list(self.objStore._backend.keys())
+        for i in old_identifiers:
+            obj = self.objStore.get_identifiable(i)
+            if i != obj.identification:
+                self.objStore._backend[obj.identification] = obj
+                del self.objStore._backend[i]
+
     def write(self, file: str = None):
+        self._update_objstore()
+
         if self.allSubmodelRefsToAas:
             self.all_submodels_to_aas()
         if self.allCDRefsToAas:
