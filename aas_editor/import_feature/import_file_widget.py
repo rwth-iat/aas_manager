@@ -187,6 +187,8 @@ class ImportManageWidget(QWidget):
                 fileName = import_util.importValueFromExcelWB(
                     fileNameScheme, workbook=excelfile, row=row,
                     sheetname=ImportManageWidget.IMPORT_SETTINGS.sheetname)
+                if "." not in fileName:
+                    fileName = f"{fileName}.aasx"
             newPack.write(f"{exportFolder}/{fileName}")
         QMessageBox.information(self, "Export was successful", "AAS files were successfully created!")
 
@@ -362,12 +364,12 @@ class RunImportDialog(QDialog):
         self.unusedColsLine = QLabel(str(unusedColumnsInMapping(packMapping, sourcefile=importSettings.sourceFile,
                                      sheetname=importSettings.sheetname)).strip("[]").replace("'", ""), self)
 
-        layout.addRow("Start Row", self.minRow)
-        layout.addRow("End Row", self.maxRow)
+        layout.addRow("Start Row*", self.minRow)
+        layout.addRow("End Row*", self.maxRow)
         hbox = QHBoxLayout()
         hbox.addWidget(self.exportFolderLine)
         hbox.addWidget(self.chooseExportFolderBtn)
-        layout.addRow("Export Folder", hbox)
+        layout.addRow("Export Folder*", hbox)
         layout.addRow("AAS Filename Scheme", self.nameScheme)
         layout.addRow("Used columns", self.usedColsLine)
         layout.addRow("Unused columns", self.unusedColsLine)
