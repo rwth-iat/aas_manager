@@ -67,10 +67,9 @@ class AboutDialog(QMessageBox):
 class ErrorMessageBox(QMessageBox):
     @classmethod
     def withTraceback(cls, parent, text: str):
-        tb = traceback.format_exc()
-        err_msg = f"{tb}".replace("_", "\\_").replace("*", "\\*").replace("[", "\\[").replace("`", "\\`")
+        err_msg = traceback.format_exc()
         box = QMessageBox(parent)
-        box.setMinimumWidth(300)
+        box.setMinimumWidth(400)
         box.setIcon(QMessageBox.Critical)
         box.setWindowTitle("Error")
         box.setText(text)
@@ -80,12 +79,11 @@ class ErrorMessageBox(QMessageBox):
     @classmethod
     def withDetailedText(cls, parent, text: str):
         box = QMessageBox(parent)
-        box.setMinimumWidth(300)
+        box.setMinimumWidth(400)
         box.setIcon(QMessageBox.Critical)
         box.setWindowTitle("Error")
         if "\n\n" in text:
             text, detailedText = text.split("\n\n", 1)
-            detailedText = f"{detailedText}".replace("_", "\\_").replace("*", "\\*").replace("[", "\\[").replace("`", "\\`")
             box.setDetailedText(detailedText)
         box.setText(text)
         return box
