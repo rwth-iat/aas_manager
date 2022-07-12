@@ -53,6 +53,7 @@ class ImportSettings:
         self._exampleRow = row
         if self.sourceFile:
             self.exampleRowValue = import_util.importRowValueFromExcel(sourcefile=self.sourceFile, row=row)
+            preobjectImport.PreObjectImport.EXAMPLE_ROW_VALUE = self.exampleRowValue
 
     @property
     def sheetname(self):

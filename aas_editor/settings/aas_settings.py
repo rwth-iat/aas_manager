@@ -503,8 +503,7 @@ ATTR_INFOS_TO_SIMPLIFY = (AdministrativeInformation, Identifier,)
 TYPES_NOT_TO_POPULATE = (type, ABCMeta)
 TYPES_WITH_INSTANCES_NOT_TO_POPULATE = (
     AbstractObjectStore, str, int, float, bool, Enum, Path, aas_editor.additional.classes.DictItem, Decimal, type, datetime.date)  # '+ TYPES_IN_ONE_ROW
-#COMPLEX_ITERABLE_TYPES = (Namespace, PreObjectImport) #FIXME
-COMPLEX_ITERABLE_TYPES = (Namespace,)
+COMPLEX_ITERABLE_TYPES = (Namespace, PreObjectImport)
 
 TYPE_SHORTS_DICT = {
     AssetAdministrationShell: "aas",
