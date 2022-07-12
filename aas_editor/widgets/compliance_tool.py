@@ -14,6 +14,7 @@ from basyx.aas.compliance_tool.state_manager import ComplianceToolStateManager
 from aas_editor.settings import FILTER_AAS_FILES
 from aas_editor.widgets.combobox import ComboBox
 from aas_editor.widgets.lineEdit import DropFilePlainTextEdit
+from aas_editor import dialogs
 
 
 class ComplianceToolDialog(QDialog):
@@ -83,4 +84,4 @@ class ComplianceToolDialog(QDialog):
             info = manager.format_state_manager(self.optionsComboBox.currentData())
             self.plainTextEdit.setPlainText(info)
         except Exception as e:
-            QMessageBox.critical(self, "Error", str(e))
+            dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()

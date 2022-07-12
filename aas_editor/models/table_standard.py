@@ -7,15 +7,9 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-#
-#  This program is made available under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-#  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-#
-#  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
+
 import copy
+import traceback
 from collections import namedtuple, deque
 from enum import Enum
 from typing import Any, Iterable, Union, AbstractSet, List
@@ -271,7 +265,8 @@ class StandardTable(QAbstractItemModel):
                     delAASParents(objToCopy)  # TODO check if there is a better solution to del aas parents
                     return copy.deepcopy(objToCopy)
             except Exception as e:
-                self.lastErrorMsg = f"Error occurred copying {index.data(NAME_ROLE)}: {e}"
+                tb = traceback.format_exc()
+                self.lastErrorMsg = f"Error occurred copying {index.data(NAME_ROLE)}: {e}\n\n{tb}"
                 print(self.lastErrorMsg)
                 self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
         else:
@@ -332,7 +327,8 @@ class StandardTable(QAbstractItemModel):
                 self.addItem(value, index)
                 return True
             except Exception as e:
-                self.lastErrorMsg = f"Error occurred while adding item to {index.data(NAME_ROLE)}: {e}"
+                tb = traceback.format_exc()
+                self.lastErrorMsg = f"Error occurred while adding item to {index.data(NAME_ROLE)}: {e}\n\n{tb}"
                 print(self.lastErrorMsg)
                 self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
         elif role == CLEAR_ROW_ROLE:
@@ -342,7 +338,8 @@ class StandardTable(QAbstractItemModel):
                 self.dataChanged.emit(parent, parent)
                 return True
             except Exception as e:
-                self.lastErrorMsg = f"{index.data(NAME_ROLE)} could not be deleted or set to default: {e}"
+                tb = traceback.format_exc()
+                self.lastErrorMsg = f"{index.data(NAME_ROLE)} could not be deleted or set to default: {e}\n\n{tb}"
                 self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
         elif role == Qt.EditRole:
             try:
@@ -353,7 +350,8 @@ class StandardTable(QAbstractItemModel):
                 self.redo.clear()
                 return True
             except Exception as e:
-                self.lastErrorMsg = f"Error occurred while setting {self.objByIndex(index).objectName}: {e}"
+                tb = traceback.format_exc()
+                self.lastErrorMsg = f"Error occurred while setting {self.objByIndex(index).objectName}: {e}\n\n{tb}"
                 self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
         elif role == UNDO_ROLE:
             if value == NOT_GIVEN and self.undo:

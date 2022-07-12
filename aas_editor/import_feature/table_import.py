@@ -7,6 +7,7 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
+import traceback
 from typing import Any
 
 from PyQt5.QtCore import QModelIndex, Qt, QPersistentModelIndex
@@ -74,7 +75,7 @@ class ImportTable(PacksTable):
 
             return result
         except Exception as e:
-            self.lastErrorMsg = f"Error occurred: {e}"
-            print(self.lastErrorMsg)
+            tb = traceback.format_exc()
+            self.lastErrorMsg = f"Error occurred: {e}\n\n{tb}"
             self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
             return False

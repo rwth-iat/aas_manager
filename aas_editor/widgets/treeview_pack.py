@@ -21,14 +21,14 @@ from typing import Optional
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex, QSettings, QPoint
-from PyQt5.QtGui import QDropEvent, QDragEnterEvent, QMouseEvent, QColor, QPalette, QPainter, QKeyEvent
-from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QStyleOptionViewItem, QMenu, QWidget
+from PyQt5.QtGui import QDropEvent, QDragEnterEvent, QKeyEvent
+from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QMenu, QWidget
 from basyx.aas.model import AssetAdministrationShell
 
 from aas_editor.delegates import EditDelegate
 from aas_editor.package import Package, StoredFile
 from aas_editor.settings import FILTER_AAS_FILES, CLASSES_INFO, PACKVIEW_ATTRS_INFO, \
-    FILE_TYPE_FILTERS, NOT_GIVEN, EMPTY_VALUES, REFERABLE_INHERITORS_ATTRS
+    FILE_TYPE_FILTERS, NOT_GIVEN, REFERABLE_INHERITORS_ATTRS
 from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, \
     APPLICATION_NAME, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, \
     TYPE_ROLE, \
@@ -39,9 +39,9 @@ from aas_editor.settings.icons import NEW_PACK_ICON, OPEN_ICON, OPEN_DRAG_ICON, 
 from aas_editor.utils import util_type
 from aas_editor.utils.util import getDefaultVal, getReqParams4init
 from aas_editor.utils.util_classes import ClassesInfo
-from aas_editor.utils.util_type import getAttrTypeHint, isoftype, checkType
 from aas_editor.widgets import TreeView
 from aas_editor.widgets.treeview import HeaderView
+from aas_editor import dialogs
 
 
 class PackHeaderView(HeaderView):
@@ -218,7 +218,7 @@ class PackTreeView(TreeView):
             if attribute == OBJECT_COLUMN_NAME:
                 attrTypeHint = type(parentObj)
             else:
-                attrTypeHint = getAttrTypeHint(type(parentObj), attribute)
+                attrTypeHint = util_type.getAttrTypeHint(type(parentObj), attribute)
         except KeyError as e:
             if objVal:
                 attrTypeHint = type(objVal)
@@ -353,8 +353,7 @@ class PackTreeView(TreeView):
             else:
                 raise TypeError("Parent type is not extendable:", type(parent.data(OBJECT_ROLE)))
         except Exception as e:
-            print(e)
-            QMessageBox.critical(self, "Error", str(e))
+            dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
 
     def addItemWithDialog(self, parent: QModelIndex, objTypeHint, objVal=None,
                           title="", rmDefParams=False, **kwargs):
@@ -414,7 +413,7 @@ class PackTreeView(TreeView):
             self.updateRecentFiles(absFile)
         except Exception as e:
             self.removeFromRecentFiles(file)
-            QMessageBox.critical(self, "Error", f"Package {file} couldn't be opened: {e}")
+            dialogs.ErrorMessageBox.withTraceback(self, f"Package {file} couldn't be opened: {e}").exec()
         else:
             openedPacks = self.model().data(QModelIndex(), OPENED_FILES_ROLE)
             if Path(file).absolute() in openedPacks:
@@ -431,7 +430,7 @@ class PackTreeView(TreeView):
             self.updateRecentFiles(pack.file.absolute().as_posix())
             return True
         except (TypeError, ValueError, KeyError) as e:
-            QMessageBox.critical(self, "Error", f"Package couldn't be saved: {file}: {e}")
+            dialogs.ErrorMessageBox.withTraceback(self, f"Package couldn't be saved: {file}: {e}").exec()
         except AttributeError as e:
             QMessageBox.critical(self, "Error", f"No chosen package to save: {e}")
         return False
@@ -618,7 +617,7 @@ class PackTreeView(TreeView):
                 return False
 
             try:
-                attrTypehint = getAttrTypeHint(type(index.data(OBJECT_ROLE)), attrName, delOptional=False)
+                attrTypehint = util_type.getAttrTypeHint(type(index.data(OBJECT_ROLE)), attrName, delOptional=False)
             except KeyError as e:
                 print(e)
                 return False
@@ -627,7 +626,7 @@ class PackTreeView(TreeView):
             targetTypeHint = attrTypehint
 
             try:
-                if checkType(obj2paste, targetTypeHint):
+                if util_type.checkType(obj2paste, targetTypeHint):
                     return True
             except (AttributeError, TypeError) as e:
                 print(e)
@@ -641,11 +640,10 @@ class PackTreeView(TreeView):
         else:
             obj2paste = self.treeObjClipboard[0]
             targetParentObj = index.data(OBJECT_ROLE)
-            targetObj = getattr(targetParentObj, attrName)
-            targetTypeHint = getAttrTypeHint(type(index.data(OBJECT_ROLE)), attrName, delOptional=False)
+            targetTypeHint = util_type.getAttrTypeHint(type(index.data(OBJECT_ROLE)), attrName, delOptional=False)
             reqAttrsDict = getReqParams4init(type(obj2paste), rmDefParams=True)
 
             # if no req. attrs, paste data without dialog
             # else paste data with dialog for asking to check req. attrs
-            if checkType(obj2paste, targetTypeHint):
+            if util_type.checkType(obj2paste, targetTypeHint):
                 self._onPasteReplace(index, obj2paste, withDialog=bool(reqAttrsDict))

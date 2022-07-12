@@ -26,9 +26,7 @@ from basyx.aas.model.datatypes import Date
 from aas_editor.utils.util import inheritors
 from aas_editor.utils.util_classes import PreObject
 from aas_editor.utils.util_type import issubtype, getTypeName, isoftype
-from aas_editor.widgets import CompleterComboBox
-from aas_editor.widgets.combobox import ComboBox
-from aas_editor.widgets.lineEdit import LineEdit
+from aas_editor import widgets
 
 
 class BytesEdit(QWidget):
@@ -243,17 +241,17 @@ class StandardInputWidget(QWidget):
         if issubtype(self.objType, bool):
             widget = QCheckBox(self)
         elif issubtype(self.objType, str):
-            widget = LineEdit(self)
+            widget = widgets.LineEdit(self)
             if kwargs.get("completions"):
                 completer = QCompleter(kwargs["completions"], self)
                 completer.setCaseSensitivity(Qt.CaseInsensitive)
                 widget.setCompleter(completer)
         elif issubtype(self.objType, int):
-            widget = LineEdit(self)
+            widget = widgets.LineEdit(self)
             if self.useValidators:
                 widget.setValidator(QIntValidator())
         elif issubtype(self.objType, float):
-            widget = LineEdit(self)
+            widget = widgets.LineEdit(self)
             if self.useValidators:
                 widget.setValidator(QDoubleValidator())
         elif issubtype(self.objType, (Enum, Type)):
@@ -270,7 +268,7 @@ class StandardInputWidget(QWidget):
                     # add Union Type attrs to types
                     types = union.__args__
 
-            widget = ComboBox(self) if len(types) <= 6 else CompleterComboBox(self)
+            widget = widgets.ComboBox(self) if len(types) <= 6 else widgets.CompleterComboBox(self)
 
             for typ in types:
                 widget.addItem(getTypeName(typ), typ)
@@ -319,7 +317,7 @@ class SpecialInputWidget(StandardInputWidget):
     def _initWidget(self, **kwargs):
         if issubtype(self.objType, datetime.tzinfo):
             timezones = pytz.all_timezones
-            widget = CompleterComboBox(self)
+            widget = widgets.CompleterComboBox(self)
             widget.addItem("None", None)
             for timezone in timezones:
                 widget.addItem(timezone, timezone)
@@ -332,7 +330,7 @@ class SpecialInputWidget(StandardInputWidget):
         elif issubtype(self.objType, dateutil.relativedelta.relativedelta):
             widget = DurationEdit(self)
         elif issubtype(self.objType, decimal.Decimal):
-            widget = LineEdit(self)
+            widget = widgets.LineEdit(self)
             widget.setValidator(QDoubleValidator())
         elif issubtype(self.objType, (bytes, bytearray)):
             widget = BytesEdit(self)

@@ -18,15 +18,15 @@
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex
-from PyQt5.QtWidgets import QAction, QAbstractScrollArea, QAbstractItemView, QMessageBox
+from PyQt5.QtWidgets import QAbstractScrollArea
 
 from aas_editor.models import DetailedInfoTable
 from aas_editor.delegates import EditDelegate
-from aas_editor.settings import EMPTY_VALUES
 from aas_editor.settings.app_settings import ATTR_COLUMN_WIDTH, NAME_ROLE, ATTRIBUTE_COLUMN, \
-    VALUE_COLUMN, LINKED_ITEM_ROLE, IS_LINK_ROLE, PARENT_OBJ_ROLE, OBJECT_ROLE
-from aas_editor.utils.util_type import getAttrTypeHint, isoftype
+    VALUE_COLUMN, LINKED_ITEM_ROLE, IS_LINK_ROLE, PARENT_OBJ_ROLE
+from aas_editor.utils.util_type import getAttrTypeHint
 from aas_editor.widgets import TreeView
+from aas_editor import dialogs
 
 
 class AttrsTreeView(TreeView):
@@ -101,8 +101,7 @@ class AttrsTreeView(TreeView):
             else:
                 self.addItemWithDialog(index, attrTypeHint, title=f"Add {attribute} element")
         except Exception as e:
-            print(e)
-            QMessageBox.critical(self, "Error", str(e))
+            dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
 
     def onEditCreate(self, objVal, index=QModelIndex()):
         """

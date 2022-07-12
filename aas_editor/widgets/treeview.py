@@ -7,14 +7,6 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-#
-#  This program is made available under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-#  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-#
-#  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 from typing import Optional, Any
 
 from PyQt5.QtCore import Qt, pyqtSignal, QModelIndex, QTimer, QAbstractItemModel, QPoint
@@ -22,9 +14,8 @@ from PyQt5.QtGui import QClipboard, QPalette, QColor, QMouseEvent, QKeyEvent
 from PyQt5.QtWidgets import QAction, QMenu, QApplication, QDialog, QMessageBox, QHeaderView, QWidget, QAbstractItemView
 
 from aas_editor.delegates import EditDelegate
-from aas_editor import dialogs
 from aas_editor.models import StandardTable
-from aas_editor.settings import NOT_GIVEN, LIGHT_BLUE_ALTERNATE, EMPTY_VALUES
+from aas_editor import settings
 from aas_editor.settings.app_settings import *
 from aas_editor.settings.icons import COPY_ICON, PASTE_ICON, CUT_ICON, ADD_ICON, DEL_ICON, UNDO_ICON, REDO_ICON, \
     ZOOM_IN_ICON, ZOOM_OUT_ICON, EXPAND_ALL_ICON, COLLAPSE_ALL_ICON, UPDATE_ICON, EDIT_ICON
@@ -37,6 +28,7 @@ from aas_editor.utils.util_classes import ClassesInfo
 from aas_editor.additional.classes import DictItem
 from aas_editor.package import Package
 from aas_editor.widgets.treeview_basic import BasicTreeView
+from aas_editor import dialogs
 
 
 class HeaderView(QHeaderView):
@@ -178,7 +170,7 @@ class TreeView(BasicTreeView):
         self.setSortingEnabled(True)
         self.setHeader(HeaderView(Qt.Horizontal, self))
         p = self.palette()
-        p.setColor(QPalette.AlternateBase, QColor(LIGHT_BLUE_ALTERNATE))
+        p.setColor(QPalette.AlternateBase, QColor(settings.LIGHT_BLUE_ALTERNATE))
         self.setPalette(p)
 
     # noinspection PyArgumentList
@@ -586,7 +578,7 @@ class TreeView(BasicTreeView):
             dialog = dialogs.AddObjDialog(objTypeHint, self, rmDefParams=rmDefParams,
                                           objVal=objVal, title=title, **kwargs)
         except Exception as e:
-            QMessageBox.critical(self, "Error", str(e))
+            dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
             return False
 
         result = False
@@ -594,7 +586,7 @@ class TreeView(BasicTreeView):
             try:
                 obj = self._getObjFromDialog(dialog)
             except Exception as e:
-                QMessageBox.critical(self, "Error", str(e))
+                dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
                 continue
             result = self._setData(parent, obj, ADD_ITEM_ROLE)
         if dialog.result() == QDialog.Rejected:
@@ -609,14 +601,14 @@ class TreeView(BasicTreeView):
             dialog = dialogs.AddObjDialog(objTypeHint, self, rmDefParams=rmDefParams,
                                           objVal=objVal, title=title, **kwargs)
         except Exception as e:
-            QMessageBox.critical(self, "Error", str(e))
+            dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
             return False
         result = False
         while not result and dialog.exec_() == QDialog.Accepted:
             try:
                 obj = self._getObjFromDialog(dialog)
             except Exception as e:
-                QMessageBox.critical(self, "Error", str(e))
+                dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
                 continue
             result = self._setData(index, obj, Qt.EditRole)
         if dialog.result() == QDialog.Rejected:
@@ -648,7 +640,7 @@ class TreeView(BasicTreeView):
     def itemDataChangeFailed(self, topLeft, bottomRight, roles):
         """Check dataChanged signal if data change failed and show Error dialog if failed"""
         if DATA_CHANGE_FAILED_ROLE in roles:
-            QMessageBox.critical(self, "Error", self.model().data(topLeft, DATA_CHANGE_FAILED_ROLE))
+            dialogs.ErrorMessageBox.withDetailedText(self, self.model().data(topLeft, DATA_CHANGE_FAILED_ROLE)).exec()
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() in (Qt.Key_Return, Qt.Key_Enter):
@@ -700,7 +692,7 @@ class TreeView(BasicTreeView):
     def isEditableInsideCell(self, index: QModelIndex):
         if index.flags() & Qt.ItemIsEditable:
             data = index.data(Qt.EditRole)
-            if isoftype(data, self.itemDelegate().editableTypesInTable) and data not in EMPTY_VALUES:
+            if isoftype(data, self.itemDelegate().editableTypesInTable) and data not in settings.EMPTY_VALUES:
                 return True
         return False
 
@@ -708,8 +700,7 @@ class TreeView(BasicTreeView):
         try:
             self.onEditCreate(objVal, index)
         except Exception as e:
-            print(e)
-            QMessageBox.critical(self, "Error", str(e))
+            dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
 
     def toggleFold(self, index: QModelIndex):
         index = index.siblingAtColumn(0)
