@@ -70,6 +70,7 @@ class ErrorMessageBox(QMessageBox):
         tb = traceback.format_exc()
         err_msg = f"{tb}".replace("_", "\\_").replace("*", "\\*").replace("[", "\\[").replace("`", "\\`")
         box = QMessageBox(parent)
+        box.setMinimumWidth(300)
         box.setIcon(QMessageBox.Critical)
         box.setWindowTitle("Error")
         box.setText(text)
@@ -79,6 +80,7 @@ class ErrorMessageBox(QMessageBox):
     @classmethod
     def withDetailedText(cls, parent, text: str):
         box = QMessageBox(parent)
+        box.setMinimumWidth(300)
         box.setIcon(QMessageBox.Critical)
         box.setWindowTitle("Error")
         if "\n\n" in text:
