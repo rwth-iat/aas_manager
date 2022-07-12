@@ -7,6 +7,7 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
+import copy
 import traceback
 from typing import Any
 
@@ -34,6 +35,7 @@ class ImportTable(PacksTable):
                 objVal = super(ImportTable, self).data(index, Qt.EditRole)
 
                 if index.column() == ATTRIBUTE_COLUMN:
+                    objVal = copy.deepcopy(objVal)  # important to handle NamespaceSets in basyx-python
                     preObj = PreObjectImport.fromObject(objVal)
                     mapping = getattr(objVal, MAPPING_ATTR, {})
                     preObj.setMapping(mapping)
