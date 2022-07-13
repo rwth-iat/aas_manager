@@ -15,25 +15,24 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-import re
 from enum import Enum
-from typing import Dict, List, Type
+from typing import Dict, Type
 
 from aas_editor.import_feature import import_util
-from aas_editor.utils.util import getReqParams4init
-from aas_editor.import_feature import import_file_widget
-from aas_editor.utils.util_classes import PreObject, ClassesInfo
-from aas_editor.utils.util_type import issubtype, isSimpleIterableType, getTypeName, isIterableType, isSimpleIterable
+from aas_editor.utils import util
+from aas_editor.utils import util_classes
+from aas_editor.utils import util_type
 
 IMPORT_FILE = "Motor Daten aus EMSRDB.xlsx"
 
 
-class PreObjectImport(PreObject):
-    def __init__(self, objType, args, kwargs: Dict[str, object], obj=None):
+class PreObjectImport(util_classes.PreObject):
+    EXAMPLE_ROW_VALUE = None
+
+    def __init__(self, objType, args, kwargs: Dict[str, object]):
         super(PreObjectImport, self).__init__(objType, args, kwargs)
-        self.obj = obj
         self._fromPreObjs2KwargObjs()
-        paramsToAttrs: Dict[str, str] = ClassesInfo.params_to_attrs(objType)
+        paramsToAttrs: Dict[str, str] = util_classes.ClassesInfo.params_to_attrs(objType)
         self.attrsToParams: Dict[str, str] = dict((v, k) for k, v in paramsToAttrs.items())
 
     @staticmethod
@@ -42,27 +41,27 @@ class PreObjectImport(PreObject):
 
         if isinstance(obj, PreObjectImport):
             return obj
-        elif isinstance(obj, PreObject):
+        elif isinstance(obj, util_classes.PreObject):
             return PreObjectImport.fromPreObject(obj)
 
         if obj is None:
-            return PreObjectImport(objType, [], {})
-        elif issubtype(objType, bool):
+            return PreObjectImport.useExistingObject(obj)
+        elif util_type.issubtype(objType, bool):
             return PreObjectImport(objType, (obj,), {})
-        elif issubtype(objType, (str, int, float, bytes)):
+        elif util_type.issubtype(objType, (str, int, float, bytes)):
             return PreObjectImport(objType, (str(obj),), {})
-        elif issubtype(objType, Enum):
+        elif util_type.issubtype(objType, Enum):
             return PreObjectImport(objType, (obj,), {})
-        elif issubtype(objType, Type) or objType == type:
-            return PreObjectImport(objType, [], {}, obj=obj)
-        elif issubtype(objType, dict):
+        elif util_type.issubtype(objType, Type) or objType == type:
+            return PreObjectImport.useExistingObject(obj)
+        elif util_type.issubtype(objType, dict):
             listObj = []
             for item in obj:
                 key = PreObjectImport.fromObject(item)
                 value = PreObjectImport.fromObject(obj[item])
                 listObj.append((key, value))
             return PreObjectImport(objType, (listObj,), {})
-        elif isSimpleIterableType(objType):
+        elif util_type.isSimpleIterableType(objType):
             listObj = []
             for item in obj:
                 item = PreObjectImport.fromObject(item)
@@ -70,10 +69,10 @@ class PreObjectImport(PreObject):
             return PreObjectImport(objType, (listObj,), {})
         else:
             kwargs = {}
-            params = list(getReqParams4init(objType, rmDefParams=False, delOptional=False).keys())
-            iterParams = ClassesInfo.iterAttrs(objType)
+            params = list(util.getReqParams4init(objType, rmDefParams=False, delOptional=False).keys())
+            iterParams = util_classes.ClassesInfo.iterAttrs(objType)
             [params.remove(i) for i in iterParams]
-            paramsToAttrs = ClassesInfo.params_to_attrs(objType)
+            paramsToAttrs = util_classes.ClassesInfo.params_to_attrs(objType)
             for param in params:
                 attr = paramsToAttrs.get(param, param)
                 val = getattr(obj, attr)
@@ -84,128 +83,127 @@ class PreObjectImport(PreObject):
                     iterAttr = paramsToAttrs.get(iterParam, iterParam)
                     kwargs[iterParam] = getattr(obj, iterAttr)
 
-            defaultParams2hide = dict(ClassesInfo.default_params_to_hide(objType))
+            defaultParams2hide = dict(util_classes.ClassesInfo.default_params_to_hide(objType))
             kwargs.update(defaultParams2hide)
             return PreObjectImport(objType, [], kwargs)
 
     @staticmethod
-    def fromPreObject(preObj: PreObject):
-        return PreObjectImport(preObj.objType, preObj.args, preObj.kwargs, obj=getattr(preObj, "obj", None))
+    def fromPreObject(preObj: util_classes.PreObject):
+        if preObj.existingObjUsed:
+            return PreObjectImport.useExistingObject(preObj.existingObj)
+        else:
+            return PreObjectImport(preObj.objType, preObj.args, preObj.kwargs)
 
     def _fromPreObjs2KwargObjs(self):
         args = []
         for arg in self.args:
-            if isinstance(arg, PreObject):
-                arg = PreObjectImport(arg.objType, arg.args, arg.kwargs, obj=getattr(arg, "obj", None))
-            elif arg and type(arg) == list and isinstance(arg[0], PreObject):
-                arg = [PreObjectImport(i.objType, i.args, i.kwargs, obj=getattr(i, "obj", None)) for i in arg]
+            if isinstance(arg, util_classes.PreObject):
+                arg = PreObjectImport.fromPreObject(arg)
+            elif arg and type(arg) in (list, tuple) and isinstance(arg[0], util_classes.PreObject):
+                arg = [PreObjectImport.fromPreObject(i) for i in arg]
             args.append(arg)
 
         kwargs = {}
         for key in self.kwargs:
             value = self.kwargs[key]
-            if isinstance(value, PreObject):
-                value = PreObjectImport(value.objType, value.args, value.kwargs, obj=getattr(value, "obj", None))
-            if isinstance(key, PreObject):
-                key = PreObjectImport(key.objType, key.args, key.kwargs, obj=getattr(key, "obj", None))
+            if isinstance(value, util_classes.PreObject):
+                value = PreObjectImport.fromPreObject(value)
+            if isinstance(key, util_classes.PreObject):
+                key = PreObjectImport.fromPreObject(key)
             kwargs[key] = value
 
         self.args = args
         self.kwargs = kwargs
 
-    def initWithImport(self, rowNum, sourceWB, sheetname):
-        if self.obj:
-            if isinstance(self.obj, str):
-                if import_util.isValueToImport(self.obj):
-                    self.obj = import_util.importValueFromExcelWB(self.obj, workbook=sourceWB, row=rowNum, sheetname=sheetname)
-            return self.obj
-
-        args = []
-        for value in self.args:
-            if isinstance(value, PreObjectImport):
-                value = value.initWithImport(rowNum, sourceWB, sheetname)
-            elif isinstance(value, str) and import_util.isValueToImport(value):
-                value = import_util.importValueFromExcelWB(value, workbook=sourceWB, row=rowNum, sheetname=sheetname)
-            elif value and type(value) == list and isinstance(value[0], PreObjectImport):
-                value = [i.initWithImport(rowNum, sourceWB, sheetname) for i in value]
-            args.append(value)
-
-        kwargs = {}
-        for key, value in self.kwargs.items():
-            if isinstance(value, PreObjectImport):
-                value = value.initWithImport(rowNum, sourceWB, sheetname)
-            elif isinstance(value, str) and import_util.isValueToImport(value):
-                value = import_util.importValueFromExcelWB(value, workbook=sourceWB, row=rowNum, sheetname=sheetname)
-            kwargs[key] = value
-        try:
-            return self.objType(*args, **kwargs)
-        except Exception as e:
-            raise e
-
-    def initWithExampleRowImport(self):
-        exampleRow = import_file_widget.ImportManageWidget.IMPORT_SETTINGS.exampleRowValue
-
-        if self.obj:
-            if isinstance(self.obj, str):
-                if import_util.isValueToImport(self.obj):
-                    self.obj = import_util.importValueFromExampleRow(self.obj, row=exampleRow)
-            return self.obj
-
-        args = []
-        for value in self.args:
-            if isinstance(value, PreObjectImport):
-                value = value.initWithExampleRowImport()
-            elif isinstance(value, str) and import_util.isValueToImport(value):
-                value = import_util.importValueFromExampleRow(value, row=exampleRow)
-            elif value and type(value) == list and isinstance(value[0], PreObjectImport):
-                value = [i.initWithExampleRowImport() for i in value]
-            args.append(value)
-
-        kwargs = {}
-        for key, value in self.kwargs.items():
-            if isinstance(value, PreObjectImport):
-                value = value.initWithExampleRowImport()
-            elif isinstance(value, str) and import_util.isValueToImport(value):
-                value = import_util.importValueFromExampleRow(value, row=exampleRow)
-            kwargs[key] = value
+    def initWithImport(self, rowNum, sourceWB, sheetname, fromSavedExampleRow=False):
+        funcKwargs = {
+            "rowNum": rowNum,
+            "sourceWB": sourceWB,
+            "sheetname": sheetname,
+            "fromSavedExampleRow": fromSavedExampleRow
+        }
+        if self.existingObjUsed:
+            return PreObjectImport._initObjWithImport(self.existingObj, **funcKwargs)
+        args = self._initWithImportArgs(**funcKwargs)
+        kwargs = self._initWithImportKwargs(**funcKwargs)
         return self.objType(*args, **kwargs)
 
+    @classmethod
+    def _initObjWithImport(cls, obj, rowNum, sourceWB, sheetname, fromSavedExampleRow):
+        if isinstance(obj, PreObjectImport):
+            return obj.initWithImport(rowNum, sourceWB, sheetname, fromSavedExampleRow)
+        elif isinstance(obj, str) and import_util.isValueToImport(obj):
+            if fromSavedExampleRow:
+                return import_util.importValueFromExampleRow(obj, row=PreObjectImport.EXAMPLE_ROW_VALUE)
+            else:
+                return import_util.importValueFromExcelWB(obj, workbook=sourceWB, row=rowNum, sheetname=sheetname)
+        elif util_type.isSimpleIterable(obj):
+            value = [PreObjectImport._initObjWithImport(i, rowNum, sourceWB, sheetname, fromSavedExampleRow) for i in obj]
+            return value
+        else:
+            return obj
+
+    def _initWithImportArgs(self, **funcKwargs):
+        args = []
+        if self.objType is dict:
+            # args has following structure: ((key1,val1), (key2,val2) ...)
+            for keyVal in self.args:
+                if keyVal:
+                    initKey = PreObjectImport._initObjWithImport(keyVal[0], **funcKwargs)
+                    initVal = PreObjectImport._initObjWithImport(keyVal[1], **funcKwargs)
+                    args.append((initKey, initVal))
+        else:
+            for val in self.args:
+                initVal = PreObjectImport._initObjWithImport(val, **funcKwargs)
+                args.append(initVal)
+        return args
+
+    def _initWithImportKwargs(self, **funcKwargs):
+        kwargs = {}
+        for key, val in self.kwargs.items():
+            initVal = PreObjectImport._initObjWithImport(val, **funcKwargs)
+            kwargs[key] = initVal
+        return kwargs
+
+    def initWithExampleRowImport(self):
+        return self.initWithImport(rowNum=None, sourceWB=None, sheetname=None, fromSavedExampleRow=True)
+
     def __str__(self):
-        if self.obj:
-            return str(self.obj)
+        if self.existingObjUsed:
+            return str(self.existingObj)
         else:
             args = str(self.args).strip("[]")
             kwargs = ""
             for kwarg in self.kwargs:
                 kwargs = f"{kwargs}, {kwarg}={self.kwargs[kwarg]}"
             if args and not kwargs:
-                return f"{getTypeName(self.objType)}({args})"
+                return f"{util_type.getTypeName(self.objType)}({args})"
             elif kwargs and not args:
-                return f"{getTypeName(self.objType)}({kwargs})"
+                return f"{util_type.getTypeName(self.objType)}({kwargs})"
             else:
-                return f"{getTypeName(self.objType)}({args}, {kwargs})"
+                return f"{util_type.getTypeName(self.objType)}({args}, {kwargs})"
 
     def __getattr__(self, item):
         param = self.attrsToParams.get(item, item)
         if param in self.kwargs:
             return self.kwargs[param]
         else:
-            return object.__getattr__(PreObject, item)
+            return object.__getattr__(util_classes.PreObject, item)
 
     def __iter__(self):
-        if isIterableType(self.objType) and self.args:
+        if util_type.isIterableType(self.objType) and self.args:
             return iter(self.args[0])
 
     def items(self):
-        if issubtype(self.objType, dict):
+        if util_type.issubtype(self.objType, dict):
             return self.args
         else:
             raise AttributeError(f"{self.objType} has no attribute 'items'")
 
     def getMapping(self) -> Dict[str, str]:
         mapping = {}
-        if self.obj and isinstance(self.obj, str) and import_util.isValueToImport(self.obj):
-            return str(self.obj)
+        if self.existingObjUsed and isinstance(self.existingObj, str) and import_util.isValueToImport(self.existingObj):
+            return str(self.existingObj)
         elif self.args:
             if len(self.args) > 1:
                 raise NotImplementedError

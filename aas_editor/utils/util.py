@@ -22,6 +22,7 @@ from abc import ABCMeta
 from enum import Enum
 from typing import List, Dict, Type, Set, Any, Tuple
 
+import basyx.aas.model
 from PyQt5.QtCore import Qt, QFile, QTextStream, QModelIndex
 from PyQt5.QtWidgets import QApplication
 
@@ -214,26 +215,30 @@ def getReqParams4init(objType: Type, rmDefParams=True,
     return paramsTypehints
 
 
-def delAASParents(aasObj): #TODO change if aas changes
-    paramsTypehints = getParams4init(type(aasObj), withDefaults=False)
-
+def _delRecursivlyParent(aasObj, iter_num=0):
+    if iter_num > 10:
+        return
     if hasattr(aasObj, "parent"):
-       aasObj.parent = None
+        aasObj.parent = None
+    if iter_num == 0 or util_type.isIterable(aasObj) or isinstance(aasObj, basyx.aas.model.Referable):
+        params = getParams4init(type(aasObj), withDefaults=False).keys()
+        for param in params:
+            if hasattr(aasObj, param.rstrip("_")):
+                lowerObj = getattr(aasObj, param.rstrip("_"))
+            elif hasattr(aasObj, param):
+                lowerObj = getattr(aasObj, param)
+            else:
+                continue
+            _delRecursivlyParent(lowerObj, iter_num + 1)
 
-    for param in paramsTypehints.keys():
-        if hasattr(aasObj, param.rstrip("_")):
-            attr = getattr(aasObj, param.rstrip("_"))
-        elif hasattr(aasObj, param):
-            attr = getattr(aasObj, param)
-        else:
-            continue
+        if util_type.isSimpleIterable(aasObj):
+            if type(aasObj) is dict:
+                aasObj = list(aasObj.values())
+            for item in aasObj:
+                _delRecursivlyParent(item, iter_num + 1)
 
-        if hasattr(attr, "parent"):
-            attr.parent = None
-        if util_type.isIterable(attr):
-            for item in attr:
-                if hasattr(item, "parent"):
-                    item.parent = None
+def delAASParents(aasObj): #TODO change if aas changes
+    _delRecursivlyParent(aasObj)
 
 
 # todo check if gorg is ok in other versions of python

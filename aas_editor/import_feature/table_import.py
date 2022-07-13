@@ -7,6 +7,8 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
+import copy
+import traceback
 from typing import Any
 
 from PyQt5.QtCore import QModelIndex, Qt, QPersistentModelIndex
@@ -14,7 +16,7 @@ from basyx.aas.model import Referable
 
 from aas_editor.import_feature.import_settings import MAPPING_ATTR
 from aas_editor.import_feature.item_import_treeview import ImportTreeViewItem
-from aas_editor.import_feature.preobjectAdvanced import PreObjectImport
+from aas_editor.import_feature.preobjectImport import PreObjectImport
 from aas_editor.models import PacksTable, PackTreeViewItem, SetDataItem
 from aas_editor.settings import ATTRIBUTE_COLUMN, OBJECT_ROLE, COLUMN_NAME_ROLE, EXTENDED_COLUMNS_IN_PACK_TABLE, \
     ADD_ITEM_ROLE, CLEAR_ROW_ROLE, DATA_CHANGE_FAILED_ROLE
@@ -33,6 +35,7 @@ class ImportTable(PacksTable):
                 objVal = super(ImportTable, self).data(index, Qt.EditRole)
 
                 if index.column() == ATTRIBUTE_COLUMN:
+                    objVal = copy.deepcopy(objVal)  # important to handle NamespaceSets in basyx-python
                     preObj = PreObjectImport.fromObject(objVal)
                     mapping = getattr(objVal, MAPPING_ATTR, {})
                     preObj.setMapping(mapping)
@@ -74,7 +77,7 @@ class ImportTable(PacksTable):
 
             return result
         except Exception as e:
-            self.lastErrorMsg = f"Error occurred: {e}"
-            print(self.lastErrorMsg)
+            tb = traceback.format_exc()
+            self.lastErrorMsg = f"Error occurred: {e}\n\n{tb}"
             self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
             return False

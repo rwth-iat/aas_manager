@@ -18,12 +18,13 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout, QPushButton, QFileDialog, QMes
 
 from aas_editor.import_feature import import_util
 from aas_editor.import_feature.import_settings import MAPPING_ATTR
-from aas_editor.import_feature import preobjectAdvanced
+from aas_editor.import_feature import preobjectImport
 from aas_editor.import_feature.import_util import getMapping, usedColumnsInMapping, unusedColumnsInMapping
 from aas_editor.package import Package
 from aas_editor import settings
 from aas_editor.utils.util_classes import ClassesInfo
 from aas_editor.utils.util_type import isIterable
+from aas_editor import dialogs
 
 CHOOSE = "Choose..."
 EXCEL_FILES = "Excel files (*.xlsx)"
@@ -52,6 +53,7 @@ class ImportSettings:
         self._exampleRow = row
         if self.sourceFile:
             self.exampleRowValue = import_util.importRowValueFromExcel(sourcefile=self.sourceFile, row=row)
+            preobjectImport.PreObjectImport.EXAMPLE_ROW_VALUE = self.exampleRowValue
 
     @property
     def sheetname(self):
@@ -109,7 +111,7 @@ class ImportManageWidget(QWidget):
         try:
             import_util.saveMapping(pack=ImportManageWidget.IMPORT_SETTINGS.mappingPackage, file=file)
         except (TypeError, ValueError, KeyError) as e:
-            QMessageBox.critical(self, "Error", f"Package couldn't be saved: {file}: {e}")
+            dialogs.ErrorMessageBox.withTraceback(self, f"Package couldn't be saved: {file}: {e}").exec()
         except AttributeError as e:
             QMessageBox.critical(self, "Error", f"No chosen package to save: {e}")
 
@@ -124,7 +126,7 @@ class ImportManageWidget(QWidget):
                     ImportManageWidget.IMPORT_SETTINGS.mappingPackage = self.importApp.mainTreeView.openPack(aasFile)
                     self.importApp.packTreeModel.setData(QModelIndex(), [], settings.UNDO_ROLE)
                 except Exception as e:
-                    QMessageBox.critical(self, "Error: Could not open AAS File", str(e))
+                    dialogs.ErrorMessageBox.withTraceback(self, f"Could not open AAS File: {e}").exec()
                     continue
 
                 ImportManageWidget.IMPORT_SETTINGS.sourceFile = dialog.importSourceFileLine.text()
@@ -142,12 +144,12 @@ class ImportManageWidget(QWidget):
                                                        mappingFile=mappingFile)
                         ImportManageWidget.IMPORT_SETTINGS.mappingFile = mappingFile
                 except Exception as e:
-                    QMessageBox.critical(self, "Error: Could not open Mapping File", str(e))
+                    dialogs.ErrorMessageBox.withTraceback(self, f"Could not open Mapping File: {e}").exec()
                     continue
 
                 result = 1
             except Exception as e:
-                QMessageBox.critical(self, "Error", str(e))
+                dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
                 continue
 
     def initSettingsDialog(self):
@@ -164,12 +166,12 @@ class ImportManageWidget(QWidget):
                         import_util.setMappingFromFile(pack=ImportManageWidget.IMPORT_SETTINGS.mappingPackage,
                                                        mappingFile=mappingFile)
                 except Exception as e:
-                    QMessageBox.critical(self, "Error: Could not open Mapping File", str(e))
+                    dialogs.ErrorMessageBox.withTraceback(self, f"Could not open Mapping File: {e}").exec()
                     continue
 
                 result = 1
             except Exception as e:
-                QMessageBox.critical(self, "Error", str(e))
+                dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
                 continue
 
     def importFromPack(self, templatePack: Package, sourcefile: str, minRow: int, maxRow: int,
@@ -186,6 +188,8 @@ class ImportManageWidget(QWidget):
                 fileName = import_util.importValueFromExcelWB(
                     fileNameScheme, workbook=excelfile, row=row,
                     sheetname=ImportManageWidget.IMPORT_SETTINGS.sheetname)
+                if "." not in fileName:
+                    fileName = f"{fileName}.aasx"
             newPack.write(f"{exportFolder}/{fileName}")
         QMessageBox.information(self, "Export was successful", "AAS files were successfully created!")
 
@@ -197,7 +201,7 @@ class ImportManageWidget(QWidget):
         return newPack
 
     def _initObjWithMappingImport(self, obj, row: int, sourceWB: openpyxl.Workbook):
-        preobj = preobjectAdvanced.PreObjectImport.fromObject(obj, withIterParams=False)
+        preobj = preobjectImport.PreObjectImport.fromObject(obj, withIterParams=False)
         preobj.setMapping(getattr(obj, MAPPING_ATTR, {}))
         newObj = preobj.initWithImport(rowNum=row, sourceWB=sourceWB,
                                        sheetname=ImportManageWidget.IMPORT_SETTINGS.sheetname)
@@ -221,9 +225,7 @@ class ImportManageWidget(QWidget):
                                     fileNameScheme=dialog.nameScheme.text()
                                     )
             except Exception as e:
-                tb = traceback.format_exc()
-                err_msg = f"{e}\n\n{tb}".replace("_", "\\_").replace("*", "\\*").replace("[", "\\[").replace("`", "\\`")
-                QMessageBox.critical(self, "Error", str(err_msg[-500:-1]))
+                dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
                 continue
 
 
@@ -359,22 +361,17 @@ class RunImportDialog(QDialog):
         self.nameScheme = QLineEdit(self, placeholderText="Export file names scheme (e.g. 'AAS_file_$A$')")
 
         packMapping = getMapping(importSettings.mappingPackage)
-        self.usedColsLine = QLineEdit(str(usedColumnsInMapping(packMapping)).strip("[]"), self)
-        self.usedColsLine.setReadOnly(True)
-        self.unusedColsLine = QLineEdit(str(unusedColumnsInMapping(packMapping,
-                                                                   sourcefile=importSettings.sourceFile,
-                                                                   sheetname=importSettings.sheetname)).strip("[]"),
-                                        self)
-        self.unusedColsLine.setReadOnly(True)
+        self.usedColsLine = QLabel(str(usedColumnsInMapping(packMapping)).strip("[]").replace("'", ""), self)
+        self.unusedColsLine = QLabel(str(unusedColumnsInMapping(packMapping, sourcefile=importSettings.sourceFile,
+                                     sheetname=importSettings.sheetname)).strip("[]").replace("'", ""), self)
 
-        layout.addRow("Start Row", self.minRow)
-        layout.addRow("End Row", self.maxRow)
+        layout.addRow("Start Row*", self.minRow)
+        layout.addRow("End Row*", self.maxRow)
         hbox = QHBoxLayout()
         hbox.addWidget(self.exportFolderLine)
         hbox.addWidget(self.chooseExportFolderBtn)
-        layout.addRow("Export Folder", hbox)
+        layout.addRow("Export Folder*", hbox)
         layout.addRow("AAS Filename Scheme", self.nameScheme)
-        layout.addRow(QLabel("Mapping statistics:"))
         layout.addRow("Used columns", self.usedColsLine)
         layout.addRow("Unused columns", self.unusedColsLine)
 

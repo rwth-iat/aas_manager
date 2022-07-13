@@ -32,6 +32,9 @@ class PreObject:
         self.args: List = list(args)
         self.objType: Type = objType
 
+        self.existingObjUsed: bool = False if objType is not type(None) else True
+        self.existingObj = None
+
     def __getattr__(self, item):
         if item in self.kwargs:
             return self.kwargs[item]
@@ -53,18 +56,18 @@ class PreObject:
     def __repr__(self):
         return self.__str__()
 
-
     @classmethod
-    def create_object(cls, obj):
+    def useExistingObject(cls, obj):
         """If object already exists and no PreObject needed"""
-        c = PreObject(type(obj), [], {})
-        c.obj = obj
+        c = cls(type(obj), [], {})
+        c.existingObjUsed = True
+        c.existingObj = obj
         return c
 
     def init(self):
         """Return initialized object"""
-        if hasattr(self, "object"):
-            return self.obj
+        if self.existingObjUsed:
+            return self.existingObj
 
         args = []
         for arg in self.args:
@@ -147,11 +150,14 @@ class ClassesInfo:
     def params_to_attrs(cls) -> Dict[str, str]:
         res = dict()
         for typ in s.CLASSES_INFO:
-            if issubtype(cls, typ):
-                try:
-                    res.update(s.CLASSES_INFO[typ][PARAMS_TO_ATTRS])
-                except KeyError:
-                    continue
+            try:
+                if issubtype(cls, typ):
+                    try:
+                        res.update(s.CLASSES_INFO[typ][PARAMS_TO_ATTRS])
+                    except KeyError:
+                        continue
+            except TypeError:
+                print(f"Error in the function params_to_attrs")
         return res
 
     @staticmethod

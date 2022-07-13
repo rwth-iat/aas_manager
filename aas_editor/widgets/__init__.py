@@ -23,4 +23,6 @@ from .treeview import TreeView
 from .treeview_pack import PackTreeView
 from .treeview_detailed import AttrsTreeView
 from .address_line import AddressLine
+from .lineEdit import LineEdit, DropFilePlainTextEdit
+from .combobox import ComboBox, CompleterComboBox, CompleterLineEdit
 from .tab import TabWidget, TabBar, Tab

@@ -18,15 +18,15 @@
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex
-from PyQt5.QtWidgets import QAction, QAbstractScrollArea, QAbstractItemView, QMessageBox
+from PyQt5.QtWidgets import QAbstractScrollArea
 
 from aas_editor.models import DetailedInfoTable
 from aas_editor.delegates import EditDelegate
-from aas_editor.settings import EMPTY_VALUES
 from aas_editor.settings.app_settings import ATTR_COLUMN_WIDTH, NAME_ROLE, ATTRIBUTE_COLUMN, \
-    VALUE_COLUMN, LINKED_ITEM_ROLE, IS_LINK_ROLE, PARENT_OBJ_ROLE, OBJECT_ROLE
-from aas_editor.utils.util_type import getAttrTypeHint, isoftype
+    VALUE_COLUMN, LINKED_ITEM_ROLE, IS_LINK_ROLE, PARENT_OBJ_ROLE
+from aas_editor.utils.util_type import getAttrTypeHint
 from aas_editor.widgets import TreeView
+from aas_editor import dialogs
 
 
 class AttrsTreeView(TreeView):
@@ -101,8 +101,7 @@ class AttrsTreeView(TreeView):
             else:
                 self.addItemWithDialog(index, attrTypeHint, title=f"Add {attribute} element")
         except Exception as e:
-            print(e)
-            QMessageBox.critical(self, "Error", str(e))
+            dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
 
     def onEditCreate(self, objVal, index=QModelIndex()):
         """
@@ -128,13 +127,8 @@ class AttrsTreeView(TreeView):
         return super(AttrsTreeView, self).currentIndex().siblingAtColumn(VALUE_COLUMN)
 
     def isEditableInsideCell(self, index: QModelIndex):
-        data = index.data(OBJECT_ROLE)
-        if index.siblingAtColumn(VALUE_COLUMN).flags() & Qt.ItemIsEditable \
-                and isoftype(data, self.itemDelegate().editableTypesInTable) \
-                and data not in EMPTY_VALUES:
-            return True
-        else:
-            return False
+        index = index.siblingAtColumn(VALUE_COLUMN)
+        return super().isEditableInsideCell(index)
 
     def openRef(self, detailInfoItem: QModelIndex, newTab=True, setCurrent=True, newWindow=False):
         """Open referenced item if clicked on Reference and item is saved locally"""

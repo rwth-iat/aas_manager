@@ -8,6 +8,7 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 import copy
+import traceback
 
 from basyx.aas.model.base import *
 
@@ -20,26 +21,27 @@ from PyQt5.QtGui import QPaintEvent, QPixmap
 from PyQt5.QtWidgets import QPushButton, QDialog, QDialogButtonBox, \
     QGroupBox, QWidget, QVBoxLayout, QMessageBox, QScrollArea, QFrame, QFormLayout
 
-from aas_editor.editWidgets import StandardInputWidget, SpecialInputWidget, CreateOptionalParamBtn
 from aas_editor.settings import DEFAULTS, DEFAULT_COMPLETIONS, ATTRIBUTE_COLUMN, OBJECT_ROLE, \
     APPLICATION_NAME, CONTRIBUTORS, CONTACT, COPYRIGHT_YEAR, VERSION, DEFAULT_INHERITOR, APPLICATION_INFO, \
     DEVELOPER_WEB, APPLICATION_LINK, LICENSE
-from aas_editor.delegates import ColorDelegate
 from aas_editor.utils.util import inheritors, getReqParams4init, getParams4init, getDefaultVal, \
     delAASParents
 from aas_editor.utils.util_type import getTypeName, issubtype, isoftype, isSimpleIterableType, \
     isIterableType, isIterable, isOptional, removeOptional, typeHintToType
 from aas_editor.utils.util_classes import ClassesInfo, PreObject
 from aas_editor.additional.classes import DictItem
-from aas_editor.widgets import *
+from aas_editor import editWidgets
 from aas_editor import widgets
 
 
 def isValOk4Typehint(val, typehint):
     if isoftype(val, typehint):
         return True
-    elif isoftype(val, PreObject) and issubtype(val.objType, typehint):
-        return True
+    elif isoftype(val, PreObject):
+        if val.existingObjUsed:
+            return isoftype(val.existingObj, typehint)
+        else:
+            return issubtype(val.objType, typehint)
     else:
         return False
 
@@ -60,6 +62,31 @@ class AboutDialog(QMessageBox):
             f"Copyright (C) {COPYRIGHT_YEAR}"
         )
         self.setIconPixmap(QPixmap("aas_editor/icons/logo.svg"))
+
+
+class ErrorMessageBox(QMessageBox):
+    @classmethod
+    def withTraceback(cls, parent, text: str):
+        err_msg = traceback.format_exc()
+        box = QMessageBox(parent)
+        box.setMinimumWidth(400)
+        box.setIcon(QMessageBox.Critical)
+        box.setWindowTitle("Error")
+        box.setText(text)
+        box.setDetailedText(err_msg)
+        return box
+
+    @classmethod
+    def withDetailedText(cls, parent, text: str):
+        box = QMessageBox(parent)
+        box.setMinimumWidth(400)
+        box.setIcon(QMessageBox.Critical)
+        box.setWindowTitle("Error")
+        if "\n\n" in text:
+            text, detailedText = text.split("\n\n", 1)
+            box.setDetailedText(detailedText)
+        box.setText(text)
+        return box
 
 
 class AddDialog(QDialog):
@@ -174,10 +201,10 @@ def getInputWidget(objTypeHint, rmDefParams=True, title="", paramsToHide: dict =
         widget = TypeOptionObjGroupBox(objTypes, **kwargs)
     elif issubtype(objTypeHint, AASReference):
         widget = AASReferenceGroupBox(objTypeHint, **kwargs)
-    elif issubtype(objTypeHint, SpecialInputWidget.types):
-        widget = SpecialInputWidget(objTypeHint, **kwargs)
-    elif issubtype(objTypeHint, StandardInputWidget.types):
-        widget = StandardInputWidget(objTypeHint, **kwargs)
+    elif issubtype(objTypeHint, editWidgets.SpecialInputWidget.types):
+        widget = editWidgets.SpecialInputWidget(objTypeHint, **kwargs)
+    elif issubtype(objTypeHint, editWidgets.StandardInputWidget.types):
+        widget = editWidgets.StandardInputWidget(objTypeHint, **kwargs)
     elif includeInheritedTyps and inheritors(objTypeHint):
         objTypes = list(inheritors(objTypeHint))
         objTypes.append(objTypeHint)
@@ -318,11 +345,13 @@ class ObjGroupBox(GroupBox):
 
     def getInitialInputWidget(self, param: str, val, **kwargs) -> QWidget:
         paramTypeHint = self.reqParamsDict[param]
-        if isOptional(paramTypeHint) and not val:
-            widget = self.getCreatePushBtn(param)
-        else:
-            widget = self.getInputWidget(param, val, **kwargs)
-        return widget
+        if isOptional(paramTypeHint):
+            if val is None or \
+                    (isinstance(val, PreObject) and
+                     val.existingObjUsed and
+                     val.existingObj is None):
+                return self.getCreatePushBtn(param)
+        return self.getInputWidget(param, val, **kwargs)
 
     def getInputWidget(self, param: str, val, **kwargs) -> QWidget:
         paramTypeHint = self.reqParamsDict[param]
@@ -396,7 +425,7 @@ class ObjGroupBox(GroupBox):
         layout.update()
 
     def getCreatePushBtn(self, paramName: str):
-        btn = CreateOptionalParamBtn("Create (optional)", paramName=paramName,
+        btn = editWidgets.CreateOptionalParamBtn("Create (optional)", paramName=paramName,
                                      objTypehint=self.reqParamsDict[paramName],
                                      parent=self, clicked=self.addWidget4optionalParam)
         return btn
@@ -406,7 +435,7 @@ class ObjGroupBox(GroupBox):
         for row in range(layout.rowCount()):
             item = layout.itemAt(row, QFormLayout.FieldRole)
             if self.sender() == item.widget():
-                createBtn: CreateOptionalParamBtn = item.widget()
+                createBtn: editWidgets.CreateOptionalParamBtn = item.widget()
                 kwargs = copy.copy(self.kwargs)
                 kwargs.update({"optional": True})
                 widget = self.getInputWidget(createBtn.paramName, val=None, **kwargs)
@@ -429,7 +458,7 @@ class ObjGroupBox(GroupBox):
 
 
 class SingleWidgetGroupBox(GroupBox):
-    def __init__(self, widget: Union[StandardInputWidget, SpecialInputWidget], parent=None):
+    def __init__(self, widget: Union[editWidgets.StandardInputWidget, editWidgets.SpecialInputWidget], parent=None):
         super(SingleWidgetGroupBox, self).__init__(widget.objType, parent)
         self.inputWidget = widget
         self.layout().addWidget(widget)
@@ -561,7 +590,7 @@ class TypeOptionObjGroupBox(GroupBox):
 
     def initTypeComboBox(self):
         """Init func for ComboBox where desired Type of input data will be chosen"""
-        self.typeComboBox = CompleterComboBox(self)
+        self.typeComboBox = widgets.CompleterComboBox(self)
         for typ in self.objTypes:
             self.typeComboBox.addItem(getTypeName(typ), typ)
             self.typeComboBox.model().sort(0, Qt.AscendingOrder)
@@ -618,8 +647,8 @@ class ChooseItemDialog(AddDialog):
             if column not in columnsToShow:
                 self.view.hideColumn(column)
 
-        self.searchBar = SearchBar(self.view, parent=self, filterColumns=columnsToShow)
-        self.toolBar = ToolBar(self)
+        self.searchBar = widgets.SearchBar(self.view, parent=self, filterColumns=columnsToShow)
+        self.toolBar = widgets.ToolBar(self)
         self.toolBar.addAction(self.view.collapseAllAct)
         self.toolBar.addAction(self.view.expandAllAct)
         self.toolBar.addWidget(self.searchBar)

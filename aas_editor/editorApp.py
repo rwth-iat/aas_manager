@@ -13,17 +13,14 @@ from PyQt5.QtCore import QModelIndex
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-import aas_editor
 from aas_editor.settings.app_settings import *
 from aas_editor.settings.icons import APP_ICON, EXIT_ICON, SETTINGS_ICON
 from aas_editor.settings_dialog import SettingsDialog
-from aas_editor.dialogs import AboutDialog
 from aas_editor.widgets.compliance_tool import ComplianceToolDialog
 from aas_editor.widgets import AddressLine
 from aas_editor import design
 from aas_editor.models import DetailedInfoTable, PacksTable
 from aas_editor.utils.util import toggleStylesheet
-from aas_editor.widgets.tab import Tab
 from aas_editor import dialogs
 
 
@@ -55,7 +52,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.aboutDialogAct = QAction("About", self,
                                       statusTip=f"Show information about {APPLICATION_NAME}",
-                                      triggered=lambda: AboutDialog(self).exec())
+                                      triggered=lambda: dialogs.AboutDialog(self).exec())
 
         self.complToolDialogAct = QAction("Compliance tool", self,
                                       statusTip="Open compliance tool",

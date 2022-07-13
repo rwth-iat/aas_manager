@@ -9,7 +9,7 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 from PyQt5.QtCore import QModelIndex
 
-from aas_editor.import_feature.preobjectAdvanced import PreObjectImport
+from aas_editor.import_feature.preobjectImport import PreObjectImport
 from aas_editor.widgets import PackTreeView, AttrsTreeView
 
 
@@ -51,3 +51,6 @@ class DetailImportTreeView(AttrsTreeView):
         kwargs["useValidators"] = False
         return super().replItemWithDialog(index=index, objTypeHint=objTypeHint, objVal=objVal,
                                           title=title, rmDefParams=rmDefParams, **kwargs)
+
+    def isEditableInsideCell(self, index: QModelIndex):
+        return False

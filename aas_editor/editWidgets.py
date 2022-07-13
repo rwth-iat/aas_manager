@@ -26,9 +26,7 @@ from basyx.aas.model.datatypes import Date
 from aas_editor.utils.util import inheritors
 from aas_editor.utils.util_classes import PreObject
 from aas_editor.utils.util_type import issubtype, getTypeName, isoftype
-from aas_editor.widgets import CompleterComboBox
-from aas_editor.widgets.combobox import ComboBox
-from aas_editor.widgets.lineEdit import LineEdit
+from aas_editor import widgets
 
 
 class BytesEdit(QWidget):
@@ -243,17 +241,17 @@ class StandardInputWidget(QWidget):
         if issubtype(self.objType, bool):
             widget = QCheckBox(self)
         elif issubtype(self.objType, str):
-            widget = LineEdit(self)
+            widget = widgets.LineEdit(self)
             if kwargs.get("completions"):
                 completer = QCompleter(kwargs["completions"], self)
                 completer.setCaseSensitivity(Qt.CaseInsensitive)
                 widget.setCompleter(completer)
         elif issubtype(self.objType, int):
-            widget = LineEdit(self)
+            widget = widgets.LineEdit(self)
             if self.useValidators:
                 widget.setValidator(QIntValidator())
         elif issubtype(self.objType, float):
-            widget = LineEdit(self)
+            widget = widgets.LineEdit(self)
             if self.useValidators:
                 widget.setValidator(QDoubleValidator())
         elif issubtype(self.objType, (Enum, Type)):
@@ -270,7 +268,7 @@ class StandardInputWidget(QWidget):
                     # add Union Type attrs to types
                     types = union.__args__
 
-            widget = ComboBox(self) if len(types) <= 6 else CompleterComboBox(self)
+            widget = widgets.ComboBox(self) if len(types) <= 6 else widgets.CompleterComboBox(self)
 
             for typ in types:
                 widget.addItem(getTypeName(typ), typ)
@@ -289,15 +287,15 @@ class StandardInputWidget(QWidget):
         elif issubtype(self.objType, Enum):
             return PreObject(self.objType, (self.widget.currentData(),), {})
         elif issubtype(self.objType, Type):
-            return PreObject.create_object(self.widget.currentData())
+            return PreObject.useExistingObject(self.widget.currentData())
 
     def getObj2add(self):
         return self.getPreObj().init()
 
     def setVal(self, val):
         if isoftype(val, PreObject):
-            if hasattr(val, "obj") and val.obj:
-                val = val.obj
+            if val.existingObjUsed:
+                val = val.existingObj
             else:
                 val = val.args[0]
 
@@ -319,7 +317,7 @@ class SpecialInputWidget(StandardInputWidget):
     def _initWidget(self, **kwargs):
         if issubtype(self.objType, datetime.tzinfo):
             timezones = pytz.all_timezones
-            widget = CompleterComboBox(self)
+            widget = widgets.CompleterComboBox(self)
             widget.addItem("None", None)
             for timezone in timezones:
                 widget.addItem(timezone, timezone)
@@ -332,8 +330,9 @@ class SpecialInputWidget(StandardInputWidget):
         elif issubtype(self.objType, dateutil.relativedelta.relativedelta):
             widget = DurationEdit(self)
         elif issubtype(self.objType, decimal.Decimal):
-            widget = LineEdit(self)
-            widget.setValidator(QDoubleValidator())
+            widget = widgets.LineEdit(self)
+            if self.useValidators:
+                widget.setValidator(QDoubleValidator())
         elif issubtype(self.objType, (bytes, bytearray)):
             widget = BytesEdit(self)
         return widget
@@ -346,16 +345,20 @@ class SpecialInputWidget(StandardInputWidget):
             else:
                 return PreObject(type(None), (), {})
         elif issubtype(self.objType, datetime.datetime):
+            return PreObject.useExistingObject(self.widget.datetime())
             raise NotImplementedError(f"The function for the type {self.objType} is notimplemented yet")
         elif issubtype(self.objType, datetime.date):
+            return PreObject.useExistingObject(self.widget.date())
             raise NotImplementedError(f"The function for the type {self.objType} is notimplemented yet")
             obj = self.widget.date()
         elif issubtype(self.objType, datetime.time):
+            return PreObject.useExistingObject(self.widget.time())
             raise NotImplementedError(f"The function for the type {self.objType} is notimplemented yet")
         elif issubtype(self.objType, dateutil.relativedelta.relativedelta):
+            return PreObject.useExistingObject(self.widget.duration())
             raise NotImplementedError(f"The function for the type {self.objType} is notimplemented yet")
         elif issubtype(self.objType, decimal.Decimal):
-            return PreObject(decimal.Decimal.from_float, (float(self.widget.text()),), {})
+            return PreObject(decimal.Decimal, (self.widget.text(),), {})
         elif issubtype(self.objType, bytes):
             return self.widget.getPreObj()
         elif issubtype(self.objType, bytearray):
@@ -378,7 +381,7 @@ class SpecialInputWidget(StandardInputWidget):
         elif issubtype(self.objType, dateutil.relativedelta.relativedelta):
             obj = self.widget.duration()
         elif issubtype(self.objType, decimal.Decimal):
-            obj = decimal.Decimal.from_float(float(self.widget.text()))
+            obj = decimal.Decimal(self.widget.text())
         elif issubtype(self.objType, bytes):
             obj = self.widget.getObj2add()
         elif issubtype(self.objType, bytearray):
