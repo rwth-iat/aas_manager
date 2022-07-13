@@ -150,11 +150,14 @@ class ClassesInfo:
     def params_to_attrs(cls) -> Dict[str, str]:
         res = dict()
         for typ in s.CLASSES_INFO:
-            if issubtype(cls, typ):
-                try:
-                    res.update(s.CLASSES_INFO[typ][PARAMS_TO_ATTRS])
-                except KeyError:
-                    continue
+            try:
+                if issubtype(cls, typ):
+                    try:
+                        res.update(s.CLASSES_INFO[typ][PARAMS_TO_ATTRS])
+                    except KeyError:
+                        continue
+            except TypeError:
+                print(f"Error in the function params_to_attrs")
         return res
 
     @staticmethod
