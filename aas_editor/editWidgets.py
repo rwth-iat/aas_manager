@@ -331,7 +331,8 @@ class SpecialInputWidget(StandardInputWidget):
             widget = DurationEdit(self)
         elif issubtype(self.objType, decimal.Decimal):
             widget = widgets.LineEdit(self)
-            widget.setValidator(QDoubleValidator())
+            if self.useValidators:
+                widget.setValidator(QDoubleValidator())
         elif issubtype(self.objType, (bytes, bytearray)):
             widget = BytesEdit(self)
         return widget
@@ -344,16 +345,20 @@ class SpecialInputWidget(StandardInputWidget):
             else:
                 return PreObject(type(None), (), {})
         elif issubtype(self.objType, datetime.datetime):
+            return PreObject.useExistingObject(self.widget.datetime())
             raise NotImplementedError(f"The function for the type {self.objType} is notimplemented yet")
         elif issubtype(self.objType, datetime.date):
+            return PreObject.useExistingObject(self.widget.date())
             raise NotImplementedError(f"The function for the type {self.objType} is notimplemented yet")
             obj = self.widget.date()
         elif issubtype(self.objType, datetime.time):
+            return PreObject.useExistingObject(self.widget.time())
             raise NotImplementedError(f"The function for the type {self.objType} is notimplemented yet")
         elif issubtype(self.objType, dateutil.relativedelta.relativedelta):
+            return PreObject.useExistingObject(self.widget.duration())
             raise NotImplementedError(f"The function for the type {self.objType} is notimplemented yet")
         elif issubtype(self.objType, decimal.Decimal):
-            return PreObject(decimal.Decimal.from_float, (float(self.widget.text()),), {})
+            return PreObject(decimal.Decimal, (self.widget.text(),), {})
         elif issubtype(self.objType, bytes):
             return self.widget.getPreObj()
         elif issubtype(self.objType, bytearray):
@@ -376,7 +381,7 @@ class SpecialInputWidget(StandardInputWidget):
         elif issubtype(self.objType, dateutil.relativedelta.relativedelta):
             obj = self.widget.duration()
         elif issubtype(self.objType, decimal.Decimal):
-            obj = decimal.Decimal.from_float(float(self.widget.text()))
+            obj = decimal.Decimal(self.widget.text())
         elif issubtype(self.objType, bytes):
             obj = self.widget.getObj2add()
         elif issubtype(self.objType, bytearray):
