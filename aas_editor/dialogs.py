@@ -542,7 +542,7 @@ class IterableGroupBox(GroupBox):
         if isinstance(val, dict):
             val = [DictItem(key, value) for key, value in val.items()]
         elif isoftype(val, PreObject) and issubtype(val.objType, dict):
-            val = [DictItem(item.key, item.value) for item in val]
+            val = [DictItem(item[0], item[1]) for item in val]  # FIXME: look how PreObjects for dicts are created
 
         if val and \
                 (isIterable(val) or
