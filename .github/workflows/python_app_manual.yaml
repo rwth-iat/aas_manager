@@ -29,8 +29,8 @@ jobs:
         pyinstaller aas_manager.spec
         cd dist
         7z a AAS_Manager_Win.zip AAS_Manager
-    - name: Save Release URL File for publish
+    - name: Save Build in artifacts
       uses: actions/upload-artifact@v1
       with:
         name: AAS_Manager_Win
-        path: AAS_Manager_Win.zip
+        path: ./dist/AAS_Manager_Win.zip
