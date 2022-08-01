@@ -18,6 +18,7 @@
 from enum import Enum
 from typing import Dict, Type
 
+from aas_editor.additional.classes import DictItem
 from aas_editor.import_feature import import_util
 from aas_editor.utils import util
 from aas_editor.utils import util_classes
@@ -145,13 +146,14 @@ class PreObjectImport(util_classes.PreObject):
 
     def _initWithImportArgs(self, **funcKwargs):
         args = []
-        if self.objType is dict:
-            # args has following structure: ((key1,val1), (key2,val2) ...)
-            for keyVal in self.args:
-                if keyVal:
-                    initKey = PreObjectImport._initObjWithImport(keyVal[0], **funcKwargs)
-                    initVal = PreObjectImport._initObjWithImport(keyVal[1], **funcKwargs)
-                    args.append((initKey, initVal))
+        if self.objType is dict and self.args:
+            # args has following structure: ([(key1,val1), (key2,val2) ...])
+            dictArgs = []
+            dictItems = self.args[0]
+            for dictItemPreObj in dictItems:
+                dictItem = PreObjectImport._initObjWithImport(dictItemPreObj, **funcKwargs)
+                dictArgs.append((dictItem.key, dictItem.value))
+            args.append(dictArgs)
         else:
             for val in self.args:
                 initVal = PreObjectImport._initObjWithImport(val, **funcKwargs)
