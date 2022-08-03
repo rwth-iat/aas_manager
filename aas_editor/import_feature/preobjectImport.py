@@ -217,7 +217,8 @@ class PreObjectImport(util_classes.PreObject):
                     return str(value)
                 elif value and type(value) == list and isinstance(value[0], PreObjectImport):
                     for i, obj in enumerate(value):
-                        mapping[i] = obj.getMapping()
+                        if obj.getMapping():
+                            mapping[i] = obj.getMapping()
         elif self.kwargs:
             for key, value in self.kwargs.items():
                 if isinstance(value, PreObjectImport):
