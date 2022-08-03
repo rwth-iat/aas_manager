@@ -113,7 +113,7 @@ class ImportManageWidget(QWidget):
         except (TypeError, ValueError, KeyError) as e:
             dialogs.ErrorMessageBox.withTraceback(self, f"Package couldn't be saved: {file}: {e}").exec()
         except AttributeError as e:
-            QMessageBox.critical(self, "Error", f"No chosen package to save: {e}")
+            dialogs.ErrorMessageBox.withTraceback(self, f"No chosen package to save: {e}").exec()
 
     def initImportSettingsDialog(self):
         dialog = ImportSettingsDialog(self)

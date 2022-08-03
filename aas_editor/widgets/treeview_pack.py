@@ -432,7 +432,7 @@ class PackTreeView(TreeView):
         except (TypeError, ValueError, KeyError) as e:
             dialogs.ErrorMessageBox.withTraceback(self, f"Package couldn't be saved: {file}: {e}").exec()
         except AttributeError as e:
-            QMessageBox.critical(self, "Error", f"No chosen package to save: {e}")
+            dialogs.ErrorMessageBox.withTraceback(self, f"No chosen package to save: {e}").exec()
         return False
 
     def savePackAsWithDialog(self, pack: Package = None, filter=FILTER_AAS_FILES) -> bool:
@@ -444,7 +444,7 @@ class PackTreeView(TreeView):
                 file, _ = QFileDialog.getSaveFileName(self, 'Save AAS File', file,
                                                       filter=filter)
             except AttributeError as e:
-                QMessageBox.critical(self, "Error", f"No chosen package to save: {e}")
+                dialogs.ErrorMessageBox.withTraceback(self, f"No chosen package to save: {e}").exec()
             else:
                 if file:
                     saved = self.savePack(pack, file)
