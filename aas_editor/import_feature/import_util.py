@@ -147,7 +147,7 @@ def importValueFromExampleRow(rawValue: str, row: Dict):
     value = rawValue
 
     colReferences: List[str] = re.findall(COLUMNS_PATTERN, rawValue)
-    if len(colReferences) == 1 and value == f"${colReferences[0]}$":
+    if len(colReferences) == 1 and value == {colReferences[0]}:
         value = row[colReferences[0]]
     else:
         for col in colReferences:
