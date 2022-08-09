@@ -158,16 +158,12 @@ class DateEdit(WidgetWithTZinfo):
 
     def date(self) -> Date:
         date = self.dateEdit.date().toPyDate()
-        tzinfo = self.tzinfoEdit.getObj2add()
-        dateDate = Date(year=date.year, month=date.month, day=date.day, tzinfo=tzinfo) #TODO change if aas changes
+        dateDate = Date(year=date.year, month=date.month, day=date.day)
         return dateDate
 
     def setDate(self, val: datetime.date):
-        if isinstance(val, datetime.date):
-            self.dateEdit.setDate(val)
-            self.tzinfoEdit.setVal(val.tzinfo)
-        else:
-            raise TypeError("arg1 must be instance of type datetime.date:", type(val))
+        assert isinstance(val, datetime.date), "val must be instance of type datetime.date"
+        self.dateEdit.setDate(val)
 
 
 class DateTimeEdit(WidgetWithTZinfo):
@@ -189,11 +185,9 @@ class DateTimeEdit(WidgetWithTZinfo):
         return dateTime
 
     def setDateTime(self, val: datetime.datetime):
-        if isinstance(val, datetime.datetime):
-            self.dateTimeEdit.setDateTime(val)
-            self.tzinfoEdit.setVal(val.tzinfo)
-        else:
-            raise TypeError("arg1 must be instance of type datetime.datetime:", type(val))
+        assert isinstance(val, datetime.datetime), "val must be instance of type datetime.datetime"
+        self.dateTimeEdit.setDateTime(val)
+        self.tzinfoEdit.setVal(val.tzinfo)
 
 
 class TimeEdit(WidgetWithTZinfo):
@@ -215,11 +209,9 @@ class TimeEdit(WidgetWithTZinfo):
         return time
 
     def setTime(self, val: datetime.time):
-        if isinstance(val, datetime.time):
-            self.timeEdit.setTime(val)
-            self.tzinfoEdit.setVal(val.tzinfo)
-        else:
-            raise TypeError("arg1 must be instance of type datetime.time", type(val))
+        assert isinstance(val, datetime.time), "val must be instance of type datetime.time"
+        self.timeEdit.setTime(val)
+        self.tzinfoEdit.setVal(val.tzinfo)
 
 
 class StandardInputWidget(QWidget):
