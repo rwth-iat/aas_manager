@@ -71,10 +71,7 @@ class ComplianceToolDialog(QDialog):
                 check_schema = compliance_check_json.check_schema
                 check_deserialization = compliance_check_json.check_deserialization
             elif file.endswith(".aasx"):
-                #TODO realize check_schema for aasx
-                def dummy(a1, a2):
-                    pass
-                check_schema = dummy
+                check_schema = compliance_check_aasx.check_schema
                 check_deserialization = compliance_check_aasx.check_deserialization
             else:
                 raise TypeError("File of unknown type:", file)
