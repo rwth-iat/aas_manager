@@ -406,3 +406,12 @@ def typeHintToType(typeHint):
         return list
     else:
         return typeHint
+
+
+def typecast(val, typ):
+    if typ in (type, None):
+        return val
+    elif typ in (type(None),):
+        return None
+    value = typ(val)
+    return value

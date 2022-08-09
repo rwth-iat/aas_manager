@@ -124,23 +124,26 @@ class PreObjectImport(util_classes.PreObject):
             "fromSavedExampleRow": fromSavedExampleRow
         }
         if self.existingObjUsed:
-            return PreObjectImport._initObjWithImport(self.existingObj, **funcKwargs)
+            return PreObjectImport._initObjWithImport(self.existingObj, objtype=self.objType, **funcKwargs)
         args = self._initWithImportArgs(**funcKwargs)
         kwargs = self._initWithImportKwargs(**funcKwargs)
         return self.objType(*args, **kwargs)
 
     @classmethod
-    def _initObjWithImport(cls, obj, rowNum, sourceWB, sheetname, fromSavedExampleRow):
+    def _initObjWithImport(cls, obj, rowNum, sourceWB, sheetname, fromSavedExampleRow, objtype=None):
         if isinstance(obj, PreObjectImport):
             return obj.initWithImport(rowNum, sourceWB, sheetname, fromSavedExampleRow)
         elif isinstance(obj, str) and import_util.isValueToImport(obj):
             if fromSavedExampleRow:
-                return import_util.importValueFromExampleRow(obj, row=PreObjectImport.EXAMPLE_ROW_VALUE)
+                value = import_util.importValueFromExampleRow(obj, row=PreObjectImport.EXAMPLE_ROW_VALUE)
             else:
-                return import_util.importValueFromExcelWB(obj, workbook=sourceWB, row=rowNum, sheetname=sheetname)
+                value = import_util.importValueFromExcelWB(obj, workbook=sourceWB, row=rowNum, sheetname=sheetname)
+            return util_type.typecast(value, objtype)
         elif util_type.isSimpleIterable(obj):
             value = [PreObjectImport._initObjWithImport(i, rowNum, sourceWB, sheetname, fromSavedExampleRow) for i in obj]
             return value
+        elif objtype:
+            return util_type.typecast(obj, objtype)
         else:
             return obj
 
@@ -152,7 +155,11 @@ class PreObjectImport(util_classes.PreObject):
             dictItems = self.args[0]
             for dictItemPreObj in dictItems:
                 dictItem = PreObjectImport._initObjWithImport(dictItemPreObj, **funcKwargs)
-                dictArgs.append((dictItem.key, dictItem.value))
+                if isinstance(dictItem, DictItem):
+                    dictArgs.append((dictItem.key, dictItem.value))
+                else:
+                    # dictItem = (key1,val1)
+                    dictArgs.append(dictItem)
             args.append(dictArgs)
         else:
             for val in self.args:

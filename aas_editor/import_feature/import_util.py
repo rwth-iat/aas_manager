@@ -47,7 +47,7 @@ def importRowValueFromExcel(sourcefile, sheetname=None, row=2):
 
     rowValue: Dict = {}
     for colLetter in colLettersInExcelSheet(sheet):
-        rowValue[colLetter] = str(sheet[f"{colLetter}{row}"].value)  # TODO Fixme
+        rowValue[colLetter] = sheet[f"{colLetter}{row}"].value
     return rowValue
 
 
@@ -124,29 +124,36 @@ def setMappingFromFile(pack: Package, mappingFile: str):
         setattr(refObj, MAPPING_ATTR, mapping)
 
 
-def importValueFromExcelWB(value, workbook: openpyxl.Workbook, sheetname, row=2):
+def importValueFromExcelWB(value: str, workbook: openpyxl.Workbook, sheetname, row=2):
     sheet = workbook[sheetname]
 
-    columns: List[str] = re.findall(COLUMNS_PATTERN, value)
-    for col in columns:
-        column = col.strip("$")
-        importedVal = str(sheet[f"{column}{row}"].value)  # FIXME
-        value = value.replace(f"${column}$", importedVal, -1)
+    colReferences: List[str] = re.findall(COLUMNS_PATTERN, value)
+    if len(colReferences) == 1 and value == f"${colReferences[0]}$":
+        value = sheet[f"{colReferences[0]}"].value
+    else:
+        for col in colReferences:
+            column = col.strip("$")
+            importedVal = str(sheet[f"{column}{row}"].value)
+            value = value.replace(f"${column}$", importedVal, -1)
     return value
 
 
-def importValueFromExcel(value, sourcefile, sheetname, row=2):
+def importValueFromExcel(value: str, sourcefile, sheetname, row=2):
     excel_file = openpyxl.load_workbook(sourcefile, data_only=True)
     return importValueFromExcelWB(value, excel_file, sheetname, row)
 
 
 def importValueFromExampleRow(rawValue: str, row: Dict):
     value = rawValue
-    columns: List[str] = re.findall(COLUMNS_PATTERN, rawValue)
-    for col in columns:
-        column = col.strip("$")
-        importedVal = row[column]
-        value = value.replace(f"${column}$", importedVal, -1)
+
+    colReferences: List[str] = re.findall(COLUMNS_PATTERN, rawValue)
+    if len(colReferences) == 1 and value == f"${colReferences[0]}$":
+        value = row[colReferences[0]]
+    else:
+        for col in colReferences:
+            column = col.strip("$")
+            importedVal = str(row[column])
+            value = value.replace(f"${column}$", importedVal, -1)
     return value
 
 
