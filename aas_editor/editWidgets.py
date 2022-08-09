@@ -144,7 +144,7 @@ class DurationEdit(QWidget):
                             type(val))
 
 
-class DateEdit(WidgetWithTZinfo):
+class DateEdit(QWidget):
     def __init__(self, parent=None):
         super(DateEdit, self).__init__(parent)
         self.initQDateEdit()
