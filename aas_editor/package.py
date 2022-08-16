@@ -142,7 +142,13 @@ class Package:
         """Add references of all existing CD to concept dictionary in existing AAS."""
         #FIXME: save all concept descriptions to AASX or JSON or XML even if they are not referenced in ConceptDict
         for shell in self.shells:
-            dictionary = shell.concept_dictionary if shell.concept_dictionary else concept.ConceptDictionary("CD")
+            if shell.concept_dictionary and len(shell.concept_dictionary):
+                for i in shell.concept_dictionary:
+                    dictionary = i
+                    break
+            else:
+                dictionary = concept.ConceptDictionary("CD")
+
             for cd in self.concept_descriptions:
                 reference = AASReference.from_referable(cd)
                 dictionary.concept_description.add(reference)
