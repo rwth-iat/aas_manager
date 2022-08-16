@@ -11,6 +11,7 @@
 import datetime
 import decimal
 from abc import abstractmethod
+from collections import namedtuple
 from enum import Enum
 from typing import Type, TypeVar
 
@@ -20,7 +21,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIntValidator, QDoubleValidator
 
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QDateTimeEdit, QCheckBox, QCompleter, \
-    QDateEdit, QSpinBox, QHBoxLayout, QPlainTextEdit, QPushButton, QFileDialog
+    QDateEdit, QSpinBox, QHBoxLayout, QPlainTextEdit, QPushButton, QFileDialog, QLineEdit, QLabel
 from basyx.aas.model.datatypes import Date
 
 from aas_editor.utils.util import inheritors
@@ -90,8 +91,9 @@ class WidgetWithTZinfo(QWidget):
 
 
 class DurationEdit(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, useValidators=True):
         super(DurationEdit, self).__init__(parent)
+        self.useValidators = useValidators
         self._initLayout()
         self.initLineEdits()
 
@@ -103,46 +105,67 @@ class DurationEdit(QWidget):
         self.setLayout(layout)
 
     def initLineEdits(self):
-        self.yearsEdit = QSpinBox(self, value=0, maximum=10**6, minimum=-10**6, suffix=" years")
-        self.monthsEdit = QSpinBox(self, value=0, maximum=10**6, minimum=-10**6, suffix=" months")
-        self.daysEdit = QSpinBox(self, value=0, maximum=10**6, minimum=-10**6, suffix=" days")
-        self.hoursEdit = QSpinBox(self, value=0, maximum=10**6, minimum=-10**6, suffix=" hours")
-        self.minutesEdit = QSpinBox(self, value=0, maximum=10**6, minimum=-10**6, suffix=" min")
-        self.secondsEdit = QSpinBox(self, value=0, maximum=10**6, minimum=-10**6, suffix=" s")
-        self.microsecondsEdit = QSpinBox(self, value=0, maximum=10**6, minimum=-10**6, suffix=" μs")
+        self.yearsEdit = QLineEdit(self)
+        self.monthsEdit = QLineEdit(self)
+        self.daysEdit = QLineEdit(self)
+        self.hoursEdit = QLineEdit(self)
+        self.minutesEdit = QLineEdit(self)
+        self.secondsEdit = QLineEdit(self)
+        self.microsecondsEdit = QLineEdit(self)
+
+        self.yearsEdit.setPlaceholderText("years")
+        self.monthsEdit.setPlaceholderText("months")
+        self.daysEdit.setPlaceholderText("days")
+        self.hoursEdit.setPlaceholderText("hours")
+        self.minutesEdit.setPlaceholderText("minutes")
+        self.secondsEdit.setPlaceholderText("s")
+        self.microsecondsEdit.setPlaceholderText("μs")
 
         self.lineEdits = (self.yearsEdit, self.monthsEdit, self.daysEdit,
                           self.hoursEdit, self.minutesEdit, self.secondsEdit, self.microsecondsEdit)
         for lineEdit in self.lineEdits:
-            lineEdit.setButtonSymbols(QSpinBox.NoButtons)
             self.layout().addWidget(lineEdit)
+            if self.useValidators:
+                lineEdit.setValidator(QIntValidator())
 
     def duration(self) -> dateutil.relativedelta.relativedelta:
-        kwargs = {
-            "years": self.yearsEdit.value(),
-            "months": self.monthsEdit.value(),
-            "days": self.daysEdit.value(),
-            "hours": self.hoursEdit.value(),
-            "minutes": self.minutesEdit.value(),
-            "seconds": self.secondsEdit.value(),
-            "microseconds": self.microsecondsEdit.value(),
-        }
-        duration = dateutil.relativedelta.relativedelta(**kwargs).days
-        return duration
+        return self.getObj2add()
+
+    def setVal(self, val: dateutil.relativedelta.relativedelta):
+        if isoftype(val, PreObject):
+            if val.existingObjUsed:
+                val = val.existingObj
+            else:
+                Duration_kwargs = namedtuple("Duration_kwargs", "years months days hours minutes seconds microseconds")
+                val = Duration_kwargs(**val.kwargs)
+        if isinstance(val, (dateutil.relativedelta.relativedelta, Duration_kwargs)):
+            self.yearsEdit.setText(val.years)
+            self.monthsEdit.setText(val.months)
+            self.daysEdit.setText(val.days)
+            self.hoursEdit.setText(val.hours)
+            self.minutesEdit.setText(val.minutes)
+            self.secondsEdit.setText(val.seconds)
+            self.microsecondsEdit.setText(val.microseconds)
+        else:
+            raise TypeError("arg1 must be instance of type dateutil.relativedelta.relativedelta:", type(val))
 
     def setDuration(self, val: dateutil.relativedelta.relativedelta):
-        if isinstance(val, dateutil.relativedelta.relativedelta):
-            self.yearsEdit.setValue(val.years)
-            self.monthsEdit.setValue(val.months)
-            self.daysEdit.setValue(val.days)
-            self.hoursEdit.setValue(val.hours)
-            self.minutesEdit.setValue(val.minutes)
-            self.secondsEdit.setValue(val.seconds)
-            self.microsecondsEdit.setValue(val.microseconds)
-        else:
-            raise TypeError("arg1 must be instance of type dateutil.relativedelta.relativedelta:",
-                            type(val))
+        self.setVal(val)
 
+    def getPreObj(self):
+        kwargs = {
+            "years": PreObject(int, (self.yearsEdit.text(),), {}) if self.yearsEdit.text() else 0,
+            "months": PreObject(int, (self.monthsEdit.text(),), {}) if self.monthsEdit.text() else 0,
+            "days": PreObject(int, (self.daysEdit.text(),), {}) if self.daysEdit.text() else 0,
+            "hours": PreObject(int, (self.hoursEdit.text(),), {}) if self.hoursEdit.text() else 0,
+            "minutes": PreObject(int, (self.minutesEdit.text(),), {}) if self.minutesEdit.text() else 0,
+            "seconds": PreObject(int, (self.secondsEdit.text(),), {}) if self.secondsEdit.text() else 0,
+            "microseconds": PreObject(int, (self.microsecondsEdit.text(),), {}) if self.microsecondsEdit.text() else 0,
+        }
+        return PreObject(dateutil.relativedelta.relativedelta, tuple(), kwargs)
+
+    def getObj2add(self):
+        return self.getPreObj().init()
 
 class DateEdit(QWidget):
     def __init__(self, parent=None):
@@ -215,7 +238,7 @@ class TimeEdit(WidgetWithTZinfo):
 
 
 class StandardInputWidget(QWidget):
-    types = (bool, str, int, float, Enum, Type)
+    types = (bool, str, int, float, decimal.Decimal, Enum, Type)
 
     def __init__(self, attrType, parent=None, objVal=None, optional=False, useValidators=True, **kwargs):
         super(StandardInputWidget, self).__init__(parent)
@@ -242,7 +265,7 @@ class StandardInputWidget(QWidget):
             widget = widgets.LineEdit(self)
             if self.useValidators:
                 widget.setValidator(QIntValidator())
-        elif issubtype(self.objType, float):
+        elif issubtype(self.objType, (float, decimal.Decimal)):
             widget = widgets.LineEdit(self)
             if self.useValidators:
                 widget.setValidator(QDoubleValidator())
@@ -274,7 +297,7 @@ class StandardInputWidget(QWidget):
     def getPreObj(self):
         if issubtype(self.objType, bool):
             return PreObject(self.objType, (self.widget.isChecked(),), {})
-        elif issubtype(self.objType, (str, int, float)):
+        elif issubtype(self.objType, (str, int, float, decimal.Decimal)):
             return PreObject(self.objType, (self.widget.text(),), {})
         elif issubtype(self.objType, Enum):
             return PreObject(self.objType, (self.widget.currentData(),), {})
@@ -295,6 +318,8 @@ class StandardInputWidget(QWidget):
             self.widget.setChecked(bool(val))
         elif issubtype(self.objType, (str, int, float)) and isoftype(val, (str, int, float)):
             self.widget.setText(str(val))
+        elif issubtype(self.objType, decimal.Decimal) and isoftype(val, (decimal.Decimal, int, float)):
+            self.widget.setText(str(float(val)))
         elif issubtype(self.objType, (Enum, Type)):
             index = self.widget.findData(val)
             if index >= 0:
@@ -320,11 +345,7 @@ class SpecialInputWidget(StandardInputWidget):
         elif issubtype(self.objType, datetime.time):
             widget = TimeEdit(self)
         elif issubtype(self.objType, dateutil.relativedelta.relativedelta):
-            widget = DurationEdit(self)
-        elif issubtype(self.objType, decimal.Decimal):
-            widget = widgets.LineEdit(self)
-            if self.useValidators:
-                widget.setValidator(QDoubleValidator())
+            widget = DurationEdit(self, useValidators=self.useValidators)
         elif issubtype(self.objType, (bytes, bytearray)):
             widget = BytesEdit(self)
         return widget
@@ -346,14 +367,7 @@ class SpecialInputWidget(StandardInputWidget):
         elif issubtype(self.objType, datetime.time):
             return PreObject.useExistingObject(self.widget.time())
             raise NotImplementedError(f"The function for the type {self.objType} is notimplemented yet")
-        elif issubtype(self.objType, dateutil.relativedelta.relativedelta):
-            return PreObject.useExistingObject(self.widget.duration())
-            raise NotImplementedError(f"The function for the type {self.objType} is notimplemented yet")
-        elif issubtype(self.objType, decimal.Decimal):
-            return PreObject(decimal.Decimal, (self.widget.text(),), {})
-        elif issubtype(self.objType, bytes):
-            return self.widget.getPreObj()
-        elif issubtype(self.objType, bytearray):
+        elif issubtype(self.objType, (dateutil.relativedelta.relativedelta, bytes, bytearray)):
             return self.widget.getPreObj()
 
     def getObj2add(self):
@@ -370,15 +384,9 @@ class SpecialInputWidget(StandardInputWidget):
             obj = self.widget.date()
         elif issubtype(self.objType, datetime.time):
             obj = self.widget.time()
-        elif issubtype(self.objType, dateutil.relativedelta.relativedelta):
-            obj = self.widget.duration()
-        elif issubtype(self.objType, decimal.Decimal):
-            obj = decimal.Decimal(self.widget.text())
-        elif issubtype(self.objType, bytes):
+        elif issubtype(self.objType, (dateutil.relativedelta.relativedelta, bytes, bytearray)):
             obj = self.widget.getObj2add()
-        elif issubtype(self.objType, bytearray):
-            obj = self.widget.getObj2add()
-            if obj is not None:
+            if obj is not None and issubtype(self.objType, bytearray):
                 obj = bytearray(obj)
         return obj
 
@@ -399,8 +407,6 @@ class SpecialInputWidget(StandardInputWidget):
             elif issubtype(self.objType, dateutil.relativedelta.relativedelta) \
                     and isoftype(val, dateutil.relativedelta.relativedelta):
                 self.widget.setDuration(val)
-            elif issubtype(self.objType, decimal.Decimal) and isoftype(val, (decimal.Decimal, int, float)):
-                self.widget.setText(str(float(val)))
             elif issubtype(self.objType, bytes) and isoftype(val, bytes):
                 text = val.decode("utf-8")
                 self.widget.setPlainText(text)
