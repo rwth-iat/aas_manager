@@ -148,11 +148,11 @@ class Package:
                     break
             else:
                 dictionary = concept.ConceptDictionary("CD")
+                shell.concept_dictionary.add(dictionary)
 
             for cd in self.concept_descriptions:
                 reference = AASReference.from_referable(cd)
                 dictionary.concept_description.add(reference)
-            shell.concept_dictionary.add(dictionary)
             break
 
     @property
