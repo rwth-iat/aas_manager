@@ -167,26 +167,24 @@ class DurationEdit(QWidget):
     def getObj2add(self):
         return self.getPreObj().init()
 
-class DateEdit(QWidget):
+
+class DateEdit(QDateEdit):
     def __init__(self, parent=None):
         super(DateEdit, self).__init__(parent)
         self.initQDateEdit()
-        self.initTZinfoEdit()
 
     def initQDateEdit(self):
-        self.dateEdit = QDateEdit(self)
-        self.dateEdit.setKeyboardTracking(False)
-        self.dateEdit.setDisplayFormat("dd.MM.yyyy")
-        self.layout().addWidget(self.dateEdit)
+        self.setKeyboardTracking(False)
+        self.setDisplayFormat("dd.MM.yyyy")
 
     def date(self) -> Date:
-        date = self.dateEdit.date().toPyDate()
+        date = super().date().toPyDate()
         dateDate = Date(year=date.year, month=date.month, day=date.day)
         return dateDate
 
     def setDate(self, val: datetime.date):
         assert isinstance(val, datetime.date), "val must be instance of type datetime.date"
-        self.dateEdit.setDate(val)
+        super().setDate(val)
 
 
 class DateTimeEdit(WidgetWithTZinfo):
