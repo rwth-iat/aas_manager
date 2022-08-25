@@ -409,9 +409,12 @@ def typeHintToType(typeHint):
 
 
 def typecast(val, typ):
+    if type(val) is typ:
+        return val
+
     if typ in (type, None):
         return val
     elif typ in (type(None),):
         return None
-    value = typ(val)
-    return value
+    else:
+        return typ(val)

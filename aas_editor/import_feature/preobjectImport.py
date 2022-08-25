@@ -138,12 +138,20 @@ class PreObjectImport(util_classes.PreObject):
                 value = import_util.importValueFromExampleRow(obj, row=PreObjectImport.EXAMPLE_ROW_VALUE)
             else:
                 value = import_util.importValueFromExcelWB(obj, workbook=sourceWB, row=rowNum, sheetname=sheetname)
-            return util_type.typecast(value, objtype)
+            try:
+                value = util_type.typecast(value, objtype)
+            except Exception as e:
+                print(f"Could not typecast value '{value}' to type '{objtype}': {e}")
+            return value
         elif util_type.isSimpleIterable(obj):
             value = [PreObjectImport._initObjWithImport(i, rowNum, sourceWB, sheetname, fromSavedExampleRow) for i in obj]
             return value
         elif objtype:
-            return util_type.typecast(obj, objtype)
+            try:
+                value = util_type.typecast(obj, objtype)
+            except Exception as e:
+                print(f"Could not typecast value '{value}' to type '{objtype}': {e}")
+            return value
         else:
             return obj
 
