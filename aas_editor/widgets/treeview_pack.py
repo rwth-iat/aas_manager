@@ -394,7 +394,7 @@ class PackTreeView(TreeView):
             file, _ = QFileDialog.getOpenFileName(self, "Add file", file)
             if file:
                 storedFile = StoredFile(filePath=file)
-                opened = self.model().setData(parent, storedFile, ADD_ITEM_ROLE)
+                opened = self._setItemData(parent, storedFile, ADD_ITEM_ROLE)
             else:
                 # cancel pressed
                 return

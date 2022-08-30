@@ -481,11 +481,10 @@ class TreeView(BasicTreeView):
             print("zoom pressed with no model")
 
     def onUndo(self):
-        self.model().setData(QModelIndex(), NOT_GIVEN, UNDO_ROLE)
+        self._setItemData(QModelIndex(), NOT_GIVEN, UNDO_ROLE)
 
     def onRedo(self):
-        model = self.model()
-        model.setData(QModelIndex(), NOT_GIVEN, REDO_ROLE)
+        self._setItemData(QModelIndex(), NOT_GIVEN, REDO_ROLE)
 
     def onUpdate(self):
         index = self.currentIndex()
@@ -497,9 +496,9 @@ class TreeView(BasicTreeView):
         try:
             parentObjType = type(index.data(PARENT_OBJ_ROLE))
             defaultVal = getDefaultVal(parentObjType, attribute)
-            self.model().setData(index, defaultVal, CLEAR_ROW_ROLE)
+            self._setItemData(index, defaultVal, CLEAR_ROW_ROLE)
         except (AttributeError, IndexError):
-            self.model().setData(index, NOT_GIVEN, CLEAR_ROW_ROLE)
+            self._setItemData(index, NOT_GIVEN, CLEAR_ROW_ROLE)
 
     def onCopy(self):
         index = self.currentIndex()
@@ -559,14 +558,14 @@ class TreeView(BasicTreeView):
             self.addItemWithDialog(index, type(obj2paste), objVal=obj2paste,
                                    title=f"Paste element", rmDefParams=True)
         else:
-            self.model().setData(index, obj2paste, ADD_ITEM_ROLE)
+            self._setItemData(index, obj2paste, ADD_ITEM_ROLE)
 
     def _onPasteReplace(self, index, obj2paste, withDialog):
         if withDialog:
             self.replItemWithDialog(index, type(obj2paste), objVal=obj2paste,
                                     title=f"Paste element", rmDefParams=True)
         else:
-            self.model().setData(index, obj2paste, Qt.EditRole)
+            self._setItemData(index, obj2paste, Qt.EditRole)
 
     def onCut(self):
         self.onCopy()
@@ -588,7 +587,7 @@ class TreeView(BasicTreeView):
             except Exception as e:
                 dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
                 continue
-            result = self._setData(parent, obj, ADD_ITEM_ROLE)
+            result = self._setItemData(parent, obj, ADD_ITEM_ROLE)
         if dialog.result() == QDialog.Rejected:
             print("Item adding cancelled")
         dialog.deleteLater()
@@ -610,7 +609,7 @@ class TreeView(BasicTreeView):
             except Exception as e:
                 dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
                 continue
-            result = self._setData(index, obj, Qt.EditRole)
+            result = self._setItemData(index, obj, Qt.EditRole)
         if dialog.result() == QDialog.Rejected:
             print("Item editing cancelled")
         dialog.deleteLater()
@@ -621,7 +620,7 @@ class TreeView(BasicTreeView):
     def _getObjFromDialog(self, dialog):
         return dialog.getObj2add()
 
-    def _setData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
+    def _setItemData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
         if role == Qt.EditRole:
             result = self.model().setData(index, value, Qt.EditRole)
         elif role == ADD_ITEM_ROLE:
@@ -633,8 +632,16 @@ class TreeView(BasicTreeView):
                     result = self.model().setData(index, i, ADD_ITEM_ROLE)
             else:
                 result = self.model().setData(index, value, ADD_ITEM_ROLE)
+        elif role == CLEAR_ROW_ROLE:
+            result = self.model().setData(index, value, CLEAR_ROW_ROLE)
+        elif role == UNDO_ROLE:
+            result = self.model().setData(index, value, UNDO_ROLE)
+        elif role == REDO_ROLE:
+            result = self.model().setData(index, value, REDO_ROLE)
         else:
-            raise ValueError("Role can be only of type EditRole or AddItemRole")
+            raise ValueError("Role can be only of Item Edit type: "
+                             "EditRole, AddItemRole, CLEAR_ROLE, UNDO_ROLE, REDO_ROLE")
+        self.setWindowModified(True)
         return result
 
     def itemDataChangeFailed(self, topLeft, bottomRight, roles):
