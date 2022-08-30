@@ -16,7 +16,7 @@ from enum import Enum, unique
 from inspect import isabstract
 from typing import Union, List, Dict, Optional
 
-from PyQt5.QtCore import Qt, QRect, QSize
+from PyQt5.QtCore import Qt, QRect, QSize, QTimer
 from PyQt5.QtGui import QPaintEvent, QPixmap
 from PyQt5.QtWidgets import QPushButton, QDialog, QDialogButtonBox, \
     QGroupBox, QWidget, QVBoxLayout, QMessageBox, QScrollArea, QFrame, QFormLayout
@@ -91,6 +91,8 @@ class ErrorMessageBox(QMessageBox):
 
 class AddDialog(QDialog):
     """Base abstract class for custom dialogs for adding data"""
+    MIN_WIDTH = 480
+    MAX_HEIGHT = 900
 
     def __init__(self, parent=None, title=""):
         QDialog.__init__(self, parent)
@@ -110,8 +112,8 @@ class AddDialog(QDialog):
         self.scrollAreaWidgetContents = QWidget(self.scrollArea)
         self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 300, 600))
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
-        self.setMinimumWidth(480)
-        self.setMaximumHeight(900)
+        self.setMinimumWidth(self.MIN_WIDTH)
+        self.setMaximumHeight(self.MAX_HEIGHT)
 
         self.verticalLayout = QVBoxLayout(self)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
@@ -123,7 +125,8 @@ class AddDialog(QDialog):
     def adjustSize(self) -> None:
         layoutSize = self.layout().sizeHint()
         buttonsSize = self.buttonBox.sizeHint()
-        result = QSize(max(layoutSize.width(), buttonsSize.width()), layoutSize.height() + buttonsSize.height() + 10)
+        result = QSize(max(layoutSize.width(), buttonsSize.width(), self.width()),
+                       layoutSize.height() + 7 + buttonsSize.height())
         self.resize(result)
 
     def layout(self) -> 'QLayout':
@@ -236,7 +239,7 @@ class AddObjDialog(AddDialog):
         self.inputWidget.setObjectName("mainBox")
         self.inputWidget.setStyleSheet("#mainBox{border:0;}")  # FIXME
         self.layout().addWidget(self.inputWidget)
-        self.adjustSize()
+        QTimer.singleShot(0, self.adjustSize)
 
     def getInputWidget(self):
         pass
@@ -310,6 +313,13 @@ class GroupBox(QGroupBox):
     def setVal(self, val):
         pass
 
+    def adjustSize(self) -> None:
+        oldSize = self.size()
+        super(GroupBox, self).adjustSize()
+        newSize = self.size()
+        if oldSize != newSize:
+            QTimer.singleShot(0, lambda: self.window().adjustSize())
+
 
 class ObjGroupBox(GroupBox):
     def __init__(self, objTypeHint, parent=None, paramsToHide: dict = None, objVal=None, paramsToAttrs: dict = None,
@@ -373,6 +383,7 @@ class ObjGroupBox(GroupBox):
         else:
             self.layout().insertRow(row, title, widget)
         self.inputWidgets.append(widget)
+        self.adjustSize()
 
     def getWidgetTitle(self, param: str):
         title = param.strip("_")
@@ -408,7 +419,6 @@ class ObjGroupBox(GroupBox):
                 break
         self.layout().removeRow(widget)
         self.adjustSize()
-        self.window().adjustSize()
 
     def rmOptionalGroupBox(self):
         widget: GroupBox = self.sender()
@@ -516,6 +526,7 @@ class IterableGroupBox(GroupBox):
         widget.toggled.connect(lambda: self.delInputWidget(widget))
         self.inputWidgets.append(widget)
         self.layout().addWidget(widget)
+        self.adjustSize()
 
     def delInputWidget(self, widget: QWidget):
         self.layout().removeWidget(widget)
@@ -616,7 +627,7 @@ class TypeOptionObjGroupBox(GroupBox):
             self.widget.setFlat(True)
         if isinstance(self.widget, (ObjGroupBox, IterableGroupBox)) and not self.widget.inputWidgets:
             self.widget.hide()
-        self.window().adjustSize()
+        self.adjustSize()
 
     def getPreObj(self):
         return self.widget.getPreObj()
