@@ -40,7 +40,8 @@ class ColorDelegate(QStyledItemDelegate):
     def paint(self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex):
         opt = QStyleOptionViewItem(option)
         # paint row of the tree with MouseOver style if one cell of the row is chosen
-        if not opt.state & QStyle.State_HasFocus:
+        if not opt.state & QStyle.State_HasFocus \
+                and not opt.state & QStyle.State_Selected:
             view = opt.styleObject
             hoverIndex: QModelIndex = view.currentIndex()
             if not opt.state & QStyle.State_MouseOver and index.siblingAtColumn(0) == hoverIndex.siblingAtColumn(0):
