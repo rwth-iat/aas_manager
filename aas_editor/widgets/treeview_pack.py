@@ -297,13 +297,6 @@ class PackTreeView(TreeView):
             self.addAct.setEnabled(True)
             self.addAct.setText("Add package")
 
-    def onDelClear(self):
-        index = self.currentIndex()
-        if isinstance(index.data(OBJECT_ROLE), Package):
-            self.closeAct.trigger()
-        else:
-            super(PackTreeView, self).onDelClear()
-
     def isPasteOk(self, index: QModelIndex) -> bool:
         if not self.treeObjClipboard or not index.isValid():
             return False
@@ -601,12 +594,14 @@ class PackTreeView(TreeView):
     def onDelClear(self):
         index = self.currentIndex()
         attribute = index.data(COLUMN_NAME_ROLE)
-        if attribute in (OBJECT_COLUMN_NAME, OBJECT_VALUE_COLUMN_NAME):
+        if isinstance(index.data(OBJECT_ROLE), Package):
+            self.closeAct.trigger()
+        elif attribute in (OBJECT_COLUMN_NAME, OBJECT_VALUE_COLUMN_NAME):
             super(PackTreeView, self).onDelClear()
         else:
             parentObjType = type(index.data(OBJECT_ROLE))
             defaultVal = getDefaultVal(parentObjType, attribute)
-            self.model().setData(index, defaultVal, Qt.EditRole)
+            self._setItemData(index, defaultVal, Qt.EditRole)
 
     def isPasteOk(self, index: QModelIndex) -> bool:
         attrName = index.data(COLUMN_NAME_ROLE)
