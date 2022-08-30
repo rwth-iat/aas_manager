@@ -82,6 +82,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                                           triggered=lambda: self.setOrientation(QtCore.Qt.Vertical))
 
     def showImportApp(self):
+        self.writeSettings()
         from aas_editor.importApp import ImportApp
         ImportApp(parent=self).show()
 
@@ -237,9 +238,8 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
     def closeEvent(self, a0: QCloseEvent) -> None:
         if not self.packTreeModel.openedFiles():
-            self.writeSettings()
             a0.accept()
-        else:
+        elif self.isWindowModified():
             reply = QMessageBox.question(self, 'Window Close',
                                          'Do you want to save files before closing the window?',
                                          QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel,
@@ -247,13 +247,12 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
             if reply == QMessageBox.Yes:
                 self.mainTreeView.saveAll()
-                self.writeSettings()
                 a0.accept()
             elif reply == QMessageBox.No:
-                self.writeSettings()
                 a0.accept()
             else:
-                a0.ignore()
+                return a0.ignore()
+        self.writeSettings()
 
     def readSettings(self):
         # set previously used theme
