@@ -97,3 +97,7 @@ class BasicTreeView(QTreeView):
                 iconRect = QRect(0, 0, 50, 50)
                 iconRect.moveCenter(position)
                 painter.drawPixmap(iconRect, self.emptyViewIcon.pixmap(QSize(50, 50)))
+
+    def setWindowModified(self, a0: bool) -> None:
+        window = self.window()
+        window.setWindowModified(a0)

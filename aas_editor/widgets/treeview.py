@@ -644,6 +644,10 @@ class TreeView(BasicTreeView):
         self.setWindowModified(True)
         return result
 
+    def commitData(self, editor: QWidget) -> None:
+        super(TreeView, self).commitData(editor)
+        self.setWindowModified(True)
+
     def itemDataChangeFailed(self, topLeft, bottomRight, roles):
         """Check dataChanged signal if data change failed and show Error dialog if failed"""
         if DATA_CHANGE_FAILED_ROLE in roles:

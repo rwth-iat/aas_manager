@@ -72,8 +72,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", APPLICATION_NAME))
-        self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar"))
+        MainWindow.setWindowTitle(f"{APPLICATION_NAME}[*]")
 
     def setOrientation(self, o: QtCore.Qt.Orientation):
         if o == QtCore.Qt.Horizontal:

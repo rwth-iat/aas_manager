@@ -421,6 +421,8 @@ class PackTreeView(TreeView):
         try:
             pack.write(file)
             self.updateRecentFiles(pack.file.absolute().as_posix())
+            if self.model().rowCount(QModelIndex()) == 1:
+                self.setWindowModified(False)
             return True
         except (TypeError, ValueError, KeyError) as e:
             dialogs.ErrorMessageBox.withTraceback(self, f"Package couldn't be saved: {file}: {e}").exec()
@@ -446,8 +448,9 @@ class PackTreeView(TreeView):
                     return
 
     def saveAll(self):
-        for pack in self.model().data(QModelIndex(), OPENED_PACKS_ROLE):
-            self.savePack(pack)
+        saved = [self.savePack(pack) for pack in self.model().data(QModelIndex(), OPENED_PACKS_ROLE)]
+        if all(saved):
+            self.setWindowModified(False)
 
     def closeFileWithDialog(self):
         pack = self.currentIndex().data(PACKAGE_ROLE)
