@@ -116,6 +116,7 @@ class AddDialog(QDialog):
         self.setMaximumHeight(self.MAX_HEIGHT)
 
         self.verticalLayout = QVBoxLayout(self)
+        self.buttonBox.setContentsMargins(*self.verticalLayout.getContentsMargins())
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.addWidget(self.scrollArea)
         self.verticalLayout.addWidget(self.buttonBox)
