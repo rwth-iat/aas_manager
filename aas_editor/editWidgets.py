@@ -327,7 +327,7 @@ class StandardInputWidget(QWidget):
 class SpecialInputWidget(StandardInputWidget):
     types = (dateutil.relativedelta.relativedelta,
              datetime.time, datetime.date, datetime.datetime, datetime.tzinfo,
-             decimal.Decimal, bytes, bytearray)
+             bytes, bytearray)
 
     def _initWidget(self, **kwargs):
         if issubtype(self.objType, datetime.tzinfo):
