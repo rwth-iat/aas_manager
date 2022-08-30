@@ -46,6 +46,7 @@ class StandardTable(QAbstractItemModel):
         self.lastErrorMsg = ""
         self.undo: deque[SetDataItem] = deque(maxlen=MAX_UNDOS)
         self.redo: List[SetDataItem] = []
+        self.changedItems: List[QModelIndex] = []
 
     def index(self, row: int, column: int = 0, parent: QModelIndex = QModelIndex()) -> QModelIndex:
         if not self.hasIndex(row, column, parent):
@@ -423,11 +424,22 @@ class StandardTable(QAbstractItemModel):
 
     def setChanged(self, topLeft: QModelIndex, bottomRight: QModelIndex = None):
         """Set the item and all parents as changed"""
+        self._setChanged(True, topLeft, bottomRight)
+
+    def setUnchanged(self, topLeft: QModelIndex, bottomRight: QModelIndex = None):
+        self._setChanged(False, topLeft, bottomRight)
+
+    def _setChanged(self, changed: bool, topLeft: QModelIndex, bottomRight: QModelIndex):
         bottomRight = topLeft if bottomRight is None else bottomRight
         if topLeft.isValid() and bottomRight.isValid():
             selection = QItemSelection(topLeft, bottomRight)
             for index in selection.indexes():
-                self.objByIndex(index).changed = True
+                self.objByIndex(index).changed = changed
+                if changed:
+                    self.changedItems.append(index)
+                else:
+                    self.changedItems.append(index)
+
                 if index.parent().isValid():
                     self.setChanged(index.parent())
                 else:
