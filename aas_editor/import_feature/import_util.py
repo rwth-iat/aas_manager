@@ -145,10 +145,13 @@ def importValueFromExcel(value: str, sourcefile, sheetname, row=2):
 
 def importValueFromExampleRow(rawValue: str, row: Dict):
     value = rawValue
-
+    # import value from row if only column reference is present in rawValue, else import value from row and try to typecast everything to str
+    # e.g. if rawValue == "$A$" -> return row["A"]
+    # if rawValue == "$A$ some text $B$" -> return f"{str(row["A"])} some text {str(row["B"])}"
     colReferences: List[str] = re.findall(COLUMNS_PATTERN, rawValue)
-    if len(colReferences) == 1 and value == {colReferences[0]}:
-        value = row[colReferences[0]]
+    if len(colReferences) == 1 and value == colReferences[0]:
+        column = colReferences[0]
+        value = row[column.strip("$")]
     else:
         for col in colReferences:
             column = col.strip("$")
