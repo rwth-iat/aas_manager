@@ -179,7 +179,7 @@ def getTypeHintName(typehint) -> str:
     try:
         args = []
         for arg in typehint.__args__:
-             args.append(getTypeHintName(arg))
+            args.append(getTypeHintName(arg))
         res = f"{typ}{args}".replace("'", "")
     except AttributeError:
         res = typ
