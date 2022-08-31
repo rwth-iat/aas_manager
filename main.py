@@ -20,13 +20,13 @@ def main():
     app = QtWidgets.QApplication(sys.argv)
     from aas_editor.editorApp import EditorApp as CurrentApp
     from aas_editor.splash import Splash
-    splash = Splash()
-    splash.show()
+    #splash = Splash()
+    #splash.show()
 
     window = CurrentApp()
     window.show()
 
-    splash.setFocus()
+    #splash.setFocus()
 
     app.exec_()
 
