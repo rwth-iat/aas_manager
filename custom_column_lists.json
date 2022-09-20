@@ -1,4 +1,4 @@
 {
-  "example_list": ["value", "description", "kind"],
+  "example_list": ["value", "value_type", "category", "description", "semantic_id", "id_short", "type"],
   "example_list2": ["type", "typehint"]
 }
