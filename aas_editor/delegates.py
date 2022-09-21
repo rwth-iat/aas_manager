@@ -73,7 +73,7 @@ class ColorDelegate(QStyledItemDelegate):
 
 class EditDelegate(ColorDelegate):
     # FIXME check if other types are also editable
-    editableTypesInTable = (bool, int, float, str, Enum, Type, DictItem, bytes, type(None), dict, list, AbstractSet)
+    editableTypesInTable = (bool, int, float, str, Enum, Type, DictItem, bytes, type(None), list, AbstractSet)
 
     def createEditor(self, parent: QWidget, option: 'QStyleOptionViewItem',
                      index: QtCore.QModelIndex) -> QWidget:
