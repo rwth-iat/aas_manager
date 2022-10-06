@@ -17,6 +17,7 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
 import inspect
+import logging
 import typing
 from abc import ABCMeta
 from collections import abc
@@ -57,7 +58,8 @@ def isTypehint(obj) -> bool:
         if obj in TYPING_TYPES or type(obj) is typing.TypeVar:
             return True
     except TypeError as e:
-        print(e)
+        logging.exception(e)
+        # print(e)
     return inspect.isclass(obj)
 
 
@@ -131,7 +133,8 @@ def checkTypeAASRef(aasref, typehint):
             try:
                 return issubclass(aasref.type, args)
             except TypeError as e:
-                print(f"Error occured while checking: {aasref.type} and {args}", e)
+                logging.exception(f"Error occured while checking: {aasref.type} and {args}", e)
+                # print(f"Error occured while checking: {aasref.type} and {args}", e)
                 return False
         else:
             return True
@@ -155,7 +158,7 @@ def getTypeName(objType) -> str:
             if res:
                 break
         except (AttributeError, TypeError) as e:
-            print(e)
+            # print(e)
             pass
     else:
         name = str(objType)
@@ -277,7 +280,8 @@ def isoftype(obj, types) -> bool:
         if issubclass(types, Enum):
             return _isoftype(obj, types)
     except TypeError as e:
-        print(e)
+        logging.exception(e)
+        # print(e)
 
     try:
         for tp in types:
@@ -285,7 +289,8 @@ def isoftype(obj, types) -> bool:
                 return True
         return False
     except TypeError as e:
-        print(e)
+        logging.exception(e)
+        # print(e)
         return _isoftype(obj, types)
 
 
@@ -349,7 +354,8 @@ def getAttrTypeHint(objType, attr, delOptional=True):
             typehints = typing.get_type_hints(func.fget)
             typeHint = typehints["return"]
         except Exception as e:
-            print(e)
+            logging.exception(e)
+            # print(e)
             raise KeyError
 
     try:

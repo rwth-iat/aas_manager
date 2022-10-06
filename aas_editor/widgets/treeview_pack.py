@@ -15,6 +15,7 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
+import logging
 import typing
 from pathlib import Path
 from typing import Optional
@@ -617,7 +618,8 @@ class PackTreeView(TreeView):
             try:
                 attrTypehint = util_type.getAttrTypeHint(type(index.data(OBJECT_ROLE)), attrName, delOptional=False)
             except KeyError as e:
-                print(e)
+                logging.exception(e)
+                # print(e)
                 return False
 
             obj2paste = self.treeObjClipboard[0]
@@ -627,7 +629,8 @@ class PackTreeView(TreeView):
                 if util_type.checkType(obj2paste, targetTypeHint):
                     return True
             except (AttributeError, TypeError) as e:
-                print(e)
+                logging.exception(e)
+                # print(e)
             return False
 
     def onPaste(self):

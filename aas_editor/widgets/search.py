@@ -17,6 +17,7 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
 from typing import List
+import logging
 
 from PyQt5.QtCore import QModelIndex, QPersistentModelIndex
 from PyQt5.QtGui import QBrush
@@ -106,8 +107,10 @@ class SearchBar(ToolBar):
         items = [QModelIndex(i) for i in self.foundItems]
         items.sort(key=absRow)
         for item in items:
-            print(item.data(NAME_ROLE))
-        print(self.view.currentIndex().data(NAME_ROLE))
+            logging.info(item.data(NAME_ROLE))
+            # print(item.data(NAME_ROLE))
+        logging.info(self.view.currentIndex().data(NAME_ROLE))
+        # print(self.view.currentIndex().data(NAME_ROLE))
         for item in items:
             if absRow(item) > absRow(self.view.currentIndex()):
                 self.view.setCurrentIndex(item)
@@ -117,7 +120,8 @@ class SearchBar(ToolBar):
         items = [QModelIndex(i) for i in self.foundItems]
         items.sort(key=absRow, reverse=True)
         for item in items:
-            print(item.data(NAME_ROLE))
+            logging.info(item.data(NAME_ROLE))
+            # print(item.data(NAME_ROLE))
         for item in items:
             if absRow(item) < absRow(self.view.currentIndex()):
                 self.view.setCurrentIndex(item)

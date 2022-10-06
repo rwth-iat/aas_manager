@@ -9,24 +9,28 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
 import sys
+import logging
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWebEngineWidgets import *
 from PyQt5 import QtWidgets
 
+logging.basicConfig(level=logging.INFO, filename="log.log", filemode="w",
+                    format="%(asctime)s | %(levelname)s | %(message)s")
+
 
 def main():
-    QtWidgets.QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
     app = QtWidgets.QApplication(sys.argv)
     from aas_editor.editorApp import EditorApp as CurrentApp
     from aas_editor.splash import Splash
-    #splash = Splash()
-    #splash.show()
+    # splash = Splash()
+    # splash.show()
 
     window = CurrentApp()
+
     window.show()
 
-    #splash.setFocus()
+    # splash.setFocus()
 
     app.exec_()
 

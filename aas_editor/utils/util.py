@@ -29,6 +29,7 @@ from PyQt5.QtWidgets import QApplication
 from aas_editor import settings
 import aas_editor.utils.util_classes as util_classes
 import aas_editor.utils.util_type as util_type
+import logging
 
 
 def nameIsSpecial(method_name):
@@ -83,13 +84,15 @@ def getAttrsOfCls(cls) -> Set[str]:
             attrs.remove(param)
             attrs.append(attr)
         except ValueError:
-            print("Error occurred while replacing param to attr: probably CLASSES_INFO is corrupted")
+            logging.exception("Error occurred while replacing param to attr: probably CLASSES_INFO is corrupted")
+            # print("Error occurred while replacing param to attr: probably CLASSES_INFO is corrupted")
     hidden_attrs = util_classes.ClassesInfo.hiddenAttrs(cls)
     for hidden_attr in hidden_attrs:
         try:
             attrs.remove(hidden_attr)
         except ValueError:
-            print("Error occurred while removing hidden attr: probably CLASSES_INFO is corrupted")
+            logging.exception("Error occurred while removing hidden attr: probably CLASSES_INFO is corrupted")
+            # print("Error occurred while removing hidden attr: probably CLASSES_INFO is corrupted")
     return attrs
 
 
@@ -117,7 +120,8 @@ def getLimitStr(obj, max_sgns=settings.MAX_SIGNS_TO_SHOW) -> str:
         if len(obj) > max_sgns:
             return f"{str(obj)[0:max_sgns]}..."
     except Exception as e:
-        print(e)
+        # print(e)
+        logging.exception(e)
     return str(obj)
 
 

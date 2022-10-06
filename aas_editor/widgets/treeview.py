@@ -7,6 +7,8 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
+import logging
+import time
 from typing import Optional, Any
 
 from PyQt5.QtCore import Qt, pyqtSignal, QModelIndex, QTimer, QAbstractItemModel, QPoint
@@ -526,7 +528,8 @@ class TreeView(BasicTreeView):
             if isIterable(targetObj):
                 return checkType(obj2paste, getIterItemTypeHint(targetTypeHint))
         except (AttributeError, TypeError) as e:
-            print(e)
+            logging.exception(e)
+            # print(e)
         return False
 
     def onPaste(self):

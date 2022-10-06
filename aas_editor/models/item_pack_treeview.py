@@ -15,7 +15,7 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-
+import logging
 from types import GeneratorType
 
 from PyQt5.QtCore import Qt
@@ -43,7 +43,8 @@ class PackTreeViewItem(StandardItem):
             if isinstance(obj, AASReference):
                 obj = obj.resolve(self.package.objStore)
         except KeyError as e:
-            print(e)
+            logging.exception(e)
+            # print(e)
         self.obj = obj
         self.populate()
 
