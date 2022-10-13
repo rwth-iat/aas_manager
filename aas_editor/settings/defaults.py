@@ -23,7 +23,7 @@ from basyx.aas.model.datatypes import String
 
 from aas_editor.additional.classes import DictItem
 
-CATEGORIES = ["CONSTANT", "PARAMETER"]
+CATEGORIES = ["CONSTANT", "PARAMETER", "VARIABLE"]
 
 LANGUAGES = [
     "DE",
