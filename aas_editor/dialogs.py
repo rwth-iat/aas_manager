@@ -45,6 +45,7 @@ def isValOk4Typehint(val, typehint):
     else:
         return False
 
+
 class AboutDialog(QMessageBox):
     def __init__(self, parent=None):  # <1>
         super().__init__(parent)
@@ -65,6 +66,11 @@ class AboutDialog(QMessageBox):
 
 
 class ErrorMessageBox(QMessageBox):
+    def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
+        super(ErrorMessageBox, self).resizeEvent(a0)
+        self.setFixedWidth(500)
+        self.setFixedHeight(500)
+
     @classmethod
     def withTraceback(cls, parent, text: str):
         err_msg = traceback.format_exc()
