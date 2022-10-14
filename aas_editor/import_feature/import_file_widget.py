@@ -180,17 +180,21 @@ class ImportManageWidget(QWidget):
         if maxRow == -1:
             sheet = excelfile[ImportManageWidget.IMPORT_SETTINGS.sheetname]
             maxRow = sheet.max_row
-        for row in range(minRow, maxRow + 1):
-            newPack = self.newPackFromTemplate(templatePack, row, sourceWB=excelfile)
-            if not fileNameScheme:
-                fileName = f"{row}.aasx"
-            else:
-                fileName = import_util.importValueFromExcelWB(
-                    fileNameScheme, workbook=excelfile, row=row,
-                    sheetname=ImportManageWidget.IMPORT_SETTINGS.sheetname)
-                if "." not in fileName:
-                    fileName = f"{fileName}.aasx"
-            newPack.write(f"{exportFolder}/{fileName}")
+        try:
+            for row in range(minRow, maxRow + 1):
+                newPack = self.newPackFromTemplate(templatePack, row, sourceWB=excelfile)
+                if not fileNameScheme:
+                    fileName = f"{row}.aasx"
+                else:
+                    fileName = import_util.importValueFromExcelWB(
+                        fileNameScheme, workbook=excelfile, row=row,
+                        sheetname=ImportManageWidget.IMPORT_SETTINGS.sheetname)
+                    if "." not in fileName:
+                        fileName = f"{fileName}.aasx"
+                newPack.write(f"{exportFolder}/{fileName}")
+        except Exception as e:
+            raise Exception(f"Problem occured by importing values from the row {row}") from e
+
         QMessageBox.information(self, "Export was successful", "AAS files were successfully created!")
 
     def newPackFromTemplate(self, pack: Package, row: int, sourceWB: openpyxl.Workbook):
