@@ -23,7 +23,7 @@ from PyQt5.QtGui import QFont
 from basyx.aas.model import Referable
 
 from aas_editor.import_feature.import_settings import MAPPING_ATTR
-from aas_editor.import_feature.preobjectImport import PreObjectImport
+from aas_editor.import_feature.import_util_classes import PreObjectImport
 from aas_editor.models import DetailedInfoItem, DetailedInfoTable, SetDataItem
 from aas_editor.settings.app_settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, DEFAULT_COLUMNS_IN_DETAILED_INFO, \
     DEFAULT_FONT, COLUMN_NAME_ROLE, ADD_ITEM_ROLE, CLEAR_ROW_ROLE, PARENT_OBJ_ROLE

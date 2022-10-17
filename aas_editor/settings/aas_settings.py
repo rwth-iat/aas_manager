@@ -31,13 +31,12 @@ from basyx.aas.model.datatypes import Decimal
 
 import aas_editor.additional.classes
 import aas_editor.package
-from aas_editor.import_feature.preobjectImport import PreObjectImport
+from aas_editor.import_feature import import_util_classes
 from aas_editor.settings.util_constants import HIDDEN_ATTRS, CHANGED_PARENT_OBJ, ADD_ACT_AAS_TXT, \
     ADD_TYPE, PACKVIEW_ATTRS_INFO, PARAMS_TO_ATTRS, DEFAULT_PARAMS_TO_HIDE, ITERABLE_ATTRS
 from aas_editor.settings.icons import getCharsIcon
 from aas_editor.utils import util_type
 import aas_editor.utils.util as util
-#from aas_editor.import_feature.preobjectAdvanced import PreObjectImport
 
 AAS_FILES_FILTER = "AAS files (*.aasx *.xml *.json)"
 AASX_FILES_FILTER = "AASX files (*.aasx)"
@@ -503,7 +502,7 @@ ATTR_INFOS_TO_SIMPLIFY = (AdministrativeInformation, Identifier,)
 TYPES_NOT_TO_POPULATE = (type, ABCMeta)
 TYPES_WITH_INSTANCES_NOT_TO_POPULATE = (
     AbstractObjectStore, str, int, float, bool, Enum, Path, aas_editor.additional.classes.DictItem, Decimal, type, datetime.date)  # '+ TYPES_IN_ONE_ROW
-COMPLEX_ITERABLE_TYPES = (Namespace, PreObjectImport)
+COMPLEX_ITERABLE_TYPES = (Namespace, import_util_classes.PreObjectImport)
 
 TYPE_SHORTS_DICT = {
     AssetAdministrationShell: "aas",

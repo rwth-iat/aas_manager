@@ -357,14 +357,10 @@ class SpecialInputWidget(StandardInputWidget):
                 return PreObject(type(None), (), {})
         elif issubtype(self.objType, datetime.datetime):
             return PreObject.useExistingObject(self.widget.dateTime())
-            raise NotImplementedError(f"The function for the type {self.objType} is notimplemented yet")
         elif issubtype(self.objType, datetime.date):
             return PreObject.useExistingObject(self.widget.date())
-            raise NotImplementedError(f"The function for the type {self.objType} is notimplemented yet")
-            obj = self.widget.date()
         elif issubtype(self.objType, datetime.time):
             return PreObject.useExistingObject(self.widget.time())
-            raise NotImplementedError(f"The function for the type {self.objType} is notimplemented yet")
         elif issubtype(self.objType, (dateutil.relativedelta.relativedelta, bytes, bytearray)):
             return self.widget.getPreObj()
 

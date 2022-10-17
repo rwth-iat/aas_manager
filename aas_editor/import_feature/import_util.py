@@ -25,7 +25,7 @@ from basyx.aas import model
 from basyx.aas.model import AASReference, Key
 from openpyxl.worksheet.worksheet import Worksheet
 
-from aas_editor.import_feature.import_settings import MAPPING_ATTR
+from . import import_settings
 from aas_editor.package import Package
 from aas_editor.utils.util_type import isIterable
 
@@ -52,7 +52,7 @@ def importRowValueFromExcel(sourcefile, sheetname=None, row=2):
 
 
 def _mapping4referableIntoDict(obj, mapDict):
-    mapping = getattr(obj, MAPPING_ATTR, {})
+    mapping = getattr(obj, import_settings.MAPPING_ATTR, {})
     if mapping:
         ref = AASReference.from_referable(obj)
         keys = ','.join(
@@ -121,26 +121,7 @@ def setMappingFromFile(pack: Package, mappingFile: str):
         })
         refObj = aasref.resolve(pack.objStore)
         mapping = mapDict[refRepr]
-        setattr(refObj, MAPPING_ATTR, mapping)
-
-
-def importValueFromExcelWB(value: str, workbook: openpyxl.Workbook, sheetname, row=2):
-    sheet = workbook[sheetname]
-
-    colReferences: List[str] = re.findall(COLUMNS_PATTERN, value)
-    if len(colReferences) == 1 and value == f"${colReferences[0]}$":
-        value = sheet[f"{colReferences[0]}"].value
-    else:
-        for col in colReferences:
-            column = col.strip("$")
-            importedVal = str(sheet[f"{column}{row}"].value)
-            value = value.replace(f"${column}$", importedVal, -1)
-    return value
-
-
-def importValueFromExcel(value: str, sourcefile, sheetname, row=2):
-    excel_file = openpyxl.load_workbook(sourcefile, data_only=True)
-    return importValueFromExcelWB(value, excel_file, sheetname, row)
+        setattr(refObj, import_settings.MAPPING_ATTR, mapping)
 
 
 def importValueFromExampleRow(rawValue: str, row: Dict):
@@ -158,6 +139,26 @@ def importValueFromExampleRow(rawValue: str, row: Dict):
             importedVal = str(row[column])
             value = value.replace(f"${column}$", importedVal, -1)
     return value
+
+
+def importValueFromExcelWB(value: str, workbook: openpyxl.Workbook, sheetname, row=2):
+    sheet = workbook[sheetname]
+
+    colReferences: List[str] = re.findall(COLUMNS_PATTERN, value)
+    if len(colReferences) == 1 and value == colReferences[0]:
+        column = colReferences[0].strip("$")
+        value = sheet[f"{column}{row}"].value
+    else:
+        for col in colReferences:
+            column = col.strip("$")
+            importedVal = str(sheet[f"{column}{row}"].value)
+            value = value.replace(f"${column}$", importedVal, -1)
+    return value
+
+
+def importValueFromExcel(value: str, sourcefile, sheetname, row=2):
+    excel_file = openpyxl.load_workbook(sourcefile, data_only=True)
+    return importValueFromExcelWB(value, excel_file, sheetname, row)
 
 
 def isValueToImport(value):

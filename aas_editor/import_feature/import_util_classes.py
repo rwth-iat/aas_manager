@@ -15,14 +15,16 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
+import datetime
 from enum import Enum
 from typing import Dict, Type
 
+from basyx.aas.model.datatypes import Date
+from dateutil.relativedelta import relativedelta
+
 from aas_editor.additional.classes import DictItem
 from aas_editor.import_feature import import_util
-from aas_editor.utils import util
-from aas_editor.utils import util_classes
-from aas_editor.utils import util_type
+from aas_editor.utils import util, util_classes, util_type
 
 IMPORT_FILE = "Motor Daten aus EMSRDB.xlsx"
 
@@ -155,7 +157,8 @@ class PreObjectImport(util_classes.PreObject):
                 print(f"Could not typecast value '{value}' to type '{objtype}': {e}")
             return value
         elif util_type.isSimpleIterable(obj):
-            value = [PreObjectImport._initObjWithImport(i, rowNum, sourceWB, sheetname, fromSavedExampleRow) for i in obj]
+            value = [PreObjectImport._initObjWithImport(i, rowNum, sourceWB, sheetname, fromSavedExampleRow) for i in
+                     obj]
             return value
         elif objtype:
             try:
@@ -257,6 +260,13 @@ class PreObjectImport(util_classes.PreObject):
 
     def setMapping(self, mapping: Dict[str, str]):
         if mapping:
+            if util_type.issubtype(self.objType, datetime.time):
+                self.objType = TimeImport
+            elif util_type.issubtype(self.objType, datetime.datetime):
+                self.objType = DateTimeImport
+            elif util_type.issubtype(self.objType, datetime.date):
+                self.objType = DateImport
+
             if isinstance(mapping, dict):
                 for attr in mapping:
                     if isinstance(attr, int) or (isinstance(attr, str) and attr.isdecimal()):
@@ -266,3 +276,63 @@ class PreObjectImport(util_classes.PreObject):
                     preObj.setMapping(mapping[attr])
             else:
                 self.args = [mapping]
+
+
+class DateImport(str):
+    def __new__(cls, *args, **kwargs):
+        if len(args) == 1 and isinstance(args[0], datetime.datetime):
+            date: datetime.datetime = args[0].date()
+            return Date(year=date.year, month=date.month, day=date.day)
+        elif len(args) == 1 and isinstance(args[0], datetime.date):
+            date = args[0]
+            return Date(year=date.year, month=date.month, day=date.day)
+        else:
+            raise TypeError("Value must be of type datetime.datetime or datetime.date", args)
+
+
+class TimeImport(str):
+    def __new__(cls, *args, **kwargs):
+        if len(args) == 1 and isinstance(args[0], datetime.time):
+            return args[0]
+        elif len(args) == 1 and isinstance(args[0], datetime.datetime):
+            return args[0].time()
+        else:
+            raise TypeError("Value must be of type datetime.datetime or datetime.time", args)
+
+
+class DateTimeImport(str):
+    def __new__(cls, *args, **kwargs):
+        if len(args) == 1 and isinstance(args[0], datetime.datetime):
+            return args[0]
+        else:
+            raise TypeError("Value must be of type datetime.datetime", args)
+
+
+class BooleanImport(str):
+    TRUE = ("1", "true", "yes", "ja", "wahr")
+    FALSE = ("0", "false", "no", "nein", "falsch")
+
+    def __new__(cls, *args, **kwargs):
+        if len(args) == 1:
+            value = args[0]
+            if isinstance(value, (bool, int)):
+                return bool(value)
+            elif isinstance(value, str):
+                value = value.lower()
+                if value in BooleanImport.TRUE:
+                    return True
+                elif value in BooleanImport.FALSE:
+                    return False
+                else:
+                    raise ValueError(f"Value must be one of the following values: "
+                                     f"{BooleanImport.TRUE}, {BooleanImport.FALSE}")
+
+        raise TypeError("Value must be of type Bool or Int or Str", args)
+
+
+TYPS_TO_SPECIAL_IMPORT_OBJ_CLASSES = {
+    datetime.time: TimeImport,
+    datetime.datetime: DateTimeImport,
+    datetime.date: DateImport,
+    bool: BooleanImport,
+}

@@ -7,7 +7,10 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
+from typing import Union
 
+from aas_editor import dialogs
+from aas_editor.import_feature.import_util_classes import TYPS_TO_SPECIAL_IMPORT_OBJ_CLASSES
 from aas_editor.settings.app_settings import *
 from aas_editor.settings import EXTENDED_COLUMNS_IN_PACK_TABLE
 from aas_editor.models import StandardTable
@@ -15,14 +18,53 @@ from aas_editor.import_feature.table_import import ImportTable
 from aas_editor.import_feature.treeview_import import ImportTreeView, DetailImportTreeView
 from aas_editor.editorApp import EditorApp
 from aas_editor.import_feature.import_file_widget import ImportManageWidget
+from aas_editor.utils.util_type import issubtype, removeOptional, isUnion, getArgs
 from aas_editor.widgets import TabWidget
 from aas_editor.import_feature.table_import_detailed_info import DetailedInfoImportTable
+
+
+def handleTypeHint4import(objTypeHint, parent):
+    def importClsInParentTypehints():
+        if not hasattr(parent, "objTypes"):
+            return False
+        if not parent.objTypes:
+            return False
+        for special_import_obj_cls in TYPS_TO_SPECIAL_IMPORT_OBJ_CLASSES.values():
+            if special_import_obj_cls in parent.objTypes:
+                return True
+        return False
+
+    def addSpecialImportObjClsTypeHint(typehint):
+        for typ in TYPS_TO_SPECIAL_IMPORT_OBJ_CLASSES:
+            if issubtype(typehint, typ):
+                importCls = TYPS_TO_SPECIAL_IMPORT_OBJ_CLASSES[typ]
+                typehint = Union[typehint, importCls]
+                return typehint
+        return typehint
+
+    objTypeHint = removeOptional(objTypeHint)
+
+    if isUnion(objTypeHint) and not importClsInParentTypehints():
+        unionTypehints = getArgs(objTypeHint)
+        for typehint in unionTypehints:
+            newtyp = addSpecialImportObjClsTypeHint(typehint)
+            objTypeHint = Union[newtyp, objTypeHint]
+    elif issubtype(objTypeHint, tuple(TYPS_TO_SPECIAL_IMPORT_OBJ_CLASSES.keys())) and not importClsInParentTypehints():
+        objTypeHint = addSpecialImportObjClsTypeHint(objTypeHint)
+
+    return objTypeHint
 
 
 class ImportApp(EditorApp):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self.importWidget.initImportSettingsDialog()
+        setattr(dialogs.InputWidgetUtil, "handleTypeHint", handleTypeHint4import)
+
+    def __del__(self):
+        setattr(dialogs.InputWidgetUtil, "handleTypeHint", dialogs.InputWidgetUtil._handleTypeHint)
+        del self
+
 
     def setupMainTreeView(self, parent, model: StandardTable) -> ImportTreeView:
         mainTreeView = ImportTreeView(parent, importManageWidget=self.importWidget)

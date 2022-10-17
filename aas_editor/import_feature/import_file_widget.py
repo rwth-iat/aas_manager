@@ -18,7 +18,7 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout, QPushButton, QFileDialog, QMes
 
 from aas_editor.import_feature import import_util
 from aas_editor.import_feature.import_settings import MAPPING_ATTR
-from aas_editor.import_feature import preobjectImport
+from aas_editor.import_feature import import_util_classes
 from aas_editor.import_feature.import_util import getMapping, usedColumnsInMapping, unusedColumnsInMapping
 from aas_editor.package import Package
 from aas_editor import settings
@@ -53,7 +53,7 @@ class ImportSettings:
         self._exampleRow = row
         if self.sourceFile:
             self.exampleRowValue = import_util.importRowValueFromExcel(sourcefile=self.sourceFile, row=row)
-            preobjectImport.PreObjectImport.EXAMPLE_ROW_VALUE = self.exampleRowValue
+            import_util_classes.PreObjectImport.EXAMPLE_ROW_VALUE = self.exampleRowValue
 
     @property
     def sheetname(self):
@@ -205,7 +205,7 @@ class ImportManageWidget(QWidget):
         return newPack
 
     def _initObjWithMappingImport(self, obj, row: int, sourceWB: openpyxl.Workbook):
-        preobj = preobjectImport.PreObjectImport.fromObject(obj, withIterParams=False)
+        preobj = import_util_classes.PreObjectImport.fromObject(obj, withIterParams=False)
         preobj.setMapping(getattr(obj, MAPPING_ATTR, {}))
         newObj = preobj.initWithImport(rowNum=row, sourceWB=sourceWB,
                                        sheetname=ImportManageWidget.IMPORT_SETTINGS.sheetname)
