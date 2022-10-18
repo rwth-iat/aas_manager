@@ -53,13 +53,13 @@ class PreObjectImport(util_classes.PreObject):
             return PreObjectImport(objType, (obj,), {})
         elif util_type.issubtype(objType, relativedelta):
             kwargs = {
-                "years": obj.years,
-                "months": obj.months,
-                "days": obj.days,
-                "hours": obj.hours,
-                "minutes": obj.minutes,
-                "seconds": obj.seconds,
-                "microseconds": obj.microseconds,
+                "years": PreObjectImport.fromObject(obj.years),
+                "months": PreObjectImport.fromObject(obj.months),
+                "days": PreObjectImport.fromObject(obj.days),
+                "hours": PreObjectImport.fromObject(obj.hours),
+                "minutes": PreObjectImport.fromObject(obj.minutes),
+                "seconds": PreObjectImport.fromObject(obj.seconds),
+                "microseconds": PreObjectImport.fromObject(obj.microseconds),
             }
             return PreObjectImport(objType, [], kwargs)
         elif util_type.issubtype(objType, (str, int, float, bytes)):
@@ -260,12 +260,9 @@ class PreObjectImport(util_classes.PreObject):
 
     def setMapping(self, mapping: Dict[str, str]):
         if mapping:
-            if util_type.issubtype(self.objType, datetime.time):
-                self.objType = TimeImport
-            elif util_type.issubtype(self.objType, datetime.datetime):
-                self.objType = DateTimeImport
-            elif util_type.issubtype(self.objType, datetime.date):
-                self.objType = DateImport
+            for typ in TYPS_TO_SPECIAL_IMPORT_OBJ_CLASSES:
+                if util_type.issubtype(self.objType, typ):
+                    self.objType = TYPS_TO_SPECIAL_IMPORT_OBJ_CLASSES[typ]
 
             if isinstance(mapping, dict):
                 for attr in mapping:
