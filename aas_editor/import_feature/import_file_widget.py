@@ -129,7 +129,7 @@ class ImportManageWidget(QWidget):
                     dialogs.ErrorMessageBox.withTraceback(self, f"Could not open AAS File: {e}").exec()
                     continue
 
-                ImportManageWidget.IMPORT_SETTINGS.sourceFile = dialog.importSourceFileLine.text()
+                ImportManageWidget.IMPORT_SETTINGS.sourceFile = dialog.importExcelFileLine.text()
                 try:
                     ImportManageWidget.IMPORT_SETTINGS.sheetname = dialog.sheetnameLine.text()
                 except Exception as e:
@@ -157,7 +157,7 @@ class ImportManageWidget(QWidget):
         result = False
         while not result and dialog.exec_() == QDialog.Accepted:
             try:
-                ImportManageWidget.IMPORT_SETTINGS.sourceFile = dialog.importSourceFileLine.text()
+                ImportManageWidget.IMPORT_SETTINGS.sourceFile = dialog.importExcelFileLine.text()
                 ImportManageWidget.IMPORT_SETTINGS.sheetname = dialog.sheetnameLine.text()
                 ImportManageWidget.IMPORT_SETTINGS.exampleRow = int(dialog.exampleRow.text())
                 try:
@@ -254,25 +254,25 @@ class SettingsDialog(QDialog):
         self.setLayout(self.formLayout)
 
     def importSourceFileGB(self, file=None, exampleRow=None):
-        self.importSourceFileLine = QLineEdit(placeholderText="Import Source File (e.g. Excel-Table)")
-        self.importSourceFileLine.setText(file)
+        self.importExcelFileLine = QLineEdit(placeholderText="Excel-Table file")
+        self.importExcelFileLine.setText(file)
         self.chooseSourceFileBtn = QPushButton(CHOOSE, clicked=self.chooseImportFile)
         self.exampleRow = QLineEdit(self,
-                                    placeholderText="The row which will be used for example values while creating the mapping (normally=2)")
+                                    placeholderText="Row for example values (normally=2)")
         self.exampleRow.setValidator(QIntValidator(1, 100000))
         if exampleRow:
             self.exampleRow.setText(str(exampleRow))
 
         # row 1
         hbox = QHBoxLayout()
-        hbox.addWidget(self.importSourceFileLine)
+        hbox.addWidget(self.importExcelFileLine)
         hbox.addWidget(self.chooseSourceFileBtn)
-        self.formLayout.addRow(QLabel("Import Source File*"), hbox)
+        self.formLayout.addRow(QLabel("Import Excel File*"), hbox)
         # row 2
         self.formLayout.addRow("Example Row*", self.exampleRow)
 
     def sheetnameGB(self, sheetname=None):
-        self.sheetnameLine = QLineEdit(placeholderText="Leave empty if first sheet used or sourcefile is not excel")
+        self.sheetnameLine = QLineEdit(placeholderText="Leave empty if first Excel sheet used")
         self.sheetnameLine.setText(sheetname)
         self.formLayout.addRow("Sheetname", self.sheetnameLine)
 
@@ -287,10 +287,10 @@ class SettingsDialog(QDialog):
         self.formLayout.addRow("Mapping File", hbox)
 
     def chooseImportFile(self):
-        file, _ = QFileDialog.getOpenFileName(self, "Choose Import Source File",
+        file, _ = QFileDialog.getOpenFileName(self, "Choose Import Excel File",
                                               filter=f"{EXCEL_FILES};;{settings.ALL_FILES_FILTER}")
         if file:
-            self.importSourceFileLine.setText(file)
+            self.importExcelFileLine.setText(file)
 
     def chooseMappingFile(self):
         file, _ = QFileDialog.getOpenFileName(self, "Choose Mapping File", filter=settings.JSON_FILES_FILTER)
@@ -299,7 +299,7 @@ class SettingsDialog(QDialog):
 
 
 class ImportSettingsDialog(SettingsDialog):
-    def __init__(self, parent=None, title="AAS Manager Import Tool"):
+    def __init__(self, parent=None, title="AAS Manager Excel Import Tool"):
         super(SettingsDialog, self).__init__(parent)
         self.setWindowTitle(title)
         self.buttonBox = QDialogButtonBox(QDialogButtonBox.Apply, self)
@@ -338,7 +338,7 @@ class ImportSettingsDialog(SettingsDialog):
             return
 
     def chooseAasFile(self):
-        file, _ = QFileDialog.getOpenFileName(self, "Choose Import Source File", filter=settings.FILTER_AAS_FILES)
+        file, _ = QFileDialog.getOpenFileName(self, "Choose Import Excel File", filter=settings.FILTER_AAS_FILES)
         if file:
             self.aasFileLine.setText(file)
 
@@ -355,14 +355,14 @@ class RunImportDialog(QDialog):
 
         layout = QFormLayout(self)
 
-        self.minRow = QLineEdit(self, placeholderText="The row where import starts")
+        self.minRow = QLineEdit(self, placeholderText="Row where import starts")
         self.minRow.setValidator(QIntValidator(1, 100000))
-        self.maxRow = QLineEdit(self, placeholderText="The row where import ends (-1 for the last row)")
+        self.maxRow = QLineEdit(self, placeholderText="Row where import ends (-1 for the last row)")
         self.maxRow.setValidator(QIntValidator(-1, 100001))
 
         self.exportFolderLine = QLineEdit(placeholderText="Export Folder")
         self.chooseExportFolderBtn = QPushButton("Choose Export Folder", clicked=self.chooseExportFolder)
-        self.nameScheme = QLineEdit(self, placeholderText="Export file names scheme (e.g. 'AAS_file_$A$')")
+        self.nameScheme = QLineEdit(self, placeholderText="Export filename scheme (e.g. AAS_file_$A$.aasx)")
 
         packMapping = getMapping(importSettings.mappingPackage)
         self.usedColsLine = QLabel(str(usedColumnsInMapping(packMapping)).strip("[]").replace("'", ""), self)
@@ -375,7 +375,7 @@ class RunImportDialog(QDialog):
         hbox.addWidget(self.exportFolderLine)
         hbox.addWidget(self.chooseExportFolderBtn)
         layout.addRow("Export Folder*", hbox)
-        layout.addRow("AAS Filename Scheme", self.nameScheme)
+        layout.addRow("Generated AAS Filenames", self.nameScheme)
         layout.addRow("Used columns", self.usedColsLine)
         layout.addRow("Unused columns", self.unusedColsLine)
 
