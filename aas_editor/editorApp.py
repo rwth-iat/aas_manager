@@ -58,8 +58,8 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                                       statusTip="Open compliance tool",
                                       triggered=lambda: ComplianceToolDialog(self).exec())
 
-        self.importToolAct = QAction("Table import tool", self,
-                                      statusTip="Switch to table import mode",
+        self.importToolAct = QAction("Excel AAS Generator tool", self,
+                                      statusTip="Open Excel AAS Generator tool",
                                       triggered=lambda: self.showImportApp())
 
         self.settingsDialogAct = QAction(SETTINGS_ICON, "Settings", self,

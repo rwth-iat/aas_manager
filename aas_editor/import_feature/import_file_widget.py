@@ -7,7 +7,7 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-import traceback
+import datetime
 from dataclasses import dataclass
 
 import openpyxl
@@ -195,7 +195,7 @@ class ImportManageWidget(QWidget):
         except Exception as e:
             raise Exception(f"Problem occured by importing values from the row {row}") from e
 
-        QMessageBox.information(self, "Export was successful", "AAS files were successfully created!")
+        QMessageBox.information(self, "Export was successful", f"{maxRow-minRow+1} AAS files were successfully generated!")
 
     def newPackFromTemplate(self, pack: Package, row: int, sourceWB: openpyxl.Workbook):
         newPack = Package()
@@ -246,29 +246,30 @@ class SettingsDialog(QDialog):
         # 6x4
         self.formLayout = QFormLayout()
         # Create widgets
-        self.importSourceFileGB(importSettings.sourceFile, importSettings.exampleRow)
+        self.importSourceFileGB(importSettings.sourceFile)
         self.sheetnameGB(importSettings.sheetname)
+        self.exampleRowGB(importSettings.exampleRow)
         self.mappingFileGB(importSettings.mappingFile)
 
         self.formLayout.addWidget(self.buttonBox)
         self.setLayout(self.formLayout)
 
-    def importSourceFileGB(self, file=None, exampleRow=None):
-        self.importExcelFileLine = QLineEdit(placeholderText="Excel-Table file")
+    def importSourceFileGB(self, file=None):
+        self.importExcelFileLine = QLineEdit(placeholderText="Excel file")
         self.importExcelFileLine.setText(file)
         self.chooseSourceFileBtn = QPushButton(CHOOSE, clicked=self.chooseImportFile)
+        hbox = QHBoxLayout()
+        hbox.addWidget(self.importExcelFileLine)
+        hbox.addWidget(self.chooseSourceFileBtn)
+        self.formLayout.addRow(QLabel("Excel to import values from*"), hbox)
+
+    def exampleRowGB(self, exampleRow=None):
         self.exampleRow = QLineEdit(self,
                                     placeholderText="Row for example values (normally=2)")
         self.exampleRow.setValidator(QIntValidator(1, 100000))
         if exampleRow:
             self.exampleRow.setText(str(exampleRow))
-
-        # row 1
-        hbox = QHBoxLayout()
-        hbox.addWidget(self.importExcelFileLine)
-        hbox.addWidget(self.chooseSourceFileBtn)
-        self.formLayout.addRow(QLabel("Import Excel File*"), hbox)
-        # row 2
+            datetime.date()
         self.formLayout.addRow("Example Row*", self.exampleRow)
 
     def sheetnameGB(self, sheetname=None):
@@ -308,17 +309,30 @@ class ImportSettingsDialog(SettingsDialog):
 
         # 6x4
         self.formLayout = QFormLayout()
+        self.formLayout.addRow(QLabel("The tool provides possibility to generate AAS files for each row in Excel table:\n"
+                                      "It takes Base AAS File as a Template with static information. \n"
+                                      "You can edit the Base AAS as a normal AAS and create there new Submodels, Properties etc.. \n"
+                                      "You can input there static values, which will be the same in all generated AAS \n"
+                                      "or you can input there Excel column references for specific attributes of objects.\n"
+                                      "When you run generation, for each row in Excel table an AAS based on Base AAS will be created. \n"
+                                      "The values in generated AAS will be token from Base AAS. \n"
+                                      "If Base AAS has parameters with Excel-Column References instead of static values, \n"
+                                      "then in generated AAS for each row these parameters will be set to values from corresponding column of Excel-Table. \n\n"
+                                      "E.g. you can set value of property to $A$, then each generated AAS will have Property with value from column A and corresponding row. \n"
+                                      "You can also mix static values und multiple references. E.g. set value of property to $A$_$B$_example "))
         # Create widgets
         self.aasFileGB()
         self.importSourceFileGB()
         self.sheetnameGB()
+        self.exampleRowGB()
         self.mappingFileGB()
 
         self.formLayout.addWidget(self.buttonBox)
         self.setLayout(self.formLayout)
 
     def aasFileGB(self):
-        self.aasFileLine = QLineEdit(placeholderText="Base AAS File")
+        self.aasFileLine = QLineEdit(placeholderText="Use existing or create new AAS file")
+
         self.chooseAasFileBtn = QPushButton(CHOOSE, clicked=self.chooseAasFile)
         self.newAasFileBtn = QPushButton("New...", clicked=self.newAasFile)
 
@@ -355,29 +369,31 @@ class RunImportDialog(QDialog):
 
         layout = QFormLayout(self)
 
-        self.minRow = QLineEdit(self, placeholderText="Row where import starts")
+        self.minRow = QLineEdit(self, placeholderText="Row where value import starts")
         self.minRow.setValidator(QIntValidator(1, 100000))
-        self.maxRow = QLineEdit(self, placeholderText="Row where import ends (-1 for the last row)")
+        layout.addRow("Start Row*", self.minRow)
+
+        self.maxRow = QLineEdit(self, placeholderText="Row where value import ends (-1 for the last row)")
         self.maxRow.setValidator(QIntValidator(-1, 100001))
+        layout.addRow("End Row*", self.maxRow)
 
         self.exportFolderLine = QLineEdit(placeholderText="Export Folder")
+        hbox = QHBoxLayout()
+        hbox.addWidget(self.exportFolderLine)
         self.chooseExportFolderBtn = QPushButton("Choose Export Folder", clicked=self.chooseExportFolder)
-        self.nameScheme = QLineEdit(self, placeholderText="Export filename scheme (e.g. AAS_file_$A$.aasx)")
+        hbox.addWidget(self.chooseExportFolderBtn)
+        layout.addRow("Export Folder*", hbox)
+
+        self.nameScheme = QLineEdit(self, placeholderText="e.g. AAS_file_$A$.aasx")
+        layout.addRow("Generated AAS filenames scheme", self.nameScheme)
 
         packMapping = getMapping(importSettings.mappingPackage)
         self.usedColsLine = QLabel(str(usedColumnsInMapping(packMapping)).strip("[]").replace("'", ""), self)
+        layout.addRow("Used columns for value import", self.usedColsLine)
+
         self.unusedColsLine = QLabel(str(unusedColumnsInMapping(packMapping, sourcefile=importSettings.sourceFile,
                                      sheetname=importSettings.sheetname)).strip("[]").replace("'", ""), self)
-
-        layout.addRow("Start Row*", self.minRow)
-        layout.addRow("End Row*", self.maxRow)
-        hbox = QHBoxLayout()
-        hbox.addWidget(self.exportFolderLine)
-        hbox.addWidget(self.chooseExportFolderBtn)
-        layout.addRow("Export Folder*", hbox)
-        layout.addRow("Generated AAS Filenames", self.nameScheme)
-        layout.addRow("Used columns", self.usedColsLine)
-        layout.addRow("Unused columns", self.unusedColsLine)
+        layout.addRow("Unused columns for value import", self.unusedColsLine)
 
         layout.addWidget(self.buttonBox)
         self.setLayout(layout)
