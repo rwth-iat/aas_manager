@@ -460,6 +460,8 @@ class PackTreeView(TreeView):
         except ValueError:
             QMessageBox.critical(self, "Not found error",
                                  f"The file to close is not found: {pack}")
+            return
+
         if packItem.isValid():
             try:
                 dialog = QMessageBox(QMessageBox.NoIcon, f"Close {pack}",
