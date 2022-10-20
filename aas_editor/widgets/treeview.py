@@ -667,6 +667,10 @@ class TreeView(BasicTreeView):
             # any other key was pressed, inform base
             super(TreeView, self).keyPressEvent(event)
 
+    def keyboardSearch(self, search: str) -> None:
+        # The func fixed following error: programm crashes if you type too fast any keys!
+        return None
+
     def keyReleaseEvent(self, event) -> None:
         if event.key() in (Qt.Key_Right, Qt.Key_Left):
             return
