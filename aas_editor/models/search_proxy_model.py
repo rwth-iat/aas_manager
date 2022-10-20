@@ -32,6 +32,8 @@ class SearchProxyModel(QSortFilterProxyModel):
             self.setSourceModel(sourceModel)
 
     def match(self, start: QModelIndex, role: int, value: Any, hits: int = ..., flags: Union[Qt.MatchFlags, Qt.MatchFlag] = ...) -> List[QModelIndex]:
+        # FIXME: error occures if you type too fast any keys! probably search on keyPressEvent
+        return []
         items = self.sourceModel().match(start, role, value, hits, flags)
         return [self.mapFromSource(item) for item in items]
 
