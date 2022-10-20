@@ -83,11 +83,6 @@ class ErrorMessageBox(QMessageBox):
     def reportButtonClicked(self):
         webbrowser.open("https://github.com/zrgt/aas_manager/issues")
 
-    def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
-        super(ErrorMessageBox, self).resizeEvent(a0)
-        self.setFixedWidth(500)
-        self.setFixedHeight(500)
-
     @classmethod
     def withTraceback(cls, parent, text: str):
         err_msg = traceback.format_exc()
