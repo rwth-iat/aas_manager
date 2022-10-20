@@ -26,7 +26,7 @@ DEVELOPER_WEB = "plt.rwth-aachen.de"
 CONTACT = "i.garmaev@plt.rwth-aachen.de"
 APPLICATION_LINK = "https://github.com/zrgt/aas_manager"
 ACPLT = "ACPLT"
-VERSION = "0.3.0"
+VERSION = "0.3.2"
 LICENSE = "GNU General Public License v3.0"
 
 TOOLBARS_HEIGHT = 30
