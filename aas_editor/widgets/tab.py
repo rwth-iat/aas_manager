@@ -15,6 +15,7 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
+import logging
 
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineSettings
 from PyQt5.QtCore import pyqtSignal, QModelIndex, QPersistentModelIndex, QPoint, QMimeData, QUrl, \
@@ -394,7 +395,8 @@ class Tab(QWidget):
                 else:
                     self.mediaWidget.setContent(mediaContent.value, mediaContent.mime_type)
             except Exception as e:
-                print(e)
+                logging.exception(e)
+                # print(e)
                 self.mediaWidget.setContent(b"Error occurred while loading media")
             self.mediaWidget.setZoomFactor(1.0)
         else:

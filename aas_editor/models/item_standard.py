@@ -17,6 +17,7 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
 import io
+import logging
 from collections import namedtuple
 
 from PyQt5.QtGui import QIcon
@@ -117,7 +118,8 @@ class StandardItem(QObject):
         try:
             self.typehintName = getTypeHintName(self.typehint)
         except TypeError as e:
-            print(e)
+            logging.exception(e)
+            # print(e)
             self.typehintName = str(self.typehint)
 
     def updateIcon(self):
@@ -254,7 +256,8 @@ class StandardItem(QObject):
                 data.resolve(self.package.objStore)
                 return True
             except (AttributeError, KeyError, NotImplementedError, TypeError, IndexError) as e:
-                print(e)
+                logging.exception(e)
+                # print(e)
                 return False
         return False
 
@@ -283,7 +286,8 @@ class StandardItem(QObject):
             attrTypehint = getAttrTypeHint(type(self.parentObj), attrName, delOptional=False)
             return attrTypehint
         except KeyError:
-            print("Typehint could not be gotten")
+            logging.exception("Typehint could not be gotten")
+            # print("Typehint could not be gotten")
 
         if isIterable(self.parentObj):
             attrTypehint = ClassesInfo.addType(type(self.parentObj))
@@ -292,7 +296,8 @@ class StandardItem(QObject):
                 try:
                     attrTypehint = getIterItemTypeHint(parentTypehint)
                 except KeyError:
-                    print("Typehint could not be gotten")
+                    logging.exception("Typehint could not be gotten")
+                    # print("Typehint could not be gotten")
         return attrTypehint
 
     def getMediaContent(self):

@@ -9,6 +9,7 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
 import copy
+import logging
 import traceback
 from collections import namedtuple, deque
 from enum import Enum
@@ -62,7 +63,8 @@ class StandardTable(QAbstractItemModel):
             childObj = self.objByIndex(child)
             parentObj = childObj.parent()
         except (RuntimeError, AttributeError) as e:
-            print(e)
+            logging.exception(e)
+            # print(e)
             return QModelIndex()
 
         if parentObj == self._rootItem or not parentObj:
@@ -122,7 +124,8 @@ class StandardTable(QAbstractItemModel):
         if role == OBJECT_ROLE and hits != 0:
             res = []
             for item in self.iterItems(start):
-                print("match for:", item.data(NAME_ROLE))
+                logging.info("match for: %s", item.data(NAME_ROLE))
+                # print("match for:", item.data(NAME_ROLE))
                 try:
                     if (item.data(OBJECT_ROLE) is value) or (item.data(OBJECT_ROLE) == value):
                         res.append(item)
@@ -134,7 +137,8 @@ class StandardTable(QAbstractItemModel):
         elif role == TYPE_ROLE and hits != 0:
             res = []
             for item in self.iterItems(start):
-                print("match for:", item.data(NAME_ROLE))
+                logging.info("match for: %s", item.data(NAME_ROLE))
+                # print("match for:", item.data(NAME_ROLE))
                 try:
                     if issubclass(value, item.data(TYPE_ROLE)):
                         res.append(item)
@@ -146,7 +150,8 @@ class StandardTable(QAbstractItemModel):
         elif role == Qt.DisplayRole and hits != 0:
             res = []
             for item in self.iterItems(start):
-                print("match for:", item.data(NAME_ROLE))
+                logging.info("match for: %s", item.data(NAME_ROLE))
+                # print("match for:", item.data(NAME_ROLE))
                 try:
                     if value == item.data(Qt.DisplayRole):
                         res.append(item)
@@ -268,7 +273,8 @@ class StandardTable(QAbstractItemModel):
             except Exception as e:
                 tb = traceback.format_exc()
                 self.lastErrorMsg = f"Error occurred copying {index.data(NAME_ROLE)}: {e}\n\n{tb}"
-                print(self.lastErrorMsg)
+                logging.exception(self.lastErrorMsg)
+                # print(self.lastErrorMsg)
                 self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
         else:
             item = self.objByIndex(index)
@@ -330,7 +336,8 @@ class StandardTable(QAbstractItemModel):
             except Exception as e:
                 tb = traceback.format_exc()
                 self.lastErrorMsg = f"Error occurred while adding item to {index.data(NAME_ROLE)}: {e}\n\n{tb}"
-                print(self.lastErrorMsg)
+                logging.exception(self.lastErrorMsg)
+                # print(self.lastErrorMsg)
                 self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
         elif role == CLEAR_ROW_ROLE:
             try:

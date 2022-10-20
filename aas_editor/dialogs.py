@@ -9,6 +9,7 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 import copy
 import traceback
+import webbrowser
 
 from PyQt5 import QtGui
 from basyx.aas.model.base import *
@@ -67,6 +68,21 @@ class AboutDialog(QMessageBox):
 
 
 class ErrorMessageBox(QMessageBox):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setMinimumWidth(400)
+        self.setIcon(QMessageBox.Critical)
+        self.setWindowTitle("Error")
+
+        # Each Error message box will have "Report Button" for opening an url
+        self.setStandardButtons(QMessageBox.Ok)
+        reportButton = self.addButton("Report Bug", QMessageBox.HelpRole)
+        reportButton.clicked.disconnect()
+        reportButton.clicked.connect(self.reportButtonClicked)
+
+    def reportButtonClicked(self):
+        webbrowser.open("https://github.com/zrgt/aas_manager/issues")
+
     def resizeEvent(self, a0: QtGui.QResizeEvent) -> None:
         super(ErrorMessageBox, self).resizeEvent(a0)
         self.setFixedWidth(500)
@@ -75,20 +91,14 @@ class ErrorMessageBox(QMessageBox):
     @classmethod
     def withTraceback(cls, parent, text: str):
         err_msg = traceback.format_exc()
-        box = QMessageBox(parent)
-        box.setMinimumWidth(400)
-        box.setIcon(QMessageBox.Critical)
-        box.setWindowTitle("Error")
+        box = cls(parent)
         box.setText(text)
         box.setDetailedText(err_msg)
         return box
 
     @classmethod
     def withDetailedText(cls, parent, text: str):
-        box = QMessageBox(parent)
-        box.setMinimumWidth(400)
-        box.setIcon(QMessageBox.Critical)
-        box.setWindowTitle("Error")
+        box = cls(parent)
         if "\n\n" in text:
             text, detailedText = text.split("\n\n", 1)
             box.setDetailedText(detailedText)
