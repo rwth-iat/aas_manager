@@ -562,14 +562,14 @@ class TreeView(BasicTreeView):
     def _onPasteAdd(self, index, obj2paste, withDialog):
         if withDialog:
             self.addItemWithDialog(index, type(obj2paste), objVal=obj2paste,
-                                   title=f"Paste element", rmDefParams=True)
+                                   title=f"Paste element")
         else:
             self._setItemData(index, obj2paste, ADD_ITEM_ROLE)
 
     def _onPasteReplace(self, index, obj2paste, withDialog):
         if withDialog:
             self.replItemWithDialog(index, type(obj2paste), objVal=obj2paste,
-                                    title=f"Paste element", rmDefParams=True)
+                                    title=f"Paste element")
         else:
             self._setItemData(index, obj2paste, Qt.EditRole)
 
