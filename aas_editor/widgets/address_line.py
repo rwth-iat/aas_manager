@@ -103,7 +103,7 @@ class AddressLine(LineEdit):
     _model: StandardTable = None
 
     def __init__(self, parent: 'Tab') -> None:
-        super(AddressLine, self).__init__(parent)
+        super().__init__(parent)
         self.tab = parent
 
         self.setCompleter(AddressLineCompleter(self))

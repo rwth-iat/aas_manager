@@ -372,8 +372,7 @@ TYPE_NAMES_DICT = {
               "idType": "id_type"
               }
          }
-    }
-
+}
 
 ATTR_ORDER = (
     "id_short",
@@ -496,12 +495,12 @@ REFERABLE_INHERITORS_ATTRS = {}
 for inheritor in REFERABLE_INHERITORS:
     REFERABLE_INHERITORS_ATTRS.update({inheritor: util.getAttrsOfCls(inheritor)})
 
-
 ATTR_INFOS_TO_SIMPLIFY = (AdministrativeInformation, Identifier,)
 
 TYPES_NOT_TO_POPULATE = (type, ABCMeta)
 TYPES_WITH_INSTANCES_NOT_TO_POPULATE = (
-    AbstractObjectStore, str, int, float, bool, Enum, Path, aas_editor.additional.classes.DictItem, Decimal, type, datetime.date)  # '+ TYPES_IN_ONE_ROW
+    AbstractObjectStore, str, int, float, bool, Enum, Path, aas_editor.additional.classes.DictItem, Decimal, type,
+    datetime.date)  # '+ TYPES_IN_ONE_ROW
 COMPLEX_ITERABLE_TYPES = (Namespace, import_util_classes.PreObjectImport)
 
 TYPE_SHORTS_DICT = {
@@ -526,4 +525,4 @@ TYPE_SHORTS_DICT = {
 }
 
 # produce char icon objects from str dict
-TYPE_ICON_DICT = {typ: getCharsIcon(TYPE_SHORTS_DICT[typ]) for typ in TYPE_SHORTS_DICT}
+TYPE_ICON_DICT = {typ: getCharsIcon(shortname) for typ, shortname in TYPE_SHORTS_DICT.items()}
