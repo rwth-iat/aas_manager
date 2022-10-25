@@ -345,6 +345,14 @@ class TreeView(BasicTreeView):
         self.attrsMenu.addAction(self.zoomInAct)
         self.attrsMenu.addAction(self.zoomOutAct)
         self.attrsMenu.addSeparator()
+        self.initMenuFolding()
+        self.attrsMenu.addSeparator()
+        self.attrsMenu.addAction(self.openInCurrTabAct)
+        self.attrsMenu.addAction(self.openInNewTabAct)
+        self.attrsMenu.addAction(self.openInBackgroundAct)
+        self.attrsMenu.addAction(self.openInNewWindowAct)
+
+    def initMenuFolding(self):
         foldingMenu = self.attrsMenu.addMenu("Folding")
         foldingMenu.addAction(self.collapseAct)
         foldingMenu.addAction(self.collapseRecAct)
@@ -352,11 +360,6 @@ class TreeView(BasicTreeView):
         foldingMenu.addAction(self.expandAct)
         foldingMenu.addAction(self.expandRecAct)
         foldingMenu.addAction(self.expandAllAct)
-        self.attrsMenu.addSeparator()
-        self.attrsMenu.addAction(self.openInCurrTabAct)
-        self.attrsMenu.addAction(self.openInNewTabAct)
-        self.attrsMenu.addAction(self.openInBackgroundAct)
-        self.attrsMenu.addAction(self.openInNewWindowAct)
 
     def openMenu(self, point):
         self.attrsMenu.exec_(self.viewport().mapToGlobal(point))
@@ -559,14 +562,14 @@ class TreeView(BasicTreeView):
     def _onPasteAdd(self, index, obj2paste, withDialog):
         if withDialog:
             self.addItemWithDialog(index, type(obj2paste), objVal=obj2paste,
-                                   title=f"Paste element", rmDefParams=True)
+                                   title=f"Paste element")
         else:
             self._setItemData(index, obj2paste, ADD_ITEM_ROLE)
 
     def _onPasteReplace(self, index, obj2paste, withDialog):
         if withDialog:
             self.replItemWithDialog(index, type(obj2paste), objVal=obj2paste,
-                                    title=f"Paste element", rmDefParams=True)
+                                    title=f"Paste element")
         else:
             self._setItemData(index, obj2paste, Qt.EditRole)
 

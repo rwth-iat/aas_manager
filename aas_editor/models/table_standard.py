@@ -262,14 +262,16 @@ class StandardTable(QAbstractItemModel):
             try:
                 if index.column() in (ATTRIBUTE_COLUMN, VALUE_COLUMN):
                     objToCopy = index.data(OBJECT_ROLE)
+                    objToCopy = copy.deepcopy(objToCopy) #FIXME
                     delAASParents(objToCopy)  # TODO check if there is a better solution to del aas parents
-                    return copy.deepcopy(objToCopy) #FIXME
+                    return objToCopy
                 elif index.column() in (TYPE_COLUMN, TYPE_HINT_COLUMN):
                     return index.data(Qt.DisplayRole)
                 else:
                     objToCopy = index.data(Qt.EditRole)
+                    objToCopy = copy.deepcopy(objToCopy)
                     delAASParents(objToCopy)  # TODO check if there is a better solution to del aas parents
-                    return copy.deepcopy(objToCopy)
+                    return objToCopy
             except Exception as e:
                 tb = traceback.format_exc()
                 self.lastErrorMsg = f"Error occurred copying {index.data(NAME_ROLE)}: {e}\n\n{tb}"
