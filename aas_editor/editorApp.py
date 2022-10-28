@@ -69,7 +69,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.reportBug = QAction("Report Bug", self,
                                  statusTip="Report an error found",
-                                 triggered=lambda: webbrowser.open("https://github.com/zrgt/aas_manager/issues"))
+                                 triggered=lambda: webbrowser.open(REPORT_ERROR_LINK))
 
         # Theme actions
         self.themeActs = []

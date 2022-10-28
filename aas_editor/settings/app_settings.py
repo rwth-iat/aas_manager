@@ -24,6 +24,7 @@ COPYRIGHT_YEAR = 2022
 CONTRIBUTORS = "Igor Garmaev"
 DEVELOPER_WEB = "plt.rwth-aachen.de"
 CONTACT = "i.garmaev@plt.rwth-aachen.de"
+REPORT_ERROR_LINK = "https://github.com/zrgt/aas_manager/issues"
 APPLICATION_LINK = "https://github.com/zrgt/aas_manager"
 ACPLT = "ACPLT"
 VERSION = "0.3.2"
