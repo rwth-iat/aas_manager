@@ -67,9 +67,9 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                                          statusTip=f"Edit application settings",
                                          triggered=lambda: SettingsDialog(self).exec())
 
-        self.reportBug = QAction("Report Bug", self,
-                                 statusTip="Report an error found",
-                                 triggered=lambda: webbrowser.open(REPORT_ERROR_LINK))
+        self.reportBugAct = QAction("Report Bug", self,
+                                    statusTip="Report an error found",
+                                    triggered=lambda: webbrowser.open(REPORT_ERROR_LINK))
 
         # Theme actions
         self.themeActs = []
@@ -153,7 +153,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.menuHelp = QMenu("&Help", self.menubar)
         self.menuHelp.addAction(self.aboutDialogAct)
-        self.menuHelp.addAction(self.reportBug)
+        self.menuHelp.addAction(self.reportBugAct)
 
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
@@ -318,5 +318,3 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         AppSettings.TABTREEVIEW_HEADER_STATE.setValue(
             self.mainTabWidget.currentWidget().attrsTreeView.header().saveState())
         # AppSettings.DEFAULT_NEW_FILETYPE_FILTER.setValue(self.packTreeView.defaultNewFileTypeFilter)
-
-

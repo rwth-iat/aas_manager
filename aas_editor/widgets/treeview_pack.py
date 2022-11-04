@@ -36,7 +36,7 @@ from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ROL
     CLEAR_ROW_ROLE, AppSettings, COLUMN_NAME_ROLE, OBJECT_COLUMN_NAME, OBJECT_VALUE_COLUMN_NAME
 from aas_editor.settings.shortcuts import SC_OPEN, SC_SAVE_ALL
 from aas_editor.settings.icons import NEW_PACK_ICON, OPEN_ICON, OPEN_DRAG_ICON, SAVE_ICON, SAVE_ALL_ICON, \
-    VIEW_ICON
+    VIEW_ICON, ADD_ICON
 from aas_editor.utils import util_type
 from aas_editor.utils.util import getDefaultVal, getReqParams4init
 from aas_editor.utils.util_classes import ClassesInfo
@@ -191,6 +191,12 @@ class PackTreeView(TreeView):
                                             toolTip="Autoscroll from source",
                                             statusTip="Autoscroll from source",
                                             checkable=True)
+
+        self.addExistingSubmodelsAct = QAction(ADD_ICON, "Add existing submodel", self,
+                                               toolTip="Add submodels from existing file",
+                                               statusTip="Add submodels from existing file",
+                                               checkable=True)
+
         self.autoScrollFromSrcAct.toggle()
 
         self.shellViewAct = QAction(VIEW_ICON, "Shell view", self,
@@ -200,6 +206,9 @@ class PackTreeView(TreeView):
                                     checkable=True)
 
         self.setItemDelegate(EditDelegate(self))
+
+    def onAddExistingSubmodelPushed(self):
+        pass
 
     def onEditCreate(self, objVal=None, index=QModelIndex()) -> bool:
         """
@@ -263,6 +272,7 @@ class PackTreeView(TreeView):
         self.attrsMenu.addAction(self.saveAllAct)
         self.attrsMenu.addAction(self.closeAct)
         self.attrsMenu.addAction(self.closeAllAct)
+        self.attrsMenu.insertAction(self.addAct, self.addExistingSubmodelsAct)
 
         self.openInCurrTabAct.triggered.connect(
             lambda: self.openInCurrTabClicked.emit(self.currentIndex()))
