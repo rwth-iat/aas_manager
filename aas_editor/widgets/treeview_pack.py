@@ -24,7 +24,9 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex, QSettings, QPoint
 from PyQt5.QtGui import QDropEvent, QDragEnterEvent, QKeyEvent
 from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QMenu, QWidget
-from basyx.aas.model import AssetAdministrationShell
+from basyx.aas.adapter import aasx
+from basyx.aas.adapter.aasx import DictSupplementaryFileContainer
+from basyx.aas.model import AssetAdministrationShell, DictObjectStore
 
 from aas_editor.delegates import EditDelegate
 from aas_editor.package import Package, StoredFile
@@ -110,6 +112,8 @@ class PackTreeView(TreeView):
     EMPTY_VIEW_ICON = OPEN_DRAG_ICON
 
     def __init__(self, parent=None, **kwargs):
+        self.fileObjDict = dict()
+        self.scanFolderForSubmodels()
         super(PackTreeView, self).__init__(parent,
                                            emptyViewMsg=self.EMPTY_VIEW_MSG,
                                            emptyViewIcon=self.EMPTY_VIEW_ICON, **kwargs)
@@ -119,6 +123,23 @@ class PackTreeView(TreeView):
         self.setExpandsOnDoubleClick(False)
         self.setSelectionBehavior(self.SelectItems)
         self.setHeader(PackHeaderView(Qt.Horizontal, self))
+
+    def scanFolderForSubmodels(self):
+        path = Path.cwd()
+        path = path / 'aas_files'
+
+        if not path.is_dir():
+            path.mkdir()
+
+        files = [file for file in path.rglob('*.aasx')]
+
+        # Read the aasx file and store it in DictObjectStore in dictionary fileObjDict.
+        for file in files:
+            objStore = DictObjectStore()
+            fileStore = DictSupplementaryFileContainer()  # prosto tak
+            reader = aasx.AASXReader(file.as_posix())
+            reader.read_into(objStore, fileStore)
+            self.fileObjDict[file.name] = objStore
 
     @property
     def defaultNewFileTypeFilter(self):
@@ -195,6 +216,7 @@ class PackTreeView(TreeView):
         self.addExistingSubmodelsAct = QAction(ADD_ICON, "Add existing submodel", self,
                                                toolTip="Add submodels from existing file",
                                                statusTip="Add submodels from existing file",
+                                               triggered=lambda: self.onAddExistingSubmodelPushed(),
                                                checkable=True)
 
         self.autoScrollFromSrcAct.toggle()
@@ -208,7 +230,8 @@ class PackTreeView(TreeView):
         self.setItemDelegate(EditDelegate(self))
 
     def onAddExistingSubmodelPushed(self):
-        pass
+        #
+        print("Derji pirojok")
 
     def onEditCreate(self, objVal=None, index=QModelIndex()) -> bool:
         """
@@ -272,7 +295,8 @@ class PackTreeView(TreeView):
         self.attrsMenu.addAction(self.saveAllAct)
         self.attrsMenu.addAction(self.closeAct)
         self.attrsMenu.addAction(self.closeAllAct)
-        self.attrsMenu.insertAction(self.addAct, self.addExistingSubmodelsAct)
+        self.initMenuAddExistingSubmodels()
+        # self.attrsMenu.insertAction(self.addAct, self.addExistingSubmodelsAct)
 
         self.openInCurrTabAct.triggered.connect(
             lambda: self.openInCurrTabClicked.emit(self.currentIndex()))
@@ -282,6 +306,23 @@ class PackTreeView(TreeView):
             lambda: self.openInBgTabClicked.emit(self.currentIndex()))
         self.openInNewWindowAct.triggered.connect(
             lambda: self.openInNewWindowClicked.emit(self.currentIndex()))
+
+    def initMenuAddExistingSubmodels(self):
+        self.addExistSubmodelsMenu = QMenu("Add existing submodel", self.attrsMenu)
+        # add menu with a name of model
+        for filename in self.fileObjDict:
+            nameMenu = self.addExistSubmodelsMenu.addMenu(filename)
+            # show existing submodels in this model
+            # TODO: How to get Model from DictObjectStore? I need access to model and its submodel
+
+            for obj in self.fileObjDict[filename]:
+                # TODO: except for else?
+                if isinstance(obj, AssetAdministrationShell):
+                    for submodel in obj.submodel:
+                        print("HI")
+                        nameMenu.addAction(submodel.id_short)
+        # self.addExistSubmodelsMenu.addAction(self.addExistingSubmodelsAct)
+        self.attrsMenu.insertMenu(self.addAct, self.addExistSubmodelsMenu)
 
     def updateActions(self, index: QModelIndex):
         super(PackTreeView, self).updateActions(index)
@@ -578,7 +619,7 @@ class PackTreeView(TreeView):
         else:
             super(PackTreeView, self).keyPressEvent(event)
 
-    def navigate2nextEnabledItemInRow(self, index: QModelIndex, leftDirection = False):
+    def navigate2nextEnabledItemInRow(self, index: QModelIndex, leftDirection=False):
         delta = -1 if leftDirection else +1
         currCol = index.column()
         if index.isValid():
