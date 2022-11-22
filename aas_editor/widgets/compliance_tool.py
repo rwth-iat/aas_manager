@@ -66,18 +66,14 @@ class ComplianceToolDialog(QDialog):
         try:
             if file.endswith(".xml"):
                 check_schema = compliance_check_xml.check_schema
-                check_deserialization = compliance_check_xml.check_deserialization
             elif file.endswith(".json"):
                 check_schema = compliance_check_json.check_schema
-                check_deserialization = compliance_check_json.check_deserialization
             elif file.endswith(".aasx"):
                 check_schema = compliance_check_aasx.check_schema
-                check_deserialization = compliance_check_aasx.check_deserialization
             else:
                 raise TypeError("File of unknown type:", file)
             manager = ComplianceToolStateManager()
             check_schema(file, manager)
-            check_deserialization(file, manager)
             info = manager.format_state_manager(self.optionsComboBox.currentData())
             self.plainTextEdit.setPlainText(info)
         except Exception as e:
