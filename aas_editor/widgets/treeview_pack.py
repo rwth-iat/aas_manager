@@ -344,6 +344,13 @@ class PackTreeView(TreeView):
 
     def updateAddAct(self, index: QModelIndex):
         super().updateAddAct(index)
+
+        attrName = index.data(NAME_ROLE)
+        if attrName in Package.addableAttrs():
+            addActText = ClassesInfo.addActText(Package, attrName)
+            self.addAct.setEnabled(True)
+            self.addAct.setText(addActText)
+
         # update add action
         if not index.isValid():
             self.addAct.setEnabled(True)
