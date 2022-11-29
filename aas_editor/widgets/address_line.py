@@ -15,7 +15,7 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-
+import logging
 from typing import List
 
 from PyQt5.QtCore import QModelIndex, Qt, QAbstractProxyModel, qDebug, \
@@ -121,7 +121,7 @@ class AddressLine(LineEdit):
     def setModel(cls, model: StandardTable):
         cls._model = model
         cls.signal.modelChanged.emit(model)
-        qDebug("New model for address completer was set")
+        logging.debug("New model for address completer was set")
 
     def onModelChanged(self):
         self.completer().setModel(AddressLine._model)
