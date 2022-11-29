@@ -25,7 +25,7 @@ from PyQt5.QtWidgets import QPushButton, QDialog, QDialogButtonBox, \
 
 from aas_editor.settings import DEFAULTS, DEFAULT_COMPLETIONS, ATTRIBUTE_COLUMN, OBJECT_ROLE, \
     APPLICATION_NAME, CONTRIBUTORS, CONTACT, COPYRIGHT_YEAR, VERSION, DEFAULT_INHERITOR, APPLICATION_INFO, \
-    DEVELOPER_WEB, APPLICATION_LINK, LICENSE
+    DEVELOPER_WEB, APPLICATION_LINK, LICENSE, REPORT_ERROR_LINK
 from aas_editor.utils.util import inheritors, getReqParams4init, getParams4init, getDefaultVal, \
     delAASParents
 from aas_editor.utils.util_type import getTypeName, issubtype, isoftype, isSimpleIterableType, \
@@ -81,7 +81,7 @@ class ErrorMessageBox(QMessageBox):
         reportButton.clicked.connect(self.reportButtonClicked)
 
     def reportButtonClicked(self):
-        webbrowser.open("https://github.com/zrgt/aas_manager/issues")
+        webbrowser.open(REPORT_ERROR_LINK)
 
     @classmethod
     def withTraceback(cls, parent, text: str):

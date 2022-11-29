@@ -103,8 +103,8 @@ class Package:
 
         fileType = self.file.suffix.lower().strip()
         if fileType == ".xml": #FIXME: if file in write_aas_xml_file() changes
-            with open(self.file.as_posix(), "w") as fileIO:
-                aasx.write_aas_xml_file(fileIO, self.objStore)
+            # with open(self.file.as_posix(), "w") as fileIO:
+            aasx.write_aas_xml_file(self.file.as_posix(), self.objStore)
         elif fileType == ".json": #FIXME: if file in write_aas_xml_file() changes
             with open(self.file.as_posix(), "w") as fileIO:
                 aasx.write_aas_json_file(fileIO, self.objStore)

@@ -8,6 +8,7 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 import json
+import webbrowser
 
 from PyQt5.QtCore import QModelIndex
 from PyQt5.QtGui import *
@@ -55,16 +56,20 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                                       triggered=lambda: dialogs.AboutDialog(self).exec())
 
         self.complToolDialogAct = QAction("Compliance tool", self,
-                                      statusTip="Open compliance tool",
-                                      triggered=lambda: ComplianceToolDialog(self).exec())
+                                          statusTip="Open compliance tool",
+                                          triggered=lambda: ComplianceToolDialog(self).exec())
 
         self.importToolAct = QAction("Excel AAS Generator tool", self,
-                                      statusTip="Open Excel AAS Generator tool",
-                                      triggered=lambda: self.showImportApp())
+                                     statusTip="Open Excel AAS Generator tool",
+                                     triggered=lambda: self.showImportApp())
 
         self.settingsDialogAct = QAction(SETTINGS_ICON, "Settings", self,
                                          statusTip=f"Edit application settings",
                                          triggered=lambda: SettingsDialog(self).exec())
+
+        self.reportBugAct = QAction("Report Bug", self,
+                                    statusTip="Report an error found",
+                                    triggered=lambda: webbrowser.open(REPORT_ERROR_LINK))
 
         # Theme actions
         self.themeActs = []
@@ -148,6 +153,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.menuHelp = QMenu("&Help", self.menubar)
         self.menuHelp.addAction(self.aboutDialogAct)
+        self.menuHelp.addAction(self.reportBugAct)
 
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
@@ -309,7 +315,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         AppSettings.FONTSIZE_FILES_VIEW.setValue(PacksTable.currFont.pointSize())
         AppSettings.FONTSIZE_DETAILED_VIEW.setValue(DetailedInfoTable.currFont.pointSize())
         AppSettings.PACKTREEVIEW_HEADER_STATE.setValue(self.mainTreeView.header().saveState())
-        AppSettings.TABTREEVIEW_HEADER_STATE.setValue(self.mainTabWidget.currentWidget().attrsTreeView.header().saveState())
+        AppSettings.TABTREEVIEW_HEADER_STATE.setValue(
+            self.mainTabWidget.currentWidget().attrsTreeView.header().saveState())
         # AppSettings.DEFAULT_NEW_FILETYPE_FILTER.setValue(self.packTreeView.defaultNewFileTypeFilter)
-
-# ToDo logs insteads of prints
