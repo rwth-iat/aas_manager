@@ -133,14 +133,26 @@ class PackTreeView(TreeView):
         if not path.is_dir():
             path.mkdir()
 
-        files = [file for file in path.rglob('*.aasx')]
+        aasxFiles = [file for file in path.rglob('*.aasx')]
+        xmlFiles = [file for file in path.rglob('*.xml')]
+        jsonFiles = [file for file in path.rglob('*.json')]
+        files = aasxFiles + xmlFiles + jsonFiles
 
         # Read the aasx file and store it in DictObjectStore in dictionary fileObjDict.
         for file in files:
-            objStore = DictObjectStore()
-            fileStore = DictSupplementaryFileContainer()  # prosto tak
-            reader = aasx.AASXReader(file.as_posix())
-            reader.read_into(objStore, fileStore)
+            fileType = file.suffix.lower().strip()
+            if fileType == ".xml":
+                objStore = aasx.read_aas_xml_file(file.as_posix())
+            elif fileType == ".json":
+                with open(file, "r") as f:  # TODO change if aas changes
+                    objStore = aasx.read_aas_json_file(f)
+            elif fileType == ".aasx":
+                objStore = DictObjectStore()
+                fileStore = DictSupplementaryFileContainer()  # prosto tak
+                reader = aasx.AASXReader(file.as_posix())
+                reader.read_into(objStore, fileStore)
+            else:
+                raise TypeError("Wrong file type:", self.file.suffix)
             self.filesObjStores[file.name] = objStore
 
     @property
