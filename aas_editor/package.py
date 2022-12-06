@@ -25,13 +25,13 @@ from aas_editor.utils.util_classes import ClassesInfo
 
 
 class Package:
-    def __init__(self, file: Union[str, Path] = ""):
+    def __init__(self, file: Union[str, Path] = "", failsafe=False):
         """:raise TypeError if file has wrong file type"""
         self.objStore = DictObjectStore()
         self.fileStore = DictSupplementaryFileContainer()
         self.file = file
         if file:
-            self._read()
+            self._read(failsafe)
         for obj in self.objStore:
             DEFAULT_COMPLETIONS[Key]["value"].append(obj.identification.id)
         self._changed = False
@@ -70,13 +70,13 @@ class Package:
     def __repr__(self):
         return self.file.as_posix()
 
-    def _read(self):
+    def _read(self, failsafe):
         fileType = self.file.suffix.lower().strip()
         if fileType == ".xml":
-            self.objStore = aasx.read_aas_xml_file(self.file.as_posix())
+            self.objStore = aasx.read_aas_xml_file(self.file.as_posix(), failsafe=failsafe)
         elif fileType == ".json":
             with open(self.file, "r") as f:  # TODO change if aas changes
-                self.objStore = aasx.read_aas_json_file(f)
+                self.objStore = aasx.read_aas_json_file(f, failsafe=failsafe)
         elif fileType == ".aasx":
             reader = aasx.AASXReader(self.file.as_posix())
             reader.read_into(self.objStore, self.fileStore)
