@@ -149,20 +149,25 @@ class PackTreeView(TreeView):
 
         # Read the aasx file and store it in DictObjectStore in dictionary fileObjDict.
         for file in files:
-            fileType = file.suffix.lower().strip()
-            if fileType == ".xml":
-                objStore = read_aas_xml_file(file.as_posix())
-            elif fileType == ".json":
-                with open(file, "r") as f:  # TODO change if aas changes
-                    objStore = read_aas_json_file(f)
-            elif fileType == ".aasx":
-                objStore = DictObjectStore()
-                fileStore = DictSupplementaryFileContainer()  # prosto tak
-                reader = AASXReader(file.as_posix())
-                reader.read_into(objStore, fileStore)
-            else:
-                raise TypeError("Wrong file type:", self.file.suffix)
-            self.filesObjStores[file.name] = objStore
+            try:
+                fileType = file.suffix.lower().strip()
+                if fileType == ".xml":
+                    objStore = read_aas_xml_file(file.as_posix())
+                elif fileType == ".json":
+                    with open(file, "r") as f:  # TODO change if aas changes
+                        objStore = read_aas_json_file(f)
+                elif fileType == ".aasx":
+                    objStore = DictObjectStore()
+                    fileStore = DictSupplementaryFileContainer()  # prosto tak
+                    reader = AASXReader(file.as_posix())
+                    reader.read_into(objStore, fileStore)
+                else:
+                    raise TypeError("Wrong file type:", self.file.suffix)
+                self.filesObjStores[file.name] = objStore
+            except Exception as e:
+                # QMessageBox.warning(self, "Warning", f"Error while reading file: {e}")
+                # TODO: Show error after opening the programm
+                logging.exception(f"Error while reading {file}: {e}")
 
     @property
     def defaultNewFileTypeFilter(self):
@@ -483,7 +488,13 @@ class PackTreeView(TreeView):
 
     def openPack(self, file: str) -> typing.Union[bool, Package]:
         try:
-            pack = Package(file)
+            try:
+                pack = Package(file, failsafe=False)
+            except Exception as e:
+                # TODO: check exceptions of xmls and json, assx readers and catch them. Dialog with warning -> show
+                #  error and cont -> failsafe=True
+                QMessageBox.warning(self, "Warning", f"Error while reading packages: {e}")
+                pack = Package(file, failsafe=True)
             absFile = pack.file.absolute().as_posix()
             self.updateRecentFiles(absFile)
         except Exception as e:
