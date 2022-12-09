@@ -578,6 +578,8 @@ class PackTreeView(TreeView):
 
     def closeFile(self, packItem: QModelIndex):
         self.model().setData(packItem, NOT_GIVEN, CLEAR_ROW_ROLE)
+        if self.model().data(QModelIndex(), OPENED_PACKS_ROLE):
+            self.setWindowModified(False)
 
     def openRecentSlot(self):
         action = self.sender()
