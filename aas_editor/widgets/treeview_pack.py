@@ -537,37 +537,39 @@ class PackTreeView(TreeView):
 
         if packItem.isValid():
             try:
-                dialog = QMessageBox(QMessageBox.NoIcon, f"Close {pack}",
-                                     f"Do you want to save your changes in {pack} before closing?",
-                                     standardButtons=QMessageBox.Save |
-                                                     QMessageBox.Cancel |
-                                                     QMessageBox.Discard)
-                dialog.setDefaultButton = QMessageBox.Save
-                dialog.button(QMessageBox.Save).setText("&Save&Close")
-                res = dialog.exec()
-                if res == QMessageBox.Save:
-                    self.savePack()
-                    self.closeFile(packItem)
-                elif res == QMessageBox.Discard:
-                    self.closeFile(packItem)
+                if self.isWindowModified():
+                    dialog = QMessageBox(QMessageBox.NoIcon, f"Close {pack}",
+                                         f"Do you want to save your changes in {pack} before closing?",
+                                         standardButtons=QMessageBox.Save |
+                                                         QMessageBox.Cancel |
+                                                         QMessageBox.Discard)
+                    dialog.setDefaultButton = QMessageBox.Save
+                    dialog.button(QMessageBox.Save).setText("&Save&Close")
+                    res = dialog.exec()
+                    if res == QMessageBox.Save:
+                        self.savePack()
+                    elif res == QMessageBox.Cancel:
+                        return
+                self.closeFile(packItem)
             except AttributeError as e:
                 QMessageBox.critical(self, "Error", f"No chosen package to close: {e}")
 
     def closeAllFilesWithDialog(self):
-        dialog = QMessageBox(QMessageBox.NoIcon, f"Close all AAS files",
-                             f"Do you want to save your changes before closing? ",
-                             standardButtons=QMessageBox.Save |
-                                             QMessageBox.Cancel |
-                                             QMessageBox.Discard)
-        dialog.setDefaultButton = QMessageBox.Save
-        dialog.button(QMessageBox.Save).setText("&Save and Close All")
-        res = dialog.exec()
-        if res == QMessageBox.Save:
-            for pack in self.model().data(QModelIndex(), OPENED_PACKS_ROLE):
-                self.savePack(pack)
-            self.closeAllFiles()
-        elif res == QMessageBox.Discard:
-            self.closeAllFiles()
+        if self.isWindowModified():
+            dialog = QMessageBox(QMessageBox.NoIcon, f"Close all AAS files",
+                                 f"Do you want to save your changes before closing? ",
+                                 standardButtons=QMessageBox.Save |
+                                                 QMessageBox.Cancel |
+                                                 QMessageBox.Discard)
+            dialog.setDefaultButton = QMessageBox.Save
+            dialog.button(QMessageBox.Save).setText("&Save and Close All")
+            res = dialog.exec()
+            if res == QMessageBox.Save:
+                for pack in self.model().data(QModelIndex(), OPENED_PACKS_ROLE):
+                    self.savePack(pack)
+            elif res == QMessageBox.Cancel:
+                return
+        self.closeAllFiles()
 
     def closeAllFiles(self):
         for pack in self.model().data(QModelIndex(), OPENED_PACKS_ROLE):
