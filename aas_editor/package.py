@@ -148,8 +148,13 @@ class Package:
                     dictionary = i
                     break
             else:
-                dictionary = ConceptDictionary("AutomaticallyGeneratedCD")
-                shell.concept_dictionary.add(dictionary)
+                idshort = "AutomaticallyGeneratedCD"
+                dictionary = ConceptDictionary(idshort)
+                try:
+                    shell.concept_dictionary.add(dictionary)
+                except KeyError:
+                    shell.concept_dictionary.discard(shell.concept_dictionary.get_referable(idshort))
+                    shell.concept_dictionary.add(dictionary)
 
             for cd in self.concept_descriptions:
                 reference = AASReference.from_referable(cd)
