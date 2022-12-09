@@ -24,7 +24,7 @@ from typing import Optional
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex, QSettings, QPoint
 from PyQt5.QtGui import QDropEvent, QDragEnterEvent, QKeyEvent
-from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QMenu, QWidget
+from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QMenu, QWidget, QDialog
 from basyx.aas.adapter.aasx import AASXReader, DictSupplementaryFileContainer
 from basyx.aas.adapter.json import read_aas_json_file
 from basyx.aas.adapter.xml import read_aas_xml_file
@@ -166,7 +166,7 @@ class PackTreeView(TreeView):
                 self.filesObjStores[file.name] = objStore
             except Exception as e:
                 # QMessageBox.warning(self, "Warning", f"Error while reading file: {e}")
-                # TODO: Show error after opening the programm
+                # TODO: Show error after opening the programm. Empty QAction with error
                 logging.exception(f"Error while reading {file}: {e}")
 
     @property
@@ -491,10 +491,18 @@ class PackTreeView(TreeView):
             try:
                 pack = Package(file, failsafe=False)
             except Exception as e:
-                # TODO: check exceptions of xmls and json, assx readers and catch them. Dialog with warning -> show
-                #  error and cont -> failsafe=True
-                QMessageBox.warning(self, "Warning", f"Error while reading packages: {e}")
-                pack = Package(file, failsafe=True)
+                msgBox = QMessageBox()
+                msgBox.setIcon(QMessageBox.Warning)
+                msgBox.setText(f"Error while reading package:\n{file}")
+                msgBox.setInformativeText("Do you still want to open it?\nSome attributes may be missing or incorrect.")
+                msgBox.setStandardButtons(QMessageBox.Cancel | QMessageBox.Yes)
+                msgBox.setDefaultButton(QMessageBox.Yes)
+                msgBox.setDetailedText(f"{e}")
+                ret = msgBox.exec()
+                if ret == QMessageBox.Yes:
+                    pack = Package(file, failsafe=True)
+                else:
+                    return False
             absFile = pack.file.absolute().as_posix()
             self.updateRecentFiles(absFile)
         except Exception as e:
