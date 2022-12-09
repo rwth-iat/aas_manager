@@ -361,7 +361,7 @@ class StandardTable(QAbstractItemModel):
                 return True
             except Exception as e:
                 tb = traceback.format_exc()
-                self.lastErrorMsg = f"Error occurred while setting {self.objByIndex(index).objectName}: {e}\n\n{tb}"
+                self.lastErrorMsg = f"Error occurred while setting {getattr(self.objByIndex(index), 'objectName', 'UNKNOWN_OBJECT')}: {e}\n\n{tb}"
                 self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
         elif role == UNDO_ROLE:
             if value == NOT_GIVEN and self.undo:
