@@ -81,6 +81,11 @@ class HeaderView(QHeaderView):
             self.addAction(act)
             self.sectionActions[section] = act
 
+    def showAllSections(self):
+        """Show all section except first"""
+        for i in range(1, self.count()):
+            self.showSection(i)
+
     def hideAllSections(self):
         """Hide all section except first"""
         for i in range(1, self.count()):
