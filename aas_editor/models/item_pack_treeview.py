@@ -20,7 +20,6 @@ from types import GeneratorType
 
 from PyQt5.QtCore import Qt
 from basyx.aas.adapter.aasx import DictSupplementaryFileContainer
-from basyx.aas.model import AASReference
 
 from aas_editor.models import StandardItem
 from aas_editor.settings.app_settings import PACKAGE_ROLE, ATTRIBUTE_COLUMN
@@ -38,14 +37,6 @@ class PackTreeViewItem(StandardItem):
             self.package = obj
         else:
             self.package = parent.data(PACKAGE_ROLE)
-
-        try:
-            if isinstance(obj, AASReference):
-                obj = obj.resolve(self.package.objStore)
-        except KeyError as e:
-            logging.exception(e)
-            # print(e)
-        self.obj = obj
         self.populate()
 
     def populate(self):

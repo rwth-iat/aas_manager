@@ -185,8 +185,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.toolBar.addAction(self.mainTreeView.redoAct)
         self.toolBar.addAction(self.mainTreeView.editCreateInDialogAct)
         self.toolBar.addAction(self.mainTreeView.addAct)
-        self.toolBar.addSeparator()
-        self.toolBar.addAction(self.mainTreeView.shellViewAct)
 
     @staticmethod
     def iterItems(root):

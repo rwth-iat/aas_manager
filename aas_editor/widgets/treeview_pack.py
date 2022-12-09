@@ -27,7 +27,7 @@ from PyQt5.QtGui import QDropEvent, QDragEnterEvent, QKeyEvent
 from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QMenu, QWidget
 from basyx.aas.adapter import aasx
 from basyx.aas.adapter.aasx import DictSupplementaryFileContainer
-from basyx.aas.model import AssetAdministrationShell, DictObjectStore, Submodel
+from basyx.aas.model import DictObjectStore, Submodel
 
 from aas_editor.delegates import EditDelegate
 from aas_editor.package import Package, StoredFile
@@ -39,7 +39,7 @@ from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ROL
     CLEAR_ROW_ROLE, AppSettings, COLUMN_NAME_ROLE, OBJECT_COLUMN_NAME, OBJECT_VALUE_COLUMN_NAME
 from aas_editor.settings.shortcuts import SC_OPEN, SC_SAVE_ALL
 from aas_editor.settings.icons import NEW_PACK_ICON, OPEN_ICON, OPEN_DRAG_ICON, SAVE_ICON, SAVE_ALL_ICON, \
-    VIEW_ICON, ADD_ICON
+    ADD_ICON
 from aas_editor.utils import util_type
 from aas_editor.utils.util import getDefaultVal, getReqParams4init
 from aas_editor.utils.util_classes import ClassesInfo
@@ -230,13 +230,6 @@ class PackTreeView(TreeView):
         self.dictCopyExistSubmodelActs = self.initDictCopyExistSubmodelActs()
 
         self.autoScrollFromSrcAct.toggle()
-
-        self.shellViewAct = QAction(VIEW_ICON, "Shell view", self,
-                                    toolTip="Shell view",
-                                    statusTip="Change to shell view",
-                                    triggered=lambda: self.onShellViewPushed(),
-                                    checkable=True)
-
         self.setItemDelegate(EditDelegate(self))
 
     def initDictCopyExistSubmodelActs(self):
@@ -299,24 +292,6 @@ class PackTreeView(TreeView):
             typ = action.text()
             self.defaultNewFileTypeFilter = FILE_TYPE_FILTERS[typ]
 
-    def onShellViewPushed(self):
-        checked = self.shellViewAct.isChecked()
-
-        packs = self.sourceModel().match(QModelIndex(), TYPE_ROLE, Package)
-        if checked:
-            for pack in packs:
-                CLASSES_INFO[AssetAdministrationShell][PACKVIEW_ATTRS_INFO] = {"asset": {}, "submodel": {}}
-                self.sourceModel().update(pack)
-
-            rowsToHide = []
-            for attr in ("submodels", "assets", "concept_descriptions", "others"):
-                rowsToHide.extend(self.model().match(QModelIndex(), Qt.DisplayRole, attr))
-            for row in rowsToHide:
-                self.setRowHidden(row.row(), row.parent(), True)
-        else:
-            CLASSES_INFO[AssetAdministrationShell][PACKVIEW_ATTRS_INFO] = {}
-            for pack in packs:
-                self.sourceModel().update(pack)
 
     # noinspection PyUnresolvedReferences
     def initMenu(self):
