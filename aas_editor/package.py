@@ -148,7 +148,7 @@ class Package:
                     dictionary = i
                     break
             else:
-                dictionary = ConceptDictionary("CD")
+                dictionary = ConceptDictionary("AutomaticallyGeneratedCD")
                 shell.concept_dictionary.add(dictionary)
 
             for cd in self.concept_descriptions:
