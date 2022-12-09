@@ -21,8 +21,7 @@ from typing import List, Dict
 
 import basyx
 import openpyxl
-from basyx.aas import model
-from basyx.aas.model import AASReference, Key
+from basyx.aas.model import AASReference, Key, KeyElements, KeyType
 from openpyxl.worksheet.worksheet import Worksheet
 
 from . import import_settings
@@ -113,8 +112,8 @@ def setMappingFromFile(pack: Package, mappingFile: str):
 
     for refRepr in mapDict:
         aasref: AASReference = eval(refRepr, {
-            "KeyElements": model.KeyElements,
-            "KeyType": model.KeyType,
+            "KeyElements": KeyElements,
+            "KeyType": KeyType,
             "Key": Key,
             "AASReference": AASReference,
             "basyx": basyx,

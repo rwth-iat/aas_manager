@@ -26,8 +26,7 @@ from basyx.aas.model import AssetAdministrationShell, Asset, ConceptDescription,
     SubmodelElementCollectionUnordered, SubmodelElementCollectionOrdered, Range, Blob, File, \
     ReferenceElement, DataElement, AdministrativeInformation, Identifier, AbstractObjectStore, \
     Namespace, SubmodelElementCollection, SubmodelElement, AASReference, ConceptDictionary, Referable, Identifiable, \
-    Key, Qualifier
-from basyx.aas.model.datatypes import Decimal
+    Key, Qualifier, datatypes
 
 import aas_editor.additional.classes
 import aas_editor.package
@@ -499,7 +498,7 @@ ATTR_INFOS_TO_SIMPLIFY = (AdministrativeInformation, Identifier,)
 
 TYPES_NOT_TO_POPULATE = (type, ABCMeta)
 TYPES_WITH_INSTANCES_NOT_TO_POPULATE = (
-    AbstractObjectStore, str, int, float, bool, Enum, Path, aas_editor.additional.classes.DictItem, Decimal, type,
+    AbstractObjectStore, str, int, float, bool, Enum, Path, aas_editor.additional.classes.DictItem, datatypes.Decimal, type,
     datetime.date)  # '+ TYPES_IN_ONE_ROW
 COMPLEX_ITERABLE_TYPES = (Namespace, import_util_classes.PreObjectImport)
 

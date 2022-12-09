@@ -15,10 +15,11 @@ from typing import Union, Iterable, Optional
 import mimetypes
 
 import pyecma376_2
-from basyx.aas.adapter import aasx
-from basyx.aas.adapter.aasx import DictSupplementaryFileContainer
+from basyx.aas.adapter.aasx import DictSupplementaryFileContainer, AASXReader, AASXWriter
+from basyx.aas.adapter.json import read_aas_json_file, write_aas_json_file
+from basyx.aas.adapter.xml import read_aas_xml_file, write_aas_xml_file
 from basyx.aas.model import AssetAdministrationShell, Asset, Submodel, ConceptDescription, \
-    DictObjectStore, Key, AASReference, concept
+    DictObjectStore, Key, AASReference, ConceptDictionary
 
 from aas_editor.settings import DEFAULT_COMPLETIONS, AppSettings
 from aas_editor.utils.util_classes import ClassesInfo
@@ -73,12 +74,12 @@ class Package:
     def _read(self):
         fileType = self.file.suffix.lower().strip()
         if fileType == ".xml":
-            self.objStore = aasx.read_aas_xml_file(self.file.as_posix())
+            self.objStore = read_aas_xml_file(self.file.as_posix())
         elif fileType == ".json":
             with open(self.file, "r") as f:  # TODO change if aas changes
-                self.objStore = aasx.read_aas_json_file(f)
+                self.objStore = read_aas_json_file(f)
         elif fileType == ".aasx":
-            reader = aasx.AASXReader(self.file.as_posix())
+            reader = AASXReader(self.file.as_posix())
             reader.read_into(self.objStore, self.fileStore)
         else:
             raise TypeError("Wrong file type:", self.file.suffix)
@@ -104,12 +105,12 @@ class Package:
         fileType = self.file.suffix.lower().strip()
         if fileType == ".xml": #FIXME: if file in write_aas_xml_file() changes
             # with open(self.file.as_posix(), "w") as fileIO:
-            aasx.write_aas_xml_file(self.file.as_posix(), self.objStore)
+            write_aas_xml_file(self.file.as_posix(), self.objStore)
         elif fileType == ".json": #FIXME: if file in write_aas_xml_file() changes
             with open(self.file.as_posix(), "w") as fileIO:
-                aasx.write_aas_json_file(fileIO, self.objStore)
+                write_aas_json_file(fileIO, self.objStore)
         elif fileType == ".aasx":
-            with aasx.AASXWriter(self.file.as_posix()) as writer:
+            with AASXWriter(self.file.as_posix()) as writer:
                 aas_ids = []
                 for obj in self.objStore:
                     if isinstance(obj, AssetAdministrationShell):
@@ -147,7 +148,7 @@ class Package:
                     dictionary = i
                     break
             else:
-                dictionary = concept.ConceptDictionary("CD")
+                dictionary = ConceptDictionary("CD")
                 shell.concept_dictionary.add(dictionary)
 
             for cd in self.concept_descriptions:

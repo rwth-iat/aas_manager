@@ -7,7 +7,13 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-from typing import AbstractSet
+from basyx.aas.model.aas import *
+from basyx.aas.model.base import *
+from basyx.aas.model.concept import *
+from basyx.aas.model.submodel import *
+
+from enum import Enum
+from typing import AbstractSet, Dict, Type, TypeVar
 
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPainter, QBrush, QDoubleValidator, QIntValidator
@@ -15,11 +21,6 @@ from PyQt5.QtWidgets import QWidget, QStyledItemDelegate, QStyleOptionViewItem, 
     QCompleter, QCheckBox
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex
-
-from basyx.aas.model.aas import *
-from basyx.aas.model.base import *
-from basyx.aas.model.concept import *
-from basyx.aas.model.submodel import *
 
 from aas_editor.settings import DEFAULT_COMPLETIONS
 from aas_editor.utils.util import inheritors

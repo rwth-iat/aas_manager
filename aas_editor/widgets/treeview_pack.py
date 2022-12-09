@@ -25,8 +25,9 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex, QSettings, QPoint
 from PyQt5.QtGui import QDropEvent, QDragEnterEvent, QKeyEvent
 from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QMenu, QWidget
-from basyx.aas.adapter import aasx
-from basyx.aas.adapter.aasx import DictSupplementaryFileContainer
+from basyx.aas.adapter.aasx import AASXReader, DictSupplementaryFileContainer
+from basyx.aas.adapter.json import read_aas_json_file
+from basyx.aas.adapter.xml import read_aas_xml_file
 from basyx.aas.model import DictObjectStore, Submodel
 
 from aas_editor.delegates import EditDelegate
@@ -142,14 +143,14 @@ class PackTreeView(TreeView):
         for file in files:
             fileType = file.suffix.lower().strip()
             if fileType == ".xml":
-                objStore = aasx.read_aas_xml_file(file.as_posix())
+                objStore = read_aas_xml_file(file.as_posix())
             elif fileType == ".json":
                 with open(file, "r") as f:  # TODO change if aas changes
-                    objStore = aasx.read_aas_json_file(f)
+                    objStore = read_aas_json_file(f)
             elif fileType == ".aasx":
                 objStore = DictObjectStore()
                 fileStore = DictSupplementaryFileContainer()  # prosto tak
-                reader = aasx.AASXReader(file.as_posix())
+                reader = AASXReader(file.as_posix())
                 reader.read_into(objStore, fileStore)
             else:
                 raise TypeError("Wrong file type:", self.file.suffix)

@@ -22,9 +22,9 @@ from abc import ABCMeta
 from enum import Enum
 from typing import List, Dict, Type, Set, Any, Tuple
 
-import basyx.aas.model
 from PyQt5.QtCore import Qt, QFile, QTextStream, QModelIndex
 from PyQt5.QtWidgets import QApplication
+from basyx.aas.model import Referable
 
 from aas_editor import settings
 import aas_editor.utils.util_classes as util_classes
@@ -224,7 +224,7 @@ def _delRecursivlyParent(aasObj, iter_num=0):
         return
     if hasattr(aasObj, "parent"):
         aasObj.parent = None
-    if iter_num == 0 or util_type.isIterable(aasObj) or isinstance(aasObj, basyx.aas.model.Referable):
+    if iter_num == 0 or util_type.isIterable(aasObj) or isinstance(aasObj, Referable):
         params = getParams4init(type(aasObj), withDefaults=False).keys()
         for param in params:
             if hasattr(aasObj, param.rstrip("_")):
