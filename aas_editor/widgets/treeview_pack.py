@@ -165,9 +165,8 @@ class PackTreeView(TreeView):
                     raise TypeError("Wrong file type:", self.file.suffix)
                 self.filesObjStores[file.name] = objStore
             except Exception as e:
-                # QMessageBox.warning(self, "Warning", f"Error while reading file: {e}")
-                # TODO: Show error after opening the programm. Empty QAction with error
-                logging.exception(f"Error while reading {file}: {e}")
+                # If a package is with an error, that file will be skipped.
+                logging.exception(f"Error while reading {file}: {e}. Submodels can not be read")
 
     @property
     def defaultNewFileTypeFilter(self):
