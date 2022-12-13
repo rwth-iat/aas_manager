@@ -137,3 +137,4 @@ class AppSettings:
     SUBMODEL_SPLIT_PARTS = Setting('submodelSplitParts', False, bool)
     ALL_SUBMODEL_REFS_TO_AAS = Setting('allSubmodelRefsToAas', True, bool)
     ALL_CD_REFS_TO_AAS = Setting('allConceptDescriptionRefsToAas', True, bool)
+    WRITE_PRETTY_JSON = Setting('writePrettyJson', False, bool)
