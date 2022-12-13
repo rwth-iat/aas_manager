@@ -53,6 +53,10 @@ class Package:
         return AppSettings.WRITE_JSON_IN_AASX.value()
 
     @property
+    def writePrettyJson(self):
+        return AppSettings.WRITE_PRETTY_JSON.value()
+
+    @property
     def submodelSplitParts(self):
         return AppSettings.SUBMODEL_SPLIT_PARTS.value()
 
@@ -107,7 +111,11 @@ class Package:
             aasx.write_aas_xml_file(self.file.as_posix(), self.objStore)
         elif fileType == ".json": #FIXME: if file in write_aas_xml_file() changes
             with open(self.file.as_posix(), "w") as fileIO:
-                aasx.write_aas_json_file(fileIO, self.objStore)
+                indent = None
+                if self.writePrettyJson:
+                    indent = 4
+                aasx.write_aas_json_file(fileIO, self.objStore, indent=indent)
+
         elif fileType == ".aasx":
             with aasx.AASXWriter(self.file.as_posix()) as writer:
                 aas_ids = []
