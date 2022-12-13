@@ -77,6 +77,7 @@ class PackHeaderView(HeaderView):
             showColumns4typeMenu.addAction(showColumnsAct)
 
         showColumnsListMenu = self.menu.addMenu("Show custom column list")
+        showColumnsListMenu.setToolTip("To manage custom lists, edit custom_column_lists.json")
         for listname in self.customLists:
             sectionNames = self.customLists[listname]
             showColumnsAct = QAction(f"{listname}", self,
@@ -87,11 +88,18 @@ class PackHeaderView(HeaderView):
             showColumnsListMenu.addAction(showColumnsAct)
 
         self.menu.addSeparator()
-        unchooseAllAct = QAction("Hide all columns", self,
-                                 toolTip="Hide all columns",
-                                 statusTip="Hide all columns",
-                                 triggered=lambda: self.hideAllSections())
-        self.menu.addAction(unchooseAllAct)
+
+        showAllColAct = QAction("Show all columns", self,
+                                toolTip="Show all columns",
+                                statusTip="Show all columns",
+                                triggered=lambda: self.showAllSections())
+        self.menu.addAction(showAllColAct)
+
+        hideAllColAct = QAction("Hide all columns", self,
+                                toolTip="Hide all columns",
+                                statusTip="Hide all columns",
+                                triggered=lambda: self.hideAllSections())
+        self.menu.addAction(hideAllColAct)
 
     def onShowListOfSectionsAct(self):
         action: QAction = self.sender()
