@@ -26,13 +26,13 @@ from aas_editor.utils.util_classes import ClassesInfo
 
 
 class Package:
-    def __init__(self, file: Union[str, Path] = ""):
+    def __init__(self, file: Union[str, Path] = "", failsafe=False):
         """:raise TypeError if file has wrong file type"""
         self.objStore = DictObjectStore()
         self.fileStore = DictSupplementaryFileContainer()
         self.file = file
         if file:
-            self._read()
+            self._read(failsafe)
         for obj in self.objStore:
             DEFAULT_COMPLETIONS[Key]["value"].append(obj.identification.id)
         self._changed = False
@@ -54,6 +54,10 @@ class Package:
         return AppSettings.WRITE_JSON_IN_AASX.value()
 
     @property
+    def writePrettyJson(self):
+        return AppSettings.WRITE_PRETTY_JSON.value()
+
+    @property
     def submodelSplitParts(self):
         return AppSettings.SUBMODEL_SPLIT_PARTS.value()
 
@@ -71,13 +75,13 @@ class Package:
     def __repr__(self):
         return self.file.as_posix()
 
-    def _read(self):
+    def _read(self, failsafe):
         fileType = self.file.suffix.lower().strip()
         if fileType == ".xml":
-            self.objStore = read_aas_xml_file(self.file.as_posix())
+            self.objStore = read_aas_xml_file(self.file.as_posix(), failsafe=failsafe)
         elif fileType == ".json":
             with open(self.file, "r") as f:  # TODO change if aas changes
-                self.objStore = read_aas_json_file(f)
+                self.objStore = read_aas_json_file(f, failsafe=failsafe)
         elif fileType == ".aasx":
             reader = AASXReader(self.file.as_posix())
             reader.read_into(self.objStore, self.fileStore)
@@ -108,7 +112,9 @@ class Package:
             write_aas_xml_file(self.file.as_posix(), self.objStore)
         elif fileType == ".json": #FIXME: if file in write_aas_xml_file() changes
             with open(self.file.as_posix(), "w") as fileIO:
-                write_aas_json_file(fileIO, self.objStore)
+                indent = 2 if self.writePrettyJson else None
+                write_aas_json_file(fileIO, self.objStore, indent=indent)
+
         elif fileType == ".aasx":
             with AASXWriter(self.file.as_posix()) as writer:
                 aas_ids = []

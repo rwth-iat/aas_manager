@@ -24,7 +24,7 @@ from typing import Optional
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex, QSettings, QPoint
 from PyQt5.QtGui import QDropEvent, QDragEnterEvent, QKeyEvent
-from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QMenu, QWidget
+from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QMenu, QWidget, QDialog
 from basyx.aas.adapter.aasx import AASXReader, DictSupplementaryFileContainer
 from basyx.aas.adapter.json import read_aas_json_file
 from basyx.aas.adapter.xml import read_aas_xml_file
@@ -149,20 +149,24 @@ class PackTreeView(TreeView):
 
         # Read the aasx file and store it in DictObjectStore in dictionary fileObjDict.
         for file in files:
-            fileType = file.suffix.lower().strip()
-            if fileType == ".xml":
-                objStore = read_aas_xml_file(file.as_posix())
-            elif fileType == ".json":
-                with open(file, "r") as f:  # TODO change if aas changes
-                    objStore = read_aas_json_file(f)
-            elif fileType == ".aasx":
-                objStore = DictObjectStore()
-                fileStore = DictSupplementaryFileContainer()  # prosto tak
-                reader = AASXReader(file.as_posix())
-                reader.read_into(objStore, fileStore)
-            else:
-                raise TypeError("Wrong file type:", self.file.suffix)
-            self.filesObjStores[file.name] = objStore
+            try:
+                fileType = file.suffix.lower().strip()
+                if fileType == ".xml":
+                    objStore = read_aas_xml_file(file.as_posix())
+                elif fileType == ".json":
+                    with open(file, "r") as f:  # TODO change if aas changes
+                        objStore = read_aas_json_file(f)
+                elif fileType == ".aasx":
+                    objStore = DictObjectStore()
+                    fileStore = DictSupplementaryFileContainer()  # prosto tak
+                    reader = AASXReader(file.as_posix())
+                    reader.read_into(objStore, fileStore)
+                else:
+                    raise TypeError("Wrong file type:", self.file.suffix)
+                self.filesObjStores[file.name] = objStore
+            except Exception as e:
+                # If a package is with an error, that file will be skipped.
+                logging.exception(f"Error while reading {file}: {e}. Submodels can not be read")
 
     @property
     def defaultNewFileTypeFilter(self):
@@ -483,7 +487,21 @@ class PackTreeView(TreeView):
 
     def openPack(self, file: str) -> typing.Union[bool, Package]:
         try:
-            pack = Package(file)
+            try:
+                pack = Package(file, failsafe=False)
+            except Exception as e:
+                msgBox = QMessageBox()
+                msgBox.setIcon(QMessageBox.Warning)
+                msgBox.setText(f"Error while reading package:\n{file}")
+                msgBox.setInformativeText("Do you still want to open it?\nSome objects may be missing or incorrect.")
+                msgBox.setStandardButtons(QMessageBox.Cancel | QMessageBox.Yes)
+                msgBox.setDefaultButton(QMessageBox.Yes)
+                msgBox.setDetailedText(f"{e}")
+                ret = msgBox.exec()
+                if ret == QMessageBox.Yes:
+                    pack = Package(file, failsafe=True)
+                else:
+                    return False
             absFile = pack.file.absolute().as_posix()
             self.updateRecentFiles(absFile)
         except Exception as e:

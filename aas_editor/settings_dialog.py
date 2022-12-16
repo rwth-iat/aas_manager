@@ -19,10 +19,10 @@ class OptionGroupBox(QGroupBox):
     def currOption(self):
         pass
 
-    def newOption(self):
+    def chosenOption(self):
         pass
 
-    def applyNewOption(self):
+    def applyChosenOption(self):
         pass
 
 
@@ -54,13 +54,13 @@ class RadioBtnsGroupBox(OptionGroupBox):
     def currOption(self):
         return self.appSetting.value()
 
-    def newOption(self):
+    def chosenOption(self):
         optionName = self.find_checked_radiobutton().text()
         chosenOption = self.options[optionName]
         return chosenOption
 
-    def applyNewOption(self):
-        self.appSetting.setValue(self.newOption())
+    def applyChosenOption(self):
+        self.appSetting.setValue(self.chosenOption())
 
 
 class SettingsDialog(QDialog):
@@ -81,14 +81,19 @@ class SettingsDialog(QDialog):
             RadioBtnsGroupBox(self, title="Filetype for saving in AASX",
                               options={"JSON": True, "XML": False},
                               appSetting=AppSettings.WRITE_JSON_IN_AASX),
+            RadioBtnsGroupBox(self, title="Save JSON in pretty style",
+                              options={"Yes": True, "No": False},
+                              appSetting=AppSettings.WRITE_PRETTY_JSON),
             RadioBtnsGroupBox(self, title="Save submodels in separate files within AASX file",
                               options={"Yes": True, "No": False},
                               appSetting=AppSettings.SUBMODEL_SPLIT_PARTS),
-            RadioBtnsGroupBox(self, title="Automatically add references of existing submodels to the first AAS when saving file",
+            RadioBtnsGroupBox(self, title="Automatically add references of existing submodels to the first AAS when "
+                                          "saving file",
                               options={"Yes": True, "No": False},
                               appSetting=AppSettings.ALL_SUBMODEL_REFS_TO_AAS),
             RadioBtnsGroupBox(self,
-                              title="Automatically add references of existing concept descriptions to the first AAS when saving file",
+                              title="Automatically add references of existing concept descriptions to the first AAS "
+                                    "when saving file",
                               options={"Yes": True, "No": False},
                               appSetting=AppSettings.ALL_CD_REFS_TO_AAS)
             ]
@@ -107,4 +112,4 @@ class SettingsDialog(QDialog):
 
     def applySettings(self) -> None:
         for optionGroupBox in self.optionGroupBoxes:
-            optionGroupBox.applyNewOption()
+            optionGroupBox.applyChosenOption()
