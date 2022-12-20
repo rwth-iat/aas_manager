@@ -24,7 +24,7 @@ from typing import Optional
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex, QSettings, QPoint
 from PyQt5.QtGui import QDropEvent, QDragEnterEvent, QKeyEvent
-from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QMenu, QWidget, QDialog
+from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QMenu, QWidget, QDialog, QApplication
 from basyx.aas.adapter.aasx import AASXReader, DictSupplementaryFileContainer
 from basyx.aas.adapter.json import read_aas_json_file
 from basyx.aas.adapter.xml import read_aas_xml_file
@@ -744,7 +744,7 @@ class PackTreeView(TreeView):
         if attrName in (OBJECT_COLUMN_NAME, OBJECT_VALUE_COLUMN_NAME):
             super(PackTreeView, self).onPaste()
         else:
-            obj2paste = self.treeObjClipboard[0]
+            obj2paste = self.currentPaste()
             targetParentObj = index.data(OBJECT_ROLE)
             targetTypeHint = util_type.getAttrTypeHint(type(index.data(OBJECT_ROLE)), attrName, delOptional=False)
             reqAttrsDict = getReqParams4init(type(obj2paste), rmDefParams=True)

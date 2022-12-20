@@ -534,11 +534,20 @@ class TreeView(BasicTreeView):
                 return checkType(obj2paste, getIterItemTypeHint(targetTypeHint))
         except (AttributeError, TypeError) as e:
             logging.exception(e)
-            # print(e)
         return False
 
+    def currentPaste(self):
+        # Text in system clipboard will be updated, if last copy element is from ASS Manager. See function "onCopy"
+        # If text in clipboard and in treeObjClipboard doesn't match, last copy element is not from AASM and is actual
+        if QApplication.clipboard().text() != self.treeObjClipboard[0]:
+            return QApplication.clipboard().text()
+        else:
+            return self.treeObjClipboard[0]
+
     def onPaste(self):
-        obj2paste = self.treeObjClipboard[0]
+        # TODO: after start the programm, wenn treeObjClipboard is empty, this funktion will not be called. Because
+        #  without onCopy, the function isPasteOk will not be called and onPaste is not Enabled by default.
+        obj2paste = self.currentPaste()
         index = self.currentIndex()
         targetParentObj = index.parent().data(OBJECT_ROLE)
         targetObj = index.data(OBJECT_ROLE)
