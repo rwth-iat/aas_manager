@@ -90,13 +90,6 @@ TYPE_NAMES_DICT = {
     model.datatypes.UnsignedByte: "UnsignedByte",
     model.datatypes.AnyURI: "AnyURI",
     model.datatypes.NormalizedString: "NormalizedString",
-    model.base.Identifier:
-        {"class": "Identifier",
-         "attributes":
-             {"idType": "id_type",
-              "id": "id_"
-              }
-         },
     model.base.AdministrativeInformation:
         {"class": "AdministrativeInformation",
          "attributes":

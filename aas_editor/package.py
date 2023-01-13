@@ -34,7 +34,7 @@ class Package:
         if file:
             self._read()
         for obj in self.objStore:
-            DEFAULT_COMPLETIONS[Key]["value"].append(obj.identification.id)
+            DEFAULT_COMPLETIONS[Key]["value"].append(obj.id)
         self._changed = False
 
     @classmethod
@@ -88,8 +88,8 @@ class Package:
         old_identifiers = list(self.objStore._backend.keys())
         for i in old_identifiers:
             obj = self.objStore.get_identifiable(i)
-            if i != obj.identification:
-                self.objStore._backend[obj.identification] = obj
+            if i != obj.id:
+                self.objStore._backend[obj.id] = obj
                 del self.objStore._backend[i]
 
     def write(self, file: str = None):
@@ -114,7 +114,7 @@ class Package:
                 aas_ids = []
                 for obj in self.objStore:
                     if isinstance(obj, AssetAdministrationShell):
-                        aas_ids.append(obj.identification)
+                        aas_ids.append(obj.id)
                 for aas_id in aas_ids:
                     writer.write_aas(aas_id, self.objStore, self.fileStore,
                                      write_json=self.writeJsonInAasx,
