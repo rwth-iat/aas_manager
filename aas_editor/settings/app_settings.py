@@ -134,5 +134,4 @@ class AppSettings:
     WRITE_JSON_IN_AASX = Setting('writeJsonInAasx', False, bool)
     # If True, submodels are written to separate AASX parts
     # instead of being included in the AAS part with in the AASX package.
-    SUBMODEL_SPLIT_PARTS = Setting('submodelSplitParts', False, bool)
     ALL_SUBMODEL_REFS_TO_AAS = Setting('allSubmodelRefsToAas', True, bool)

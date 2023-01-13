@@ -54,10 +54,6 @@ class Package:
         return AppSettings.WRITE_JSON_IN_AASX.value()
 
     @property
-    def submodelSplitParts(self):
-        return AppSettings.SUBMODEL_SPLIT_PARTS.value()
-
-    @property
     def allSubmodelRefsToAas(self):
         return AppSettings.ALL_SUBMODEL_REFS_TO_AAS.value()
 
@@ -111,8 +107,7 @@ class Package:
                         aas_ids.append(obj.id)
                 for aas_id in aas_ids:
                     writer.write_aas(aas_id, self.objStore, self.fileStore,
-                                     write_json=self.writeJsonInAasx,
-                                     submodel_split_parts=self.submodelSplitParts)
+                                     write_json=self.writeJsonInAasx)
                 # Create OPC/AASX core properties
                 cp = pyecma376_2.OPCCoreProperties()
                 cp.created = datetime.now()
