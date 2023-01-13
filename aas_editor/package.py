@@ -61,10 +61,6 @@ class Package:
     def allSubmodelRefsToAas(self):
         return AppSettings.ALL_SUBMODEL_REFS_TO_AAS.value()
 
-    @property
-    def allCDRefsToAas(self):
-        return AppSettings.ALL_CD_REFS_TO_AAS.value()
-
     def __str__(self):
         return self.name
 
@@ -97,8 +93,6 @@ class Package:
 
         if self.allSubmodelRefsToAas:
             self.all_submodels_to_aas()
-        if self.allCDRefsToAas:
-            self.all_concept_descriptions_to_aas()
         if file:
             self.file: Path = file
 
@@ -137,28 +131,6 @@ class Package:
                 if shell.submodel is None:
                     shell.submodel = set()
                 shell.submodel.add(reference)
-            break
-
-    def all_concept_descriptions_to_aas(self):
-        """Add references of all existing CD to concept dictionary in existing AAS."""
-        #FIXME: save all concept descriptions to AASX or JSON or XML even if they are not referenced in ConceptDict
-        for shell in self.shells:
-            if shell.concept_dictionary and len(shell.concept_dictionary):
-                for i in shell.concept_dictionary:
-                    dictionary = i
-                    break
-            else:
-                idshort = "AutomaticallyGeneratedCD"
-                dictionary = ConceptDictionary(idshort)
-                try:
-                    shell.concept_dictionary.add(dictionary)
-                except KeyError:
-                    shell.concept_dictionary.discard(shell.concept_dictionary.get_referable(idshort))
-                    shell.concept_dictionary.add(dictionary)
-
-            for cd in self.concept_descriptions:
-                reference = AASReference.from_referable(cd)
-                dictionary.concept_description.add(reference)
             break
 
     @property

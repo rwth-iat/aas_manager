@@ -417,11 +417,6 @@ CLASSES_INFO = {
         DEFAULT_PARAMS_TO_HIDE: {"parent": None}
     },
     AssetAdministrationShell: {
-        HIDDEN_ATTRS: ("concept_dictionary", "view"),
-        ITERABLE_ATTRS: ("concept_dictionary", "view"),
-        CHANGED_PARENT_OBJ: "concept_dictionary",
-        ADD_ACT_AAS_TXT: "Add concept dictionary",
-        ADD_TYPE: ConceptDictionary,
     },
     Submodel: {
         HIDDEN_ATTRS: ("submodel_element",),
