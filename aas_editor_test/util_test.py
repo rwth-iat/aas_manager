@@ -17,7 +17,7 @@ from unittest import TestCase
 
 import basyx.aas as aas
 import dateutil
-from basyx.aas.model import AASReference, Reference, Submodel, IdentifierType, Referable
+from basyx.aas.model import ModelReference, Reference, Submodel, Referable
 
 from aas_editor.utils.util_type import checkType, issubtype, isoftype
 
@@ -25,21 +25,19 @@ from aas_editor.utils.util_type import checkType, issubtype, isoftype
 class TestUtilFuncs(TestCase):
     def test_issubtype(self):
         self.assertTrue(issubtype(int, int))
-        self.assertTrue(issubtype(AASReference, AASReference))
-        self.assertTrue(issubtype(AASReference, Reference))
-        self.assertTrue(issubtype(AASReference, AASReference[str]))
+        self.assertTrue(issubtype(ModelReference, ModelReference))
+        self.assertTrue(issubtype(ModelReference, Reference))
+        self.assertTrue(issubtype(ModelReference, ModelReference[str]))
         self.assertTrue(issubtype(list, List[int]))
         self.assertTrue(issubtype(list, Optional[List[int]]))
         self.assertTrue(issubtype(Type, Type))
         self.assertTrue(issubtype(str, Type[str]))
         self.assertTrue(issubtype(str, Type[Union[int, float, str]]))
         self.assertTrue(issubtype(float, Union[int, float, str]))
-        self.assertTrue(issubtype(IdentifierType, Enum))
 
         self.assertTrue(issubtype(int, (int, str)))
         self.assertTrue(issubtype(list, (set, List[int])))
         self.assertTrue(issubtype(list, Optional[List[int]]))
-        self.assertTrue(issubtype(IdentifierType, (bool, str, int, float, Enum, Type)))
         self.assertTrue(issubtype(str, typing.Type[typing.Union[
             dateutil.relativedelta.relativedelta, datetime.datetime, aas.model.datatypes.Date,
             datetime.time, aas.model.datatypes.GYearMonth, aas.model.datatypes.GYear,
@@ -54,8 +52,8 @@ class TestUtilFuncs(TestCase):
             aas.model.datatypes.AnyURI, str, aas.model.datatypes.NormalizedString]]))
 
         self.assertFalse(issubtype(list, Set[str]))
-        self.assertFalse(issubtype(AASReference, Submodel))
-        self.assertFalse(issubtype(Submodel, AASReference[str]))
+        self.assertFalse(issubtype(ModelReference, Submodel))
+        self.assertFalse(issubtype(Submodel, ModelReference[str]))
         self.assertFalse(issubtype(Submodel, Union[int, float, str]))
         self.assertFalse(issubtype(str, Union))
         self.assertFalse(issubtype(str, Type))
