@@ -152,8 +152,8 @@ TYPE_NAMES_DICT = {
               "annotation": "annotation"
               }
          },
-    model.submodel.BasicEvent:
-        {"class": "BasicEvent",
+    model.submodel.BasicEventElement:
+        {"class": "BasicEventElement",
          "attributes":
              {"idShort": "id_short",
               "displayName": "display_name",
@@ -492,7 +492,7 @@ TYPE_SHORTS_DICT = {
     Property: "prop",
     Entity: "ent",
     Capability: "cap",
-    Event: "evnt",
+    BasicEventElement: "evnt",
     Operation: "opr",
     RelationshipElement: "rel",
     AnnotatedRelationshipElement: "arel",
