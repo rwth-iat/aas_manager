@@ -74,14 +74,6 @@ DEFAULTS = {
     Key: {
         "id_type": KeyType.IRI,
         "value": "https://www.company.com/",
-        "local": True
-    },
-    Identifier: {
-        "id_": "https://www.company.com/",
-        "id_type": IdentifierType.IRI,
-    },
-    Asset: {
-        "kind": AssetKind.INSTANCE,
     },
     Property: {
         "value_type": String,

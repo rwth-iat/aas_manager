@@ -406,10 +406,6 @@ CLASSES_INFO = {
                 ADD_ACT_AAS_TXT: "Add shell",
                 ADD_TYPE: AssetAdministrationShell,
             },
-            "assets": {
-                ADD_ACT_AAS_TXT: "Add asset",
-                ADD_TYPE: Asset,
-            },
             "submodels": {
                 ADD_ACT_AAS_TXT: "Add submodel",
                 ADD_TYPE: Submodel,
@@ -498,7 +494,6 @@ COMPLEX_ITERABLE_TYPES = (Namespace, import_util_classes.PreObjectImport)
 
 TYPE_SHORTS_DICT = {
     AssetAdministrationShell: "aas",
-    Asset: "ast",
     ConceptDescription: "cd",
     Submodel: "sm",
     Property: "prop",

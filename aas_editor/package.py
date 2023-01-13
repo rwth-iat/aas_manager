@@ -174,10 +174,6 @@ class Package:
         return self._iter_objects(AssetAdministrationShell)
 
     @property
-    def assets(self) -> Iterable[Asset]:
-        return self._iter_objects(Asset)
-
-    @property
     def submodels(self) -> Iterable[Submodel]:
         return self._iter_objects(Submodel)
 
@@ -215,10 +211,6 @@ class Package:
     @property
     def numOfShells(self) -> int:
         return len(tuple(self.shells))
-
-    @property
-    def numOfAssets(self) -> int:
-        return len(tuple(self.assets))
 
     @property
     def numOfSubmodels(self) -> int:
