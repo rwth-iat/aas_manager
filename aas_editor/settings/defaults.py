@@ -67,7 +67,6 @@ MIME_TYPES = [
 
 DEFAULT_INHERITOR = {
     SubmodelElement: Property,
-    Constraint: Qualifier,
 }
 
 DEFAULTS = {
