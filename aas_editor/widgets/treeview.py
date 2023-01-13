@@ -9,7 +9,7 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 import logging
 import time
-from typing import Optional, Any
+from typing import Optional, Any, List
 
 from PyQt5.QtCore import Qt, pyqtSignal, QModelIndex, QTimer, QAbstractItemModel, QPoint
 from PyQt5.QtGui import QClipboard, QPalette, QColor, QMouseEvent, QKeyEvent
@@ -156,13 +156,37 @@ class HeaderView(QHeaderView):
             self.currSortSection = -1
 
 
+@dataclass
+class TreeClipboard:
+    def __init__(self):
+        self.objects: List[Any] = []
+        self.objStrings: List[str] = []
+
+    def clear(self):
+        self.objects.clear()
+        self.objStrings.clear()
+
+    def append(self, obj, objRepr: str = None):
+        self.objects.append(obj)
+        if objRepr is None:
+            self.objStrings.append(str(obj))
+        else:
+            self.objStrings.append(objRepr)
+
+    def empty(self):
+        if self.objects:
+            return False
+        else:
+            return True
+
+
 class TreeView(BasicTreeView):
     openInCurrTabClicked = pyqtSignal(QModelIndex)
     openInNewTabClicked = pyqtSignal(QModelIndex)
     openInBgTabClicked = pyqtSignal(QModelIndex)
     openInNewWindowClicked = pyqtSignal(QModelIndex)
 
-    treeObjClipboard = []
+    treeClipboard = TreeClipboard()
 
     def __init__(self, parent=None, editEnabled: bool = True, **kwargs):
         super(TreeView, self).__init__(parent, **kwargs)
@@ -401,6 +425,7 @@ class TreeView(BasicTreeView):
 
     def updateActions(self, index: QModelIndex):
         if self.editEnabled:
+            self.updateTreeClipboard()
             self.pasteAct.setEnabled(self.isPasteOk(index))
             self.updateCopyCutDelActs(index)
             self.updateEditActs(index)
@@ -510,20 +535,21 @@ class TreeView(BasicTreeView):
     def onCopy(self):
         index = self.currentIndex()
         data2copy = index.data(COPY_ROLE)
-        self.treeObjClipboard.clear()
-        self.treeObjClipboard.append(data2copy)
+        text2copy = index.data(Qt.DisplayRole)
+        self.treeClipboard.clear()
+        self.treeClipboard.append(data2copy, objRepr=text2copy)
         clipboard = QApplication.clipboard()
-        clipboard.setText(index.data(Qt.DisplayRole), QClipboard.Clipboard)
+        clipboard.setText(text2copy, QClipboard.Clipboard)
         if self.isPasteOk(index):
             self.pasteAct.setEnabled(True)
         else:
             self.pasteAct.setEnabled(False)
 
     def isPasteOk(self, index: QModelIndex) -> bool:
-        if not self.treeObjClipboard or not index.isValid():
+        if self.treeClipboard.empty() or not index.isValid():
             return False
 
-        obj2paste = self.treeObjClipboard[0]
+        obj2paste = self.treeClipboard.objects[0]
         targetTypeHint = index.data(TYPE_HINT_ROLE)
 
         try:
@@ -536,18 +562,20 @@ class TreeView(BasicTreeView):
             logging.exception(e)
         return False
 
-    def currentPaste(self):
-        # Text in system clipboard will be updated, if last copy element is from ASS Manager. See function "onCopy"
+    def updateTreeClipboard(self):
+        txtInSystemClipboard = QApplication.clipboard().text()
+        # If treeObjClipboard is empty and user have something in txtInSystemClipboard
+        if not txtInSystemClipboard:
+            return
+        elif self.treeClipboard.empty():
+            self.treeClipboard.append(txtInSystemClipboard)
         # If text in clipboard and in treeObjClipboard doesn't match, last copy element is not from AASM and is actual
-        if QApplication.clipboard().text() != self.treeObjClipboard[0]:
-            return QApplication.clipboard().text()
-        else:
-            return self.treeObjClipboard[0]
+        elif self.treeClipboard.objStrings[-1] != txtInSystemClipboard:
+            self.treeClipboard.clear()
+            self.treeClipboard.append(txtInSystemClipboard)
 
     def onPaste(self):
-        # TODO: after start the programm, wenn treeObjClipboard is empty, this funktion will not be called. Because
-        #  without onCopy, the function isPasteOk will not be called and onPaste is not Enabled by default.
-        obj2paste = self.currentPaste()
+        obj2paste = self.treeClipboard.objects[0]
         index = self.currentIndex()
         targetParentObj = index.parent().data(OBJECT_ROLE)
         targetObj = index.data(OBJECT_ROLE)
