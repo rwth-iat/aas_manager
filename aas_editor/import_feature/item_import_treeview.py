@@ -21,7 +21,7 @@ from types import GeneratorType
 from PyQt5.QtCore import QVariant, Qt
 from PyQt5.QtWidgets import QMessageBox, QDialog
 from basyx.aas.adapter.aasx import DictSupplementaryFileContainer
-from basyx.aas.model import AASReference, Referable
+from basyx.aas.model import ModelReference, Referable
 
 from aas_editor import dialogs
 from aas_editor.import_feature.import_settings import MAPPING_ATTR
@@ -45,7 +45,7 @@ class ImportTreeViewItem(PackTreeViewItem):
             setattr(obj, MAPPING_ATTR, {})
 
         try:
-            if isinstance(obj, AASReference):
+            if isinstance(obj, ModelReference):
                 obj = obj.resolve(self.package.objStore)
         except KeyError as e:
             logging.exception(e)

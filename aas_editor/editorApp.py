@@ -31,7 +31,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.setupUi(self)
         self.currTheme = DEFAULT_THEME
 
-        dialogs.AASReferenceGroupBox.CHOOSE_FRM_VIEW = self.mainTreeView
+        dialogs.ModelReferenceGroupBox.CHOOSE_FRM_VIEW = self.mainTreeView
         AddressLine.setModel(self.mainTreeView.model())
         welcomeTabKwargs = self.mainTabWidget.tabClsKwargs if self.mainTabWidget.tabClsKwargs else {}
         welcomeTab = self.mainTabWidget.addTab(self.mainTabWidget.tabCls(parent=self.mainTabWidget, **welcomeTabKwargs),

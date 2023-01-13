@@ -21,7 +21,7 @@ from typing import List, Dict
 
 import basyx
 import openpyxl
-from basyx.aas.model import AASReference, Key, KeyElements, KeyType
+from basyx.aas.model import ModelReference, Key
 from openpyxl.worksheet.worksheet import Worksheet
 
 from . import import_settings
@@ -53,11 +53,11 @@ def importRowValueFromExcel(sourcefile, sheetname=None, row=2):
 def _mapping4referableIntoDict(obj, mapDict):
     mapping = getattr(obj, import_settings.MAPPING_ATTR, {})
     if mapping:
-        ref = AASReference.from_referable(obj)
+        ref = ModelReference.from_referable(obj) # FIXME V30RC02
         keys = ','.join(
             [f"Key(type_={i.type}, local={i.local}, id_type={i.id_type}, value='{i.value}')" for i in ref.key])
         target_type = repr(ref.type).lstrip("<class '").rstrip("'>")
-        mapDict[f"AASReference(target_type={target_type}, key=({keys},))"] = mapping
+        mapDict[f"ModelReference(target_type={target_type}, key=({keys},))"] = mapping
 
 
 def _mappingIntoDict(obj, mapDict):
@@ -111,11 +111,11 @@ def setMappingFromFile(pack: Package, mappingFile: str):
         mapDict = json.load(jsonFile)
 
     for refRepr in mapDict:
-        aasref: AASReference = eval(refRepr, {
+        aasref: ModelReference = eval(refRepr, { #FIXME V30RC02
             "KeyElements": KeyElements,
             "KeyType": KeyType,
             "Key": Key,
-            "AASReference": AASReference,
+            "ModelReference": ModelReference,
             "basyx": basyx,
         })
         refObj = aasref.resolve(pack.objStore)

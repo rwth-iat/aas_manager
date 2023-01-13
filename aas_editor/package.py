@@ -18,8 +18,8 @@ import pyecma376_2
 from basyx.aas.adapter.aasx import DictSupplementaryFileContainer, AASXReader, AASXWriter
 from basyx.aas.adapter.json import read_aas_json_file, write_aas_json_file
 from basyx.aas.adapter.xml import read_aas_xml_file, write_aas_xml_file
-from basyx.aas.model import AssetAdministrationShell, Asset, Submodel, ConceptDescription, \
-    DictObjectStore, Key, AASReference, ConceptDictionary
+from basyx.aas.model import AssetAdministrationShell, Submodel, ConceptDescription, \
+    DictObjectStore, Key, ModelReference
 
 from aas_editor.settings import DEFAULT_COMPLETIONS, AppSettings
 from aas_editor.utils.util_classes import ClassesInfo
@@ -133,7 +133,7 @@ class Package:
         #TODO: fix if pyi40aas changes
         for shell in self.shells:
             for submodel in self.submodels:
-                reference = AASReference.from_referable(submodel)
+                reference = ModelReference.from_referable(submodel)
                 if shell.submodel is None:
                     shell.submodel = set()
                 shell.submodel.add(reference)

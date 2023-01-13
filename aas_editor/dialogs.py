@@ -236,8 +236,8 @@ class InputWidgetUtil:
         elif issubtype(objTypeHint, Union):
             objTypes = objTypeHint.__args__
             widget = TypeOptionObjGroupBox(objTypes, **kwargs)
-        elif issubtype(objTypeHint, AASReference):
-            widget = AASReferenceGroupBox(objTypeHint, **kwargs)
+        elif issubtype(objTypeHint, ModelReference):
+            widget = ModelReferenceGroupBox(objTypeHint, **kwargs)
         elif issubtype(objTypeHint, editWidgets.SpecialInputWidget.types):
             widget = editWidgets.SpecialInputWidget(objTypeHint, **kwargs)
         elif issubtype(objTypeHint, editWidgets.StandardInputWidget.types):
@@ -721,13 +721,13 @@ class ChooseItemDialog(AddDialog):
         return self.getObj2add()
 
 
-class AASReferenceGroupBox(ObjGroupBox):
+class ModelReferenceGroupBox(ObjGroupBox):
     # use CHOOSE_FRM_VIEW if no chooseFrmView is given
     # can be changed outside of class
     CHOOSE_FRM_VIEW = None
 
     def __init__(self, objTypeHint, chooseFrmView=None, **kwargs):
-        super(AASReferenceGroupBox, self).__init__(objTypeHint, **kwargs)
+        super(ModelReferenceGroupBox, self).__init__(objTypeHint, **kwargs)
         self.chooseFrmView: 'TreeView' = chooseFrmView if chooseFrmView else self.CHOOSE_FRM_VIEW
         if self.chooseFrmView:
             plusButton = QPushButton(f"Choose from local", self,
@@ -748,7 +748,7 @@ class AASReferenceGroupBox(ObjGroupBox):
             print("Item adding accepted")
             item = dialog.getChosenItem()
             referable = item.data(OBJECT_ROLE)
-            reference = AASReference.from_referable(referable)
+            reference = ModelReference.from_referable(referable)
             self.setVal(reference)
         else:
             print("Item adding cancelled")

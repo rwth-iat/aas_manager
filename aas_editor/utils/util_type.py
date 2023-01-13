@@ -24,7 +24,7 @@ from collections import abc
 from enum import Enum
 from typing import Union, Tuple, Iterable
 
-from basyx.aas.model import AASReference
+from basyx.aas.model import ModelReference
 
 import aas_editor.additional.classes
 from aas_editor import settings
@@ -105,8 +105,8 @@ def checkType(obj, typeHint):
         else:
             return False
 
-    if isinstance(obj, AASReference):
-        return checkTypeAASRef(obj, typeHint)
+    if isinstance(obj, ModelReference):
+        return checkTypeModelRef(obj, typeHint)
 
     if isIterableType(origin) and objType is origin:
         return True
@@ -117,15 +117,15 @@ def checkType(obj, typeHint):
     return isinstance(obj, origin)
 
 
-def checkTypeAASRef(aasref, typehint):
+def checkTypeModelRef(aasref, typehint):
     """Check if"""
-    if not isinstance(aasref, AASReference):
-        raise TypeError("arg 1 must be of type AASReference")
+    if not isinstance(aasref, ModelReference):
+        raise TypeError("arg 1 must be of type ModelReference")
 
     origin = getOrigin(typehint)
     args = getArgs(typehint)
 
-    if origin is AASReference:
+    if origin is ModelReference:
         if args:
             if isinstance(args[0], typing.ForwardRef):
                 arg = args[0].__forward_arg__

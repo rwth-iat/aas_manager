@@ -21,12 +21,11 @@ from abc import ABCMeta
 from enum import Enum
 from pathlib import Path
 
-from basyx.aas.model import AssetAdministrationShell, Asset, ConceptDescription, Submodel, Property, \
-    Entity, Capability, Event, Operation, RelationshipElement, AnnotatedRelationshipElement, \
-    SubmodelElementCollectionUnordered, SubmodelElementCollectionOrdered, Range, Blob, File, \
-    ReferenceElement, DataElement, AdministrativeInformation, Identifier, AbstractObjectStore, \
-    Namespace, SubmodelElementCollection, SubmodelElement, AASReference, ConceptDictionary, Referable, Identifiable, \
-    Key, Qualifier, datatypes
+from basyx.aas.model import AssetAdministrationShell, ConceptDescription, Submodel, Property, \
+    Entity, Capability, Operation, RelationshipElement, AnnotatedRelationshipElement, Range, Blob, File, \
+    ReferenceElement, DataElement, AdministrativeInformation, AbstractObjectStore, \
+    Namespace, SubmodelElementCollection, SubmodelElement, ModelReference, Referable, Identifiable, \
+    Key, Qualifier, BasicEventElement, SubmodelElementList, datatypes
 
 import aas_editor.additional.classes
 import aas_editor.package
@@ -52,7 +51,7 @@ FILTER_AAS_FILES = f"{AAS_FILES_FILTER};;{AASX_FILES_FILTER};;{XML_FILES_FILTER}
 
 EMPTY_VALUES = (None, tuple(), set(), list(), dict())
 
-LINK_TYPES = (AASReference,)
+LINK_TYPES = (ModelReference,)
 MEDIA_TYPES = (File, Blob, aas_editor.package.StoredFile)
 
 # AnyXSDType = Base64Binary, HexBinary
@@ -463,7 +462,7 @@ CLASSES_INFO = {
         ADD_ACT_AAS_TXT: "Add statement",
         ADD_TYPE: SubmodelElement,
     },
-    AASReference: {
+    ModelReference: {
         DEFAULT_PARAMS_TO_HIDE: {"target_type": Identifiable},
         PARAMS_TO_ATTRS: {
             "target_type": "type"
@@ -479,11 +478,6 @@ CLASSES_INFO = {
             "type_": "type"
         },
     },
-    Identifier: {
-        PARAMS_TO_ATTRS: {
-            "id_": "id"
-        },
-    }
 }
 
 EXTENDED_COLUMNS_IN_PACK_TABLE = list(util.getAttrs4inheritors(Referable))
@@ -494,7 +488,7 @@ REFERABLE_INHERITORS_ATTRS = {}
 for inheritor in REFERABLE_INHERITORS:
     REFERABLE_INHERITORS_ATTRS.update({inheritor: util.getAttrsOfCls(inheritor)})
 
-ATTR_INFOS_TO_SIMPLIFY = (AdministrativeInformation, Identifier,)
+ATTR_INFOS_TO_SIMPLIFY = (AdministrativeInformation, )
 
 TYPES_NOT_TO_POPULATE = (type, ABCMeta)
 TYPES_WITH_INSTANCES_NOT_TO_POPULATE = (
