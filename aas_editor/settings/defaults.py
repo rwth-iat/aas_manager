@@ -72,7 +72,7 @@ DEFAULT_INHERITOR = {
 
 DEFAULTS = {
     Key: {
-        "id_type": KeyType.IRI,
+        "type_": KeyTypes.PROPERTY,
         "value": "https://www.company.com/",
     },
     Property: {

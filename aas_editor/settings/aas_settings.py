@@ -360,7 +360,6 @@ TYPE_NAMES_DICT = {
          "attributes":
              {"type": "type_",
               "value": "value",
-              "idType": "id_type"
               }
          }
 }
