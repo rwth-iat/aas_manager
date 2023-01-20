@@ -305,7 +305,6 @@ class PackTreeView(TreeView):
             typ = action.text()
             self.defaultNewFileTypeFilter = FILE_TYPE_FILTERS[typ]
 
-
     # noinspection PyUnresolvedReferences
     def initMenu(self):
         super(PackTreeView, self).initMenu()
@@ -384,13 +383,13 @@ class PackTreeView(TreeView):
             self.addAct.setText("Add package")
 
     def isPasteOk(self, index: QModelIndex) -> bool:
-        if self.treeClipboard.empty() or not index.isValid():
+        if self.treeClipboard.isEmpty() or not index.isValid():
             return False
 
         if super(PackTreeView, self).isPasteOk(index):
             return True
 
-        obj2paste = self.treeClipboard.objects[0]
+        obj2paste = self.treeClipboard.objects[-1]
         currObj = index.data(OBJECT_ROLE)
 
         if ClassesInfo.addType(type(currObj)) and isinstance(obj2paste, ClassesInfo.addType(type(currObj))):
@@ -717,7 +716,7 @@ class PackTreeView(TreeView):
         if attrName in (OBJECT_COLUMN_NAME, OBJECT_VALUE_COLUMN_NAME):
             return super(PackTreeView, self).isPasteOk(index)
         else:
-            if self.treeClipboard.empty() or not index.isValid():
+            if self.treeClipboard.isEmpty() or not index.isValid():
                 return False
 
             try:
@@ -727,7 +726,7 @@ class PackTreeView(TreeView):
                 # print(e)
                 return False
 
-            obj2paste = self.treeClipboard.objects[0]
+            obj2paste = self.treeClipboard.objects[-1]
             targetTypeHint = attrTypehint
 
             try:
@@ -744,7 +743,7 @@ class PackTreeView(TreeView):
         if attrName in (OBJECT_COLUMN_NAME, OBJECT_VALUE_COLUMN_NAME):
             super(PackTreeView, self).onPaste()
         else:
-            obj2paste = self.treeClipboard.objects[0]
+            obj2paste = self.treeClipboard.objects[-1]
             targetParentObj = index.data(OBJECT_ROLE)
             targetTypeHint = util_type.getAttrTypeHint(type(index.data(OBJECT_ROLE)), attrName, delOptional=False)
             reqAttrsDict = getReqParams4init(type(obj2paste), rmDefParams=True)

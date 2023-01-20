@@ -156,7 +156,7 @@ class HeaderView(QHeaderView):
             self.currSortSection = -1
 
 
-@dataclass
+# @dataclass
 class TreeClipboard:
     def __init__(self):
         self.objects: List[Any] = []
@@ -173,7 +173,7 @@ class TreeClipboard:
         else:
             self.objStrings.append(objRepr)
 
-    def empty(self):
+    def isEmpty(self):
         if self.objects:
             return False
         else:
@@ -397,6 +397,8 @@ class TreeView(BasicTreeView):
         self.customContextMenuRequested.connect(self.openMenu)
         self.modelChanged.connect(self.onModelChanged)
         self.ctrlWheelScrolled.connect(lambda delta: self.zoom(delta=delta))
+        self.updateTreeClipboard()
+        QApplication.clipboard().dataChanged.connect(self.updateTreeClipboard)
 
     def onModelChanged(self, model: StandardTable):
         self.selectionModel().currentChanged.connect(self.onCurrentChanged)
@@ -425,7 +427,6 @@ class TreeView(BasicTreeView):
 
     def updateActions(self, index: QModelIndex):
         if self.editEnabled:
-            self.updateTreeClipboard()
             self.pasteAct.setEnabled(self.isPasteOk(index))
             self.updateCopyCutDelActs(index)
             self.updateEditActs(index)
@@ -546,10 +547,11 @@ class TreeView(BasicTreeView):
             self.pasteAct.setEnabled(False)
 
     def isPasteOk(self, index: QModelIndex) -> bool:
-        if self.treeClipboard.empty() or not index.isValid():
+        if self.treeClipboard.isEmpty() or not index.isValid():
             return False
 
-        obj2paste = self.treeClipboard.objects[0]
+        obj2paste = self.treeClipboard.objects[-1]
+        objStr2paste = self.treeClipboard.objStrings[-1]
         targetTypeHint = index.data(TYPE_HINT_ROLE)
 
         try:
@@ -557,7 +559,10 @@ class TreeView(BasicTreeView):
                 return True
             targetObj = index.data(OBJECT_ROLE)
             if isIterable(targetObj):
-                return checkType(obj2paste, getIterItemTypeHint(targetTypeHint))
+                if checkType(obj2paste, getIterItemTypeHint(targetTypeHint)):
+                    return True
+            if checkType(objStr2paste, targetTypeHint):
+                return True
         except (AttributeError, TypeError) as e:
             logging.exception(e)
         return False
@@ -567,7 +572,7 @@ class TreeView(BasicTreeView):
         # If treeObjClipboard is empty and user have something in txtInSystemClipboard
         if not txtInSystemClipboard:
             return
-        elif self.treeClipboard.empty():
+        elif self.treeClipboard.isEmpty():
             self.treeClipboard.append(txtInSystemClipboard)
         # If text in clipboard and in treeObjClipboard doesn't match, last copy element is not from AASM and is actual
         elif self.treeClipboard.objStrings[-1] != txtInSystemClipboard:
@@ -575,7 +580,7 @@ class TreeView(BasicTreeView):
             self.treeClipboard.append(txtInSystemClipboard)
 
     def onPaste(self):
-        obj2paste = self.treeClipboard.objects[0]
+        obj2paste = self.treeClipboard.objects[-1]
         index = self.currentIndex()
         targetParentObj = index.parent().data(OBJECT_ROLE)
         targetObj = index.data(OBJECT_ROLE)
