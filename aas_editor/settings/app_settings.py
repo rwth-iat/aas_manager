@@ -135,3 +135,4 @@ class AppSettings:
     # If True, submodels are written to separate AASX parts
     # instead of being included in the AAS part with in the AASX package.
     ALL_SUBMODEL_REFS_TO_AAS = Setting('allSubmodelRefsToAas', True, bool)
+    WRITE_PRETTY_JSON = Setting('writePrettyJson', False, bool)

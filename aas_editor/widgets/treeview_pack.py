@@ -24,7 +24,7 @@ from typing import Optional
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex, QSettings, QPoint
 from PyQt5.QtGui import QDropEvent, QDragEnterEvent, QKeyEvent
-from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QMenu, QWidget
+from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QMenu, QWidget, QDialog, QApplication
 from basyx.aas.adapter.aasx import AASXReader, DictSupplementaryFileContainer
 from basyx.aas.adapter.json import read_aas_json_file
 from basyx.aas.adapter.xml import read_aas_xml_file
@@ -77,6 +77,7 @@ class PackHeaderView(HeaderView):
             showColumns4typeMenu.addAction(showColumnsAct)
 
         showColumnsListMenu = self.menu.addMenu("Show custom column list")
+        showColumnsListMenu.setToolTip("To manage custom lists, edit custom_column_lists.json")
         for listname in self.customLists:
             sectionNames = self.customLists[listname]
             showColumnsAct = QAction(f"{listname}", self,
@@ -87,11 +88,18 @@ class PackHeaderView(HeaderView):
             showColumnsListMenu.addAction(showColumnsAct)
 
         self.menu.addSeparator()
-        unchooseAllAct = QAction("Hide all columns", self,
-                                 toolTip="Hide all columns",
-                                 statusTip="Hide all columns",
-                                 triggered=lambda: self.hideAllSections())
-        self.menu.addAction(unchooseAllAct)
+
+        showAllColAct = QAction("Show all columns", self,
+                                toolTip="Show all columns",
+                                statusTip="Show all columns",
+                                triggered=lambda: self.showAllSections())
+        self.menu.addAction(showAllColAct)
+
+        hideAllColAct = QAction("Hide all columns", self,
+                                toolTip="Hide all columns",
+                                statusTip="Hide all columns",
+                                triggered=lambda: self.hideAllSections())
+        self.menu.addAction(hideAllColAct)
 
     def onShowListOfSectionsAct(self):
         action: QAction = self.sender()
@@ -141,20 +149,24 @@ class PackTreeView(TreeView):
 
         # Read the aasx file and store it in DictObjectStore in dictionary fileObjDict.
         for file in files:
-            fileType = file.suffix.lower().strip()
-            if fileType == ".xml":
-                objStore = read_aas_xml_file(file.as_posix())
-            elif fileType == ".json":
-                with open(file, "r") as f:  # TODO change if aas changes
-                    objStore = read_aas_json_file(f)
-            elif fileType == ".aasx":
-                objStore = DictObjectStore()
-                fileStore = DictSupplementaryFileContainer()  # prosto tak
-                reader = AASXReader(file.as_posix())
-                reader.read_into(objStore, fileStore)
-            else:
-                raise TypeError("Wrong file type:", self.file.suffix)
-            self.filesObjStores[file.name] = objStore
+            try:
+                fileType = file.suffix.lower().strip()
+                if fileType == ".xml":
+                    objStore = read_aas_xml_file(file.as_posix())
+                elif fileType == ".json":
+                    with open(file, "r") as f:  # TODO change if aas changes
+                        objStore = read_aas_json_file(f)
+                elif fileType == ".aasx":
+                    objStore = DictObjectStore()
+                    fileStore = DictSupplementaryFileContainer()  # prosto tak
+                    reader = AASXReader(file.as_posix())
+                    reader.read_into(objStore, fileStore)
+                else:
+                    raise TypeError("Wrong file type:", self.file.suffix)
+                self.filesObjStores[file.name] = objStore
+            except Exception as e:
+                # If a package is with an error, that file will be skipped.
+                logging.exception(f"Error while reading {file}: {e}. Submodels can not be read")
 
     @property
     def defaultNewFileTypeFilter(self):
@@ -256,8 +268,8 @@ class PackTreeView(TreeView):
         action = self.sender()
         if action:
             submodel = copy.deepcopy(action.data())
-            self.treeObjClipboard.clear()
-            self.treeObjClipboard.append(submodel)
+            self.treeClipboard.clear()
+            self.treeClipboard.append(submodel)
             self.pasteAct.trigger()
 
     def onEditCreate(self, objVal=None, index=QModelIndex()) -> bool:
@@ -292,7 +304,6 @@ class PackTreeView(TreeView):
         if action:
             typ = action.text()
             self.defaultNewFileTypeFilter = FILE_TYPE_FILTERS[typ]
-
 
     # noinspection PyUnresolvedReferences
     def initMenu(self):
@@ -372,13 +383,13 @@ class PackTreeView(TreeView):
             self.addAct.setText("Add package")
 
     def isPasteOk(self, index: QModelIndex) -> bool:
-        if not self.treeObjClipboard or not index.isValid():
+        if self.treeClipboard.isEmpty() or not index.isValid():
             return False
 
         if super(PackTreeView, self).isPasteOk(index):
             return True
 
-        obj2paste = self.treeObjClipboard[0]
+        obj2paste = self.treeClipboard.objects[-1]
         currObj = index.data(OBJECT_ROLE)
 
         if ClassesInfo.addType(type(currObj)) and isinstance(obj2paste, ClassesInfo.addType(type(currObj))):
@@ -475,7 +486,21 @@ class PackTreeView(TreeView):
 
     def openPack(self, file: str) -> typing.Union[bool, Package]:
         try:
-            pack = Package(file)
+            try:
+                pack = Package(file, failsafe=False)
+            except Exception as e:
+                msgBox = QMessageBox()
+                msgBox.setIcon(QMessageBox.Warning)
+                msgBox.setText(f"Error while reading package:\n{file}")
+                msgBox.setInformativeText("Do you still want to open it?\nSome objects may be missing or incorrect.")
+                msgBox.setStandardButtons(QMessageBox.Cancel | QMessageBox.Yes)
+                msgBox.setDefaultButton(QMessageBox.Yes)
+                msgBox.setDetailedText(f"{e}")
+                ret = msgBox.exec()
+                if ret == QMessageBox.Yes:
+                    pack = Package(file, failsafe=True)
+                else:
+                    return False
             absFile = pack.file.absolute().as_posix()
             self.updateRecentFiles(absFile)
         except Exception as e:
@@ -691,7 +716,7 @@ class PackTreeView(TreeView):
         if attrName in (OBJECT_COLUMN_NAME, OBJECT_VALUE_COLUMN_NAME):
             return super(PackTreeView, self).isPasteOk(index)
         else:
-            if not self.treeObjClipboard or not index.isValid():
+            if self.treeClipboard.isEmpty() or not index.isValid():
                 return False
 
             try:
@@ -701,7 +726,7 @@ class PackTreeView(TreeView):
                 # print(e)
                 return False
 
-            obj2paste = self.treeObjClipboard[0]
+            obj2paste = self.treeClipboard.objects[-1]
             targetTypeHint = attrTypehint
 
             try:
@@ -718,7 +743,7 @@ class PackTreeView(TreeView):
         if attrName in (OBJECT_COLUMN_NAME, OBJECT_VALUE_COLUMN_NAME):
             super(PackTreeView, self).onPaste()
         else:
-            obj2paste = self.treeObjClipboard[0]
+            obj2paste = self.treeClipboard.objects[-1]
             targetParentObj = index.data(OBJECT_ROLE)
             targetTypeHint = util_type.getAttrTypeHint(type(index.data(OBJECT_ROLE)), attrName, delOptional=False)
             reqAttrsDict = getReqParams4init(type(obj2paste), rmDefParams=True)
