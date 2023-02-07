@@ -24,7 +24,7 @@ from typing import Optional
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex, QSettings, QPoint
 from PyQt5.QtGui import QDropEvent, QDragEnterEvent, QKeyEvent
-from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QMenu, QWidget, QDialog
+from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QMenu, QWidget, QDialog, QApplication
 from basyx.aas.adapter.aasx import AASXReader, DictSupplementaryFileContainer
 from basyx.aas.adapter.json import read_aas_json_file
 from basyx.aas.adapter.xml import read_aas_xml_file
@@ -268,8 +268,8 @@ class PackTreeView(TreeView):
         action = self.sender()
         if action:
             submodel = copy.deepcopy(action.data())
-            self.treeObjClipboard.clear()
-            self.treeObjClipboard.append(submodel)
+            self.treeClipboard.clear()
+            self.treeClipboard.append(submodel)
             self.pasteAct.trigger()
 
     def onEditCreate(self, objVal=None, index=QModelIndex()) -> bool:
@@ -304,7 +304,6 @@ class PackTreeView(TreeView):
         if action:
             typ = action.text()
             self.defaultNewFileTypeFilter = FILE_TYPE_FILTERS[typ]
-
 
     # noinspection PyUnresolvedReferences
     def initMenu(self):
@@ -384,13 +383,13 @@ class PackTreeView(TreeView):
             self.addAct.setText("Add package")
 
     def isPasteOk(self, index: QModelIndex) -> bool:
-        if not self.treeObjClipboard or not index.isValid():
+        if self.treeClipboard.isEmpty() or not index.isValid():
             return False
 
         if super(PackTreeView, self).isPasteOk(index):
             return True
 
-        obj2paste = self.treeObjClipboard[0]
+        obj2paste = self.treeClipboard.objects[-1]
         currObj = index.data(OBJECT_ROLE)
 
         if ClassesInfo.addType(type(currObj)) and isinstance(obj2paste, ClassesInfo.addType(type(currObj))):
@@ -717,7 +716,7 @@ class PackTreeView(TreeView):
         if attrName in (OBJECT_COLUMN_NAME, OBJECT_VALUE_COLUMN_NAME):
             return super(PackTreeView, self).isPasteOk(index)
         else:
-            if not self.treeObjClipboard or not index.isValid():
+            if self.treeClipboard.isEmpty() or not index.isValid():
                 return False
 
             try:
@@ -727,7 +726,7 @@ class PackTreeView(TreeView):
                 # print(e)
                 return False
 
-            obj2paste = self.treeObjClipboard[0]
+            obj2paste = self.treeClipboard.objects[-1]
             targetTypeHint = attrTypehint
 
             try:
@@ -744,7 +743,7 @@ class PackTreeView(TreeView):
         if attrName in (OBJECT_COLUMN_NAME, OBJECT_VALUE_COLUMN_NAME):
             super(PackTreeView, self).onPaste()
         else:
-            obj2paste = self.treeObjClipboard[0]
+            obj2paste = self.treeClipboard.objects[-1]
             targetParentObj = index.data(OBJECT_ROLE)
             targetTypeHint = util_type.getAttrTypeHint(type(index.data(OBJECT_ROLE)), attrName, delOptional=False)
             reqAttrsDict = getReqParams4init(type(obj2paste), rmDefParams=True)

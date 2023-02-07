@@ -9,7 +9,7 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 import logging
 import time
-from typing import Optional, Any
+from typing import Optional, Any, List
 
 from PyQt5.QtCore import Qt, pyqtSignal, QModelIndex, QTimer, QAbstractItemModel, QPoint
 from PyQt5.QtGui import QClipboard, QPalette, QColor, QMouseEvent, QKeyEvent
@@ -156,13 +156,37 @@ class HeaderView(QHeaderView):
             self.currSortSection = -1
 
 
+# @dataclass
+class TreeClipboard:
+    def __init__(self):
+        self.objects: List[Any] = []
+        self.objStrings: List[str] = []
+
+    def clear(self):
+        self.objects.clear()
+        self.objStrings.clear()
+
+    def append(self, obj, objRepr: str = None):
+        self.objects.append(obj)
+        if objRepr is None:
+            self.objStrings.append(str(obj))
+        else:
+            self.objStrings.append(objRepr)
+
+    def isEmpty(self):
+        if self.objects:
+            return False
+        else:
+            return True
+
+
 class TreeView(BasicTreeView):
     openInCurrTabClicked = pyqtSignal(QModelIndex)
     openInNewTabClicked = pyqtSignal(QModelIndex)
     openInBgTabClicked = pyqtSignal(QModelIndex)
     openInNewWindowClicked = pyqtSignal(QModelIndex)
 
-    treeObjClipboard = []
+    treeClipboard = TreeClipboard()
 
     def __init__(self, parent=None, editEnabled: bool = True, **kwargs):
         super(TreeView, self).__init__(parent, **kwargs)
@@ -373,6 +397,8 @@ class TreeView(BasicTreeView):
         self.customContextMenuRequested.connect(self.openMenu)
         self.modelChanged.connect(self.onModelChanged)
         self.ctrlWheelScrolled.connect(lambda delta: self.zoom(delta=delta))
+        self.updateTreeClipboard()
+        QApplication.clipboard().dataChanged.connect(self.updateTreeClipboard)
 
     def onModelChanged(self, model: StandardTable):
         self.selectionModel().currentChanged.connect(self.onCurrentChanged)
@@ -510,20 +536,22 @@ class TreeView(BasicTreeView):
     def onCopy(self):
         index = self.currentIndex()
         data2copy = index.data(COPY_ROLE)
-        self.treeObjClipboard.clear()
-        self.treeObjClipboard.append(data2copy)
+        text2copy = index.data(Qt.DisplayRole)
+        self.treeClipboard.clear()
+        self.treeClipboard.append(data2copy, objRepr=text2copy)
         clipboard = QApplication.clipboard()
-        clipboard.setText(index.data(Qt.DisplayRole), QClipboard.Clipboard)
+        clipboard.setText(text2copy, QClipboard.Clipboard)
         if self.isPasteOk(index):
             self.pasteAct.setEnabled(True)
         else:
             self.pasteAct.setEnabled(False)
 
     def isPasteOk(self, index: QModelIndex) -> bool:
-        if not self.treeObjClipboard or not index.isValid():
+        if self.treeClipboard.isEmpty() or not index.isValid():
             return False
 
-        obj2paste = self.treeObjClipboard[0]
+        obj2paste = self.treeClipboard.objects[-1]
+        objStr2paste = self.treeClipboard.objStrings[-1]
         targetTypeHint = index.data(TYPE_HINT_ROLE)
 
         try:
@@ -531,14 +559,28 @@ class TreeView(BasicTreeView):
                 return True
             targetObj = index.data(OBJECT_ROLE)
             if isIterable(targetObj):
-                return checkType(obj2paste, getIterItemTypeHint(targetTypeHint))
+                if checkType(obj2paste, getIterItemTypeHint(targetTypeHint)):
+                    return True
+            if checkType(objStr2paste, targetTypeHint):
+                return True
         except (AttributeError, TypeError) as e:
             logging.exception(e)
-            # print(e)
         return False
 
+    def updateTreeClipboard(self):
+        txtInSystemClipboard = QApplication.clipboard().text()
+        # If treeObjClipboard is empty and user have something in txtInSystemClipboard
+        if not txtInSystemClipboard:
+            return
+        elif self.treeClipboard.isEmpty():
+            self.treeClipboard.append(txtInSystemClipboard)
+        # If text in clipboard and in treeObjClipboard doesn't match, last copy element is not from AASM and is actual
+        elif self.treeClipboard.objStrings[-1] != txtInSystemClipboard:
+            self.treeClipboard.clear()
+            self.treeClipboard.append(txtInSystemClipboard)
+
     def onPaste(self):
-        obj2paste = self.treeObjClipboard[0]
+        obj2paste = self.treeClipboard.objects[-1]
         index = self.currentIndex()
         targetParentObj = index.parent().data(OBJECT_ROLE)
         targetObj = index.data(OBJECT_ROLE)
