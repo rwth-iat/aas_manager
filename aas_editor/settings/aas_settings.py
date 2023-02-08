@@ -435,7 +435,14 @@ CLASSES_INFO = {
         HIDDEN_ATTRS: ("value",),
         ITERABLE_ATTRS: ("value",),
         CHANGED_PARENT_OBJ: "value",
-        ADD_ACT_AAS_TXT: "Add collection submodel element",
+        ADD_ACT_AAS_TXT: "Add submodel element to collection",
+        ADD_TYPE: SubmodelElement,
+    },
+    SubmodelElementList: {
+        HIDDEN_ATTRS: ("value",),
+        ITERABLE_ATTRS: ("value",),
+        CHANGED_PARENT_OBJ: "value",
+        ADD_ACT_AAS_TXT: "Add submodel element to list",
         ADD_TYPE: SubmodelElement,
     },
     Entity: {
