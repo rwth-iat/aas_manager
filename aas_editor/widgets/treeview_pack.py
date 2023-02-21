@@ -16,6 +16,7 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 import copy
+import json
 import logging
 import typing
 from pathlib import Path
@@ -23,10 +24,10 @@ from typing import Optional
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex, QSettings, QPoint
-from PyQt5.QtGui import QDropEvent, QDragEnterEvent, QKeyEvent
+from PyQt5.QtGui import QDropEvent, QDragEnterEvent, QKeyEvent, QClipboard
 from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QMenu, QWidget, QDialog, QApplication
 from basyx.aas.adapter.aasx import AASXReader, DictSupplementaryFileContainer
-from basyx.aas.adapter.json import read_aas_json_file
+from basyx.aas.adapter.json import read_aas_json_file, AASToJsonEncoder
 from basyx.aas.adapter.xml import read_aas_xml_file
 from basyx.aas.model import DictObjectStore, Submodel
 
@@ -34,10 +35,12 @@ from aas_editor.delegates import EditDelegate
 from aas_editor.package import Package, StoredFile
 from aas_editor.settings import FILTER_AAS_FILES, CLASSES_INFO, PACKVIEW_ATTRS_INFO, \
     FILE_TYPE_FILTERS, NOT_GIVEN, REFERABLE_INHERITORS_ATTRS
-from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, \
+from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE, \
+    MAX_RECENT_FILES, ACPLT, \
     APPLICATION_NAME, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, \
     TYPE_ROLE, \
-    CLEAR_ROW_ROLE, AppSettings, COLUMN_NAME_ROLE, OBJECT_COLUMN_NAME, OBJECT_VALUE_COLUMN_NAME
+    CLEAR_ROW_ROLE, AppSettings, COLUMN_NAME_ROLE, OBJECT_COLUMN_NAME, \
+    OBJECT_VALUE_COLUMN_NAME, COPY_ROLE
 from aas_editor.settings.shortcuts import SC_OPEN, SC_SAVE_ALL
 from aas_editor.settings.icons import NEW_PACK_ICON, OPEN_ICON, OPEN_DRAG_ICON, SAVE_ICON, SAVE_ALL_ICON, \
     ADD_ICON
@@ -182,6 +185,11 @@ class PackTreeView(TreeView):
         self.addAct.setText("Add package")
         self.addAct.setEnabled(True)
 
+        self.copyJsonAct = QAction("Copy as JSON", self,
+                                   statusTip="Copy the object in JSON",
+                                   triggered=lambda: self.onJsonCopy(),
+                                   enabled=True)
+
         self.newPackAct = QAction(NEW_PACK_ICON, "&New AAS file", self,
                                   statusTip="Create new AAS file",
                                   triggered=lambda: self.newPackWithDialog(),
@@ -308,6 +316,8 @@ class PackTreeView(TreeView):
     # noinspection PyUnresolvedReferences
     def initMenu(self):
         super(PackTreeView, self).initMenu()
+        self.attrsMenu.insertAction(self.pasteAct, self.copyJsonAct)
+
         self.attrsMenu.addSeparator()
         self.attrsMenu.addAction(self.openPackAct)
         self.attrsMenu.addAction(self.saveAct)
@@ -442,6 +452,15 @@ class PackTreeView(TreeView):
             self.addFileWithDialog(parent)
             return
         super(PackTreeView, self).addItemWithDialog(parent, objTypeHint, objVal, title, rmDefParams, **kwargs)
+
+    def onJsonCopy(self):
+        index = self.currentIndex()
+        data2copy = index.data(COPY_ROLE)
+        json2copy = json.dumps(data2copy, cls=AASToJsonEncoder, indent=2)
+        self.treeClipboard.clear()
+        self.treeClipboard.append(json2copy, objRepr=json2copy)
+        clipboard = QApplication.clipboard()
+        clipboard.setText(json2copy, QClipboard.Clipboard)
 
     def newPackWithDialog(self, filter=FILTER_AAS_FILES):
         saved = False
