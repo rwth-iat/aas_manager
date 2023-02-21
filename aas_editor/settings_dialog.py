@@ -84,18 +84,10 @@ class SettingsDialog(QDialog):
             RadioBtnsGroupBox(self, title="Save JSON in pretty style",
                               options={"Yes": True, "No": False},
                               appSetting=AppSettings.WRITE_PRETTY_JSON),
-            RadioBtnsGroupBox(self, title="Save submodels in separate files within AASX file",
-                              options={"Yes": True, "No": False},
-                              appSetting=AppSettings.SUBMODEL_SPLIT_PARTS),
             RadioBtnsGroupBox(self, title="Automatically add references of existing submodels to the first AAS when "
                                           "saving file",
                               options={"Yes": True, "No": False},
                               appSetting=AppSettings.ALL_SUBMODEL_REFS_TO_AAS),
-            RadioBtnsGroupBox(self,
-                              title="Automatically add references of existing concept descriptions to the first AAS "
-                                    "when saving file",
-                              options={"Yes": True, "No": False},
-                              appSetting=AppSettings.ALL_CD_REFS_TO_AAS)
             ]
 
         self.layout = QVBoxLayout()
