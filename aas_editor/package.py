@@ -102,7 +102,10 @@ class Package:
             write_aas_xml_file(self.file.as_posix(), self.objStore)
         elif fileType == ".json": #FIXME: if file in write_aas_xml_file() changes
             with open(self.file.as_posix(), "w") as fileIO:
-                write_aas_json_file(fileIO, self.objStore)
+                if self.writePrettyJson:
+                    write_aas_json_file(fileIO, self.objStore, indent=4)
+                else:
+                    write_aas_json_file(fileIO, self.objStore)
         elif fileType == ".aasx":
             with AASXWriter(self.file.as_posix()) as writer:
                 aas_ids = []
