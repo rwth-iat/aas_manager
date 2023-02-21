@@ -453,9 +453,8 @@ CLASSES_INFO = {
         ADD_TYPE: SubmodelElement,
     },
     ModelReference: {
-        DEFAULT_PARAMS_TO_HIDE: {"target_type": Identifiable},
         PARAMS_TO_ATTRS: {
-            "target_type": "type"
+            "type_": "type"
         },
     },
     Key: {
