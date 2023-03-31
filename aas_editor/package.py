@@ -78,9 +78,14 @@ class Package:
     def _read(self, failsafe):
         fileType = self.file.suffix.lower().strip()
         if fileType == ".xml":
-            self.objStore = read_aas_xml_file(self.file.as_posix(), failsafe=failsafe)
+            # The file must be opened in binary mode! The XML writer will handle
+            # character encoding internally.
+            with open(self.file, 'rb') as xml_file:
+                self.objStore = read_aas_xml_file(xml_file, failsafe=failsafe)
         elif fileType == ".json":
-            with open(self.file, "r") as f:  # TODO change if aas changes
+            # Using 'utf-8-sig' is recommended to handle unicode Byte Order
+            # Marks (BOM) correctly.
+            with open(self.file, "r", encoding='utf-8-sig') as f:
                 self.objStore = read_aas_json_file(f, failsafe=failsafe)
         elif fileType == ".aasx":
             reader = AASXReader(self.file.as_posix())
@@ -107,11 +112,13 @@ class Package:
             self.file: Path = file
 
         fileType = self.file.suffix.lower().strip()
-        if fileType == ".xml": #FIXME: if file in write_aas_xml_file() changes
-            # with open(self.file.as_posix(), "w") as fileIO:
-            write_aas_xml_file(self.file.as_posix(), self.objStore)
-        elif fileType == ".json": #FIXME: if file in write_aas_xml_file() changes
-            with open(self.file.as_posix(), "w") as fileIO:
+        if fileType == ".xml":
+            # The file must be opened in binary mode! The XML writer will handle
+            # character encoding internally.
+            with open(self.file.as_posix(), 'wb') as xml_file:
+                write_aas_xml_file(xml_file, self.objStore)
+        elif fileType == ".json":
+            with open(self.file.as_posix(), "w", encoding='utf-8') as fileIO:
                 indent = 2 if self.writePrettyJson else None
                 write_aas_json_file(fileIO, self.objStore, indent=indent)
 
