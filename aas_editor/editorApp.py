@@ -9,6 +9,7 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 import json
 import webbrowser
+import os
 
 from PyQt5.QtCore import QModelIndex
 from PyQt5.QtGui import *
@@ -72,6 +73,10 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                                     statusTip="Report an error found",
                                     triggered=lambda: webbrowser.open(REPORT_ERROR_LINK))
 
+        self.openDocumentationAct = QAction("AAS Documentation", self,
+                                         statusTip="Open Details of the AAS",
+                                         triggered=lambda: self.openDocumentation())
+
         # Theme actions
         self.themeActs = []
         for theme in THEMES:
@@ -100,6 +105,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menuFile = QMenu("&File", self.menubar)
         self.menuFile.addAction(self.mainTreeView.newPackAct)
         self.menuFile.addAction(self.mainTreeView.openPackAct)
+        # self.menuFile.addAction(self.mainTreeView.openPackFromServerAct)
 
         self.menuFile.addSeparator()
         self.menuOpenRecent = QMenu("Open Recent", self.menuFile)
@@ -155,6 +161,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menuHelp = QMenu("&Help", self.menubar)
         self.menuHelp.addAction(self.aboutDialogAct)
         self.menuHelp.addAction(self.reportBugAct)
+        self.menuHelp.addAction(self.openDocumentationAct)
 
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
@@ -178,6 +185,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.toolBar.addAction(self.mainTreeView.saveAllAct)
         self.toolBar.addAction(self.mainTreeView.saveAct)
         self.toolBar.addAction(self.mainTreeView.openPackAct)
+        # self.toolBar.addAction(self.mainTreeView.openPackFromServerAct)
         self.toolBar.addAction(self.mainTreeView.newPackAct)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.mainTreeView.collapseAllAct)
@@ -320,3 +328,15 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         AppSettings.TABTREEVIEW_HEADER_STATE.setValue(
             self.mainTabWidget.currentWidget().attrsTreeView.header().saveState())
         # AppSettings.DEFAULT_NEW_FILETYPE_FILTER.setValue(self.packTreeView.defaultNewFileTypeFilter)
+
+    def openDocumentation(self):
+        # TODO: The location of the pdf file?
+        pdf_path = "aas_editor/additional/Details_of_the_Asset_Administration_Shell_Part1_V3.pdf"
+        os_name = os.name
+        if os_name == "nt":
+            os.system(f'start "" "{pdf_path}"')
+        elif os_name == "posix":
+            os.system(f'open "{pdf_path}"')
+        else:
+            raise OSError(f"Unsupported operating system: {os_name}")
+
