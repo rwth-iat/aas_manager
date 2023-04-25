@@ -24,7 +24,8 @@ from typing import Optional
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex, QSettings, QPoint
 from PyQt5.QtGui import QDropEvent, QDragEnterEvent, QKeyEvent
-from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QMenu, QWidget, QDialog
+from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QMenu, QWidget, QDialog, QVBoxLayout, QLabel, QLineEdit, \
+    QHBoxLayout, QPushButton
 from basyx.aas.adapter.aasx import AASXReader, DictSupplementaryFileContainer
 from basyx.aas.adapter.json import read_aas_json_file
 from basyx.aas.adapter.xml import read_aas_xml_file
@@ -192,6 +193,11 @@ class PackTreeView(TreeView):
                                    statusTip="Open AAS file",
                                    triggered=lambda: self.openPackWithDialog(),
                                    enabled=True)
+
+        self.connectServerAct = QAction("Connect CouchDB", self,
+                                        statusTip="Connect CouchDB server",
+                                        triggered=lambda: self.connectServer(),
+                                        enabled=True)
 
         # Recent files actions
         self.recentFileActs = []
@@ -753,3 +759,70 @@ class PackTreeView(TreeView):
             # else paste data with dialog for asking to check req. attrs
             if util_type.checkType(obj2paste, targetTypeHint):
                 self._onPasteReplace(index, obj2paste, withDialog=bool(reqAttrsDict))
+
+    def connectServer(self):
+        dialog = QDialog()
+        dialog.setWindowTitle("Enter Credentials")
+        main_layout = QVBoxLayout()
+        dialog.setLayout(main_layout)
+
+        label_width = 100
+
+        url_label = QLabel("URL:")
+        url_label.setFixedWidth(label_width)
+        url_edit = QLineEdit()
+        url_layout = QHBoxLayout()
+        url_layout.addWidget(url_label)
+        url_layout.addWidget(url_edit, stretch=1)
+
+        database_label = QLabel("Database:")
+        database_label.setFixedWidth(label_width)
+        database_edit = QLineEdit()
+        database_layout = QHBoxLayout()
+        database_layout.addWidget(database_label)
+        database_layout.addWidget(database_edit, stretch=1)
+
+        username_label = QLabel("User Name:")
+        username_label.setFixedWidth(label_width)
+        username_edit = QLineEdit()
+        username_layout = QHBoxLayout()
+        username_layout.addWidget(username_label)
+        username_layout.addWidget(username_edit, stretch=1)
+
+        password_label = QLabel("Password:")
+        password_label.setFixedWidth(label_width)
+        password_edit = QLineEdit()
+        password_edit.setEchoMode(QLineEdit.Password)
+        password_layout = QHBoxLayout()
+        password_layout.addWidget(password_label)
+        password_layout.addWidget(password_edit, stretch=1)
+
+        submit_button = QPushButton("Submit")
+
+        def on_submit():
+            url = url_edit.text()
+            database = database_edit.text()
+            username = username_edit.text()
+            password = password_edit.text()
+            # TODO: Open CouchDB server with this data. Open Webpage?
+            print(f"URL: {url}")
+            print(f"Database: {database}")
+            print(f"User Name: {username}")
+            print(f"Password: {password}")
+
+            dialog.accept()
+
+        submit_button.clicked.connect(on_submit)
+
+        main_layout.addLayout(url_layout)
+        main_layout.addLayout(database_layout)
+        main_layout.addLayout(username_layout)
+        main_layout.addLayout(password_layout)
+        main_layout.addWidget(submit_button)
+
+        result = dialog.exec()
+
+        if result == QDialog.Accepted:
+            print("Submitted successfully.")
+        else:
+            print("Dialog canceled.")
