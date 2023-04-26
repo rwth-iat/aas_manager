@@ -2,7 +2,7 @@
 <br />
 <p align="center">
   <a href="https://github.com/zrgt/pygui40aas">
-    <img src="aas_editor/icons/full_logo.svg" alt="Logo" width="240" height="80">
+    <img src="aas_editor/icons/full_logo3.svg" alt="Logo" width="240" height="80">
   </a>
   <p align="center">
     AAS Manager is a free, open source, cross-platform visual viewer/editor based on <a href="https://www.riverbankcomputing.com/software/pyqt/"><strong>PyQt</strong></a> Framework and <a href="https://github.com/eclipse-basyx/basyx-python-sdk"><strong>Eclipse BaSyx Python SDK</strong></a>

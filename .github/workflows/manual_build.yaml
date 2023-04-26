@@ -20,7 +20,7 @@ jobs:
         python-version: 3.7
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
+        python -m pip install pip==23.0.1
         pip install qtawesome==1.0.3
         pip install PyQt5==5.15.4
         pip install -r requirements.txt
