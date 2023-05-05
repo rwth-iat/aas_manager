@@ -20,16 +20,21 @@ import logging
 import typing
 from pathlib import Path
 from typing import Optional
+import basyx
+
+import basyx.aas.backend.couchdb
+from configparser import ConfigParser
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex, QSettings, QPoint
 from PyQt5.QtGui import QDropEvent, QDragEnterEvent, QKeyEvent
 from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QMenu, QWidget, QDialog, QVBoxLayout, QLabel, QLineEdit, \
-    QHBoxLayout, QPushButton
+    QHBoxLayout, QPushButton, QListWidget
 from basyx.aas.adapter.aasx import AASXReader, DictSupplementaryFileContainer
 from basyx.aas.adapter.json import read_aas_json_file
 from basyx.aas.adapter.xml import read_aas_xml_file
 from basyx.aas.model import DictObjectStore, Submodel
+from basyx.aas import model
 
 from aas_editor.delegates import EditDelegate
 from aas_editor.package import Package, StoredFile
@@ -124,6 +129,7 @@ class PackTreeView(TreeView):
 
     def __init__(self, parent=None, **kwargs):
         self.filesObjStores = dict()
+        self.filesCouchDBStore: model.DictObjectStore[model.Identifiable] = model.DictObjectStore()
         self.scanFolderForExistFiles()
         super(PackTreeView, self).__init__(parent,
                                            emptyViewMsg=self.EMPTY_VIEW_MSG,
@@ -194,10 +200,10 @@ class PackTreeView(TreeView):
                                    triggered=lambda: self.openPackWithDialog(),
                                    enabled=True)
 
-        self.connectServerAct = QAction("Connect CouchDB", self,
-                                        statusTip="Connect CouchDB server",
-                                        triggered=lambda: self.connectServer(),
-                                        enabled=True)
+        self.openServerAct = QAction("Connect CouchDB", self,
+                                     statusTip="Connect CouchDB server",
+                                     triggered=lambda: self.openServer(),
+                                     enabled=True)
 
         # Recent files actions
         self.recentFileActs = []
@@ -760,69 +766,164 @@ class PackTreeView(TreeView):
             if util_type.checkType(obj2paste, targetTypeHint):
                 self._onPasteReplace(index, obj2paste, withDialog=bool(reqAttrsDict))
 
-    def connectServer(self):
+
+    def createServerConnection(self, url, database, username, password):
+        basyx.aas.backend.couchdb.register_credentials(url, username, password)
+        object_store = basyx.aas.backend.couchdb.CouchDBObjectStore(url, database)
+
+        for obj in object_store:
+            self.filesCouchDBStore.add(obj)
+
+    def onSubmit(self, urlEdit, databaseEdit, usernameEdit, passwordEdit, dialog):
+        url = urlEdit.text()
+        database = databaseEdit.text()
+        username = usernameEdit.text()
+        password = passwordEdit.text()
+
+        self.createServerConnection(url, database, username, password)
+
+        dialog.accept()
+
+    def onUseConfig(self, dialog):
+        config = ConfigParser()
+        # TODO: Find better location for config file
+        config.read(Path(__file__).parent.parent.parent / 'test' / 'test_config.ini')
+
+        url = config['couchdb']['url']
+        database = config['couchdb']['database']
+        user = config['couchdb']['user']
+        password = config['couchdb']['password']
+
+        self.createServerConnection(url, database, user, password)
+
+        dialog.accept()
+
+    def openSubmitActionWindow(self, aasObjName):
+        aasObjName = aasObjName.text()
+
+        submitActionDialog = QDialog()
+        submitActionDialog.setWindowTitle("Add object")
+        submitActionLayout = QVBoxLayout()
+        submitActionDialog.setLayout(submitActionLayout)
+
+        chosenFileLabel = QLabel("Add selected object: {}".format(aasObjName))
+        submitActionLayout.addWidget(chosenFileLabel)
+
+        submitButton = QPushButton("Submit")
+
+        for obj in self.filesCouchDBStore:
+            if obj.identification.id == aasObjName:
+                choosenAASObj = obj
+
+        # TODO: Find all references in Dict and add AAS to the TreeView
+
+        submitButton.clicked.connect(lambda: submitActionDialog.close())
+        submitActionLayout.addWidget(submitButton)
+
+        submitActionDialog.exec()
+
+    def openFilesDialog(self, aasObjects):
+        filesDialog = QDialog()
+        filesDialog.setWindowTitle("Files List")
+        filesLayout = QVBoxLayout()
+        filesDialog.setLayout(filesLayout)
+
+        filesListWidget = QListWidget()
+        for aasObj in aasObjects:
+            file = aasObj.identification.id
+            filesListWidget.addItem(file)
+
+        filesListWidget.itemDoubleClicked.connect(self.openSubmitActionWindow)
+
+        # Create a QHBoxLayout for the buttons
+        buttonsLayout = QHBoxLayout()
+
+        # Create the "Close" button
+        closeButton = QPushButton("Close")
+        closeButton.clicked.connect(filesDialog.close)
+        buttonsLayout.addWidget(closeButton)
+
+        # Create the "Open" button
+        openButton = QPushButton("Open")
+        openButton.setEnabled(False)  # Disable the button by default
+        openButton.clicked.connect(lambda: self.openSubmitActionWindow(filesListWidget.selectedItems()[0]))
+        buttonsLayout.addWidget(openButton)
+
+        # Enable the "Open" button when an item is selected in the QListWidget
+        filesListWidget.itemSelectionChanged.connect(
+            lambda: openButton.setEnabled(len(filesListWidget.selectedItems()) > 0))
+
+
+        filesLayout.addWidget(filesListWidget)
+        filesLayout.addLayout(buttonsLayout)
+        filesDialog.exec()
+
+    def getAASObjectsFromBackend(self):
+        aasObjects = []
+        for obj in self.filesCouchDBStore:
+            if isinstance(obj, model.AssetAdministrationShell):
+                aasObjects.append(obj)
+        return aasObjects
+
+
+
+    def openServer(self):
         dialog = QDialog()
         dialog.setWindowTitle("Enter Credentials")
-        main_layout = QVBoxLayout()
-        dialog.setLayout(main_layout)
+        mainLayout = QVBoxLayout()
+        dialog.setLayout(mainLayout)
 
-        label_width = 100
+        labelWidth = 100
 
-        url_label = QLabel("URL:")
-        url_label.setFixedWidth(label_width)
-        url_edit = QLineEdit()
-        url_layout = QHBoxLayout()
-        url_layout.addWidget(url_label)
-        url_layout.addWidget(url_edit, stretch=1)
+        urlLabel = QLabel("URL:")
+        urlLabel.setFixedWidth(labelWidth)
+        urlEdit = QLineEdit()
+        urlLayout = QHBoxLayout()
+        urlLayout.addWidget(urlLabel)
+        urlLayout.addWidget(urlEdit, stretch=1)
 
-        database_label = QLabel("Database:")
-        database_label.setFixedWidth(label_width)
-        database_edit = QLineEdit()
-        database_layout = QHBoxLayout()
-        database_layout.addWidget(database_label)
-        database_layout.addWidget(database_edit, stretch=1)
+        databaseLabel = QLabel("Database:")
+        databaseLabel.setFixedWidth(labelWidth)
+        databaseEdit = QLineEdit()
+        databaseLayout = QHBoxLayout()
+        databaseLayout.addWidget(databaseLabel)
+        databaseLayout.addWidget(databaseEdit, stretch=1)
 
-        username_label = QLabel("User Name:")
-        username_label.setFixedWidth(label_width)
-        username_edit = QLineEdit()
-        username_layout = QHBoxLayout()
-        username_layout.addWidget(username_label)
-        username_layout.addWidget(username_edit, stretch=1)
+        usernameLabel = QLabel("User Name:")
+        usernameLabel.setFixedWidth(labelWidth)
+        usernameEdit = QLineEdit()
+        usernameLayout = QHBoxLayout()
+        usernameLayout.addWidget(usernameLabel)
+        usernameLayout.addWidget(usernameEdit, stretch=1)
 
-        password_label = QLabel("Password:")
-        password_label.setFixedWidth(label_width)
-        password_edit = QLineEdit()
-        password_edit.setEchoMode(QLineEdit.Password)
-        password_layout = QHBoxLayout()
-        password_layout.addWidget(password_label)
-        password_layout.addWidget(password_edit, stretch=1)
+        passwordLabel = QLabel("Password:")
+        passwordLabel.setFixedWidth(labelWidth)
+        passwordEdit = QLineEdit()
+        passwordEdit.setEchoMode(QLineEdit.Password)
+        passwordLayout = QHBoxLayout()
+        passwordLayout.addWidget(passwordLabel)
+        passwordLayout.addWidget(passwordEdit, stretch=1)
 
-        submit_button = QPushButton("Submit")
+        submitButton = QPushButton("Submit")
+        submitButton.clicked.connect(lambda: self.onSubmit(urlEdit, databaseEdit, usernameEdit, passwordEdit, dialog))
 
-        def on_submit():
-            url = url_edit.text()
-            database = database_edit.text()
-            username = username_edit.text()
-            password = password_edit.text()
-            # TODO: Open CouchDB server with this data. Open Webpage?
-            print(f"URL: {url}")
-            print(f"Database: {database}")
-            print(f"User Name: {username}")
-            print(f"Password: {password}")
+        useConfigButton = QPushButton("Use Config")
+        useConfigButton.clicked.connect(lambda: self.onUseConfig(dialog))
 
-            dialog.accept()
+        buttonsLayout = QHBoxLayout()
+        buttonsLayout.addWidget(submitButton)
+        buttonsLayout.addWidget(useConfigButton)
 
-        submit_button.clicked.connect(on_submit)
-
-        main_layout.addLayout(url_layout)
-        main_layout.addLayout(database_layout)
-        main_layout.addLayout(username_layout)
-        main_layout.addLayout(password_layout)
-        main_layout.addWidget(submit_button)
+        mainLayout.addLayout(urlLayout)
+        mainLayout.addLayout(databaseLayout)
+        mainLayout.addLayout(usernameLayout)
+        mainLayout.addLayout(passwordLayout)
+        mainLayout.addLayout(buttonsLayout)
 
         result = dialog.exec()
 
         if result == QDialog.Accepted:
             print("Submitted successfully.")
+            self.openFilesDialog(self.getAASObjectsFromBackend())
         else:
             print("Dialog canceled.")

@@ -99,7 +99,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menuFile = QMenu("&File", self.menubar)
         self.menuFile.addAction(self.mainTreeView.newPackAct)
         self.menuFile.addAction(self.mainTreeView.openPackAct)
-        self.menuFile.addAction(self.mainTreeView.connectServerAct)
+        self.menuFile.addAction(self.mainTreeView.openServerAct)
 
         self.menuFile.addSeparator()
         self.menuOpenRecent = QMenu("Open Recent", self.menuFile)
