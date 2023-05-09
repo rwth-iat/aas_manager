@@ -128,8 +128,8 @@ class PackTreeView(TreeView):
     EMPTY_VIEW_ICON = OPEN_DRAG_ICON
 
     def __init__(self, parent=None, **kwargs):
-        self.filesObjStores = dict()
-        self.filesCouchDBStore: model.DictObjectStore[model.Identifiable] = model.DictObjectStore()
+        self.copyBufferObjStores = dict()
+        self.backendObjStore: model.DictObjectStore[model.Identifiable] = model.DictObjectStore()
         self.scanFolderForExistFiles()
         super(PackTreeView, self).__init__(parent,
                                            emptyViewMsg=self.EMPTY_VIEW_MSG,
@@ -170,7 +170,7 @@ class PackTreeView(TreeView):
                     reader.read_into(objStore, fileStore)
                 else:
                     raise TypeError("Wrong file type:", self.file.suffix)
-                self.filesObjStores[file.name] = objStore
+                self.copyBufferObjStores[file.name] = objStore
             except Exception as e:
                 # If a package is with an error, that file will be skipped.
                 logging.exception(f"Error while reading {file}: {e}. Submodels can not be read")
@@ -252,15 +252,15 @@ class PackTreeView(TreeView):
                                             statusTip="Autoscroll from source",
                                             checkable=True)
 
-        self.dictCopyExistSubmodelActs = self.initDictCopyExistSubmodelActs()
+        self.existSubmodelCopyActsFromFiles: typing.Dict[str, typing.List[QAction]] = self.initExistSubmodelCopyActsFromFiles()
 
         self.autoScrollFromSrcAct.toggle()
         self.setItemDelegate(EditDelegate(self))
 
-    def initDictCopyExistSubmodelActs(self):
-        dictCopyExistSubmodelActs = {}  # {"file1": list(QAction_copySubmodel1, QAction_copySubmodel2, ...)}
+    def initExistSubmodelCopyActsFromFiles(self):
+        existSubmodelCopyActsFromFiles = {}  # {"file1": list(QAction_copySubmodel1, QAction_copySubmodel2, ...)}
         # filesObjStores contains packages and its instances
-        for file, objStore in self.filesObjStores.items():
+        for file, objStore in self.copyBufferObjStores.items():
             copyExistSubmodelActs = []
             for obj in objStore:
                 if isinstance(obj, Submodel):
@@ -273,8 +273,8 @@ class PackTreeView(TreeView):
                                                triggered=lambda: self.onAddExistingSubmodelPushed())
                     existSubmodelAct.setData(obj)
                     copyExistSubmodelActs.append(existSubmodelAct)
-            dictCopyExistSubmodelActs[file] = copyExistSubmodelActs
-        return dictCopyExistSubmodelActs
+            existSubmodelCopyActsFromFiles[file] = copyExistSubmodelActs
+        return existSubmodelCopyActsFromFiles
 
     def onAddExistingSubmodelPushed(self):
         action = self.sender()
@@ -347,7 +347,7 @@ class PackTreeView(TreeView):
         self.addExistSubmodelsMenu.menuAction().setEnabled(False)
         # Add menu with a name of model.
         # dictCopyExistSubmodelActs contains the package names and the list of QActions of its submodels.
-        for filename, copyPasteSubmodelActs in self.dictCopyExistSubmodelActs.items():
+        for filename, copyPasteSubmodelActs in self.existSubmodelCopyActsFromFiles.items():
             nameMenu = self.addExistSubmodelsMenu.addMenu(filename)
             # In copyPasteSubmodelActs are QActions with submodels
             for copyPasteSubmodelAct in copyPasteSubmodelActs:
@@ -772,7 +772,7 @@ class PackTreeView(TreeView):
         object_store = basyx.aas.backend.couchdb.CouchDBObjectStore(url, database)
 
         for obj in object_store:
-            self.filesCouchDBStore.add(obj)
+            self.backendObjStore.add(obj)
 
     def onSubmit(self, urlEdit, databaseEdit, usernameEdit, passwordEdit, dialog):
         url = urlEdit.text()
@@ -780,9 +780,11 @@ class PackTreeView(TreeView):
         username = usernameEdit.text()
         password = passwordEdit.text()
 
-        self.createServerConnection(url, database, username, password)
-
-        dialog.accept()
+        try:
+            self.createServerConnection(url, database, username, password)
+            dialog.accept()
+        except Exception as e:
+            dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
 
     def onUseConfig(self, dialog):
         config = ConfigParser()
@@ -794,73 +796,85 @@ class PackTreeView(TreeView):
         user = config['couchdb']['user']
         password = config['couchdb']['password']
 
-        self.createServerConnection(url, database, user, password)
+        try:
+            self.createServerConnection(url, database, user, password)
+            dialog.accept()
+        except Exception as e:
+            dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
 
-        dialog.accept()
 
     def openSubmitActionWindow(self, aasObjName):
-        aasObjName = aasObjName.text()
 
         submitActionDialog = QDialog()
         submitActionDialog.setWindowTitle("Add object")
         submitActionLayout = QVBoxLayout()
         submitActionDialog.setLayout(submitActionLayout)
 
-        chosenFileLabel = QLabel("Add selected object: {}".format(aasObjName))
+        aasObjName = aasObjName.text()
+        chosenFileLabel = QLabel("Add this object to the local machine:\n {}".format(aasObjName))
         submitActionLayout.addWidget(chosenFileLabel)
 
         submitButton = QPushButton("Submit")
 
-        for obj in self.filesCouchDBStore:
-            if obj.identification.id == aasObjName:
-                choosenAASObj = obj
-
         # TODO: Find all references in Dict and add AAS to the TreeView
+        def submitClicked():
+            newPack = Package()
+            for obj in self.backendObjStore:
+                if obj.identification.id == aasObjName:
+                    # TODO: check resolve
+                    assetObj = obj.asset.resolve(self.backendObjStore)
+                    newPack.objStore.add(assetObj)
+                    for submodelRef in obj.submodel:
+                        submodelObj = submodelRef.resolve(self.backendObjStore)
+                        newPack.objStore.add(submodelObj)
 
-        submitButton.clicked.connect(lambda: submitActionDialog.close())
+
+
+            submitActionDialog.accept()
+
+        submitButton.clicked.connect(submitClicked)
         submitActionLayout.addWidget(submitButton)
 
         submitActionDialog.exec()
 
-    def openFilesDialog(self, aasObjects):
-        filesDialog = QDialog()
-        filesDialog.setWindowTitle("Files List")
-        filesLayout = QVBoxLayout()
-        filesDialog.setLayout(filesLayout)
+    def openAASObjectsDialog(self, aasObjects):
+        objectsDialog = QDialog()
+        objectsDialog.setWindowTitle("Files List")
+        objectsLayout = QVBoxLayout()
+        objectsDialog.setLayout(objectsLayout)
 
-        filesListWidget = QListWidget()
+        objectsListWidget = QListWidget()
         for aasObj in aasObjects:
-            file = aasObj.identification.id
-            filesListWidget.addItem(file)
+            objectsListWidget.addItem(aasObj.identification.id)
 
-        filesListWidget.itemDoubleClicked.connect(self.openSubmitActionWindow)
+        objectsListWidget.itemDoubleClicked.connect(self.openSubmitActionWindow)
 
         # Create a QHBoxLayout for the buttons
         buttonsLayout = QHBoxLayout()
 
         # Create the "Close" button
         closeButton = QPushButton("Close")
-        closeButton.clicked.connect(filesDialog.close)
+        closeButton.clicked.connect(objectsDialog.close)
         buttonsLayout.addWidget(closeButton)
 
         # Create the "Open" button
         openButton = QPushButton("Open")
         openButton.setEnabled(False)  # Disable the button by default
-        openButton.clicked.connect(lambda: self.openSubmitActionWindow(filesListWidget.selectedItems()[0]))
+        openButton.clicked.connect(lambda: self.openSubmitActionWindow(objectsListWidget.selectedItems()[0]))
         buttonsLayout.addWidget(openButton)
 
         # Enable the "Open" button when an item is selected in the QListWidget
-        filesListWidget.itemSelectionChanged.connect(
-            lambda: openButton.setEnabled(len(filesListWidget.selectedItems()) > 0))
+        objectsListWidget.itemSelectionChanged.connect(
+            lambda: openButton.setEnabled(len(objectsListWidget.selectedItems()) > 0))
 
 
-        filesLayout.addWidget(filesListWidget)
-        filesLayout.addLayout(buttonsLayout)
-        filesDialog.exec()
+        objectsLayout.addWidget(objectsListWidget)
+        objectsLayout.addLayout(buttonsLayout)
+        objectsDialog.exec()
 
     def getAASObjectsFromBackend(self):
         aasObjects = []
-        for obj in self.filesCouchDBStore:
+        for obj in self.backendObjStore:
             if isinstance(obj, model.AssetAdministrationShell):
                 aasObjects.append(obj)
         return aasObjects
@@ -924,6 +938,14 @@ class PackTreeView(TreeView):
 
         if result == QDialog.Accepted:
             print("Submitted successfully.")
-            self.openFilesDialog(self.getAASObjectsFromBackend())
+
+            if not self.backendObjStore:
+                emptyMessageBox = QMessageBox()
+                emptyMessageBox.setWindowTitle("Warning")
+                emptyMessageBox.setText("Server is empty")
+                emptyMessageBox.setStandardButtons(QMessageBox.Ok)
+                emptyMessageBox.exec()
+            else:
+                self.openAASObjectsDialog(self.getAASObjectsFromBackend())
         else:
             print("Dialog canceled.")
