@@ -128,7 +128,7 @@ class SearchBar(ToolBar):
                 return
 
     def toggleViewAction(self):
-        return QAction("searchBar", self,
+        return QAction("SearchBar", self,
                        statusTip="Show/hide search bar",
                        toggled=self.toggleView,
                        checkable=True,

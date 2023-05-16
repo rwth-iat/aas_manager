@@ -7,14 +7,7 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-#
-#  This program is made available under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-#  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-#
-#  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
+
 import copy
 import json
 import logging
@@ -40,7 +33,7 @@ from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ROL
     APPLICATION_NAME, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, \
     TYPE_ROLE, \
     CLEAR_ROW_ROLE, AppSettings, COLUMN_NAME_ROLE, OBJECT_COLUMN_NAME, \
-    OBJECT_VALUE_COLUMN_NAME, COPY_ROLE
+    OBJECT_VALUE_COLUMN_NAME, DEFAULT_COLUMNS_IN_PACKS_TABLE_TO_SHOW, COPY_ROLE
 from aas_editor.settings.shortcuts import SC_OPEN, SC_SAVE_ALL
 from aas_editor.settings.icons import NEW_PACK_ICON, OPEN_ICON, OPEN_DRAG_ICON, SAVE_ICON, SAVE_ALL_ICON, \
     ADD_ICON
@@ -62,13 +55,17 @@ class PackHeaderView(HeaderView):
         self.initMenu()
 
     def initMenu(self) -> None:
-        self.menu = QMenu(self)
+        self.menu = QMenu("Columns", self)
 
-        allColumnsMenu = self.menu.addMenu("All Columns")
+        showBasicColumnsAct = QAction("Show Basic Columns", self,
+                                      triggered=lambda: self.showSectionWithNames(DEFAULT_COLUMNS_IN_PACKS_TABLE_TO_SHOW, only=True))
+        self.menu.addAction(showBasicColumnsAct)
+
+        allColumnsMenu = self.menu.addMenu("Select Columns")
         for i in self.actions():
             allColumnsMenu.addAction(i)
 
-        showColumns4typeMenu = self.menu.addMenu("Show Columns for type")
+        showColumns4typeMenu = self.menu.addMenu("Show Columns for Attributes of Type")
         for cls in REFERABLE_INHERITORS_ATTRS:
             clsname = util_type.getTypeName(cls)
             sectionNames = REFERABLE_INHERITORS_ATTRS[cls]
@@ -79,16 +76,18 @@ class PackHeaderView(HeaderView):
             showColumnsAct.setData(sectionNames)
             showColumns4typeMenu.addAction(showColumnsAct)
 
-        showColumnsListMenu = self.menu.addMenu("Show custom column list")
-        showColumnsListMenu.setToolTip("To manage custom lists, edit custom_column_lists.json")
+        showColumnsFromListMenu = self.menu.addMenu("Show Columns From Custom List")
+        menuTip = "To manage custom lists, edit custom_column_lists.json"
+        showColumnsFromListMenu.setToolTip(menuTip)
+        showColumnsFromListMenu.setStatusTip(menuTip)
         for listname in self.customLists:
             sectionNames = self.customLists[listname]
             showColumnsAct = QAction(f"{listname}", self,
-                                     toolTip=f"Show custom list {listname}: {sectionNames}. To manage custom lists, edit custom_column_lists.json",
-                                     statusTip=f"Show custom list {listname}: {sectionNames}. To manage custom lists, edit custom_column_lists.json",
+                                     toolTip=f"Show custom list {listname}: {sectionNames}. {menuTip}",
+                                     statusTip=f"Show custom list {listname}: {sectionNames}. {menuTip}",
                                      triggered=lambda: self.onShowListOfSectionsAct())
             showColumnsAct.setData(sectionNames)
-            showColumnsListMenu.addAction(showColumnsAct)
+            showColumnsFromListMenu.addAction(showColumnsAct)
 
         self.menu.addSeparator()
 
