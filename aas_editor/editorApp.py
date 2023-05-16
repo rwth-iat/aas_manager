@@ -298,7 +298,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             packTreeViewHeader.restoreState(packTreeViewHeaderState)
         else:
             packTreeViewHeader.updateMenu()
-            packTreeViewHeader.showSectionWithNames(DEFAULT_COLUMNS_IN_PACKS_TABLE, only=True)
+            packTreeViewHeader.showSectionWithNames(DEFAULT_COLUMNS_IN_PACKS_TABLE_TO_SHOW, only=True)
         with open(AppSettings.PACKTREEVIEW_HEADER_CUSTOM_COLUMN_LISTS_FILE) as json_file:
             customLists = json.load(json_file)
             packTreeViewHeader.setCustomLists(customLists)
