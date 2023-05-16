@@ -803,30 +803,37 @@ class PackTreeView(TreeView):
             dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
 
 
-    def openSubmitActionWindow(self, aasObjName):
+    def openSubmitActionWindow(self, aasObjIDItem):
 
         submitActionDialog = QDialog()
         submitActionDialog.setWindowTitle("Add object")
         submitActionLayout = QVBoxLayout()
         submitActionDialog.setLayout(submitActionLayout)
 
-        aasObjName = aasObjName.text()
-        chosenFileLabel = QLabel("Add this object to the local machine:\n {}".format(aasObjName))
+        aasObjID = aasObjIDItem.text()
+        chosenFileLabel = QLabel("Add this object to the local machine:\n {}".format(aasObjID))
         submitActionLayout.addWidget(chosenFileLabel)
 
         submitButton = QPushButton("Submit")
 
         # TODO: Find all references in Dict and add AAS to the TreeView
         def submitClicked():
-            newPack = Package()
+            newPackage = Package()
             for obj in self.backendObjStore:
-                if obj.identification.id == aasObjName:
-                    # TODO: check resolve
+                if obj.identification.id == aasObjID:
                     assetObj = obj.asset.resolve(self.backendObjStore)
-                    newPack.objStore.add(assetObj)
+                    newPackage.objStore.add(assetObj)
+
                     for submodelRef in obj.submodel:
                         submodelObj = submodelRef.resolve(self.backendObjStore)
-                        newPack.objStore.add(submodelObj)
+                        newPackage.objStore.add(submodelObj)
+
+                    # Need to create file on the directory fisrts
+                    # Add file type to the object
+                    file = aasObjID + ".aasx"
+                    saved = self.savePack(newPackage, file)
+                    if saved:
+                        self.model().setData(QModelIndex(), newPackage, ADD_ITEM_ROLE)
 
 
 
