@@ -43,7 +43,9 @@ class HeaderView(QHeaderView):
         self.sortIndicatorChanged.connect(lambda a, b: print(a, b))
         self.currSortSection = self.sortIndicatorSection()
         self.currOrder = self.sortIndicatorOrder()
+
         self.sectionActions = {}
+        self.initShowSectionActs()
 
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.initMenu()
@@ -60,13 +62,18 @@ class HeaderView(QHeaderView):
 
     def restoreState(self, state: typing.Union[QtCore.QByteArray, bytes, bytearray]) -> bool:
         super(HeaderView, self).restoreState(state)
-        self.initShowSectionActs()
+        self.updateMenu()
+
+    def updateMenu(self):
+        self.updateShowSectionActs()
         self.initMenu()
 
-    def initShowSectionActs(self):
+    def updateShowSectionActs(self):
         for action in self.actions():
             self.removeAction(action)
+        self.initShowSectionActs()
 
+    def initShowSectionActs(self):
         sections = self.count()
         for section in range(sections):
             sectionName = self.text(section)

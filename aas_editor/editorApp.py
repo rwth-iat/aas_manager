@@ -23,6 +23,7 @@ from aas_editor import design
 from aas_editor.models import DetailedInfoTable, PacksTable
 from aas_editor.utils.util import toggleStylesheet
 from aas_editor import dialogs
+from aas_editor.widgets.treeview import HeaderView
 
 
 class EditorApp(QMainWindow, design.Ui_MainWindow):
@@ -291,10 +292,13 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             self.packTreeModel.setData(QModelIndex(), [], UNDO_ROLE)
 
         # set previous tree states
-        packTreeViewHeader = self.mainTreeView.header()
+        packTreeViewHeader: HeaderView = self.mainTreeView.header()
         packTreeViewHeaderState = AppSettings.PACKTREEVIEW_HEADER_STATE.value()
         if packTreeViewHeaderState:
             packTreeViewHeader.restoreState(packTreeViewHeaderState)
+        else:
+            packTreeViewHeader.updateMenu()
+            packTreeViewHeader.showSectionWithNames(DEFAULT_COLUMNS_IN_PACKS_TABLE, only=True)
         with open(AppSettings.PACKTREEVIEW_HEADER_CUSTOM_COLUMN_LISTS_FILE) as json_file:
             customLists = json.load(json_file)
             packTreeViewHeader.setCustomLists(customLists)
