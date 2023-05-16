@@ -158,6 +158,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
+        self.menubar.addMenu(self.mainTreeView.header().menu)
         self.menubar.addAction(self.menuNavigate.menuAction())
         self.menubar.addAction(self.menuTools.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
@@ -297,7 +298,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         if packTreeViewHeaderState:
             packTreeViewHeader.restoreState(packTreeViewHeaderState)
         else:
-            packTreeViewHeader.updateMenu()
             packTreeViewHeader.showSectionWithNames(DEFAULT_COLUMNS_IN_PACKS_TABLE_TO_SHOW, only=True)
         with open(AppSettings.PACKTREEVIEW_HEADER_CUSTOM_COLUMN_LISTS_FILE) as json_file:
             customLists = json.load(json_file)

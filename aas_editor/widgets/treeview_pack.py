@@ -54,7 +54,7 @@ class PackHeaderView(HeaderView):
         self.initMenu()
 
     def initMenu(self) -> None:
-        self.menu = QMenu(self)
+        self.menu = QMenu("Columns", self)
 
         showBasicColumnsAct = QAction("Show Basic Columns", self,
                                       triggered=lambda: self.showSectionWithNames(DEFAULT_COLUMNS_IN_PACKS_TABLE_TO_SHOW, only=True))

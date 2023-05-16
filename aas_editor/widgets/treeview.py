@@ -413,6 +413,7 @@ class TreeView(BasicTreeView):
         self.model().dataChanged.connect(self.onDataChanged)
         self.model().rowsInserted.connect(self.onRowsInserted)
         self.model().rowsRemoved.connect(self.onRowsRemoved)
+        self.header().updateMenu()
 
     def onCurrentChanged(self, current: QModelIndex, previous: QModelIndex):
         self.updateActions(current)
