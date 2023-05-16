@@ -61,11 +61,11 @@ class PackHeaderView(HeaderView):
     def initMenu(self) -> None:
         self.menu = QMenu(self)
 
-        allColumnsMenu = self.menu.addMenu("All Columns")
+        allColumnsMenu = self.menu.addMenu("Select Columns")
         for i in self.actions():
             allColumnsMenu.addAction(i)
 
-        showColumns4typeMenu = self.menu.addMenu("Show Columns for type")
+        showColumns4typeMenu = self.menu.addMenu("Show Columns for Attributes of Type")
         for cls in REFERABLE_INHERITORS_ATTRS:
             clsname = util_type.getTypeName(cls)
             sectionNames = REFERABLE_INHERITORS_ATTRS[cls]
@@ -76,16 +76,18 @@ class PackHeaderView(HeaderView):
             showColumnsAct.setData(sectionNames)
             showColumns4typeMenu.addAction(showColumnsAct)
 
-        showColumnsListMenu = self.menu.addMenu("Show custom column list")
-        showColumnsListMenu.setToolTip("To manage custom lists, edit custom_column_lists.json")
+        showColumnsFromListMenu = self.menu.addMenu("Show Columns From Custom List")
+        menuTip = "To manage custom lists, edit custom_column_lists.json"
+        showColumnsFromListMenu.setToolTip(menuTip)
+        showColumnsFromListMenu.setStatusTip(menuTip)
         for listname in self.customLists:
             sectionNames = self.customLists[listname]
             showColumnsAct = QAction(f"{listname}", self,
-                                     toolTip=f"Show custom list {listname}: {sectionNames}. To manage custom lists, edit custom_column_lists.json",
-                                     statusTip=f"Show custom list {listname}: {sectionNames}. To manage custom lists, edit custom_column_lists.json",
+                                     toolTip=f"Show custom list {listname}: {sectionNames}. {menuTip}",
+                                     statusTip=f"Show custom list {listname}: {sectionNames}. {menuTip}",
                                      triggered=lambda: self.onShowListOfSectionsAct())
             showColumnsAct.setData(sectionNames)
-            showColumnsListMenu.addAction(showColumnsAct)
+            showColumnsFromListMenu.addAction(showColumnsAct)
 
         self.menu.addSeparator()
 
