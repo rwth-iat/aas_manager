@@ -34,10 +34,12 @@ from aas_editor.delegates import EditDelegate
 from aas_editor.package import Package, StoredFile
 from aas_editor.settings import FILTER_AAS_FILES, CLASSES_INFO, PACKVIEW_ATTRS_INFO, \
     FILE_TYPE_FILTERS, NOT_GIVEN, REFERABLE_INHERITORS_ATTRS
-from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, \
+from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE, \
+    MAX_RECENT_FILES, ACPLT, \
     APPLICATION_NAME, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, \
     TYPE_ROLE, \
-    CLEAR_ROW_ROLE, AppSettings, COLUMN_NAME_ROLE, OBJECT_COLUMN_NAME, OBJECT_VALUE_COLUMN_NAME
+    CLEAR_ROW_ROLE, AppSettings, COLUMN_NAME_ROLE, OBJECT_COLUMN_NAME, \
+    OBJECT_VALUE_COLUMN_NAME, DEFAULT_COLUMNS_IN_PACKS_TABLE
 from aas_editor.settings.shortcuts import SC_OPEN, SC_SAVE_ALL
 from aas_editor.settings.icons import NEW_PACK_ICON, OPEN_ICON, OPEN_DRAG_ICON, SAVE_ICON, SAVE_ALL_ICON, \
     ADD_ICON
@@ -60,6 +62,10 @@ class PackHeaderView(HeaderView):
 
     def initMenu(self) -> None:
         self.menu = QMenu(self)
+
+        showBasicColumnsAct = QAction("Show Basic Columns", self,
+                                      triggered=lambda: self.showSectionWithNames(DEFAULT_COLUMNS_IN_PACKS_TABLE, only=True))
+        self.menu.addAction(showBasicColumnsAct)
 
         allColumnsMenu = self.menu.addMenu("Select Columns")
         for i in self.actions():
