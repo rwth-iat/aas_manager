@@ -29,7 +29,7 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QModelIndex, QSettings, QPoint
 from PyQt5.QtGui import QDropEvent, QDragEnterEvent, QKeyEvent
 from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QMenu, QWidget, QDialog, QVBoxLayout, QLabel, QLineEdit, \
-    QHBoxLayout, QPushButton, QListWidget
+    QHBoxLayout, QPushButton, QListWidget, QTabWidget, QListWidgetItem
 from basyx.aas.adapter.aasx import AASXReader, DictSupplementaryFileContainer
 from basyx.aas.adapter.json import read_aas_json_file
 from basyx.aas.adapter.xml import read_aas_xml_file
@@ -395,19 +395,21 @@ class PackTreeView(TreeView):
             self.addAct.setEnabled(True)
             self.addAct.setText("Add package")
 
-    def isPasteOk(self, index: QModelIndex) -> bool:
-        if not self.treeObjClipboard or not index.isValid():
-            return False
 
-        if super(PackTreeView, self).isPasteOk(index):
-            return True
-
-        obj2paste = self.treeObjClipboard[0]
-        currObj = index.data(OBJECT_ROLE)
-
-        if ClassesInfo.addType(type(currObj)) and isinstance(obj2paste, ClassesInfo.addType(type(currObj))):
-            return True
-        return False
+    # TODO: Delete on another brach
+    # def isPasteOk(self, index: QModelIndex) -> bool:
+    #     if not self.treeObjClipboard or not index.isValid():
+    #         return False
+    #
+    #     if super(PackTreeView, self).isPasteOk(index):
+    #         return True
+    #
+    #     obj2paste = self.treeObjClipboard[0]
+    #     currObj = index.data(OBJECT_ROLE)
+    #
+    #     if ClassesInfo.addType(type(currObj)) and isinstance(obj2paste, ClassesInfo.addType(type(currObj))):
+    #         return True
+    #     return False
 
     def isSaveOk(self) -> bool:
         pack = self.currentIndex().data(PACKAGE_ROLE)
@@ -480,7 +482,7 @@ class PackTreeView(TreeView):
             file, _ = QFileDialog.getOpenFileName(self, "Open AAS file", file,
                                                   filter=filter)
             if file:
-                opened = self.openPack(file)
+                opened = self.createAndOpenPackFromFile(file)
             else:
                 # cancel pressed
                 return
@@ -497,7 +499,15 @@ class PackTreeView(TreeView):
                 # cancel pressed
                 return
 
-    def openPack(self, file: str) -> typing.Union[bool, Package]:
+    def openPack2(self, pack: Package, file: str) -> typing.Union[bool, Package]:
+        openedPacks = self.model().data(QModelIndex(), OPENED_FILES_ROLE)
+        if Path(file).absolute() in openedPacks:
+            QMessageBox.critical(self, "Error", f"Package {file} is already opened")
+        else:
+            self.model().setData(QModelIndex(), pack, ADD_ITEM_ROLE)
+            return pack
+
+    def createAndOpenPackFromFile(self, file: str) -> typing.Union[bool, Package]:
         try:
             try:
                 pack = Package(file, failsafe=False)
@@ -520,11 +530,8 @@ class PackTreeView(TreeView):
             self.removeFromRecentFiles(file)
             dialogs.ErrorMessageBox.withTraceback(self, f"Package {file} couldn't be opened: {e}").exec()
         else:
-            openedPacks = self.model().data(QModelIndex(), OPENED_FILES_ROLE)
-            if Path(file).absolute() in openedPacks:
-                QMessageBox.critical(self, "Error", f"Package {file} is already opened")
-            else:
-                self.model().setData(QModelIndex(), pack, ADD_ITEM_ROLE)
+            pack = self.openPack2(pack, file)
+            if pack:
                 return pack
         return False
 
@@ -622,7 +629,7 @@ class PackTreeView(TreeView):
     def openRecentSlot(self):
         action = self.sender()
         if action:
-            self.openPack(action.data())
+            self.createAndOpenPackFromFile(action.data())
 
     def updateRecentFiles(self, file: str):
         self.removeFromRecentFiles(file)
@@ -710,7 +717,7 @@ class PackTreeView(TreeView):
     def dropEvent(self, e: QDropEvent) -> None:
         for url in e.mimeData().urls():
             file = str(url.toLocalFile())
-            self.openPack(file)
+            self.createAndOpenPackFromFile(file)
 
     def onDelClear(self):
         index = self.currentIndex()
@@ -770,6 +777,8 @@ class PackTreeView(TreeView):
     def createServerConnection(self, url, database, username, password):
         basyx.aas.backend.couchdb.register_credentials(url, username, password)
         object_store = basyx.aas.backend.couchdb.CouchDBObjectStore(url, database)
+        # Clen lokal object store for several server opening
+        self.backendObjStore.clear()
 
         for obj in object_store:
             self.backendObjStore.add(obj)
@@ -786,10 +795,9 @@ class PackTreeView(TreeView):
         except Exception as e:
             dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
 
-    def onUseConfig(self, dialog):
+    def onUseConfig(self, configPath: Path, dialog):
         config = ConfigParser()
-        # TODO: Find better location for config file
-        config.read(Path(__file__).parent.parent.parent / 'test' / 'test_config.ini')
+        config.read(configPath)
 
         url = config['couchdb']['url']
         database = config['couchdb']['database']
@@ -816,7 +824,6 @@ class PackTreeView(TreeView):
 
         submitButton = QPushButton("Submit")
 
-        # TODO: Find all references in Dict and add AAS to the TreeView
         def submitClicked():
             newPackage = Package()
             for obj in self.backendObjStore:
@@ -828,12 +835,22 @@ class PackTreeView(TreeView):
                         submodelObj = submodelRef.resolve(self.backendObjStore)
                         newPackage.objStore.add(submodelObj)
 
-                    # Need to create file on the directory fisrts
-                    # Add file type to the object
-                    file = aasObjID + ".aasx"
-                    saved = self.savePack(newPackage, file)
+
+                    file = Path(aasObjID).name + ".aasx"
+                    backendPath = Path.cwd()
+                    backendPath = backendPath / 'aas_files' / 'backend'
+
+                    if not backendPath.exists():
+                        backendPath.mkdir(parents=True, exist_ok=True)
+                        # parents=True create any necessary parent directories if they don't exist.
+                        # exist_ok=True  it will not throw an error if the directory already exists.
+
+                    backendPath = backendPath / file
+
+                    saved = self.savePack(newPackage, str(backendPath))
                     if saved:
-                        self.model().setData(QModelIndex(), newPackage, ADD_ITEM_ROLE)
+                        # self.model().setData(QModelIndex(), newPackage, ADD_ITEM_ROLE)
+                        self.openPack2(newPackage, str(backendPath))
 
 
 
@@ -867,6 +884,7 @@ class PackTreeView(TreeView):
         # Create the "Open" button
         openButton = QPushButton("Open")
         openButton.setEnabled(False)  # Disable the button by default
+        openButton.setDefault(True)
         openButton.clicked.connect(lambda: self.openSubmitActionWindow(objectsListWidget.selectedItems()[0]))
         buttonsLayout.addWidget(openButton)
 
@@ -886,13 +904,24 @@ class PackTreeView(TreeView):
                 aasObjects.append(obj)
         return aasObjects
 
-
+    def getBackendConfigs(self, listWidget, directory: Path):
+        listWidget.clear()
+        config_files = [file for file in directory.iterdir() if file.is_file() and file.suffix == '.ini']
+        for file in config_files:
+            item = QListWidgetItem(file.name)
+            item.setData(Qt.UserRole, str(file))
+            listWidget.addItem(item)
+        return listWidget
 
     def openServer(self):
         dialog = QDialog()
         dialog.setWindowTitle("Enter Credentials")
-        mainLayout = QVBoxLayout()
-        dialog.setLayout(mainLayout)
+
+        tabWidget = QTabWidget()
+
+        # 1. Tab with manual input
+        manualInputWidget = QWidget()
+        manualInputLayout = QVBoxLayout(manualInputWidget)
 
         labelWidth = 100
 
@@ -925,21 +954,50 @@ class PackTreeView(TreeView):
         passwordLayout.addWidget(passwordLabel)
         passwordLayout.addWidget(passwordEdit, stretch=1)
 
-        submitButton = QPushButton("Submit")
-        submitButton.clicked.connect(lambda: self.onSubmit(urlEdit, databaseEdit, usernameEdit, passwordEdit, dialog))
+        manualInputLayout.addLayout(urlLayout)
+        manualInputLayout.addLayout(databaseLayout)
+        manualInputLayout.addLayout(usernameLayout)
+        manualInputLayout.addLayout(passwordLayout)
 
-        useConfigButton = QPushButton("Use Config")
-        useConfigButton.clicked.connect(lambda: self.onUseConfig(dialog))
+        tabWidget.addTab(manualInputWidget, "Manual Input")
+
+        # 2. Tab with configurations
+        configWidget = QWidget()
+        configLayout = QVBoxLayout(configWidget)
+
+        backendConfigsPath = Path.cwd() / 'aas_editor' / 'backend_configs'
+        if not backendConfigsPath.exists():
+            backendConfigsPath.mkdir(parents=True, exist_ok=True)
+
+        # Add hint for users
+        hintLabel = QLabel("To add a new configuration,:\n"
+                           "create a .ini in the following directory:\n" 
+                           "aas_manager/aas_editor/backend_configs")
+        configLayout.addWidget(hintLabel)
+
+        configListWidget = QListWidget()
+
+        configLayout.addWidget(self.getBackendConfigs(configListWidget, backendConfigsPath))
+
+        tabWidget.addTab(configWidget, "Configurations")
+
+        closeButton = QPushButton("Close")
+        closeButton.clicked.connect(dialog.close)
+
+        submitButton = QPushButton("Submit")
+        submitButton.setDefault(True)
+        submitButton.clicked.connect(lambda: self.onSubmit(urlEdit, databaseEdit, usernameEdit, passwordEdit, dialog)
+                                    if tabWidget.currentIndex() == 0
+                                    else self.onUseConfig(Path(configListWidget.currentItem().data(Qt.UserRole)), dialog))
 
         buttonsLayout = QHBoxLayout()
+        buttonsLayout.addWidget(closeButton)
         buttonsLayout.addWidget(submitButton)
-        buttonsLayout.addWidget(useConfigButton)
 
-        mainLayout.addLayout(urlLayout)
-        mainLayout.addLayout(databaseLayout)
-        mainLayout.addLayout(usernameLayout)
-        mainLayout.addLayout(passwordLayout)
+        mainLayout = QVBoxLayout()
+        mainLayout.addWidget(tabWidget)
         mainLayout.addLayout(buttonsLayout)
+        dialog.setLayout(mainLayout)
 
         result = dialog.exec()
 

@@ -123,7 +123,7 @@ class ImportManageWidget(QWidget):
                 try:
                     aasFile = dialog.aasFileLine.text()
                     self.importApp.mainTreeView.closeAllFiles()
-                    ImportManageWidget.IMPORT_SETTINGS.mappingPackage = self.importApp.mainTreeView.openPack(aasFile)
+                    ImportManageWidget.IMPORT_SETTINGS.mappingPackage = self.importApp.mainTreeView.createAndOpenPackFromFile(aasFile)
                     self.importApp.packTreeModel.setData(QModelIndex(), [], settings.UNDO_ROLE)
                 except Exception as e:
                     dialogs.ErrorMessageBox.withTraceback(self, f"Could not open AAS File: {e}").exec()

@@ -286,7 +286,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         openedAasFiles = AppSettings.OPENED_AAS_FILES.value()
         for file in openedAasFiles:
             try:
-                self.mainTreeView.openPack(file)
+                self.mainTreeView.createAndOpenPackFromFile(file)
             except OSError:
                 pass
             self.packTreeModel.setData(QModelIndex(), [], UNDO_ROLE)

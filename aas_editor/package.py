@@ -105,6 +105,7 @@ class Package:
             self.all_concept_descriptions_to_aas()
         if file:
             self.file: Path = file
+            # TODO: Check if dir for file existing
 
         fileType = self.file.suffix.lower().strip()
         if fileType == ".xml": #FIXME: if file in write_aas_xml_file() changes

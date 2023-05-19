@@ -25,7 +25,7 @@ class TestUi(TestCase):
         self.app = QApplication(sys.argv)
 
         self.window = EditorApp()
-        self.window.mainTreeView.openPack("aas_files/TestPackage.aasx")
+        self.window.mainTreeView.createAndOpenPackFromFile("aas_files/TestPackage.aasx")
         self.window.show()
 
         self.packTreeView: PackTreeView = self.window.mainTreeView
