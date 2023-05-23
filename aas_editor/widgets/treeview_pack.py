@@ -202,7 +202,7 @@ class PackTreeView(TreeView):
 
         self.openServerAct = QAction("Connect CouchDB", self,
                                      statusTip="Connect CouchDB server",
-                                     triggered=lambda: self.openServer(),
+                                     triggered=lambda: self.openServerConnectionDialog(),
                                      enabled=True)
 
         # Recent files actions
@@ -774,6 +774,7 @@ class PackTreeView(TreeView):
                 self._onPasteReplace(index, obj2paste, withDialog=bool(reqAttrsDict))
 
 
+    ########### BACKEND ###########
     def createServerConnection(self, url, database, username, password):
         basyx.aas.backend.couchdb.register_credentials(url, username, password)
         object_store = basyx.aas.backend.couchdb.CouchDBObjectStore(url, database)
@@ -783,7 +784,7 @@ class PackTreeView(TreeView):
         for obj in object_store:
             self.backendObjStore.add(obj)
 
-    def onSubmit(self, urlEdit, databaseEdit, usernameEdit, passwordEdit, dialog):
+    def submitInputCredentials(self, urlEdit, databaseEdit, usernameEdit, passwordEdit, dialog):
         url = urlEdit.text()
         database = databaseEdit.text()
         username = usernameEdit.text()
@@ -795,7 +796,7 @@ class PackTreeView(TreeView):
         except Exception as e:
             dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
 
-    def onUseConfig(self, configPath: Path, dialog):
+    def submitConfigCredentials(self, configPath: Path, dialog):
         config = ConfigParser()
         config.read(configPath)
 
@@ -810,9 +811,33 @@ class PackTreeView(TreeView):
         except Exception as e:
             dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
 
+    def submitAddClicked(self, aasObjID, submitActionDialog):
+        newPackage = Package()
+        for obj in self.backendObjStore:
+            if obj.identification.id == aasObjID:
+                assetObj = obj.asset.resolve(self.backendObjStore)
+                newPackage.objStore.add(assetObj)
 
-    def openSubmitActionWindow(self, aasObjIDItem):
+                for submodelRef in obj.submodel:
+                    submodelObj = submodelRef.resolve(self.backendObjStore)
+                    newPackage.objStore.add(submodelObj)
 
+                file = Path(aasObjID).name + ".aasx"
+                backendPath = Path.cwd()
+                backendPath = backendPath / 'aas_files' / 'backend'
+
+                if not backendPath.exists():
+                    backendPath.mkdir(parents=True, exist_ok=True)
+
+                backendPath = backendPath / file
+
+                saved = self.savePack(newPackage, str(backendPath))
+                if saved:
+                    self.openPack2(newPackage, str(backendPath))
+
+        submitActionDialog.accept()
+
+    def displayAASObjectSubmitDialog(self, aasObjIDItem):
         submitActionDialog = QDialog()
         submitActionDialog.setWindowTitle("Add object")
         submitActionLayout = QVBoxLayout()
@@ -823,47 +848,14 @@ class PackTreeView(TreeView):
         submitActionLayout.addWidget(chosenFileLabel)
 
         submitButton = QPushButton("Submit")
-
-        def submitClicked():
-            newPackage = Package()
-            for obj in self.backendObjStore:
-                if obj.identification.id == aasObjID:
-                    assetObj = obj.asset.resolve(self.backendObjStore)
-                    newPackage.objStore.add(assetObj)
-
-                    for submodelRef in obj.submodel:
-                        submodelObj = submodelRef.resolve(self.backendObjStore)
-                        newPackage.objStore.add(submodelObj)
-
-
-                    file = Path(aasObjID).name + ".aasx"
-                    backendPath = Path.cwd()
-                    backendPath = backendPath / 'aas_files' / 'backend'
-
-                    if not backendPath.exists():
-                        backendPath.mkdir(parents=True, exist_ok=True)
-                        # parents=True create any necessary parent directories if they don't exist.
-                        # exist_ok=True  it will not throw an error if the directory already exists.
-
-                    backendPath = backendPath / file
-
-                    saved = self.savePack(newPackage, str(backendPath))
-                    if saved:
-                        # self.model().setData(QModelIndex(), newPackage, ADD_ITEM_ROLE)
-                        self.openPack2(newPackage, str(backendPath))
-
-
-
-            submitActionDialog.accept()
-
-        submitButton.clicked.connect(submitClicked)
+        submitButton.clicked.connect(lambda: self.submitAddClicked(aasObjID, submitActionDialog))
         submitActionLayout.addWidget(submitButton)
 
         submitActionDialog.exec()
 
-    def openAASObjectsDialog(self, aasObjects):
+    def displayAASObjectsDialog(self, aasObjects):
         objectsDialog = QDialog()
-        objectsDialog.setWindowTitle("Files List")
+        objectsDialog.setWindowTitle("AAS Objects")
         objectsLayout = QVBoxLayout()
         objectsDialog.setLayout(objectsLayout)
 
@@ -871,7 +863,7 @@ class PackTreeView(TreeView):
         for aasObj in aasObjects:
             objectsListWidget.addItem(aasObj.identification.id)
 
-        objectsListWidget.itemDoubleClicked.connect(self.openSubmitActionWindow)
+        objectsListWidget.itemDoubleClicked.connect(self.displayAASObjectSubmitDialog)
 
         # Create a QHBoxLayout for the buttons
         buttonsLayout = QHBoxLayout()
@@ -885,7 +877,7 @@ class PackTreeView(TreeView):
         openButton = QPushButton("Open")
         openButton.setEnabled(False)  # Disable the button by default
         openButton.setDefault(True)
-        openButton.clicked.connect(lambda: self.openSubmitActionWindow(objectsListWidget.selectedItems()[0]))
+        openButton.clicked.connect(lambda: self.displayAASObjectSubmitDialog(objectsListWidget.selectedItems()[0]))
         buttonsLayout.addWidget(openButton)
 
         # Enable the "Open" button when an item is selected in the QListWidget
@@ -904,7 +896,7 @@ class PackTreeView(TreeView):
                 aasObjects.append(obj)
         return aasObjects
 
-    def getBackendConfigs(self, listWidget, directory: Path):
+    def loadBackendConfigFiles(self, listWidget, directory: Path):
         listWidget.clear()
         config_files = [file for file in directory.iterdir() if file.is_file() and file.suffix == '.ini']
         for file in config_files:
@@ -913,7 +905,7 @@ class PackTreeView(TreeView):
             listWidget.addItem(item)
         return listWidget
 
-    def openServer(self):
+    def openServerConnectionDialog(self):
         dialog = QDialog()
         dialog.setWindowTitle("Enter Credentials")
 
@@ -977,7 +969,7 @@ class PackTreeView(TreeView):
 
         configListWidget = QListWidget()
 
-        configLayout.addWidget(self.getBackendConfigs(configListWidget, backendConfigsPath))
+        configLayout.addWidget(self.loadBackendConfigFiles(configListWidget, backendConfigsPath))
 
         tabWidget.addTab(configWidget, "Configurations")
 
@@ -986,9 +978,9 @@ class PackTreeView(TreeView):
 
         submitButton = QPushButton("Submit")
         submitButton.setDefault(True)
-        submitButton.clicked.connect(lambda: self.onSubmit(urlEdit, databaseEdit, usernameEdit, passwordEdit, dialog)
+        submitButton.clicked.connect(lambda: self.submitInputCredentials(urlEdit, databaseEdit, usernameEdit, passwordEdit, dialog)
                                     if tabWidget.currentIndex() == 0
-                                    else self.onUseConfig(Path(configListWidget.currentItem().data(Qt.UserRole)), dialog))
+                                    else self.submitConfigCredentials(Path(configListWidget.currentItem().data(Qt.UserRole)), dialog))
 
         buttonsLayout = QHBoxLayout()
         buttonsLayout.addWidget(closeButton)
@@ -1011,6 +1003,6 @@ class PackTreeView(TreeView):
                 emptyMessageBox.setStandardButtons(QMessageBox.Ok)
                 emptyMessageBox.exec()
             else:
-                self.openAASObjectsDialog(self.getAASObjectsFromBackend())
+                self.displayAASObjectsDialog(self.getAASObjectsFromBackend())
         else:
             print("Dialog canceled.")
