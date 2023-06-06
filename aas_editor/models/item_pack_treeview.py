@@ -26,14 +26,14 @@ from aas_editor.settings.app_settings import PACKAGE_ROLE, ATTRIBUTE_COLUMN
 from aas_editor.utils.util import getDescription
 from aas_editor.utils.util_classes import ClassesInfo
 from aas_editor.utils.util_type import isIterable
-from aas_editor.package import Package, StoredFile
+from aas_editor.package import LocalPackage, StoredFile
 
 
 class PackTreeViewItem(StandardItem):
     def __init__(self, obj, parent, **kwargs):
         super().__init__(obj, parent=parent, **kwargs)
-        if isinstance(obj, Package):
-            self.typehint = Package
+        if isinstance(obj, LocalPackage):
+            self.typehint = LocalPackage
             self.package = obj
         else:
             self.package = parent.data(PACKAGE_ROLE)

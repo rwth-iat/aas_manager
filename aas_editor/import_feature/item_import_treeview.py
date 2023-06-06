@@ -26,7 +26,7 @@ from basyx.aas.model import AASReference, Referable
 from aas_editor import dialogs
 from aas_editor.import_feature.import_settings import MAPPING_ATTR
 from aas_editor.models import PackTreeViewItem, StandardItem
-from aas_editor.package import Package
+from aas_editor.package import LocalPackage
 from aas_editor.settings import PACKAGE_ROLE
 from aas_editor.utils.util_classes import ClassesInfo
 from aas_editor.utils.util_type import isIterable
@@ -35,8 +35,8 @@ from aas_editor.utils.util_type import isIterable
 class ImportTreeViewItem(PackTreeViewItem):
     def __init__(self, obj, parent, **kwargs):
         StandardItem.__init__(self, obj, parent=parent, **kwargs)
-        if isinstance(obj, Package):
-            self.typehint = Package
+        if isinstance(obj, LocalPackage):
+            self.typehint = LocalPackage
             self.package = obj
         else:
             self.package = parent.data(PACKAGE_ROLE)

@@ -25,7 +25,7 @@ from basyx.aas.model import AASReference, Key, KeyElements, KeyType
 from openpyxl.worksheet.worksheet import Worksheet
 
 from . import import_settings
-from aas_editor.package import Package
+from aas_editor.package import LocalPackage
 from aas_editor.utils.util_type import isIterable
 
 COLUMNS_PATTERN = re.compile(r"\$[A-Z][A-Z]?\$")
@@ -68,14 +68,14 @@ def _mappingIntoDict(obj, mapDict):
             _mappingIntoDict(i, mapDict)
 
 
-def getMapping(pack: Package):
+def getMapping(pack: LocalPackage):
     mapDict = dict()
     for obj in pack.objStore:
         _mappingIntoDict(obj, mapDict)
     return mapDict
 
 
-def saveMapping(pack: Package, file: str) -> bool:
+def saveMapping(pack: LocalPackage, file: str) -> bool:
     mapDict = getMapping(pack)
     with open(file, 'w') as jsonFile:
         json.dump(mapDict, jsonFile)
@@ -106,7 +106,7 @@ def unusedColumnsInMapping(mapDict, sourcefile, sheetname: Worksheet) -> List[st
     return columns
 
 
-def setMappingFromFile(pack: Package, mappingFile: str):
+def setMappingFromFile(pack: LocalPackage, mappingFile: str):
     with open(mappingFile, 'r') as jsonFile:
         mapDict = json.load(jsonFile)
 

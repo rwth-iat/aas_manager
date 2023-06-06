@@ -20,7 +20,7 @@ from PyQt5.QtCore import QAbstractItemModel, QVariant, QModelIndex, Qt, QItemSel
 from PyQt5.QtGui import QFont
 
 from aas_editor.models import DetailedInfoItem, StandardItem, PackTreeViewItem
-from aas_editor.package import Package
+from aas_editor.package import LocalPackage
 from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
     VALUE_COLUMN, PACKAGE_ROLE, PACK_ITEM_ROLE, DEFAULT_FONT, ADD_ITEM_ROLE, CLEAR_ROW_ROLE, \
     DATA_CHANGE_FAILED_ROLE, IS_LINK_ROLE, TYPE_COLUMN, \
@@ -163,7 +163,7 @@ class StandardTable(QAbstractItemModel):
         else:
             return super(StandardTable, self).match(start, role, value, **kwargs)
 
-    def addItem(self, obj: Union[Package, 'SubmodelElement', Iterable],
+    def addItem(self, obj: Union[LocalPackage, 'SubmodelElement', Iterable],
                 parent: QModelIndex = QModelIndex()):
         parent = parent.siblingAtColumn(0)
         parentItem = self.objByIndex(parent)
@@ -175,12 +175,12 @@ class StandardTable(QAbstractItemModel):
             "obj": obj,
             "parent": parentItem,
         }
-        if isinstance(obj, Package):
+        if isinstance(obj, LocalPackage):
             kwargs["parent"] = self._rootItem
             kwargs["new"] = False
             itemTyp = PackTreeViewItem
-        elif parentName in Package.addableAttrs():
-            package: Package = parent.data(PACKAGE_ROLE)
+        elif parentName in LocalPackage.addableAttrs():
+            package: LocalPackage = parent.data(PACKAGE_ROLE)
             package.add(obj)
             itemTyp = PackTreeViewItem
         elif ClassesInfo.changedParentObject(parentObjCls): #FIXME: Refactor
@@ -500,7 +500,7 @@ class StandardTable(QAbstractItemModel):
                 if not defaultVal == NOT_GIVEN:
                     index = self.index(currRow, 0, parent)
                     self.setData(index, defaultVal, Qt.EditRole)
-                elif isinstance(child.obj, Package):
+                elif isinstance(child.obj, LocalPackage):
                     # close package
                     oldValue = child.obj
                     self.removeRow(currRow, parent)

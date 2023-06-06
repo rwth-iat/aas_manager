@@ -20,7 +20,7 @@ from aas_editor.import_feature import import_util
 from aas_editor.import_feature.import_settings import MAPPING_ATTR
 from aas_editor.import_feature import import_util_classes
 from aas_editor.import_feature.import_util import getMapping, usedColumnsInMapping, unusedColumnsInMapping
-from aas_editor.package import Package
+from aas_editor.package import LocalPackage
 from aas_editor import settings
 from aas_editor.utils.util_classes import ClassesInfo
 from aas_editor.utils.util_type import isIterable
@@ -33,7 +33,7 @@ EXCEL_FILES = "Excel files (*.xlsx)"
 @dataclass
 class ImportSettings:
     def __init__(self,
-                 mappingPackage: Package = None,
+                 mappingPackage: LocalPackage = None,
                  mappingFile: str = None,
                  sourceFile: str = None,
                  sheetname: str = None,  # required if sourcefile is Excel
@@ -174,7 +174,7 @@ class ImportManageWidget(QWidget):
                 dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
                 continue
 
-    def importFromPack(self, templatePack: Package, sourcefile: str, minRow: int, maxRow: int,
+    def importFromPack(self, templatePack: LocalPackage, sourcefile: str, minRow: int, maxRow: int,
                        exportFolder: str, fileNameScheme: str):
         excelfile = openpyxl.load_workbook(sourcefile, data_only=True)
         if maxRow == -1:
@@ -197,8 +197,8 @@ class ImportManageWidget(QWidget):
 
         QMessageBox.information(self, "Export was successful", f"{maxRow-minRow+1} AAS files were successfully generated!")
 
-    def newPackFromTemplate(self, pack: Package, row: int, sourceWB: openpyxl.Workbook):
-        newPack = Package()
+    def newPackFromTemplate(self, pack: LocalPackage, row: int, sourceWB: openpyxl.Workbook):
+        newPack = LocalPackage()
         for refObj in pack.objStore:
             newRefObj = self._initObjWithMappingImport(refObj, row, sourceWB=sourceWB)
             newPack.objStore.add(newRefObj)
@@ -346,7 +346,7 @@ class ImportSettingsDialog(SettingsDialog):
         file, _ = QFileDialog.getSaveFileName(self, 'Create new AAS File', 'new_aas_file.aasx',
                                               filter=settings.FILTER_AAS_FILES)
         if file:
-            Package().write(file)
+            LocalPackage().write(file)
             self.aasFileLine.setText(file)
         else:  # cancel pressed
             return

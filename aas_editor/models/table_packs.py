@@ -14,7 +14,7 @@ from PyQt5.QtCore import QModelIndex, Qt
 from PyQt5.QtGui import QFont
 
 from aas_editor.models import StandardTable
-from aas_editor.package import Package
+from aas_editor.package import LocalPackage
 from aas_editor.settings.app_settings import PACKAGE_ROLE, DEFAULT_FONT, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, \
     DEFAULT_COLUMNS_IN_PACKS_TABLE, OBJECT_ROLE, COLUMN_NAME_ROLE
 
@@ -26,7 +26,7 @@ class PacksTable(StandardTable):
         packs = set()
         for i in range(self.rowCount()):
             item = self.index(row=i)
-            pack: Package = item.data(PACKAGE_ROLE)
+            pack: LocalPackage = item.data(PACKAGE_ROLE)
             if pack:
                 try:
                     packs.add(pack)
@@ -35,7 +35,7 @@ class PacksTable(StandardTable):
         return packs
 
     def openedFiles(self):
-        files = set([pack.file for pack in self.openedPacks()])
+        files = set([pack.source for pack in self.openedPacks()])
         return files
 
     def data(self, index: QModelIndex, role: int = ...) -> Any:

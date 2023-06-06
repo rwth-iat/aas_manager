@@ -37,7 +37,7 @@ from basyx.aas.model import DictObjectStore, Submodel
 from basyx.aas import model
 
 from aas_editor.delegates import EditDelegate
-from aas_editor.package import Package, StoredFile
+from aas_editor.package import LocalPackage, StoredFile
 from aas_editor.settings import FILTER_AAS_FILES, CLASSES_INFO, PACKVIEW_ATTRS_INFO, \
     FILE_TYPE_FILTERS, NOT_GIVEN, REFERABLE_INHERITORS_ATTRS
 from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE, MAX_RECENT_FILES, ACPLT, \
@@ -385,8 +385,8 @@ class PackTreeView(TreeView):
         super().updateAddAct(index)
 
         attrName = index.data(NAME_ROLE)
-        if attrName in Package.addableAttrs():
-            addActText = ClassesInfo.addActText(Package, attrName)
+        if attrName in LocalPackage.addableAttrs():
+            addActText = ClassesInfo.addActText(LocalPackage, attrName)
             self.addAct.setEnabled(True)
             self.addAct.setText(addActText)
 
@@ -439,8 +439,8 @@ class PackTreeView(TreeView):
         try:
             if not parent.isValid():
                 self.newPackWithDialog()
-            elif name in Package.addableAttrs():
-                self.addItemWithDialog(objTypeHint=ClassesInfo.addType(Package, name), **kwargs)
+            elif name in LocalPackage.addableAttrs():
+                self.addItemWithDialog(objTypeHint=ClassesInfo.addType(LocalPackage, name), **kwargs)
             elif ClassesInfo.addType(type(parentObj)):
                 self.addItemWithDialog(objTypeHint=ClassesInfo.addType(type(parentObj)), **kwargs)
             else:
@@ -450,7 +450,7 @@ class PackTreeView(TreeView):
 
     def addItemWithDialog(self, parent: QModelIndex, objTypeHint, objVal=None,
                           title="", rmDefParams=False, **kwargs):
-        if objTypeHint is Package:
+        if objTypeHint is LocalPackage:
             self.newPackWithDialog()
             return
         elif objTypeHint is StoredFile:
@@ -467,7 +467,7 @@ class PackTreeView(TreeView):
                                                   filter=filter,
                                                   initialFilter=self.defaultNewFileTypeFilter)
             if file:
-                pack = Package()
+                pack = LocalPackage()
                 saved = self.savePack(pack, file)
                 if saved:
                     self.model().setData(QModelIndex(), pack, ADD_ITEM_ROLE)
@@ -499,7 +499,7 @@ class PackTreeView(TreeView):
                 # cancel pressed
                 return
 
-    def openPack2(self, pack: Package, file: str) -> typing.Union[bool, Package]:
+    def openPack2(self, pack: LocalPackage, file: str) -> typing.Union[bool, LocalPackage]:
         openedPacks = self.model().data(QModelIndex(), OPENED_FILES_ROLE)
         if Path(file).absolute() in openedPacks:
             QMessageBox.critical(self, "Error", f"Package {file} is already opened")
@@ -507,10 +507,10 @@ class PackTreeView(TreeView):
             self.model().setData(QModelIndex(), pack, ADD_ITEM_ROLE)
             return pack
 
-    def createAndOpenPackFromFile(self, file: str) -> typing.Union[bool, Package]:
+    def createAndOpenPackFromFile(self, file: str) -> typing.Union[bool, LocalPackage]:
         try:
             try:
-                pack = Package(file, failsafe=False)
+                pack = LocalPackage(file, failsafe=False)
             except Exception as e:
                 msgBox = QMessageBox()
                 msgBox.setIcon(QMessageBox.Warning)
@@ -521,10 +521,10 @@ class PackTreeView(TreeView):
                 msgBox.setDetailedText(f"{e}")
                 ret = msgBox.exec()
                 if ret == QMessageBox.Yes:
-                    pack = Package(file, failsafe=True)
+                    pack = LocalPackage(file, failsafe=True)
                 else:
                     return False
-            absFile = pack.file.absolute().as_posix()
+            absFile = pack.source.absolute().as_posix()
             self.updateRecentFiles(absFile)
         except Exception as e:
             self.removeFromRecentFiles(file)
@@ -535,11 +535,11 @@ class PackTreeView(TreeView):
                 return pack
         return False
 
-    def savePack(self, pack: Package = None, file: str = None) -> bool:
+    def savePack(self, pack: LocalPackage = None, file: str = None) -> bool:
         pack = self.currentIndex().data(PACKAGE_ROLE) if pack is None else pack
         try:
             pack.write(file)
-            self.updateRecentFiles(pack.file.absolute().as_posix())
+            self.updateRecentFiles(pack.source.absolute().as_posix())
             if self.model().rowCount(QModelIndex()) == 1:
                 self.setWindowModified(False)
             return True
@@ -549,10 +549,10 @@ class PackTreeView(TreeView):
             dialogs.ErrorMessageBox.withTraceback(self, f"No chosen package to save: {e}").exec()
         return False
 
-    def savePackAsWithDialog(self, pack: Package = None, filter=FILTER_AAS_FILES) -> bool:
+    def savePackAsWithDialog(self, pack: LocalPackage = None, filter=FILTER_AAS_FILES) -> bool:
         pack = self.currentIndex().data(PACKAGE_ROLE) if pack is None else pack
         saved = False
-        file = pack.file.as_posix()
+        file = pack.source.as_posix()
         while not saved:
             try:
                 file, _ = QFileDialog.getSaveFileName(self, 'Save AAS File', file,
@@ -722,7 +722,7 @@ class PackTreeView(TreeView):
     def onDelClear(self):
         index = self.currentIndex()
         attribute = index.data(COLUMN_NAME_ROLE)
-        if isinstance(index.data(OBJECT_ROLE), Package):
+        if isinstance(index.data(OBJECT_ROLE), LocalPackage):
             self.closeAct.trigger()
         elif attribute in (OBJECT_COLUMN_NAME, OBJECT_VALUE_COLUMN_NAME):
             super(PackTreeView, self).onDelClear()
@@ -812,7 +812,7 @@ class PackTreeView(TreeView):
             dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
 
     def submitAddClicked(self, aasObjID, submitActionDialog):
-        newPackage = Package()
+        newPackage = LocalPackage() # TODO: WebPackage()
         for obj in self.backendObjStore:
             if obj.identification.id == aasObjID:
                 assetObj = obj.asset.resolve(self.backendObjStore)

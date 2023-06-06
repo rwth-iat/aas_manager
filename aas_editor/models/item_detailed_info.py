@@ -21,11 +21,11 @@ from aas_editor import settings
 from aas_editor.utils.util import getAttrs4detailInfo
 from aas_editor.utils.util_type import getTypeName, isSimpleIterable
 from aas_editor.additional.classes import DictItem
-from aas_editor.package import Package
+from aas_editor.package import LocalPackage
 
 
 class DetailedInfoItem(StandardItem):
-    def __init__(self, obj, name="", parent=None, package: Package = None, **kwargs):
+    def __init__(self, obj, name="", parent=None, package: LocalPackage = None, **kwargs):
         super().__init__(obj, name, parent, **kwargs)
         if parent and not package:
             self.package = parent.data(settings.PACKAGE_ROLE)

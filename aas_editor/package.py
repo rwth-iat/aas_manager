@@ -14,27 +14,30 @@ from pathlib import Path
 from typing import Union, Iterable, Optional
 import mimetypes
 
+import basyx
 import pyecma376_2
 from basyx.aas.adapter.aasx import DictSupplementaryFileContainer, AASXReader, AASXWriter
 from basyx.aas.adapter.json import read_aas_json_file, write_aas_json_file
 from basyx.aas.adapter.xml import read_aas_xml_file, write_aas_xml_file
 from basyx.aas.model import AssetAdministrationShell, Asset, Submodel, ConceptDescription, \
-    DictObjectStore, Key, AASReference, ConceptDictionary
+    DictObjectStore, Key, AASReference, ConceptDictionary, AbstractObjectStore
 
 from aas_editor.settings import DEFAULT_COMPLETIONS, AppSettings
 from aas_editor.utils.util_classes import ClassesInfo
 
+from abc import ABC, abstractmethod
 
-class Package:
-    def __init__(self, file: Union[str, Path] = "", failsafe=False):
-        """:raise TypeError if file has wrong file type"""
-        self.objStore = DictObjectStore()
-        self.fileStore = DictSupplementaryFileContainer()
-        self.file = file
-        if file:
+class BasePackage(ABC):
+    # objStore: AbstractObjectStore
+    def __init__(self, source: Union[str, Path] = "", failsafe=False):
+        """raise TypeError if file has wrong file type"""
+        # self.objStore = DictObjectStore()
+        # self.fileStore = DictSupplementaryFileContainer()
+        self.source = source
+        if source:
             self._read(failsafe)
-        for obj in self.objStore:
-            DEFAULT_COMPLETIONS[Key]["value"].append(obj.identification.id)
+        # for obj in self.objStore:
+        #     DEFAULT_COMPLETIONS[Key]["value"].append(obj.identification.id)
         self._changed = False
 
     @classmethod
@@ -42,12 +45,12 @@ class Package:
         return ClassesInfo.packViewAttrs(cls)
 
     @property
-    def file(self):
-        return self._file
+    def source(self):
+        return self._source
 
-    @file.setter
-    def file(self, file):
-        self._file = Path(file).absolute()
+    @source.setter
+    def source(self, source):
+        self._source = Path(source).absolute()
 
     @property
     def writeJsonInAasx(self):
@@ -73,67 +76,19 @@ class Package:
         return self.name
 
     def __repr__(self):
-        return self.file.as_posix()
+        return self.source.as_posix()
 
+    @abstractmethod
     def _read(self, failsafe):
-        fileType = self.file.suffix.lower().strip()
-        if fileType == ".xml":
-            self.objStore = read_aas_xml_file(self.file.as_posix(), failsafe=failsafe)
-        elif fileType == ".json":
-            with open(self.file, "r") as f:  # TODO change if aas changes
-                self.objStore = read_aas_json_file(f, failsafe=failsafe)
-        elif fileType == ".aasx":
-            reader = AASXReader(self.file.as_posix())
-            reader.read_into(self.objStore, self.fileStore)
-        else:
-            raise TypeError("Wrong file type:", self.file.suffix)
+        pass
 
+    @abstractmethod
     def _update_objstore(self):
-        old_identifiers = list(self.objStore._backend.keys())
-        for i in old_identifiers:
-            obj = self.objStore.get_identifiable(i)
-            if i != obj.identification:
-                self.objStore._backend[obj.identification] = obj
-                del self.objStore._backend[i]
+        pass
 
-    def write(self, file: str = None):
-        self._update_objstore()
-
-        if self.allSubmodelRefsToAas:
-            self.all_submodels_to_aas()
-        if self.allCDRefsToAas:
-            self.all_concept_descriptions_to_aas()
-        if file:
-            self.file: Path = file
-            # TODO: Check if dir for file existing
-
-        fileType = self.file.suffix.lower().strip()
-        if fileType == ".xml": #FIXME: if file in write_aas_xml_file() changes
-            # with open(self.file.as_posix(), "w") as fileIO:
-            write_aas_xml_file(self.file.as_posix(), self.objStore)
-        elif fileType == ".json": #FIXME: if file in write_aas_xml_file() changes
-            with open(self.file.as_posix(), "w") as fileIO:
-                indent = 2 if self.writePrettyJson else None
-                write_aas_json_file(fileIO, self.objStore, indent=indent)
-
-        elif fileType == ".aasx":
-            with AASXWriter(self.file.as_posix()) as writer:
-                aas_ids = []
-                for obj in self.objStore:
-                    if isinstance(obj, AssetAdministrationShell):
-                        aas_ids.append(obj.identification)
-                for aas_id in aas_ids:
-                    writer.write_aas(aas_id, self.objStore, self.fileStore,
-                                     write_json=self.writeJsonInAasx,
-                                     submodel_split_parts=self.submodelSplitParts)
-                # Create OPC/AASX core properties
-                cp = pyecma376_2.OPCCoreProperties()
-                cp.created = datetime.now()
-                from aas_editor.settings.app_settings import AAS_CREATOR
-                cp.creator = AAS_CREATOR
-                writer.write_core_properties(cp)
-        else:
-            raise TypeError("Wrong file type:", self.file.suffix)
+    @abstractmethod
+    def write(self, source: str = None):
+        pass
 
     def all_submodels_to_aas(self):
         """Add references of all existing submodels to submodel attribute of existing AAS."""
@@ -170,11 +125,11 @@ class Package:
 
     @property
     def name(self):
-        return self.file.name
+        return self.source.name
 
     @name.setter
     def name(self, name):
-        self.file = self.file.parent.joinpath(name)
+        self.source = self.source.parent.joinpath(name)
 
     @property
     def shells(self) -> Iterable[AssetAdministrationShell]:
@@ -199,6 +154,103 @@ class Package:
     #                           (AssetAdministrationShell, Asset, Submodel, ConceptDescription)):
     #             yield obj
 
+    @abstractmethod
+    def _iter_objects(self, objtype):
+        pass
+
+    @abstractmethod
+    def add(self, obj):
+        pass
+
+    @abstractmethod
+    def discard(self, obj):
+        pass
+
+    @property
+    def numOfShells(self) -> int:
+        return len(tuple(self.shells))
+
+    @property
+    def numOfAssets(self) -> int:
+        return len(tuple(self.assets))
+
+    @property
+    def numOfSubmodels(self) -> int:
+        return len(tuple(self.submodels))
+
+    @property
+    def numOfConceptDescriptions(self) -> int:
+        return len(tuple(self.concept_descriptions))
+
+
+class LocalPackage(BasePackage):
+    def __init__(self, source: Union[str, Path] = "", failsafe=False):
+        self.objStore = DictObjectStore()
+        self.fileStore = DictSupplementaryFileContainer()
+        for obj in self.objStore:
+            DEFAULT_COMPLETIONS[Key]["value"].append(obj.identification.id)
+        super().__init__(source, failsafe)
+
+    def _read(self, failsafe):
+        fileType = self.source.suffix.lower().strip()
+        if fileType == ".xml":
+            self.objStore = read_aas_xml_file(self.source.as_posix(), failsafe=failsafe)
+        elif fileType == ".json":
+            with open(self.source, "r") as f:  # TODO change if aas changes
+                self.objStore = read_aas_json_file(f, failsafe=failsafe)
+        elif fileType == ".aasx":
+            reader = AASXReader(self.source.as_posix())
+            reader.read_into(self.objStore, self.fileStore)
+        else:
+            raise TypeError("Wrong file type:", self.source.suffix)
+
+    def _update_objstore(self):
+        old_identifiers = list(self.objStore._backend.keys())
+        for i in old_identifiers:
+            obj = self.objStore.get_identifiable(i)
+            if i != obj.identification:
+                self.objStore._backend[obj.identification] = obj
+                del self.objStore._backend[i]
+
+    def write(self, source: str = None):
+        self._update_objstore()
+
+        if self.allSubmodelRefsToAas:
+            self.all_submodels_to_aas()
+        if self.allCDRefsToAas:
+            self.all_concept_descriptions_to_aas()
+        if source:
+            self.source: Path = source
+            # TODO: Check if dir for file existing
+
+        fileType = self.source.suffix.lower().strip()
+        if fileType == ".xml":  # FIXME: if file in write_aas_xml_file() changes
+            # with open(self.file.as_posix(), "w") as fileIO:
+            write_aas_xml_file(self.source.as_posix(), self.objStore)
+        elif fileType == ".json":  # FIXME: if file in write_aas_xml_file() changes
+            with open(self.source.as_posix(), "w") as fileIO:
+                indent = 2 if self.writePrettyJson else None
+                write_aas_json_file(fileIO, self.objStore, indent=indent)
+
+        elif fileType == ".aasx":
+            with AASXWriter(self.source.as_posix()) as writer:
+                aas_ids = []
+                for obj in self.objStore:
+                    if isinstance(obj, AssetAdministrationShell):
+                        aas_ids.append(obj.identification)
+                for aas_id in aas_ids:
+                    writer.write_aas(aas_id, self.objStore, self.fileStore,
+                                     write_json=self.writeJsonInAasx,
+                                     submodel_split_parts=self.submodelSplitParts)
+                # Create OPC/AASX core properties
+                cp = pyecma376_2.OPCCoreProperties()
+                cp.created = datetime.now()
+                from aas_editor.settings.app_settings import AAS_CREATOR
+                cp.creator = AAS_CREATOR
+                writer.write_core_properties(cp)
+        else:
+            raise TypeError("Wrong file type:", self.source.suffix)
+
     def _iter_objects(self, objtype):
         for obj in self.objStore:
             if isinstance(obj, objtype):
@@ -219,21 +271,40 @@ class Package:
     def discard(self, obj):
         self.objStore.discard(obj)
 
-    @property
-    def numOfShells(self) -> int:
-        return len(tuple(self.shells))
 
-    @property
-    def numOfAssets(self) -> int:
-        return len(tuple(self.assets))
+class WebPackage(BasePackage):
+    def __init__(self, source: Union[str, Path] = "", url: str = "", database: str = "", failsafe=False):
+        # TODO: By creating a WebPackage a server will be connected and objStore for managing oblects created.
+        self.url = url
+        self.database = database
+        self.objStore = basyx.aas.backend.couchdb.CouchDBObjectStore(self.url, self.database)
+        # for obj in self.objStore:
+        #     DEFAULT_COMPLETIONS[Key]["value"].append(obj.identification.id)
+        super().__init__(source, failsafe)
 
-    @property
-    def numOfSubmodels(self) -> int:
-        return len(tuple(self.submodels))
+    def _read(self, failsafe):
+        # This method will update object from server
+        pass
 
-    @property
-    def numOfConceptDescriptions(self) -> int:
-        return len(tuple(self.concept_descriptions))
+    def _update_objstore(self):
+        pass
+
+    def write(self, source: str = None):
+        # Commit all referable objects...?
+        pass
+
+    def _iter_objects(self, objtype):
+        for obj in self.objStore:
+            if isinstance(obj, objtype):
+                yield obj
+
+    def add(self, obj):
+        # TODO: Think about it!
+        self.objStore.add(obj)
+
+    def discard(self, obj):
+        # TODO: Think about it!
+        self.objStore.discard(obj)
 
 
 class StoredFile:

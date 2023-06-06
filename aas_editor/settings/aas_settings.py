@@ -398,10 +398,10 @@ CLASSES_INFO = {
     datetime.datetime: {
         HIDDEN_ATTRS: ("min", "max", "resolution"),
     },
-    aas_editor.package.Package: {
+    aas_editor.package.LocalPackage: {
         HIDDEN_ATTRS: ("ATTRS_INFO", "shells", "assets", "submodels", "concept_descriptions", "others", "fileStore"),
         ADD_ACT_AAS_TXT: "Add package",
-        ADD_TYPE: aas_editor.package.Package,
+        ADD_TYPE: aas_editor.package.LocalPackage,
         PACKVIEW_ATTRS_INFO: {
             "shells": {
                 ADD_ACT_AAS_TXT: "Add shell",

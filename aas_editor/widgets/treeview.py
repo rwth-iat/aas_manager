@@ -28,7 +28,7 @@ from aas_editor.utils.util_type import checkType, isSimpleIterable, isIterable, 
 
 from aas_editor.utils.util_classes import ClassesInfo
 from aas_editor.additional.classes import DictItem
-from aas_editor.package import Package
+from aas_editor.package import LocalPackage
 from aas_editor.widgets.treeview_basic import BasicTreeView
 from aas_editor import dialogs
 

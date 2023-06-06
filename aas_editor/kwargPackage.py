@@ -13,16 +13,16 @@ from typing import Dict, Type, Union, List, Iterable
 
 from basyx.aas.model import AssetAdministrationShell, Asset, Submodel, ConceptDescription
 
-from aas_editor.package import Package, StoredFile
+from aas_editor.package import LocalPackage, StoredFile
 from aas_editor.utils.util import getParams4init
 from aas_editor.utils.util_classes import ClassesInfo, PreObject
 from aas_editor.utils.util_type import getAttrTypeHint, isIterableType, isIterable, checkType, isOptional, getTypeName
 
 
-class KwargPackage(Package):
-    def __init__(self, file: Union[str, Path] = ""):
+class KwargPackage(LocalPackage):
+    def __init__(self, source: Union[str, Path] = ""):
         """:raise TypeError if file has wrong file type"""
-        super(KwargPackage, self).__init__(file)
+        super(KwargPackage, self).__init__(source)
         self._objStore: List[KwargObject] = [1]
 
     @property
