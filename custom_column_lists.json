@@ -1,5 +1,5 @@
 {
   "example_list": ["value", "value_type", "category", "description", "semantic_id", "id_short", "type"],
   "example_list2": ["type", "typehint"],
-  "all_columns": ["unit", "value_type", "entity_type", "first", "asset_identification_model", "value_format", "asset", "output_variable", "data_type", "qualifier", "contained_element", "symbol", "preferred_name", "submodel", "value_list", "id_short", "max", "concept_description", "bill_of_material", "description", "kind", "in_output_variable", "unit_id", "administration", "level_types", "second", "min", "source_of_definition", "value_id", "semantic_id", "input_variable", "value", "derived_from", "category", "is_case_of", "mime_type", "definition", "short_name", "identification", "observed"]
+  "all_columns": ["unit", "value_type", "entity_type", "first", "asset_identification_model", "value_format", "asset", "output_variable", "data_type", "qualifier", "contained_element", "symbol", "preferred_name", "submodel", "value_list", "id_short", "max", "concept_description", "bill_of_material", "description", "kind", "in_output_variable", "unit_id", "administration", "level_types", "second", "min", "source_of_definition", "value_id", "semantic_id", "input_variable", "value", "derived_from", "category", "is_case_of", "mime_type", "definition", "short_name", "id", "observed"]
 }

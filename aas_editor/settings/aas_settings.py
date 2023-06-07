@@ -75,7 +75,7 @@ ATTR_ORDER = (
     "entity_type",
     "description",
     "administration",
-    "identification",
+    "id",
 )
 PREFERED_LANGS_ORDER = ("en-us", "en", "de")
 
@@ -111,6 +111,11 @@ CLASSES_INFO = {
     },
     Referable: {
         DEFAULT_PARAMS_TO_HIDE: {"parent": None}
+    },
+    Identifiable: {
+        PARAMS_TO_ATTRS: {
+            "id_": "id"
+        },
     },
     AssetAdministrationShell: {
     },

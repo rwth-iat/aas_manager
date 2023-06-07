@@ -253,6 +253,7 @@ class PackTreeView(TreeView):
         self.setItemDelegate(EditDelegate(self))
 
     def initDictCopyExistSubmodelActs(self):
+        # TODO: refactor method name
         dictCopyExistSubmodelActs = {}  # {"file1": list(QAction_copySubmodel1, QAction_copySubmodel2, ...)}
         # filesObjStores contains packages and its instances
         for file, objStore in self.filesObjStores.items():
@@ -262,7 +263,7 @@ class PackTreeView(TreeView):
                     if not obj.id_short == "":
                         name = obj.id_short
                     else:
-                        name = obj.identification.id
+                        name = obj.id
                     existSubmodelAct = QAction(name, self,
                                                statusTip=f"Copy existing submodel in current package",
                                                triggered=lambda: self.onAddExistingSubmodelPushed())
