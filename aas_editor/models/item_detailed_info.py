@@ -18,6 +18,7 @@
 
 from aas_editor.models import StandardItem
 from aas_editor import settings
+from aas_editor.settings import DICT_TYPES
 from aas_editor.utils.util import getAttrs4detailInfo
 from aas_editor.utils.util_type import getTypeName, isSimpleIterable
 from aas_editor.additional.classes import DictItem
@@ -44,7 +45,7 @@ class DetailedInfoItem(StandardItem):
             "new": self.new,
         }
 
-        if isinstance(self.obj, dict):
+        if isinstance(self.obj, DICT_TYPES):
             self._populateDict(self.obj, **kwargs)
         elif isSimpleIterable(self.obj):
             self._populateIterable(self.obj, **kwargs)

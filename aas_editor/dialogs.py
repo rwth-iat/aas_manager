@@ -231,6 +231,8 @@ class InputWidgetUtil:
             objTypes = inheritors(objTypeHint)
             kwargs["defType"] = DEFAULT_INHERITOR.get(objTypeHint, None)
             widget = TypeOptionObjGroupBox(objTypes, **kwargs)
+        elif issubtype(objTypeHint, LangStringSet):
+            widget = LangStringSetGroupBox(objTypeHint, **kwargs)
         elif isSimpleIterableType(objTypeHint):
             widget = IterableGroupBox(objTypeHint, **kwargs)
         elif issubtype(objTypeHint, Union):
@@ -601,6 +603,22 @@ class IterableGroupBox(GroupBox):
             print("Value is not iterable")
             for widget in reversed(self.inputWidgets):
                 self.delInputWidget(widget)
+
+
+class LangStringSetGroupBox(IterableGroupBox):
+    def __init__(self, objTypeHint, **kwargs):
+        objTypeHint = Dict[str, str]
+        super().__init__(objTypeHint, **kwargs)
+
+    def getPreObj(self):
+        preObjDict = super().getPreObj()
+        return PreObject(LangStringSet, (preObjDict,), {})
+
+    def setVal(self, val):
+        if type(val) is LangStringSet:
+            super().setVal(copy.copy(val._dict))
+        else:
+            super().setVal(val)
 
 
 class TypeOptionObjGroupBox(GroupBox):

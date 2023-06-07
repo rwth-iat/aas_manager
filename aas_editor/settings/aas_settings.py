@@ -17,7 +17,7 @@ from basyx.aas.model import AssetAdministrationShell, ConceptDescription, Submod
     Entity, Capability, Operation, RelationshipElement, AnnotatedRelationshipElement, Range, Blob, File, \
     ReferenceElement, DataElement, AdministrativeInformation, AbstractObjectStore, \
     Namespace, SubmodelElementCollection, SubmodelElement, ModelReference, Referable, Identifiable, \
-    Key, Qualifier, BasicEventElement, SubmodelElementList, datatypes
+    Key, Qualifier, BasicEventElement, SubmodelElementList, datatypes, LangStringSet
 
 import aas_editor.additional.classes
 import aas_editor.package
@@ -181,6 +181,7 @@ for inheritor in REFERABLE_INHERITORS:
 
 ATTR_INFOS_TO_SIMPLIFY = (AdministrativeInformation, )
 
+DICT_TYPES = (dict, LangStringSet)
 TYPES_NOT_TO_POPULATE = (type, ABCMeta)
 TYPES_WITH_INSTANCES_NOT_TO_POPULATE = (
     AbstractObjectStore, str, int, float, bool, Enum, Path, aas_editor.additional.classes.DictItem, datatypes.Decimal, type,

@@ -24,7 +24,7 @@ from collections import abc
 from enum import Enum
 from typing import Union, Tuple, Iterable
 
-from basyx.aas.model import ModelReference
+from basyx.aas.model import ModelReference, LangStringSet
 
 import aas_editor.additional.classes
 from aas_editor import settings
@@ -386,7 +386,11 @@ def getIterItemTypeHint(iterableTypehint):
     origin = getOrigin(iterableTypehint)
     args = getArgs(iterableTypehint)
 
-    if issubtype(iterableTypehint, dict):
+    if issubtype(iterableTypehint, LangStringSet):
+        aas_editor.additional.classes.DictItem._field_types["key"] = str
+        aas_editor.additional.classes.DictItem._field_types["value"] = str
+        attrType = aas_editor.additional.classes.DictItem
+    elif issubtype(iterableTypehint, dict):
         aas_editor.additional.classes.DictItem._field_types["key"] = iterableTypehint.__args__[0]
         aas_editor.additional.classes.DictItem._field_types["value"] = iterableTypehint.__args__[1]
         attrType = aas_editor.additional.classes.DictItem
