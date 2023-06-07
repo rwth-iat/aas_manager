@@ -98,6 +98,10 @@ def checkType(obj, typeHint):
     if objType == typeHint:
         return True
 
+    if type(typeHint) is typing.ForwardRef:
+        typeHintName = typeHint.__forward_arg__
+        return getTypeName(type(obj)) == typeHintName
+
     if isUnion(typeHint):
         for typHint in args:
             if checkType(obj, typHint):
