@@ -386,7 +386,7 @@ class ObjGroupBox(GroupBox):
         if hasattr(self.objVal, attr):
             val = getattr(self.objVal, attr)
         else:
-            val = DEFAULTS.get(self.objTypeHint, {}).get(attr, getDefaultVal(self.objTypeHint, param, None))
+            val = DEFAULTS.get(self.objTypeHint, {}).get(param, getDefaultVal(self.objTypeHint, param, None))
         return val
 
     def getInitialInputWidget(self, param: str, val, **kwargs) -> QWidget:

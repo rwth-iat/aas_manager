@@ -68,11 +68,11 @@ MIME_TYPES = [
 DEFAULT_INHERITOR = {
     SubmodelElement: Property,
 }
-
+# Default parameter values of types
 DEFAULTS = {
     Key: {
-        "type_": KeyTypes.PROPERTY,
-        "value": "https://www.company.com/",
+        "type_": KeyTypes.GLOBAL_REFERENCE,
+        "value": "https://www.example.com/",
     },
     Property: {
         "value_type": String,
