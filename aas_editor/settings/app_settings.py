@@ -20,14 +20,14 @@ AAS_CREATOR = "PyI40AAS Testing Framework"
 APPLICATION_NAME = "AAS Manager"
 APPLICATION_INFO = "Free, open source, cross-platform viewer/editor based on PyQt Framework and Eclipse BaSyx Python SDK.\n" \
                    "Developed at the Chair of Information and Automation Systems for Process and Material Technology at RWTH Aachen."
-COPYRIGHT_YEAR = 2022
+COPYRIGHT_YEAR = 2023
 CONTRIBUTORS = "Igor Garmaev"
-DEVELOPER_WEB = "plt.rwth-aachen.de"
-CONTACT = "i.garmaev@plt.rwth-aachen.de"
-REPORT_ERROR_LINK = "https://github.com/zrgt/aas_manager/issues"
-APPLICATION_LINK = "https://github.com/zrgt/aas_manager"
+DEVELOPER_WEB = "www.iat.rwth-aachen.de"
+CONTACT = "i.garmaev@iat.rwth-aachen.de"
+REPORT_ERROR_LINK = "https://github.com/acplt/aas_manager/issues"
+APPLICATION_LINK = "https://github.com/acplt/aas_manager"
 ACPLT = "ACPLT"
-VERSION = "0.3.2"
+VERSION = "0.3.3"
 LICENSE = "GNU General Public License v3.0"
 
 TOOLBARS_HEIGHT = 30
