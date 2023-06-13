@@ -81,7 +81,7 @@ class Package:
                 self.objStore = read_aas_json_file(f, failsafe=failsafe)
         elif fileType == ".aasx":
             reader = AASXReader(self.file.as_posix())
-            reader.read_into(self.objStore, self.fileStore)
+            reader.read_into(self.objStore, self.fileStore, failsafe=failsafe)
         else:
             raise TypeError("Wrong file type:", self.file.suffix)
 
