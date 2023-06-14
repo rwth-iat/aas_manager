@@ -511,7 +511,7 @@ class PackTreeView(TreeView):
                 msgBox = QMessageBox()
                 msgBox.setIcon(QMessageBox.Warning)
                 msgBox.setText(f"Error while reading package:\n{file}")
-                msgBox.setInformativeText("Do you still want to open it?\nSome objects may be missing or incorrect.")
+                msgBox.setInformativeText("The file may not comply with the official schema. For more details, please use the Tools/compliance tool to check the file. Are you sure you want to proceed with opening it? Note that some objects may be missing or incorrect.")
                 msgBox.setStandardButtons(QMessageBox.Cancel | QMessageBox.Yes)
                 msgBox.setDefaultButton(QMessageBox.Yes)
                 msgBox.setDetailedText(f"{e}")
