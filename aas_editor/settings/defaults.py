@@ -17,7 +17,8 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
 from basyx.aas.model import Key, KeyTypes, AssetKind, File, Blob, SubmodelElement, \
-    Property, Qualifier, Referable, AssetAdministrationShell, Submodel
+    Property, Qualifier, Referable, AssetAdministrationShell, Submodel, \
+    SubmodelElementList
 from basyx.aas.model.datatypes import String
 
 from aas_editor.additional.classes import DictItem
@@ -83,6 +84,10 @@ DEFAULTS = {
     Property: {
         "value_type": String,
     },
+    SubmodelElementList: {
+        "type_value_list_element": Property,
+        "value_type_list_element": String,
+    }
 }
 
 DEFAULT_COMPLETIONS = {
