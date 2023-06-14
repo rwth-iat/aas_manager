@@ -516,6 +516,7 @@ class TreeView(BasicTreeView):
             else:
                 return
             font.setPointSize(fontSize)
+            font.setItalic(False)
             self.model().setData(QModelIndex(), font, Qt.FontRole)
             self.setFont(font)
         else:
