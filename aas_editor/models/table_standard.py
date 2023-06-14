@@ -42,7 +42,7 @@ class StandardTable(QAbstractItemModel):
 
     def __init__(self, columns=("Item",), rootItem: StandardItem = None):
         super(StandardTable, self).__init__()
-        self._rootItem = rootItem if rootItem else DetailedInfoItem(None) # FIXME
+        self._rootItem = rootItem
         self._columns = columns
         self.lastErrorMsg = ""
         self.undo: deque[SetDataItem] = deque(maxlen=MAX_UNDOS)

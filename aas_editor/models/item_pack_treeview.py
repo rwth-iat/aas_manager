@@ -32,7 +32,9 @@ from aas_editor.package import Package, StoredFile
 class PackTreeViewItem(StandardItem):
     def __init__(self, obj, parent, **kwargs):
         super().__init__(obj, parent=parent, **kwargs)
-        if isinstance(obj, Package):
+        if obj is None and parent is None:
+            self.child = []
+        elif isinstance(obj, Package):
             self.typehint = Package
             self.package = obj
         else:
