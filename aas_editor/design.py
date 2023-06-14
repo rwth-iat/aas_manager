@@ -21,7 +21,7 @@ import typing
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import QFrame, QWidget, QHBoxLayout
 
-from aas_editor.models import PacksTable, StandardTable
+from aas_editor.models import PacksTable, StandardTable, PackTreeViewItem
 from aas_editor.settings import EXTENDED_COLUMNS_IN_PACK_TABLE
 from aas_editor.settings.app_settings import APPLICATION_NAME, TOOLBARS_HEIGHT, ATTRIBUTE_COLUMN, AppSettings, \
     DEFAULT_COLUMNS_IN_PACKS_TABLE
@@ -120,4 +120,4 @@ class Ui_MainWindow(object):
     def setupMainTreeModel(self) -> StandardTable:
         columns_in_packs_table = list(DEFAULT_COLUMNS_IN_PACKS_TABLE)
         columns_in_packs_table.extend(EXTENDED_COLUMNS_IN_PACK_TABLE)
-        return PacksTable(columns_in_packs_table)
+        return PacksTable(columns_in_packs_table, PackTreeViewItem(None, None))
