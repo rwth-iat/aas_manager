@@ -7,6 +7,13 @@ on:
       - master_test
 
 jobs:
+  createrelease:
+    name: Create Release
+    runs-on: [ubuntu-latest]
+    steps:
+    - name: Output Release URL File
+      run: echo "hello"
+
   build:
     name: Build packages
     needs: createrelease
