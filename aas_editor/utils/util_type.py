@@ -387,8 +387,8 @@ def getIterItemTypeHint(iterableTypehint):
     args = getArgs(iterableTypehint)
 
     if issubtype(iterableTypehint, dict):
-        aas_editor.additional.classes.DictItem._field_types["key"] = iterableTypehint.__args__[0]
-        aas_editor.additional.classes.DictItem._field_types["value"] = iterableTypehint.__args__[1]
+        aas_editor.additional.classes.DictItem.__annotations__["key"] = iterableTypehint.__args__[0]
+        aas_editor.additional.classes.DictItem.__annotations__["value"] = iterableTypehint.__args__[1]
         attrType = aas_editor.additional.classes.DictItem
     elif args:
         if len(args) > 1:
