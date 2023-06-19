@@ -24,7 +24,7 @@ from typing import List, Dict, Type, Set, Any, Tuple
 
 from PyQt5.QtCore import Qt, QFile, QTextStream, QModelIndex
 from PyQt5.QtWidgets import QApplication
-from basyx.aas.model import Referable
+from basyx.aas.model import Referable, NamespaceSet
 
 from aas_editor import settings
 import aas_editor.utils.util_classes as util_classes
@@ -102,6 +102,8 @@ def simplifyInfo(obj, attrName: str = "") -> str:
         if isinstance(obj, settings.ATTR_INFOS_TO_SIMPLIFY):
             res = re.sub("^[A-Z]\w*[(]", "", res)
             res = res.rstrip(")")
+        elif util_type.issubtype(type(obj), NamespaceSet):
+            res = f"{{{str([i for i in obj]).strip('[]')}}}"
         elif inspect.isclass(obj):
             res = util_type.getTypeName(obj)
         elif isinstance(obj, Enum):
