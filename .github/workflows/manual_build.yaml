@@ -14,15 +14,15 @@ jobs:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Set up Python 3.7
-      uses: actions/setup-python@v2
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v3
       with:
-        python-version: 3.7
+        python-version: 3.11
     - name: Install dependencies
       run: |
-        python -m pip install pip==23.0.1
-        pip install qtawesome==1.0.3
-        pip install PyQt5==5.15.4
+        python -m pip install pip==21.3.1
+        pip install qtawesome==1.2.3
+        pip install PyQt5==5.15.9
         pip install -r requirements.txt
     - name: Build with pyinstaller for Windows
       run: |
