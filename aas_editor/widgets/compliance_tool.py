@@ -7,7 +7,7 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-from PyQt5.QtWidgets import QDialog, QLabel, QPushButton, QVBoxLayout, QFileDialog, QMessageBox
+from PyQt5.QtWidgets import QDialog, QLabel, QPushButton, QVBoxLayout, QFileDialog
 from basyx.aas.compliance_tool import compliance_check_xml, compliance_check_json, compliance_check_aasx
 from basyx.aas.compliance_tool.state_manager import ComplianceToolStateManager
 
