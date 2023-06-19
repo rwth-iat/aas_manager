@@ -3,7 +3,7 @@ qtawesome==1.2.3
 pytz==2023.3
 PyQt5==5.15.9
 qpageview==0.6.2
-PyQtWebEngine==5.15.2
+PyQtWebEngine==5.15.6
 pyinstaller
 openpyxl==3.1.2
 pylint
