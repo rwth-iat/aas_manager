@@ -1,4 +1,4 @@
-git+https://github.com/zrgt/basyx-python-sdk@improve/V30RC02#egg=basyx-python-sdk
+git+https://github.com/zrgt/basyx-python-sdk@aas_manager/v30#egg=basyx-python-sdk
 qtawesome==1.2.3
 pytz==2023.3
 PyQt5==5.15.9
