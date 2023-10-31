@@ -123,7 +123,7 @@ class PackTreeView(TreeView):
     EMPTY_VIEW_ICON = OPEN_DRAG_ICON
 
     def __init__(self, parent=None, **kwargs):
-        self.filesObjStores = dict()
+        self.copyBufferObjStores = dict()
         self.scanFolderForExistFiles()
         super(PackTreeView, self).__init__(parent,
                                            emptyViewMsg=self.EMPTY_VIEW_MSG,
@@ -164,7 +164,7 @@ class PackTreeView(TreeView):
                     reader.read_into(objStore, fileStore)
                 else:
                     raise TypeError("Wrong file type:", self.file.suffix)
-                self.filesObjStores[file.name] = objStore
+                self.copyBufferObjStores[file.name] = objStore
             except Exception as e:
                 # If a package is with an error, that file will be skipped.
                 logging.exception(f"Error while reading {file}: {e}. Submodels can not be read")
@@ -241,15 +241,15 @@ class PackTreeView(TreeView):
                                             statusTip="Autoscroll from source",
                                             checkable=True)
 
-        self.dictCopyExistSubmodelActs = self.initDictCopyExistSubmodelActs()
+        self.existSubmodelCopyActsFromFiles: typing.Dict[str, typing.List[QAction]] = self.initExistSubmodelCopyActsFromFiles()
 
         self.autoScrollFromSrcAct.toggle()
         self.setItemDelegate(EditDelegate(self))
 
-    def initDictCopyExistSubmodelActs(self):
-        dictCopyExistSubmodelActs = {}  # {"file1": list(QAction_copySubmodel1, QAction_copySubmodel2, ...)}
+    def initExistSubmodelCopyActsFromFiles(self):
+        existSubmodelCopyActsFromFiles = {}  # {"file1": list(QAction_copySubmodel1, QAction_copySubmodel2, ...)}
         # filesObjStores contains packages and its instances
-        for file, objStore in self.filesObjStores.items():
+        for file, objStore in self.copyBufferObjStores.items():
             copyExistSubmodelActs = []
             for obj in objStore:
                 if isinstance(obj, Submodel):
@@ -262,8 +262,8 @@ class PackTreeView(TreeView):
                                                triggered=lambda: self.onAddExistingSubmodelPushed())
                     existSubmodelAct.setData(obj)
                     copyExistSubmodelActs.append(existSubmodelAct)
-            dictCopyExistSubmodelActs[file] = copyExistSubmodelActs
-        return dictCopyExistSubmodelActs
+            existSubmodelCopyActsFromFiles[file] = copyExistSubmodelActs
+        return existSubmodelCopyActsFromFiles
 
     def onAddExistingSubmodelPushed(self):
         action = self.sender()
@@ -335,7 +335,7 @@ class PackTreeView(TreeView):
         self.addExistSubmodelsMenu.menuAction().setEnabled(False)
         # Add menu with a name of model.
         # dictCopyExistSubmodelActs contains the package names and the list of QActions of its submodels.
-        for filename, copyPasteSubmodelActs in self.dictCopyExistSubmodelActs.items():
+        for filename, copyPasteSubmodelActs in self.existSubmodelCopyActsFromFiles.items():
             nameMenu = self.addExistSubmodelsMenu.addMenu(filename)
             # In copyPasteSubmodelActs are QActions with submodels
             for copyPasteSubmodelAct in copyPasteSubmodelActs:
