@@ -85,14 +85,12 @@ def getAttrsOfCls(cls) -> Set[str]:
             attrs.append(attr)
         except ValueError:
             logging.exception("Error occurred while replacing param to attr: probably CLASSES_INFO is corrupted")
-            # print("Error occurred while replacing param to attr: probably CLASSES_INFO is corrupted")
     hidden_attrs = util_classes.ClassesInfo.hiddenAttrs(cls)
     for hidden_attr in hidden_attrs:
         try:
             attrs.remove(hidden_attr)
         except ValueError:
             logging.exception("Error occurred while removing hidden attr: probably CLASSES_INFO is corrupted")
-            # print("Error occurred while removing hidden attr: probably CLASSES_INFO is corrupted")
     return attrs
 
 
@@ -122,7 +120,6 @@ def getLimitStr(obj, max_sgns=settings.MAX_SIGNS_TO_SHOW) -> str:
         if len(obj) > max_sgns:
             return f"{str(obj)[0:max_sgns]}..."
     except Exception as e:
-        # print(e)
         logging.exception(e)
     return str(obj)
 

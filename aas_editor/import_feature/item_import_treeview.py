@@ -49,7 +49,6 @@ class ImportTreeViewItem(PackTreeViewItem):
                 obj = obj.resolve(self.package.objStore)
         except KeyError as e:
             logging.exception(e)
-            # print(e)
         self.obj = obj
         self.populate()
 

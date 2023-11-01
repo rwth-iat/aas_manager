@@ -64,7 +64,6 @@ class StandardTable(QAbstractItemModel):
             parentObj = childObj.parent()
         except (RuntimeError, AttributeError) as e:
             logging.exception(e)
-            # print(e)
             return QModelIndex()
 
         if parentObj == self._rootItem or not parentObj:
@@ -125,7 +124,6 @@ class StandardTable(QAbstractItemModel):
             res = []
             for item in self.iterItems(start):
                 logging.info("match for: %s", item.data(NAME_ROLE))
-                # print("match for:", item.data(NAME_ROLE))
                 try:
                     if (item.data(OBJECT_ROLE) is value) or (item.data(OBJECT_ROLE) == value):
                         res.append(item)
@@ -138,7 +136,6 @@ class StandardTable(QAbstractItemModel):
             res = []
             for item in self.iterItems(start):
                 logging.info("match for: %s", item.data(NAME_ROLE))
-                # print("match for:", item.data(NAME_ROLE))
                 try:
                     if issubclass(value, item.data(TYPE_ROLE)):
                         res.append(item)
@@ -151,7 +148,6 @@ class StandardTable(QAbstractItemModel):
             res = []
             for item in self.iterItems(start):
                 logging.info("match for: %s", item.data(NAME_ROLE))
-                # print("match for:", item.data(NAME_ROLE))
                 try:
                     if value == item.data(Qt.DisplayRole):
                         res.append(item)
@@ -276,7 +272,6 @@ class StandardTable(QAbstractItemModel):
                 tb = traceback.format_exc()
                 self.lastErrorMsg = f"Error occurred copying {index.data(NAME_ROLE)}: {e}\n\n{tb}"
                 logging.exception(self.lastErrorMsg)
-                # print(self.lastErrorMsg)
                 self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
         else:
             item = self.objByIndex(index)
@@ -339,7 +334,6 @@ class StandardTable(QAbstractItemModel):
                 tb = traceback.format_exc()
                 self.lastErrorMsg = f"Error occurred while adding item to {index.data(NAME_ROLE)}: {e}\n\n{tb}"
                 logging.exception(self.lastErrorMsg)
-                # print(self.lastErrorMsg)
                 self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
         elif role == CLEAR_ROW_ROLE:
             try:

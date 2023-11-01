@@ -119,7 +119,6 @@ class StandardItem(QObject):
             self.typehintName = getTypeHintName(self.typehint)
         except TypeError as e:
             logging.exception(e)
-            # print(e)
             self.typehintName = str(self.typehint)
 
     def updateIcon(self):
@@ -257,7 +256,6 @@ class StandardItem(QObject):
                 return True
             except (AttributeError, KeyError, NotImplementedError, TypeError, IndexError) as e:
                 logging.exception(e)
-                # print(e)
                 return False
         return False
 
@@ -287,7 +285,6 @@ class StandardItem(QObject):
             return attrTypehint
         except KeyError:
             logging.exception("Typehint could not be gotten")
-            # print("Typehint could not be gotten")
 
         if isIterable(self.parentObj):
             attrTypehint = ClassesInfo.addType(type(self.parentObj))
@@ -297,7 +294,6 @@ class StandardItem(QObject):
                     attrTypehint = getIterItemTypeHint(parentTypehint)
                 except KeyError:
                     logging.exception("Typehint could not be gotten")
-                    # print("Typehint could not be gotten")
         return attrTypehint
 
     def getMediaContent(self):

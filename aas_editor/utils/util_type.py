@@ -59,7 +59,6 @@ def isTypehint(obj) -> bool:
             return True
     except TypeError as e:
         logging.exception(e)
-        # print(e)
     return inspect.isclass(obj)
 
 
@@ -138,7 +137,6 @@ def checkTypeModelRef(aasref, typehint):
                 return issubclass(aasref.type, args)
             except TypeError as e:
                 logging.exception(f"Error occured while checking: {aasref.type} and {args}", e)
-                # print(f"Error occured while checking: {aasref.type} and {args}", e)
                 return False
         else:
             return True
@@ -162,7 +160,6 @@ def getTypeName(objType) -> str:
             if res:
                 break
         except (AttributeError, TypeError) as e:
-            # print(e)
             pass
     else:
         name = str(objType)
@@ -285,7 +282,6 @@ def isoftype(obj, types) -> bool:
             return _isoftype(obj, types)
     except TypeError as e:
         logging.exception(e)
-        # print(e)
 
     try:
         for tp in types:
@@ -294,7 +290,6 @@ def isoftype(obj, types) -> bool:
         return False
     except TypeError as e:
         logging.exception(e)
-        # print(e)
         return _isoftype(obj, types)
 
 
@@ -359,7 +354,6 @@ def getAttrTypeHint(objType, attr, delOptional=True):
             typeHint = typehints["return"]
         except Exception as e:
             logging.exception(e)
-            # print(e)
             raise KeyError
 
     try:
@@ -425,8 +419,7 @@ def typeHintToType(typeHint):
 def typecast(val, typ):
     if type(val) is typ:
         return val
-
-    if typ in (type, None):
+    elif typ in (type, None):
         return val
     elif typ in (type(None),):
         return None

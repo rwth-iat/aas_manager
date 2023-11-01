@@ -108,9 +108,7 @@ class SearchBar(ToolBar):
         items.sort(key=absRow)
         for item in items:
             logging.info(item.data(NAME_ROLE))
-            # print(item.data(NAME_ROLE))
         logging.info(self.view.currentIndex().data(NAME_ROLE))
-        # print(self.view.currentIndex().data(NAME_ROLE))
         for item in items:
             if absRow(item) > absRow(self.view.currentIndex()):
                 self.view.setCurrentIndex(item)
@@ -121,7 +119,6 @@ class SearchBar(ToolBar):
         items.sort(key=absRow, reverse=True)
         for item in items:
             logging.info(item.data(NAME_ROLE))
-            # print(item.data(NAME_ROLE))
         for item in items:
             if absRow(item) < absRow(self.view.currentIndex()):
                 self.view.setCurrentIndex(item)

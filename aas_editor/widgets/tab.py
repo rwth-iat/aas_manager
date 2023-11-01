@@ -396,7 +396,6 @@ class Tab(QWidget):
                     self.mediaWidget.setContent(mediaContent.value, mediaContent.mime_type)
             except Exception as e:
                 logging.exception(e)
-                # print(e)
                 self.mediaWidget.setContent(b"Error occurred while loading media")
             self.mediaWidget.setZoomFactor(1.0)
         else:
