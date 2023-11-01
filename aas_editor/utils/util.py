@@ -158,11 +158,7 @@ def getParams4init(objType: Type, withDefaults=True):
     if hasattr(objType, "__origin__") and objType.__origin__:
         objType = objType.__origin__
 
-    if hasattr(objType, "_field_types"):
-        # for NamedTuple
-        paramsTypehints = objType._field_types.copy()
-        defaults = objType._field_defaults if hasattr(objType, "_field_defaults") else {}
-    elif hasattr(objType, "__init__") or hasattr(objType, "__new__"):
+    if hasattr(objType, "__init__") or hasattr(objType, "__new__"):
         if hasattr(objType, "__init__"):
             g = inspect.getfullargspec(objType.__init__)
             paramsTypehints = g.annotations.copy()

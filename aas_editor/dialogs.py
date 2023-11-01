@@ -543,8 +543,8 @@ class IterableGroupBox(GroupBox):
                 raise TypeError(f"expected 1 argument, got {len(self.argTypes)}", self.argTypes)
         else:  # if parentType = dict
             if len(self.argTypes) == 2:
-                DictItem._field_types["key"] = self.argTypes[0]
-                DictItem._field_types["value"] = self.argTypes[1]
+                DictItem.__new__.__annotations__["key"] = self.argTypes[0]
+                DictItem.__new__.__annotations__["value"] = self.argTypes[1]
                 argType = DictItem
             else:
                 raise TypeError(f"expected 2 arguments, got {len(self.argTypes)}", self.argTypes)
