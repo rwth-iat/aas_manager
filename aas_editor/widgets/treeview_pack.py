@@ -391,20 +391,6 @@ class PackTreeView(TreeView):
             self.addAct.setEnabled(True)
             self.addAct.setText("Add package")
 
-    def isPasteOk(self, index: QModelIndex) -> bool:
-        if self.treeClipboard.isEmpty() or not index.isValid():
-            return False
-
-        if super(PackTreeView, self).isPasteOk(index):
-            return True
-
-        obj2paste = self.treeClipboard.objects[-1]
-        currObj = index.data(OBJECT_ROLE)
-
-        if ClassesInfo.addType(type(currObj)) and isinstance(obj2paste, ClassesInfo.addType(type(currObj))):
-            return True
-        return False
-
     def isSaveOk(self) -> bool:
         pack = self.currentIndex().data(PACKAGE_ROLE)
         return True if pack else False
@@ -730,30 +716,30 @@ class PackTreeView(TreeView):
             self._setItemData(index, defaultVal, Qt.EditRole)
 
     def isPasteOk(self, index: QModelIndex) -> bool:
+        if self.treeClipboard.isEmpty() or not index.isValid():
+            return False
+
         attrName = index.data(COLUMN_NAME_ROLE)
         if attrName in (OBJECT_COLUMN_NAME, OBJECT_VALUE_COLUMN_NAME):
             return super(PackTreeView, self).isPasteOk(index)
-        else:
-            if self.treeClipboard.isEmpty() or not index.isValid():
-                return False
 
-            try:
-                attrTypehint = util_type.getAttrTypeHint(type(index.data(OBJECT_ROLE)), attrName, delOptional=False)
-            except KeyError as e:
-                logging.exception(e)
-                # print(e)
-                return False
-
-            obj2paste = self.treeClipboard.objects[-1]
-            targetTypeHint = attrTypehint
-
-            try:
-                if util_type.checkType(obj2paste, targetTypeHint):
-                    return True
-            except (AttributeError, TypeError) as e:
-                logging.exception(e)
-                # print(e)
+        currObj = index.data(OBJECT_ROLE)
+        currObjType = type(currObj)
+        try:
+            attrTypehint = util_type.getAttrTypeHint(currObjType, attrName, delOptional=False)
+        except KeyError as e:
+            logging.exception(e)
             return False
+
+        obj2paste = self.treeClipboard.objects[-1]
+        try:
+            if util_type.checkType(obj2paste, attrTypehint):
+                return True
+            if ClassesInfo.addType(currObjType) and isinstance(obj2paste, ClassesInfo.addType(currObjType)):
+                return True
+        except (AttributeError, TypeError) as e:
+            logging.exception(e)
+        return False
 
     def onPaste(self):
         index = self.currentIndex()
