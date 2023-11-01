@@ -385,7 +385,7 @@ class Tab(QWidget):
             if not self.mediaWidget.width():
                 # set equal sizes
                 oldSizes = self.splitter.sizes()
-                newSizes = [sum(oldSizes)/(len(oldSizes)) for size in oldSizes]
+                newSizes = [sum(oldSizes)//(len(oldSizes)) for i in oldSizes]
                 self.splitter.setSizes(newSizes)
 
             try:
