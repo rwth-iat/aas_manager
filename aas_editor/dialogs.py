@@ -615,7 +615,7 @@ class LangStringSetGroupBox(IterableGroupBox):
         return PreObject(LangStringSet, (preObjDict,), {})
 
     def setVal(self, val):
-        if type(val) is LangStringSet:
+        if isinstance(val, LangStringSet):
             super().setVal(copy.copy(val._dict))
         else:
             super().setVal(val)

@@ -179,7 +179,7 @@ REFERABLE_INHERITORS_ATTRS = {}
 for inheritor in REFERABLE_INHERITORS:
     REFERABLE_INHERITORS_ATTRS.update({inheritor: util.getAttrsOfCls(inheritor)})
 
-ATTR_INFOS_TO_SIMPLIFY = (AdministrativeInformation, )
+ATTR_INFOS_TO_SIMPLIFY = (AdministrativeInformation, LangStringSet)
 
 DICT_TYPES = (dict, LangStringSet)
 TYPES_NOT_TO_POPULATE = (type, ABCMeta)
