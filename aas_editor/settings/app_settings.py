@@ -122,7 +122,7 @@ class AppSettings:
     ORIENTATION = Setting('orientation', QtCore.Qt.Vertical, int)
     LEFT_ZONE_SIZE = Setting('leftZoneSize', QSize(300, 624))
     RIGHT_ZONE_SIZE = Setting('rightZoneSize', QSize(300, 624))
-    OPENED_AAS_FILES = Setting('openedAasFiles', set())
+    AAS_FILES_TO_OPEN_ON_START = Setting('openedAasFiles', set())
     FONTSIZE_FILES_VIEW = Setting('fontSizeFilesView', DEFAULT_FONT.pointSize(), int)
     FONTSIZE_DETAILED_VIEW = Setting('fontSizeDetailedView', DEFAULT_FONT.pointSize(), int)
     PACKTREEVIEW_HEADER_STATE = Setting('packTreeViewHeaderState', None)

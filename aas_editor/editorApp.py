@@ -44,8 +44,8 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.initMenu()
         self.initToolbars()
         self.buildHandlers()
-        self.readSettings()
-        self.setWindowIcon(APP_ICON)
+        self.restoreSettingsFromLastSession()
+        self.openLastSessionFiles()
 
     # noinspection PyArgumentList
     def initActions(self):
@@ -72,10 +72,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.reportBugAct = QAction("Report Bug", self,
                                     statusTip="Report an error found",
                                     triggered=lambda: webbrowser.open(REPORT_ERROR_LINK))
-
-        self.openDocumentationAct = QAction("AAS Documentation", self,
-                                         statusTip="Open Details of the AAS",
-                                         triggered=lambda: self.openDocumentation())
 
         # Theme actions
         self.themeActs = []
@@ -161,7 +157,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menuHelp = QMenu("&Help", self.menubar)
         self.menuHelp.addAction(self.aboutDialogAct)
         self.menuHelp.addAction(self.reportBugAct)
-        self.menuHelp.addAction(self.openDocumentationAct)
 
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
@@ -268,31 +263,16 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                 return a0.ignore()
         self.writeSettings()
 
-    def readSettings(self):
-        # set previously used theme
-        theme = AppSettings.THEME.value()
-        self.toggleTheme(theme)
+    def restoreSettingsFromLastSession(self):
+        self.applyLastSessionTheme()
+        self.applyLastSessionMainWindowSize()
+        self.applyLastSessionOrientation()
+        self.applyLastSessionLayouts()
+        self.applyLastSessionTreeFontSizes()
+        self.applyLastSessionTreeStates()
 
-        # set previously used mainwindow size and orientation
-        size = AppSettings.SIZE.value()
-        self.resize(size)
-        orientation = AppSettings.ORIENTATION.value()
-        self.setOrientation(orientation)
-
-        # set previously used sizes of right ans left layouts
-        splitterLeftSize = AppSettings.LEFT_ZONE_SIZE.value()
-        splitterRightSize = AppSettings.RIGHT_ZONE_SIZE.value()
-        self.mainLayoutWidget.resize(splitterLeftSize)
-        self.subLayoutWidget.resize(splitterRightSize)
-
-        # set previously used fontsizes in trees
-        fontSizeFilesView = AppSettings.FONTSIZE_FILES_VIEW.value()
-        fontSizeDetailedView = AppSettings.FONTSIZE_DETAILED_VIEW.value()
-        PacksTable.currFont.setPointSize(fontSizeFilesView)
-        DetailedInfoTable.currFont.setPointSize(fontSizeDetailedView)
-
-        # try to open previously opened files
-        openedAasFiles = AppSettings.OPENED_AAS_FILES.value()
+    def openLastSessionFiles(self):
+        openedAasFiles = AppSettings.AAS_FILES_TO_OPEN_ON_START.value()
         for file in openedAasFiles:
             try:
                 self.mainTreeView.openPack(file)
@@ -300,7 +280,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                 pass
             self.packTreeModel.setData(QModelIndex(), [], UNDO_ROLE)
 
-        # set previous tree states
+    def applyLastSessionTreeStates(self):
         packTreeViewHeader: HeaderView = self.mainTreeView.header()
         packTreeViewHeaderState = AppSettings.PACKTREEVIEW_HEADER_STATE.value()
         if packTreeViewHeaderState:
@@ -311,32 +291,44 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             customLists = json.load(json_file)
             packTreeViewHeader.setCustomLists(customLists)
         packTreeViewHeader.initMenu()
-
         tabTreeViewHeaderState = AppSettings.TABTREEVIEW_HEADER_STATE.value()
         if tabTreeViewHeaderState:
             self.mainTabWidget.currentWidget().attrsTreeView.header().restoreState(tabTreeViewHeaderState)
+
+    def applyLastSessionTreeFontSizes(self):
+        fontSizeFilesView = AppSettings.FONTSIZE_FILES_VIEW.value()
+        fontSizeDetailedView = AppSettings.FONTSIZE_DETAILED_VIEW.value()
+        PacksTable.currFont.setPointSize(fontSizeFilesView)
+        DetailedInfoTable.currFont.setPointSize(fontSizeDetailedView)
+
+    def applyLastSessionLayouts(self):
+        splitterLeftSize = AppSettings.LEFT_ZONE_SIZE.value()
+        splitterRightSize = AppSettings.RIGHT_ZONE_SIZE.value()
+        self.mainLayoutWidget.resize(splitterLeftSize)
+        self.subLayoutWidget.resize(splitterRightSize)
+
+    def applyLastSessionOrientation(self):
+        orientation = AppSettings.ORIENTATION.value()
+        self.setOrientation(orientation)
+
+    def applyLastSessionMainWindowSize(self):
+        size = AppSettings.SIZE.value()
+        self.resize(size)
+
+    def applyLastSessionTheme(self):
+        theme = AppSettings.THEME.value()
+        self.toggleTheme(theme)
 
     def writeSettings(self):
         AppSettings.THEME.setValue(self.currTheme)
         AppSettings.SIZE.setValue(self.size())
         AppSettings.LEFT_ZONE_SIZE.setValue(self.mainLayoutWidget.size())
         AppSettings.RIGHT_ZONE_SIZE.setValue(self.subLayoutWidget.size())
-        AppSettings.OPENED_AAS_FILES.setValue(self.packTreeModel.openedFiles())
+        AppSettings.AAS_FILES_TO_OPEN_ON_START.setValue(self.packTreeModel.openedFiles())
         AppSettings.FONTSIZE_FILES_VIEW.setValue(PacksTable.currFont.pointSize())
         AppSettings.FONTSIZE_DETAILED_VIEW.setValue(DetailedInfoTable.currFont.pointSize())
         AppSettings.PACKTREEVIEW_HEADER_STATE.setValue(self.mainTreeView.header().saveState())
         AppSettings.TABTREEVIEW_HEADER_STATE.setValue(
             self.mainTabWidget.currentWidget().attrsTreeView.header().saveState())
         # AppSettings.DEFAULT_NEW_FILETYPE_FILTER.setValue(self.packTreeView.defaultNewFileTypeFilter)
-
-    def openDocumentation(self):
-        # TODO: The location of the pdf file?
-        pdf_path = "aas_editor/additional/Details_of_the_Asset_Administration_Shell_Part1_V3.pdf"
-        os_name = os.name
-        if os_name == "nt":
-            os.system(f'start "" "{pdf_path}"')
-        elif os_name == "posix":
-            os.system(f'open "{pdf_path}"')
-        else:
-            raise OSError(f"Unsupported operating system: {os_name}")
 
