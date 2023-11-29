@@ -11,6 +11,7 @@
 import copy
 import json
 import logging
+import traceback
 import typing
 from pathlib import Path
 from typing import Optional
@@ -499,7 +500,7 @@ class PackTreeView(TreeView):
                 msgBox.setInformativeText("The file may not comply with the official schema. For more details, please use the Tools/compliance tool to check the file. Are you sure you want to proceed with opening it? Note that some objects may be missing or incorrect.")
                 msgBox.setStandardButtons(QMessageBox.Cancel | QMessageBox.Yes)
                 msgBox.setDefaultButton(QMessageBox.Yes)
-                msgBox.setDetailedText(f"{e}")
+                msgBox.setDetailedText(f"{traceback.format_exc()}")
                 ret = msgBox.exec()
                 if ret == QMessageBox.Yes:
                     pack = Package(file, failsafe=True)
