@@ -25,7 +25,7 @@ from PyQt5.QtWidgets import QPushButton, QDialog, QDialogButtonBox, \
 
 from aas_editor.settings import DEFAULTS, DEFAULT_COMPLETIONS, ATTRIBUTE_COLUMN, OBJECT_ROLE, \
     APPLICATION_NAME, CONTRIBUTORS, CONTACT, COPYRIGHT_YEAR, VERSION, DEFAULT_INHERITOR, APPLICATION_INFO, \
-    DEVELOPER_WEB, APPLICATION_LINK, LICENSE, REPORT_ERROR_LINK
+    DEVELOPER_WEB, APPLICATION_LINK, LICENSE, REPORT_ERROR_LINK, ICONS_FOLDER
 from aas_editor.utils.util import inheritors, getReqParams4init, getParams4init, getDefaultVal, \
     delAASParents
 from aas_editor.utils.util_type import getTypeName, issubtype, isoftype, isSimpleIterableType, \
@@ -64,7 +64,7 @@ class AboutDialog(QMessageBox):
             f"License: {LICENSE}<br>"
             f"Copyright (C) {COPYRIGHT_YEAR}"
         )
-        self.setIconPixmap(QPixmap("aas_editor/icons/logo.svg"))
+        self.setIconPixmap(self.parentWidget().windowIcon().pixmap(QSize(64, 64)))
 
 
 class ErrorMessageBox(QMessageBox):
@@ -313,22 +313,6 @@ class GroupBox(QGroupBox):
         self.setAlignment(Qt.AlignLeft)
         self.setLayout(QFormLayout(self))
         self.type = GroupBoxType.SIMPLE
-
-    def paintEvent(self, a0: QPaintEvent) -> None:
-        super(GroupBox, self).paintEvent(a0)
-        if self.isCheckable():
-            self.setStyleSheet(
-                "GroupBox::indicator:checked"
-                "{"
-                "    border-image: url(aas_editor/icons/close-hover.svg);"
-                "}"
-                "GroupBox::indicator:checked:hover,"
-                "GroupBox::indicator:checked:focus,"
-                "GroupBox::indicator:checked:pressed"
-                "{"
-                "    border-image: url(aas_editor/icons/close-pressed.svg);"
-                "}"
-            )
 
     def setClosable(self, b: bool) -> None:
         self.type = GroupBoxType.CLOSABLE if b else GroupBoxType.SIMPLE

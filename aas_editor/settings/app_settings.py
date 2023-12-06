@@ -9,11 +9,13 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 import typing
 from dataclasses import dataclass
+from pathlib import Path
 
 from PyQt5.QtCore import QSize, QSettings
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QIcon
 from PyQt5 import QtCore
 
+from aas_editor.directories import get_settings_file, get_themes_folder, get_custom_column_lists_file, get_icons_folder
 from aas_editor.settings.util_constants import NOT_GIVEN
 
 AAS_CREATOR = "PyI40AAS Testing Framework"
@@ -84,18 +86,17 @@ VALUE_COLUMN = 1
 TYPE_COLUMN = 2
 TYPE_HINT_COLUMN = 3
 
+# Files
+SETTINGS_FILE = get_settings_file()
+THEMES_FOLDER = get_themes_folder()
+ICONS_FOLDER = get_icons_folder()
+CUSTOM_COLUMN_LISTS_FILE = get_custom_column_lists_file()
+
 # Themes
-import os
-
-files = os.listdir("themes")
-THEMES = {"default": "default.qss"}
+APP_LOGO = QIcon(str(ICONS_FOLDER / 'logo.svg'))
 DEFAULT_THEME = "default"
-for file in files:
-    if file.endswith(".qss"):
-        themename = file.rstrip(".qss")
-        THEMES[themename] = f"themes/{file}"
 
-SETTINGS = QSettings("settings.ini", QSettings.IniFormat)
+SETTINGS = QSettings(str(SETTINGS_FILE), QSettings.IniFormat)
 
 
 @dataclass(order=True)
@@ -126,7 +127,7 @@ class AppSettings:
     FONTSIZE_FILES_VIEW = Setting('fontSizeFilesView', DEFAULT_FONT.pointSize(), int)
     FONTSIZE_DETAILED_VIEW = Setting('fontSizeDetailedView', DEFAULT_FONT.pointSize(), int)
     PACKTREEVIEW_HEADER_STATE = Setting('packTreeViewHeaderState', None)
-    PACKTREEVIEW_HEADER_CUSTOM_COLUMN_LISTS_FILE = "custom_column_lists.json"
+    PACKTREEVIEW_HEADER_CUSTOM_COLUMN_LISTS_FILE = CUSTOM_COLUMN_LISTS_FILE
     TABTREEVIEW_HEADER_STATE = Setting('tabTreeViewHeaderState', None)
     DEFAULT_NEW_FILETYPE_FILTER = Setting('defaultNewFileTypeFilter', "AASX files (*.aasx)", str)
 

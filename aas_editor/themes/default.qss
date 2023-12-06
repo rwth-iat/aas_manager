@@ -176,3 +176,15 @@ QTableCornerButton::section
     border: 0.2ex transparent #BAB9B8;
     border-radius: 0px;
 }
+
+
+GroupBox::indicator:checked
+{
+    border-image: url(themes:default/close-hover.svg);
+}
+GroupBox::indicator:checked:hover,
+GroupBox::indicator:checked:focus,
+GroupBox::indicator:checked:pressed
+{
+    border-image: url(themes:default/close-pressed.svg);
+}
