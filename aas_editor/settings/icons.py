@@ -21,7 +21,6 @@ ICON_DEFAULTS = {'scale_factor': 1.0,
 
 qta.set_defaults(**ICON_DEFAULTS)
 
-APP_ICON=QIcon('aas_editor/icons/logo.svg')
 EXIT_ICON = qta.icon("mdi.exit-to-app")
 NEW_PACK_ICON = qta.icon("mdi.folder-plus")
 OPEN_ICON = qta.icon("mdi.folder-open")

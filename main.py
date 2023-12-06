@@ -23,9 +23,6 @@ logging.basicConfig(level=logging.INFO, filename="log.log", filemode="w",
 def main():
     app = QtWidgets.QApplication(sys.argv)
     from aas_editor.editorApp import EditorApp as CurrentApp
-    from aas_editor.splash import Splash
-    # splash = Splash()
-    # splash.show()
 
     window = CurrentApp()
 

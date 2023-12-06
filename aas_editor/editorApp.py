@@ -16,7 +16,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 from aas_editor.settings.app_settings import *
-from aas_editor.settings.icons import APP_ICON, EXIT_ICON, SETTINGS_ICON
+from aas_editor.settings.icons import EXIT_ICON, SETTINGS_ICON
 from aas_editor.settings_dialog import SettingsDialog
 from aas_editor.widgets.compliance_tool import ComplianceToolDialog
 from aas_editor.widgets import AddressLine
@@ -28,10 +28,10 @@ from aas_editor.widgets.treeview import HeaderView
 
 
 class EditorApp(QMainWindow, design.Ui_MainWindow):
-    def __init__(self, parent=None):
+    def __init__(self, fileToOpen=None, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
-        self.currTheme = DEFAULT_THEME
+        self.loadThemes()
 
         dialogs.ModelReferenceGroupBox.CHOOSE_FRM_VIEW = self.mainTreeView
         AddressLine.setModel(self.mainTreeView.model())
@@ -45,7 +45,18 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.initToolbars()
         self.buildHandlers()
         self.restoreSettingsFromLastSession()
-        self.openLastSessionFiles()
+
+        if fileToOpen:
+            self.openAASFile(fileToOpen)
+        else:
+            self.openLastSessionFiles()
+
+    def loadThemes(self):
+        self.themes = {}
+        for file in THEMES_FOLDER.iterdir():
+            if file.suffix == ".qss":
+                self.themes[file.stem] = str(file)
+        self.currTheme = DEFAULT_THEME
 
     # noinspection PyArgumentList
     def initActions(self):
@@ -75,11 +86,10 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         # Theme actions
         self.themeActs = []
-        for theme in THEMES:
-            themeAct = QAction(theme, self,
-                               statusTip=f"Choose {theme} theme",
-                               triggered=lambda: self.toggleThemeSlot())
-            self.themeActs.append(themeAct)
+        for theme in self.themes:
+            self.themeActs.append(QAction(theme, self,
+                                          statusTip=f"Choose {theme} theme",
+                                          triggered=lambda: self.toggleThemeSlot()))
 
         self.setHOrientationAct = QAction("Horizontal", self,
                                           statusTip=f"Set horizontal orientation",
@@ -241,8 +251,8 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             self.toggleTheme(action.text())
 
     def toggleTheme(self, theme: str) -> None:
-        if theme in THEMES:
-            toggleStylesheet(THEMES[theme])
+        if theme in self.themes:
+            toggleStylesheet(self.themes[theme])
             self.currTheme = theme
 
     def closeEvent(self, a0: QCloseEvent) -> None:
@@ -274,11 +284,14 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
     def openLastSessionFiles(self):
         openedAasFiles = AppSettings.AAS_FILES_TO_OPEN_ON_START.value()
         for file in openedAasFiles:
-            try:
-                self.mainTreeView.openPack(file)
-            except OSError:
-                pass
-            self.packTreeModel.setData(QModelIndex(), [], UNDO_ROLE)
+            self.openAASFile(file)
+
+    def openAASFile(self, filePath: str):
+        try:
+            self.mainTreeView.openPack(filePath)
+        except OSError:
+            pass
+        self.packTreeModel.setData(QModelIndex(), [], UNDO_ROLE)
 
     def applyLastSessionTreeStates(self):
         packTreeViewHeader: HeaderView = self.mainTreeView.header()
