@@ -39,6 +39,7 @@ jobs:
             TARGET: macos
             CMD_BUILD: >
                 pyinstaller aas_manager.spec &&
+                cp -r basyx dist/AAS_Manager/basyx &&
                 cd dist/ &&
                 zip -r AAS_Manager_MacOS.zip AAS_Manager
             OUT_FILE_NAME: AAS_Manager_MacOS.zip
@@ -47,6 +48,7 @@ jobs:
             TARGET: ubuntu
             CMD_BUILD: >
                 pyinstaller aas_manager.spec &&
+                cp -r basyx dist/AAS_Manager/basyx &&
                 cd dist/ &&
                 zip -r AAS_Manager_Linux.zip AAS_Manager
             OUT_FILE_NAME: AAS_Manager_Linux.zip
@@ -55,6 +57,7 @@ jobs:
             TARGET: windows
             CMD_BUILD: |
                 pyinstaller aas_manager.spec
+                xcopy /E /I basyx dist\AAS_Manager\basyx
                 cd dist
                 7z a AAS_Manager_Win.zip AAS_Manager
             OUT_FILE_NAME: AAS_Manager_Win.zip
