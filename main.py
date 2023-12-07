@@ -24,7 +24,10 @@ def main():
     app = QtWidgets.QApplication(sys.argv)
     from aas_editor.editorApp import EditorApp as CurrentApp
 
-    window = CurrentApp()
+    # Check if a file path is provided as an argument
+    fileToOpen = sys.argv[1] if len(sys.argv) > 1 else None
+
+    window = CurrentApp(fileToOpen)
 
     window.show()
 
