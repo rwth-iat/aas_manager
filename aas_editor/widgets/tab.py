@@ -239,10 +239,6 @@ class Tab(QWidget):
         self.objTypeLine.setFixedWidth(168)
         self.objTypeLine.setReadOnly(True)
 
-        self.descrLabel = QLabel(self)
-        self.descrLabel.setWordWrap(True)
-        self.descrLabel.setTextInteractionFlags(Qt.TextSelectableByMouse)
-
         QWebEngineSettings.defaultSettings().setAttribute(QWebEngineSettings.PluginsEnabled, True)
         self.mediaWidget = QWebEngineView()
         self.saveMediaAsBtn = QPushButton(f"Save media as..", self,
@@ -358,7 +354,6 @@ class Tab(QWidget):
             state = None
 
         self.packItem = QPersistentModelIndex(packItem.siblingAtColumn(0))
-        self.descrLabel.setText("")
 
         self.packItemObj = self.packItem.data(OBJECT_ROLE)
         self.updateMediaWidget()
@@ -370,7 +365,6 @@ class Tab(QWidget):
             self.setWindowIcon(icon)
         self.setWindowTitle(self.packItem.data(Qt.DisplayRole))
         self.attrsTreeView.newPackItem(self.packItem)
-        self.attrsTreeView.selectionModel().currentChanged.connect(self.showDetailInfoItemDoc)
         self.currItemChanged.emit(QModelIndex(self.packItem))
 
         self.forwardAct.setEnabled(True) if self.nextItems else self.forwardAct.setDisabled(True)
@@ -429,9 +423,6 @@ class Tab(QWidget):
             QMessageBox.critical(self, "Error", f"No chosen media to save: {e}")
         return False
 
-    def showDetailInfoItemDoc(self, detailInfoItem: QModelIndex):
-        self.descrLabel.setText(detailInfoItem.data(Qt.WhatsThisRole))
-
     def _initLayout(self):
         pathLayout = QHBoxLayout(self.pathWidget)
         pathLayout.setContentsMargins(0, 0, 0, 0)
@@ -452,7 +443,6 @@ class Tab(QWidget):
         treeViewLayout.setContentsMargins(0, 0, 0, 0)
         treeViewLayout.addWidget(self.pathWidget)
         treeViewLayout.addWidget(self.attrsTreeView)
-        treeViewLayout.addWidget(self.descrLabel)
 
         self.splitter = QSplitter()
         self.splitter.setOrientation(Qt.Horizontal)
