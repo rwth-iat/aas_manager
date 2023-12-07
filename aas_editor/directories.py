@@ -17,7 +17,7 @@ def get_settings_file():
 
 
 def create_alias_for_themes_folder(path):
-    QDir.addSearchPath('themes', str(path))
+    QDir.addSearchPath('themes', str(path.resolve()))
 
 
 def get_themes_folder():
