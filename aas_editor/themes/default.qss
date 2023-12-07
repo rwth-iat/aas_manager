@@ -1,7 +1,3 @@
-
-
-
-
 QTreeView,
 QListView
 {
@@ -13,31 +9,31 @@ QListView
 
 QTreeView::branch:has-siblings:!adjoins-item
 {
-    border-image: url(themes/light/stylesheet-vline.svg) 0;
+    border-image: url(themes:default/stylesheet-vline.svg) 0;
 }
 
 QTreeView::branch:has-siblings:adjoins-item
 {
-    border-image: url(themes/light/stylesheet-branch-more.svg) 0;
+    border-image: url(themes:default/stylesheet-branch-more.svg) 0;
 }
 
 QTreeView::branch:!has-children:!has-siblings:adjoins-item
 {
-    border-image: url(themes/light/stylesheet-branch-end.svg) 0;
+    border-image: url(themes:default/stylesheet-branch-end.svg) 0;
 }
 
 QTreeView::branch:has-children:!has-siblings:closed,
 QTreeView::branch:closed:has-children:has-siblings
 {
-    border-image: url(themes/light/stylesheet-branch-end-closed.svg) 0;
-    image: url(themes/light/branch_closed.svg);
+    border-image: url(themes:default/stylesheet-branch-end-closed.svg) 0;
+    image: url(themes:default/branch_closed.svg);
 }
 
 QTreeView::branch:open:has-children:!has-siblings,
 QTreeView::branch:open:has-children:has-siblings
 {
-    border-image: url(themes/light/stylesheet-branch-end-open.svg) 0;
-    image: url(themes/light/branch_open.svg);
+    border-image: url(themes:default/stylesheet-branch-end-open.svg) 0;
+    image: url(themes:default/branch_open.svg);
 }
 
 QTableView::item,
