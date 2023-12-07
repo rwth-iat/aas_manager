@@ -162,44 +162,33 @@ class StandardTable(QAbstractItemModel):
     def addItem(self, obj: Union[Package, 'SubmodelElement', Iterable],
                 parent: QModelIndex = QModelIndex()):
         parent = parent.siblingAtColumn(0)
-        parentItem = self.objByIndex(parent)
-        parentObj = parentItem.data(OBJECT_ROLE)
-        parentObjCls = type(parentObj)
-        parentName = parent.data(NAME_ROLE)
+        self._addItemObjToParentObj(obj, parent)
+        itemInitKwargs = self._getKwargsForItemInit(obj, parent)
+        return self._addItem(parent, itemInitKwargs)
 
+    def _getKwargsForItemInit(self, obj: Union[Package, 'SubmodelElement', Iterable], parent):
+        parentItem = self.objByIndex(parent)
         kwargs = {
             "obj": obj,
             "parent": parentItem,
         }
-        if isinstance(obj, Package):
-            kwargs["parent"] = self._rootItem
-            kwargs["new"] = False
-            itemTyp = PackTreeViewItem
-        elif parentName in Package.addableAttrs():
-            package: Package = parent.data(PACKAGE_ROLE)
-            package.add(obj)
-            itemTyp = PackTreeViewItem
-        elif ClassesInfo.changedParentObject(parentObjCls): #FIXME: Refactor
-            parentObj = getattr(parentObj, ClassesInfo.changedParentObject(parentObjCls))
+        return kwargs
+
+    def _addItemObjToParentObj(self, obj: Union[Package, 'SubmodelElement', Iterable], parent: QModelIndex):
+        parentObj = parent.data(OBJECT_ROLE)
+        if isinstance(parentObj, AbstractSet):
             parentObj.add(obj)
-            itemTyp = PackTreeViewItem
-        elif isinstance(parentObj, AbstractSet):
-            parentObj.add(obj)
-            itemTyp = DetailedInfoItem
         elif isinstance(parentObj, list):
             parentObj.append(obj)
-            itemTyp = DetailedInfoItem
         elif isinstance(parentObj, dict):
             parentObj[obj.key] = obj.value
-            itemTyp = DetailedInfoItem
         else:
             raise AttributeError(
                 f"Object couldn't be added: parent obj type is not appendable: {type(parentObj)}")
-        return self._addItem(parent, itemTyp, kwargs)
 
-    def _addItem(self, parent: QModelIndex, itemTyp, kwargs):
+    def _addItem(self, parent: QModelIndex, kwargs):
         self.beginInsertRows(parent, self.rowCount(parent), self.rowCount(parent))
-        item = itemTyp(**kwargs)
+        item = self.itemTyp(**kwargs)
         self.endInsertRows()
         itemIndex = self.index(item.row(), 0, parent)
         self.undo.append(SetDataItem(index=QPersistentModelIndex(itemIndex), value=NOT_GIVEN, role=CLEAR_ROW_ROLE))

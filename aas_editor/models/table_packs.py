@@ -8,18 +8,20 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
-from typing import Any
+from typing import Any, Union, Iterable
 
 from PyQt5.QtCore import QModelIndex, Qt
 from PyQt5.QtGui import QFont
 
-from aas_editor.models import StandardTable
+from aas_editor.models import StandardTable, PackTreeViewItem
 from aas_editor.package import Package
 from aas_editor.settings.app_settings import PACKAGE_ROLE, DEFAULT_FONT, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, \
-    DEFAULT_COLUMNS_IN_PACKS_TABLE, OBJECT_ROLE, COLUMN_NAME_ROLE
+    DEFAULT_COLUMNS_IN_PACKS_TABLE, OBJECT_ROLE, COLUMN_NAME_ROLE, NAME_ROLE
+from aas_editor.utils.util_classes import ClassesInfo
 
 
 class PacksTable(StandardTable):
+    itemTyp = PackTreeViewItem
     currFont = QFont(DEFAULT_FONT)
 
     def openedPacks(self):
@@ -63,3 +65,25 @@ class PacksTable(StandardTable):
         self.dataChanged.emit(index.siblingAtColumn(0),
                               index.siblingAtColumn(self.columnCount()))
         return True
+
+    def _addItemObjToParentObj(self, obj: Union[Package, 'SubmodelElement', Iterable], parent: QModelIndex):
+        parentObj = parent.data(OBJECT_ROLE)
+        parentObjCls = type(parentObj)
+        parentName = parent.data(NAME_ROLE)
+        if isinstance(obj, Package):
+            return
+        elif parentName in Package.addableAttrs():
+            package: Package = parent.data(PACKAGE_ROLE)
+            package.add(obj)
+        elif ClassesInfo.changedParentObject(parentObjCls): #FIXME: Refactor
+            parentObj = getattr(parentObj, ClassesInfo.changedParentObject(parentObjCls))
+            parentObj.add(obj)
+        else:
+            return super()._addItemObjToParentObj(obj, parentObj)
+
+    def _getKwargsForItemInit(self, obj: Union[Package, 'SubmodelElement', Iterable], parent):
+        kwargs = super()._getKwargsForItemInit(obj, parent)
+        if isinstance(obj, Package):
+            kwargs["parent"] = self._rootItem
+            kwargs["new"] = False
+        return kwargs
