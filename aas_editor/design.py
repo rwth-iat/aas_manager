@@ -30,7 +30,6 @@ from aas_editor.widgets import ToolBar, TabWidget, SearchBar, PackTreeView
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
-
         MainWindow.setWindowIcon(APP_LOGO)
         MainWindow.setAutoFillBackground(True)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
@@ -43,7 +42,6 @@ class Ui_MainWindow(object):
 
         self.packTreeModel = self.setupMainTreeModel()
         self.mainTreeView = self.setupMainTreeView(parent=self.mainLayoutWidget, model=self.packTreeModel)
-
 
         self.toolBar = ToolBar(self.mainLayoutWidget)
         self.searchBarPack = SearchBar(self.mainTreeView, filterColumns=[ATTRIBUTE_COLUMN],
