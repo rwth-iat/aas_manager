@@ -410,6 +410,7 @@ class PackTreeView(TreeView):
         parent = parent if parent else self.currentIndex()
         name = parent.data(NAME_ROLE)
         parentObj = parent.data(OBJECT_ROLE)
+        parentParentObj = parent.parent().data(OBJECT_ROLE) if parent.parent().isValid() else None
 
         if objVal:
             kwargs = {"parent": parent,
@@ -420,8 +421,8 @@ class PackTreeView(TreeView):
         try:
             if not parent.isValid():
                 self.newPackWithDialog()
-            elif name in Package.addableAttrs():
-                self.addItemWithDialog(objTypeHint=ClassesInfo.addType(Package, name), **kwargs)
+            elif parentParentObj is not None and ClassesInfo.packViewAttrs(type(parentParentObj)):
+                self.addItemWithDialog(objTypeHint=ClassesInfo.addType(type(parentParentObj), name), **kwargs)
             elif ClassesInfo.addType(type(parentObj)):
                 self.addItemWithDialog(objTypeHint=ClassesInfo.addType(type(parentObj)), **kwargs)
             else:
@@ -460,7 +461,7 @@ class PackTreeView(TreeView):
                 pack = Package()
                 saved = self.savePack(pack, file)
                 if saved:
-                    self.model().setData(QModelIndex(), pack, ADD_ITEM_ROLE)
+                    self.add_pack_to_tree(pack)
             else:
                 # cancel pressed
                 return
@@ -519,9 +520,12 @@ class PackTreeView(TreeView):
             if Path(file).absolute() in openedPacks:
                 QMessageBox.critical(self, "Error", f"Package {file} is already opened")
             else:
-                self.model().setData(QModelIndex(), pack, ADD_ITEM_ROLE)
+                self.add_pack_to_tree(pack)
                 return pack
         return False
+
+    def add_pack_to_tree(self, pack: Package):
+        self.model().setData(QModelIndex(), pack, ADD_ITEM_ROLE)
 
     def savePack(self, pack: Package = None, file: str = None) -> bool:
         pack = self.currentIndex().data(PACKAGE_ROLE) if pack is None else pack
