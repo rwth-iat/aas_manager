@@ -19,13 +19,12 @@ from inspect import isabstract
 from typing import Union, List, Dict, Optional
 
 from PyQt5.QtCore import Qt, QRect, QSize, QTimer
-from PyQt5.QtGui import QPaintEvent, QPixmap
 from PyQt5.QtWidgets import QPushButton, QDialog, QDialogButtonBox, \
     QGroupBox, QWidget, QVBoxLayout, QMessageBox, QScrollArea, QFrame, QFormLayout
 
 from aas_editor.settings import DEFAULTS, DEFAULT_COMPLETIONS, ATTRIBUTE_COLUMN, OBJECT_ROLE, \
     APPLICATION_NAME, CONTRIBUTORS, CONTACT, COPYRIGHT_YEAR, VERSION, DEFAULT_INHERITOR, APPLICATION_INFO, \
-    DEVELOPER_WEB, APPLICATION_LINK, LICENSE, REPORT_ERROR_LINK, ICONS_FOLDER
+    DEVELOPER_WEB, APPLICATION_LINK, LICENSE, REPORT_ERROR_LINK, ICONS_FOLDER, AAS_METAMODEL_VERSION
 from aas_editor.utils.util import inheritors, getReqParams4init, getParams4init, getDefaultVal, \
     delAASParents
 from aas_editor.utils.util_type import getTypeName, issubtype, isoftype, isSimpleIterableType, \
@@ -59,6 +58,7 @@ class AboutDialog(QMessageBox):
             f"Website: <a href='{DEVELOPER_WEB}'>{DEVELOPER_WEB}</a><br>"
             f"Project Homepage: <a href='{APPLICATION_LINK}'>{APPLICATION_LINK}</a><br>"
             f"Version: {VERSION}<br>"
+            f"AAS Metamodel Version: {AAS_METAMODEL_VERSION}<br>"
             f"Contributors: {CONTRIBUTORS}<br>"
             f"Contact: {CONTACT}<br>"
             f"License: {LICENSE}<br>"
