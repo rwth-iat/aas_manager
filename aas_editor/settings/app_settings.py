@@ -9,7 +9,6 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 import typing
 from dataclasses import dataclass
-from pathlib import Path
 
 from PyQt5.QtCore import QSize, QSettings
 from PyQt5.QtGui import QFont, QIcon
@@ -26,10 +25,10 @@ COPYRIGHT_YEAR = 2023
 CONTRIBUTORS = "Igor Garmaev"
 DEVELOPER_WEB = "www.iat.rwth-aachen.de"
 CONTACT = "i.garmaev@iat.rwth-aachen.de"
-REPORT_ERROR_LINK = "https://github.com/acplt/aas_manager/issues"
-APPLICATION_LINK = "https://github.com/acplt/aas_manager"
+REPORT_ERROR_LINK = "https://github.com/rwth-iat/aas_manager/issues"
+APPLICATION_LINK = "https://github.com/rwth-iat/aas_manager"
 ACPLT = "ACPLT"
-VERSION = "0.3.3"
+VERSION = "0.3.4"
 LICENSE = "GNU General Public License v3.0"
 
 TOOLBARS_HEIGHT = 30
