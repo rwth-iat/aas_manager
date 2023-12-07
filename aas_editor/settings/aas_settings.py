@@ -154,6 +154,24 @@ CLASSES_INFO = {
         ADD_ACT_AAS_TXT: "Add statement",
         ADD_TYPE: SubmodelElement,
     },
+    Operation: {
+        HIDDEN_ATTRS: ("input_variable", "output_variable", "in_output_variable"),
+        ITERABLE_ATTRS: ("input_variable", "output_variable", "in_output_variable"),
+        PACKVIEW_ATTRS_INFO: {
+            "input_variable": {
+                ADD_ACT_AAS_TXT: "Add input variable",
+                ADD_TYPE: SubmodelElement,
+            },
+            "output_variable": {
+                ADD_ACT_AAS_TXT: "Add output variable",
+                ADD_TYPE: SubmodelElement,
+            },
+            "in_output_variable": {
+                ADD_ACT_AAS_TXT: "Add in_output variable",
+                ADD_TYPE: SubmodelElement,
+            },
+        }
+    },
     ModelReference: {
         PARAMS_TO_ATTRS: {
             "type_": "type"
