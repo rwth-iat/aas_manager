@@ -38,7 +38,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         welcomeTabKwargs = self.mainTabWidget.tabClsKwargs if self.mainTabWidget.tabClsKwargs else {}
         welcomeTab = self.mainTabWidget.addTab(self.mainTabWidget.tabCls(parent=self.mainTabWidget, **welcomeTabKwargs),
                                                "Welcome")
-        self.mainTabWidget.widget(welcomeTab).searchBar.showFocused()
 
         self.initActions()
         self.initMenu()
