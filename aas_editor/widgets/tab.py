@@ -285,11 +285,6 @@ class Tab(QWidget):
                        toggled=lambda a: self.tabWidget.tabBar().show() if a else self.tabWidget.tabBar().hide(),
                        checkable=True,
                        checked=not self.tabWidget.tabBar().isHidden()))
-        menuSettings.addAction(QAction("Hide/show address line", self,
-                       statusTip="Hide/show address line",
-                       toggled=lambda a: self.pathWidget.show() if a else self.pathWidget.hide(),
-                       checkable=True,
-                       checked=not self.pathWidget.isHidden()))
         settingsBtn.setMenu(menuSettings)
         self.toolBar.addWidget(settingsBtn)
 
@@ -300,6 +295,7 @@ class Tab(QWidget):
         self.toolBar.addAction(self.attrsTreeView.redoAct)
         self.toolBar.addAction(self.attrsTreeView.editCreateInDialogAct)
         self.toolBar.addAction(self.attrsTreeView.addAct)
+        self.toolBar.addSeparator()
 
     # noinspection PyArgumentList
     def initActions(self):
@@ -425,24 +421,18 @@ class Tab(QWidget):
         return False
 
     def _initLayout(self):
-        pathLayout = QHBoxLayout(self.pathWidget)
-        pathLayout.setContentsMargins(0, 0, 0, 0)
-        pathLayout.addWidget(self.pathToolBar)
-        pathLayout.addWidget(self.pathLine)
-        pathLayout.addWidget(self.objTypeLine)
-        self.pathWidget.setFixedHeight(TOOLBARS_HEIGHT)
-
         toolBarWidget = QWidget()
         toolBarLayout = QHBoxLayout(toolBarWidget)
         toolBarLayout.setContentsMargins(0, 0, 0, 0)
         toolBarLayout.addWidget(self.toolBar)
-        toolBarLayout.addWidget(self.searchBar)
+        toolBarLayout.addWidget(self.pathToolBar)
+        toolBarLayout.addWidget(self.pathLine)
+        toolBarLayout.addWidget(self.objTypeLine)
         toolBarWidget.setFixedHeight(TOOLBARS_HEIGHT)
 
         treeViewWidget = QWidget()
         treeViewLayout = QVBoxLayout(treeViewWidget)
         treeViewLayout.setContentsMargins(0, 0, 0, 0)
-        treeViewLayout.addWidget(self.pathWidget)
         treeViewLayout.addWidget(self.attrsTreeView)
 
         self.splitter = QSplitter()
@@ -453,8 +443,8 @@ class Tab(QWidget):
 
         layout = QVBoxLayout(self)
         layout.setObjectName("tabLayout")
-        layout.addWidget(self.pathWidget)
         layout.addWidget(toolBarWidget)
+        layout.addWidget(self.searchBar)
         layout.addWidget(self.splitter)
         layout.setSpacing(2)
         layout.setContentsMargins(0, 2, 0, 2)
