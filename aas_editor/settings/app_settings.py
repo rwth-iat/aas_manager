@@ -29,7 +29,7 @@ REPORT_ERROR_LINK = "https://github.com/rwth-iat/aas_manager/issues"
 APPLICATION_LINK = "https://github.com/rwth-iat/aas_manager"
 ACPLT = "ACPLT"
 VERSION = "0.3.4"
-AAS_METAMODEL_VERSION = "2.0.1"
+AAS_METAMODEL_VERSION = "3.0"
 LICENSE = "GNU General Public License v3.0"
 
 TOOLBARS_HEIGHT = 30
