@@ -24,7 +24,7 @@ from PyQt5.QtWidgets import QFrame, QWidget, QHBoxLayout
 from aas_editor.models import PacksTable, StandardTable, PackTreeViewItem
 from aas_editor.settings import EXTENDED_COLUMNS_IN_PACK_TABLE, APP_LOGO
 from aas_editor.settings.app_settings import APPLICATION_NAME, TOOLBARS_HEIGHT, ATTRIBUTE_COLUMN, AppSettings, \
-    DEFAULT_COLUMNS_IN_PACKS_TABLE
+    DEFAULT_COLUMNS_IN_PACKS_TABLE, WINDOW_TITLE
 from aas_editor.widgets import ToolBar, TabWidget, SearchBar, PackTreeView
 
 
@@ -72,7 +72,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(f"{APPLICATION_NAME}[*]")
+        MainWindow.setWindowTitle(f"{WINDOW_TITLE}[*]")
 
     def setOrientation(self, o: QtCore.Qt.Orientation):
         if o == QtCore.Qt.Horizontal:

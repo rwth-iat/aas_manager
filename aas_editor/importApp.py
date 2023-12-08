@@ -85,7 +85,7 @@ class ImportApp(EditorApp):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(f"{_translate('MainWindow', APPLICATION_NAME)} Import Mode")
+        MainWindow.setWindowTitle(f"{_translate('MainWindow', WINDOW_TITLE)} Import Mode")
         self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar"))
 
     def setupUi(self, MainWindow):
