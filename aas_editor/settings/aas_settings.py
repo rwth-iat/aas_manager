@@ -9,10 +9,12 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
 import datetime
+import inspect
 from abc import ABCMeta
 from enum import Enum
 from pathlib import Path
 
+import basyx.aas.model
 from basyx.aas.model import AssetAdministrationShell, ConceptDescription, Submodel, Property, \
     Entity, Capability, Operation, RelationshipElement, AnnotatedRelationshipElement, Range, Blob, File, \
     ReferenceElement, DataElement, AdministrativeInformation, AbstractObjectStore, \
@@ -189,6 +191,7 @@ CLASSES_INFO = {
     },
 }
 
+AAS_CLASSES = {name:obj for name, obj in inspect.getmembers(basyx.aas.model) if inspect.isclass(obj)}
 EXTENDED_COLUMNS_IN_PACK_TABLE = list(util.getAttrs4inheritors(Referable))
 EXTENDED_COLUMNS_IN_PACK_TABLE.sort()
 REFERABLE_INHERITORS = sorted(list(util.inheritors(Referable)), key=util_type.getTypeName)

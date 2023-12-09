@@ -18,9 +18,10 @@
 
 import inspect
 import re
+import typing
 from abc import ABCMeta
 from enum import Enum
-from typing import List, Dict, Type, Set, Any, Tuple
+from typing import List, Dict, Type, Set, Any, Tuple, Iterable
 
 from PyQt5.QtCore import Qt, QFile, QTextStream, QModelIndex
 from PyQt5.QtWidgets import QApplication
@@ -77,14 +78,27 @@ def getAttrs4inheritors(cls) -> Set[str]:
 
 def getAttrsOfCls(cls) -> Set[str]:
     """Return attributes of the class instance"""
-    attrs = list(getParams4init(cls, withDefaults=False).keys())
+    params = getParams4init(cls)
+    attrs = convertParams2Attrs(params, cls)
+    attrs = removeHiddenAttrs(attrs, cls)
+    return attrs
+
+
+def convertParams2Attrs(params: List[str], cls) -> List[str]:
+    """Convert params to attrs"""
     params_to_attrs = util_classes.ClassesInfo.params_to_attrs(cls)
+    attrs = params.copy()
     for param, attr in params_to_attrs.items():
         try:
             attrs.remove(param)
             attrs.append(attr)
         except ValueError:
             logging.exception("Error occurred while replacing param to attr: probably CLASSES_INFO is corrupted")
+    return attrs
+
+
+def removeHiddenAttrs(attrs: List[str], cls) -> List[str]:
+    """Remove hidden attrs from attrs"""
     hidden_attrs = util_classes.ClassesInfo.hiddenAttrs(cls)
     for hidden_attr in hidden_attrs:
         try:
@@ -140,7 +154,7 @@ def getDefaultVal(objType: Type, param: str, default=settings.NOT_GIVEN):
     :raise AttributeError if no default value found and default is not given
     :return: default value for the given attribute for type init
     """
-    paramsTypehints, paramsDefaults = getParams4init(objType)
+    paramsTypehints, paramsDefaults = getParamsAndTypehints4init(objType)
     try:
         return paramsDefaults[param]
     except KeyError:
@@ -150,50 +164,97 @@ def getDefaultVal(objType: Type, param: str, default=settings.NOT_GIVEN):
             return default
 
 
-def getParams4init(objType: Type, withDefaults=True):
-    """Return params for init with their type and default values"""
-    if hasattr(objType, "__origin__") and objType.__origin__:
-        objType = objType.__origin__
+def getParams4init(objType: Type) -> List[str]:
+    """Return params for init"""
+    objType = resolveBaseType(objType)
+    g = getfullargspecoftypeinit(objType)
+    paramsAndTypehints = g.annotations.copy()
+    if 'return' in paramsAndTypehints:
+        paramsAndTypehints.pop('return')
+    return list(paramsAndTypehints.keys())
 
-    if hasattr(objType, "__init__") or hasattr(objType, "__new__"):
-        if hasattr(objType, "__init__"):
-            g = inspect.getfullargspec(objType.__init__)
-            paramsTypehints = g.annotations.copy()
-            defaults = g.defaults
-        if not paramsTypehints and hasattr(objType, "__new__"):
+
+def getParamsAndTypehints4init(objType: Type, withDefaults=True) -> tuple[dict[str, Any], dict[str, Any]] | dict[
+    str, Any]:
+    """Return params for init with their type and default values"""
+    objType = resolveBaseType(objType)
+
+    g = getfullargspecoftypeinit(objType)
+    paramsAndTypehints = g.annotations.copy()
+    if 'return' in paramsAndTypehints:
+        paramsAndTypehints.pop('return')
+    paramsAndTypehints = replaceForwardRefsWithTypes(paramsAndTypehints)
+
+    if withDefaults:
+        defaults = g.defaults
+        paramsDefaults = _getDefaultValuesOfParams(paramsAndTypehints.keys(), defaults)
+        return paramsAndTypehints, paramsDefaults
+
+    return paramsAndTypehints
+
+
+def resolveBaseType(objType: Type) -> Type:
+    origin = typing.get_origin(objType)
+    return origin if origin else objType
+
+
+def getfullargspecoftypeinit(objType: Type) -> inspect.FullArgSpec:
+    if not (hasattr(objType, "__init__") or hasattr(objType, "__new__")):
+        raise TypeError(f"no init or new func in objectType: {objType}")
+
+    if hasattr(objType, "__init__"):
+        g = inspect.getfullargspec(objType.__init__)
+        if hasattr(objType, "__new__") and not g.annotations:
             g = inspect.getfullargspec(objType.__new__)
-            paramsTypehints = g.annotations.copy()
-            defaults = g.defaults
-        if g.kwonlydefaults:
-            defaults = defaults + tuple(g.kwonlydefaults.values())
     else:
         raise TypeError(f"no init or new func in objectType: {objType}")
 
-    try:
-        paramsTypehints.pop('return')
-    except KeyError:
-        pass
+    if g.kwonlydefaults:
+        g.defaults = g.defaults + tuple(g.kwonlydefaults.values())
+    return g
 
-    if withDefaults:
-        paramsDefaults = _getParamsDefaults(paramsTypehints, defaults)
-        return paramsTypehints, paramsDefaults
+
+def replaceForwardRefsWithTypes(paramsTypehints: Dict[str, Any]) -> Dict[str, Any]:
+    for param in paramsTypehints:
+        typeHint = paramsTypehints[param]
+        paramsTypehints[param] = resolveForwardRef(typeHint)
+    return paramsTypehints
+
+
+def resolveForwardRef(typeHint: Any) -> Any:
+    origin = typing.get_origin(typeHint)
+    args = typing.get_args(typeHint)
+
+    if origin is None and not args:
+        # It's neither a generic type nor a Union
+        if type(typeHint) is typing.ForwardRef:
+            referencedTypeName = typeHint.__forward_arg__
+            typeHint = settings.AAS_CLASSES[referencedTypeName]
+        return typeHint
+
+    # Replace ForwardRefs in the arguments
+    new_args = tuple(resolveForwardRef(arg) for arg in args)
+
+    if origin:
+        # Reconstruct generic types like Optional or Tuple
+        return origin[new_args]
     else:
-        return paramsTypehints
+        raise TypeError(f"no origin in typeHint, only args: {typeHint}")
 
 
-def _getParamsDefaults(paramsTypehints: Dict[str, Any], defaults: Tuple[Any]) -> Dict[str, Any]:
-    if paramsTypehints and defaults:
-        prms = list(paramsTypehints.keys())[len(paramsTypehints) - len(defaults):]
-        paramsDefaults = dict(zip(prms, defaults))
-    else:
-        paramsDefaults = {}
+def _getDefaultValuesOfParams(params: Iterable[str], defaults: Tuple[Any]) -> Dict[str, Any]:
+    params = list(params)
+    paramsDefaults = {}
+    if params and defaults:
+        paramsWithDefaults = params[len(params) - len(defaults):]
+        paramsDefaults = dict(zip(paramsWithDefaults, defaults))
     return paramsDefaults
 
 
 def getReqParams4init(objType: Type, rmDefParams=True,
-                      attrsToHide = None, delOptional=True) -> Dict[str, Type]:
+                      attrsToHide=None, delOptional=True) -> Dict[str, Type]:
     """Return required params for init with their type"""
-    paramsTypehints, paramasDefaults = getParams4init(objType)
+    paramsTypehints, paramasDefaults = getParamsAndTypehints4init(objType)
 
     if rmDefParams and paramasDefaults:
         for i in range(len(paramasDefaults)):
@@ -220,7 +281,7 @@ def _delRecursivlyParent(aasObj, iter_num=0):
     if hasattr(aasObj, "parent"):
         aasObj.parent = None
     if iter_num == 0 or util_type.isIterable(aasObj) or isinstance(aasObj, Referable):
-        params = getParams4init(type(aasObj), withDefaults=False).keys()
+        params = getParams4init(type(aasObj))
         for param in params:
             if hasattr(aasObj, param.rstrip("_")):
                 lowerObj = getattr(aasObj, param.rstrip("_"))
@@ -236,43 +297,10 @@ def _delRecursivlyParent(aasObj, iter_num=0):
             for item in aasObj:
                 _delRecursivlyParent(item, iter_num + 1)
 
-def delAASParents(aasObj): #TODO change if aas changes
+
+def delAASParents(aasObj):  # TODO change if aas changes
     _delRecursivlyParent(aasObj)
 
-
-# todo check if gorg is ok in other versions of python
-# def issubtype(typ, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:
-#     if types == Union:
-#         if hasattr(typ, "__origin__") and typ.__origin__:
-#             return typ.__origin__ == types
-#         if hasattr(typ, "_gorg"):
-#             return typ._gorg == types
-#         else:
-#             return typ == types
-#
-#     if isinstance(types, typing.Iterable) and typ in types:
-#         return True
-#     elif typ == types:
-#         return True
-#     if hasattr(typ, "__origin__") and typ.__origin__:
-#         print(typ.__origin__)
-#         if typ.__origin__ == typing.Union:
-#             if None.__class__ in typ.__args__ and len(typ.__args__) == 2:
-#                 args = list(typ.__args__)
-#                 args.remove(None.__class__)
-#                 typ = args[0]
-#                 if hasattr(typ, "__origin__") and typ.__origin__:
-#                     typ = typ.__origin__
-#                 return issubclass(typ, types)
-#             elif isinstance(types, typing.Iterable):
-#                 return typ.__origin__ in types
-#             else:
-#                 return typ.__origin__ == types
-#         else:
-#             return issubclass(typ.__origin__, types)
-#     if hasattr(typ, "_gorg"):
-#         return issubclass(typ._gorg, types)
-#     return issubclass(typ, types)
 
 def getDoc(typ: type) -> str:
     return typ.__doc__

@@ -11,10 +11,10 @@ import copy
 from pathlib import Path
 from typing import Dict, Type, Union, List, Iterable
 
-from basyx.aas.model import AssetAdministrationShell, Asset, Submodel, ConceptDescription
+from basyx.aas.model import AssetAdministrationShell, Submodel, ConceptDescription
 
 from aas_editor.package import Package, StoredFile
-from aas_editor.utils.util import getParams4init
+from aas_editor.utils.util import getParamsAndTypehints4init
 from aas_editor.utils.util_classes import ClassesInfo, PreObject
 from aas_editor.utils.util_type import getAttrTypeHint, isIterableType, isIterable, checkType, isOptional, getTypeName
 
@@ -28,10 +28,6 @@ class KwargPackage(Package):
     @property
     def shells(self) -> Iterable[AssetAdministrationShell]:
         return self._iter_objects(AssetAdministrationShell)
-
-    @property
-    def assets(self) -> Iterable[Asset]:
-        return self._iter_objects(Asset)
 
     @property
     def submodels(self) -> Iterable[Submodel]:
@@ -133,7 +129,7 @@ class KwargObject:
     #         raise AttributeError
 
     def _updateKwargsWithDefaults(self):
-        params, defaults = getParams4init(self.objtype)
+        params, defaults = getParamsAndTypehints4init(self.objtype)
         self.kwargsTypehints = params
         if params and defaults:
             params = list(params.keys())

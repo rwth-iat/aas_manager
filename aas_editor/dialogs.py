@@ -24,8 +24,8 @@ from PyQt5.QtWidgets import QPushButton, QDialog, QDialogButtonBox, \
 
 from aas_editor.settings import DEFAULTS, DEFAULT_COMPLETIONS, ATTRIBUTE_COLUMN, OBJECT_ROLE, \
     APPLICATION_NAME, CONTRIBUTORS, CONTACT, COPYRIGHT_YEAR, VERSION, DEFAULT_INHERITOR, APPLICATION_INFO, \
-    DEVELOPER_WEB, APPLICATION_LINK, LICENSE, REPORT_ERROR_LINK, ICONS_FOLDER, AAS_METAMODEL_VERSION
-from aas_editor.utils.util import inheritors, getReqParams4init, getParams4init, getDefaultVal, \
+    DEVELOPER_WEB, APPLICATION_LINK, LICENSE, REPORT_ERROR_LINK,  AAS_METAMODEL_VERSION
+from aas_editor.utils.util import inheritors, getReqParams4init, getParamsAndTypehints4init, getDefaultVal, \
     delAASParents
 from aas_editor.utils.util_type import getTypeName, issubtype, isoftype, isSimpleIterableType, \
     isIterableType, isIterable, isOptional, removeOptional, typeHintToType
@@ -206,7 +206,7 @@ class InputWidgetUtil:
 
         paramsToHide = paramsToHide if paramsToHide else ClassesInfo.default_params_to_hide(objTypeHint)
 
-        params, paramsDefaults = getParams4init(objTypeHint)
+        params, paramsDefaults = getParamsAndTypehints4init(objTypeHint)
         reqParams = getReqParams4init(objTypeHint, rmDefParams=True)
         hiddenAttrs = ClassesInfo.hiddenAttrs(objTypeHint)
 
@@ -463,15 +463,18 @@ class ObjGroupBox(GroupBox):
     def addWidget4optionalParam(self):
         layout: QFormLayout = self.layout()
         for row in range(layout.rowCount()):
-            item = layout.itemAt(row, QFormLayout.FieldRole)
-            if self.sender() == item.widget():
-                createBtn: editWidgets.CreateOptionalParamBtn = item.widget()
-                kwargs = copy.copy(self.kwargs)
-                kwargs.update({"optional": True})
-                widget = self.getInputWidget(createBtn.paramName, val=None, **kwargs)
-                layout.removeRow(row)
-                self.insertInputWidget(widget, createBtn.paramName, row)
-                break
+            try:
+                item = layout.itemAt(row, QFormLayout.FieldRole)
+                if self.sender() == item.widget():
+                    createBtn: editWidgets.CreateOptionalParamBtn = item.widget()
+                    kwargs = copy.copy(self.kwargs)
+                    kwargs.update({"optional": True})
+                    widget = self.getInputWidget(createBtn.paramName, val=None, **kwargs)
+                    layout.removeRow(row)
+                    self.insertInputWidget(widget, createBtn.paramName, row)
+                    break
+            except Exception as e:
+                ErrorMessageBox.withTraceback(self, str(e)).exec()
 
     def setVal4param(self, param: str, val):
         paramWidget = self.paramWidgetDict[param]
