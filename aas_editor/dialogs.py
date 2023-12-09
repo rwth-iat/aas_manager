@@ -515,7 +515,7 @@ class IterableGroupBox(GroupBox):
         plusButton = QPushButton(f"+ Element", self,
                                  toolTip="Add element",
                                  clicked=self._addInputWidget)
-        self.layout().addWidget(plusButton)
+        self.layout().addRow(plusButton)
         self.inputWidgets = []
         self.setVal(self.objVal)
 
@@ -548,7 +548,7 @@ class IterableGroupBox(GroupBox):
         widget.setFlat(True)
         widget.toggled.connect(lambda: self.delInputWidget(widget))
         self.inputWidgets.append(widget)
-        self.layout().addWidget(widget)
+        self.layout().insertRow(self.layout().count()-1, widget)
         self.adjustSize()
 
     def delInputWidget(self, widget: QWidget):
@@ -632,7 +632,7 @@ class TypeOptionObjGroupBox(GroupBox):
         kwargs["title"] = ""
         self.widget = QWidget()
         self.replaceGroupBoxWidget(currObjType, **kwargs)
-        self.layout().addWidget(self.widget)
+        self.layout().addRow(self.widget)
 
         # change input widget for new type if type in combobox changed
         self.typeComboBox.currentIndexChanged.connect(
@@ -649,7 +649,7 @@ class TypeOptionObjGroupBox(GroupBox):
             self.typeComboBox.setCurrentIndex(self.typeComboBox.findData(objValType))
         else:
             self.typeComboBox.setCurrentIndex(0)
-        self.layout().addWidget(self.typeComboBox)
+        self.layout().addRow(self.typeComboBox)
 
     def replaceGroupBoxWidget(self, objType, **kwargs):
         """Changes input GroupBox due to objType structure"""
