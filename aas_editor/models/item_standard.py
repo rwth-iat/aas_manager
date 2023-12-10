@@ -188,13 +188,13 @@ class StandardItem(QObject):
         data = settings.NOT_GIVEN
         if column == settings.ATTRIBUTE_COLUMN:
             data = self.objectName
-        if column == settings.VALUE_COLUMN:
+        elif column == settings.VALUE_COLUMN:
             data = self.displayValue
-        if column == settings.TYPE_COLUMN:
+        elif column == settings.TYPE_COLUMN:
             data = self.objTypeName
-        if column == settings.TYPE_HINT_COLUMN:
+        elif column == settings.TYPE_HINT_COLUMN:
             data = self.typehintName
-        if column_name:
+        elif column_name:
             try:
                 obj = getattr(self.obj, column_name)
                 data = simplifyInfo(obj)
