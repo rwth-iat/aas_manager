@@ -128,7 +128,7 @@ def checkTypeModelRef(aasref, typehint):
     origin = getOrigin(typehint)
     args = getArgs(typehint)
 
-    if origin is ModelReference:
+    if origin is ModelReference or type(aasref) is ModelReference:
         if args:
             if isinstance(args[0], typing.ForwardRef):
                 arg = args[0].__forward_arg__
