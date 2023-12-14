@@ -20,7 +20,7 @@ from typing import Union, List, Dict, Optional
 
 from PyQt5.QtCore import Qt, QRect, QSize, QTimer
 from PyQt5.QtWidgets import QPushButton, QDialog, QDialogButtonBox, \
-    QGroupBox, QWidget, QVBoxLayout, QMessageBox, QScrollArea, QFrame, QFormLayout
+    QGroupBox, QWidget, QVBoxLayout, QMessageBox, QScrollArea, QFrame, QFormLayout, QApplication
 
 from aas_editor.settings import DEFAULTS, DEFAULT_COMPLETIONS, ATTRIBUTE_COLUMN, OBJECT_ROLE, \
     APPLICATION_NAME, CONTRIBUTORS, CONTACT, COPYRIGHT_YEAR, VERSION, DEFAULT_INHERITOR, APPLICATION_INFO, \
@@ -103,8 +103,9 @@ class ErrorMessageBox(QMessageBox):
 
 class AddDialog(QDialog):
     """Base abstract class for custom dialogs for adding data"""
-    MIN_WIDTH = 480
-    MAX_HEIGHT = 900
+    REC = QApplication.desktop().screenGeometry()
+    MAX_HEIGHT = int(REC.height() * 0.9)
+    MIN_WIDTH = max(650, REC.width() // 2)
 
     def __init__(self, parent=None, title=""):
         QDialog.__init__(self, parent)
