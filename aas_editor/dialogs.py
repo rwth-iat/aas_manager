@@ -18,7 +18,7 @@ from enum import Enum, unique
 from inspect import isabstract
 from typing import Union, List, Dict, Optional
 
-from PyQt5.QtCore import Qt, QRect, QSize, QTimer
+from PyQt5.QtCore import Qt, QRect, QSize, QTimer, pyqtSignal
 from PyQt5.QtWidgets import QPushButton, QDialog, QDialogButtonBox, \
     QGroupBox, QWidget, QVBoxLayout, QMessageBox, QScrollArea, QFrame, QFormLayout, QApplication
 
@@ -308,6 +308,7 @@ class GroupBoxType(Enum):
 
 class GroupBox(QGroupBox):
     """Groupbox which also can be closable groupbox"""
+    closeClicked = pyqtSignal()
 
     def __init__(self, objTypeHint, parent=None, title="", paramsToHide: dict = None, rmDefParams=True,
                  objVal=None, paramsToAttrs=None, optional=False, **kwargs):
@@ -325,6 +326,7 @@ class GroupBox(QGroupBox):
         self.setAlignment(Qt.AlignLeft)
         self.setLayout(QFormLayout(self))
         self.type = GroupBoxType.SIMPLE
+        self.toggled.connect(lambda x: self.closeClicked.emit())
 
     def setClosable(self, b: bool) -> None:
         self.type = GroupBoxType.CLOSABLE if b else GroupBoxType.SIMPLE
