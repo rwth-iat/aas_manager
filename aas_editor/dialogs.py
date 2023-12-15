@@ -306,7 +306,6 @@ class AddObjDialog(AddDialog):
 class GroupBoxType(Enum):
     SIMPLE = 0
     CLOSABLE = 1
-    ADDABLE = 2
 
 
 class GroupBox(QGroupBox):
@@ -335,13 +334,6 @@ class GroupBox(QGroupBox):
 
     def isClosable(self) -> bool:
         return self.isCheckable() and self.type is GroupBoxType.CLOSABLE
-
-    def setAddable(self, b: bool) -> None:
-        self.type = GroupBoxType.ADDABLE if b else GroupBoxType.SIMPLE
-        self.setCheckable(b)
-
-    def isAddable(self) -> bool:
-        return self.isCheckable() and self.type is GroupBoxType.ADDABLE
 
     def setVal(self, val):
         pass
