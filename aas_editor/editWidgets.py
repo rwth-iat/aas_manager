@@ -21,7 +21,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIntValidator, QDoubleValidator
 
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QDateTimeEdit, QCheckBox, QCompleter, \
-    QDateEdit, QSpinBox, QHBoxLayout, QPlainTextEdit, QPushButton, QFileDialog, QLineEdit, QLabel
+    QDateEdit, QHBoxLayout, QPlainTextEdit, QPushButton, QFileDialog, QLineEdit, QToolButton
 from basyx.aas.model.datatypes import Date
 
 from aas_editor.utils.util import inheritors
@@ -411,3 +411,9 @@ class CreateOptionalParamBtn(QPushButton):
         super(CreateOptionalParamBtn, self).__init__(title, **kwargs)
         self.paramName = paramName
         self.paramTypehint = objTypehint
+
+class CloseButton(QToolButton):
+    """Close button for optional params.
+    A separate class is needed for the stylesheet to work properly"""
+    def __init__(self, parent=None):
+        super(CloseButton, self).__init__(parent)

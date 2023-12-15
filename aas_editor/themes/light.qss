@@ -1644,10 +1644,16 @@ QPushButton:pressed
     color: #31363B;
 }
 
+CloseButton:enabled,
+CloseButton:diabled,
+CloseButton:checked,
 GroupBox::indicator:checked
 {
     border-image: url(themes:light/close-hover.svg);
 }
+CloseButton:hover,
+CloseButton:focus,
+CloseButton:pressed,
 GroupBox::indicator:checked:hover,
 GroupBox::indicator:checked:focus,
 GroupBox::indicator:checked:pressed

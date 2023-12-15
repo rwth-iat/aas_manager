@@ -174,10 +174,16 @@ QTableCornerButton::section
 }
 
 
+CloseButton:enabled,
+CloseButton:diabled,
+CloseButton:checked,
 GroupBox::indicator:checked
 {
     border-image: url(themes:default/close-hover.svg);
 }
+CloseButton:hover,
+CloseButton:focus,
+CloseButton:pressed,
 GroupBox::indicator:checked:hover,
 GroupBox::indicator:checked:focus,
 GroupBox::indicator:checked:pressed

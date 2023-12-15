@@ -1638,10 +1638,16 @@ QDoubleSpinBox::down-arrow:off
    border-image: url(themes:dark/down_arrow_disabled.svg);
 }
 
+CloseButton:enabled,
+CloseButton:diabled,
+CloseButton:checked,
 GroupBox::indicator:checked
 {
     border-image: url(themes:dark/close-hover.svg);
 }
+CloseButton:hover,
+CloseButton:focus,
+CloseButton:pressed,
 GroupBox::indicator:checked:hover,
 GroupBox::indicator:checked:focus,
 GroupBox::indicator:checked:pressed
