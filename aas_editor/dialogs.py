@@ -105,7 +105,8 @@ class AddDialog(QDialog):
     """Base abstract class for custom dialogs for adding data"""
     REC = QApplication.desktop().screenGeometry()
     MAX_HEIGHT = int(REC.height() * 0.9)
-    MIN_WIDTH = max(650, REC.width() // 2)
+    MIN_WIDTH = 450
+    INITIAL_POSITION = None
 
     def __init__(self, parent=None, title=""):
         QDialog.__init__(self, parent)
@@ -136,6 +137,9 @@ class AddDialog(QDialog):
         self.verticalLayoutScroll = QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayoutScroll.setContentsMargins(0, 0, 0, 0)
 
+        if self.INITIAL_POSITION:
+            self.move(self.INITIAL_POSITION)
+
     def adjustSize(self) -> None:
         layoutSize = self.layout().sizeHint()
         buttonsSize = self.buttonBox.sizeHint()
@@ -148,6 +152,14 @@ class AddDialog(QDialog):
 
     def getObj2add(self):
         pass
+
+    # Save dialog position on exit
+    def closeEvent(self, event):
+        super().closeEvent(event)
+        self.saveSettings()
+
+    def saveSettings(self):
+        AddDialog.INITIAL_POSITION = self.pos()
 
 
 def checkIfAccepted(func):
