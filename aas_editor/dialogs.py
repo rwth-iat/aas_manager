@@ -344,6 +344,9 @@ class GroupBox(QGroupBox):
         newSize = self.size()
         if oldSize != newSize:
             QTimer.singleShot(0, lambda: self.window().adjustSize())
+        newSize = self.size()
+        if newSize.width() < oldSize.width():
+            self.resize(oldSize.width(), newSize.height())
 
 
 class ObjGroupBox(GroupBox):
