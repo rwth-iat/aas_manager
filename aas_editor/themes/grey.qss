@@ -187,11 +187,11 @@ QTabBar::tab:selected {
     background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #535353, stop:1 #444);
 }
 QTabBar::close-button {
-    image: url(themes:grey/close.png);
+    image: url(themes:grey/close.svg);
     subcontrol-position: right;
 }
 QTabBar::close-button:hover {
-    image: url(themes:grey/close-hover.png);
+    image: url(themes:grey/close-hover.svg);
 }
 
 QTabWidget, QTabWidget::tab-bar {
@@ -762,13 +762,19 @@ QStatusBar QLineEdit, QStatusBar QLineEdit:focus {
     selection-color: #ffffff;
 }
 
+CloseButton:enabled,
+CloseButton:diabled,
+CloseButton:checked,
 GroupBox::indicator:checked
 {
-    border-image: url(themes:grey/close.png);
+    border-image: url(themes:grey/close.svg);
 }
+CloseButton:hover,
+CloseButton:focus,
+CloseButton:pressed,
 GroupBox::indicator:checked:hover,
 GroupBox::indicator:checked:focus,
 GroupBox::indicator:checked:pressed
 {
-    border-image: url(themes:grey/close-hover.png);
+    border-image: url(themes:grey/close-hover.svg);
 }
