@@ -22,6 +22,7 @@ from PyQt5.QtCore import Qt, QRect, QSize, QTimer, pyqtSignal
 from PyQt5.QtWidgets import QPushButton, QDialog, QDialogButtonBox, \
     QGroupBox, QWidget, QVBoxLayout, QMessageBox, QScrollArea, QFrame, QFormLayout, QApplication
 
+from aas_editor.editWidgets import StandardInputWidget
 from aas_editor.settings import DEFAULTS, DEFAULT_COMPLETIONS, ATTRIBUTE_COLUMN, OBJECT_ROLE, \
     APPLICATION_NAME, CONTRIBUTORS, CONTACT, COPYRIGHT_YEAR, VERSION, DEFAULT_INHERITOR, APPLICATION_INFO, \
     DEVELOPER_WEB, APPLICATION_LINK, LICENSE, REPORT_ERROR_LINK,  AAS_METAMODEL_VERSION
@@ -358,12 +359,15 @@ class ObjGroupBox(GroupBox):
                          paramsToAttrs=paramsToAttrs, **kwargs)
 
         self.inputWidgets: List[QWidget] = []
-        self.paramWidgetDict: Dict[str, QWidget] = {}
+        self.paramWidgets: Dict[str, QWidget] = {}
 
-        reqParamsDict: Dict = getReqParams4init(self.objTypeHint, self.rmDefParams, self.paramsToHide,
-                                                delOptional=False)
-        sortedReqParams = sorted(reqParamsDict.items(), key=lambda x: isOptional(x[1]))
-        self.reqParamsDict = dict(sortedReqParams)
+        reqInitParamsTypehints = getReqParams4init(self.objTypeHint, self.rmDefParams, self.paramsToHide,
+                                                   delOptional=False)
+        self.defaultParams =  tuple(getParamsAndTypehints4init(self.objTypeHint)[1].keys())
+
+        sortedReqInitParamsTypehints = sorted(reqInitParamsTypehints.items(),
+                                              key=lambda x: int(x[0] in self.defaultParams))
+        self.reqParamsDict = dict(sortedReqInitParamsTypehints)
         self.kwargs = kwargs.copy() if kwargs else {}
         self.initLayout()
 
@@ -397,33 +401,28 @@ class ObjGroupBox(GroupBox):
         paramTypeHint = self.reqParamsDict[param]
         print(f"Getting widget for param: {param} of type: {paramTypeHint}")
         widget = InputWidgetUtil.getInputWidget(paramTypeHint, objVal=val, **kwargs)
-        self.paramWidgetDict[param] = widget
+        self.paramWidgets[param] = widget
 
-        if isinstance(widget, GroupBox):
-            if widget.optional:
-                widget.setClosable(True)
-                widget.toggled.connect(self.rmOptionalGroupBox)
+        if widget.optional and isinstance(widget, (GroupBox, StandardInputWidget)):
+            widget.setClosable(True)
+            widget.closeClicked.connect(self.replaceOptionalParamWidgetWithCreateBtn)
         return widget
 
     def insertInputWidget(self, widget: QWidget, param: str, row: int = -1):
         title = self.getWidgetTitle(param)
-        if isinstance(widget, QGroupBox):
-            widget.setTitle(title)
-            self.layout().insertRow(row, widget)
-        else:
-            self.layout().insertRow(row, title, widget)
+        self.layout().insertRow(row, title, widget)
         self.inputWidgets.append(widget)
         self.adjustSize()
 
     def getWidgetTitle(self, param: str):
         title = param.strip("_")
-        if not isOptional(self.reqParamsDict[param]):
+        if param not in self.defaultParams:
             title = f"{title}*"
         return title
 
     def getPreObj(self):
         paramValueDict = {}
-        for param, widget in self.paramWidgetDict.items():
+        for param, widget in self.paramWidgets.items():
             paramValueDict[param] = widget.getPreObj()
         for param, value in self.paramsToHide.items():
             paramValueDict[param] = value
@@ -443,29 +442,36 @@ class ObjGroupBox(GroupBox):
 
     def delInputWidget(self, widget: QWidget):
         self.inputWidgets.remove(widget)
-        for paramName, paramWidget in self.paramWidgetDict.items():
+        for paramName, paramWidget in self.paramWidgets.items():
             if widget is paramWidget:
-                self.paramWidgetDict.pop(paramName)
+                self.paramWidgets.pop(paramName)
                 break
         self.layout().removeRow(widget)
         self.adjustSize()
 
-    def rmOptionalGroupBox(self):
-        widget: GroupBox = self.sender()
+    def replaceOptionalParamWidgetWithCreateBtn(self):
+        widget = self.sender()
+        widgetRow = self.findWidgetRow(widget)
+
+        widgets = list(self.paramWidgets.values())
+        if widgetRow is not None and widget in widgets:
+            params = list(self.paramWidgets.keys())
+            paramName = params[widgets.index(widget)]
+            btn = self.getCreatePushBtn(paramName)
+            self.layout().insertRow(widgetRow, self.getWidgetTitle(paramName), btn)
+            self.delInputWidget(widget)
+        self.layout().update()
+
+    def findWidgetRow(self, widget: QWidget):
         layout: QFormLayout = self.layout()
         for row in range(layout.rowCount()):
             item = layout.itemAt(row, QFormLayout.FieldRole)
             if widget == item.widget():
-                for paramName, paramWidget in self.paramWidgetDict.items():
-                    if paramWidget is widget:
-                        btn = self.getCreatePushBtn(paramName)
-                        self.layout().insertRow(row, widget.title(), btn)
-                        self.delInputWidget(widget)
-                        break
-        layout.update()
+                return row
+        return None
 
     def getCreatePushBtn(self, paramName: str):
-        btn = editWidgets.CreateOptionalParamBtn("Create (optional)", paramName=paramName,
+        btn = editWidgets.CreateOptionalParamBtn("Create", paramName=paramName,
                                                  objTypehint=self.reqParamsDict[paramName],
                                                  parent=self, clicked=self.addWidget4optionalParam)
         return btn
@@ -487,7 +493,7 @@ class ObjGroupBox(GroupBox):
                 ErrorMessageBox.withTraceback(self, str(e)).exec()
 
     def setVal4param(self, param: str, val):
-        paramWidget = self.paramWidgetDict[param]
+        paramWidget = self.paramWidgets[param]
         paramWidget.setVal(val)
 
     def setVal(self, val):
@@ -522,7 +528,7 @@ class IterableGroupBox(GroupBox):
         super().__init__(objTypeHint, **kwargs)
         self.argTypes = list(self.objTypeHint.__args__)
         self.kwargs = kwargs.copy() if kwargs else {}
-        plusButton = QPushButton(f"+ Element", self,
+        plusButton = QPushButton(f"+", self,
                                  toolTip="Add element",
                                  clicked=self._addInputWidget)
         self.layout().addRow(plusButton)
