@@ -254,10 +254,10 @@ def _getDefaultValuesOfParams(params: Iterable[str], defaults: Tuple[Any]) -> Di
 def getReqParams4init(objType: Type, rmDefParams=True,
                       attrsToHide=None, delOptional=True) -> Dict[str, Type]:
     """Return required params for init with their type"""
-    paramsTypehints, paramasDefaults = getParamsAndTypehints4init(objType)
+    paramsTypehints, paramsDefaults = getParamsAndTypehints4init(objType)
 
-    if rmDefParams and paramasDefaults:
-        for i in range(len(paramasDefaults)):
+    if rmDefParams and paramsDefaults:
+        for i in range(len(paramsDefaults)):
             paramsTypehints.popitem()
 
     if delOptional:
