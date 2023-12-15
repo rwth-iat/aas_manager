@@ -17,7 +17,7 @@ from typing import Type, TypeVar
 
 import dateutil
 import pytz
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QIntValidator, QDoubleValidator
 
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QDateTimeEdit, QCheckBox, QCompleter, \
@@ -234,8 +234,9 @@ class TimeEdit(WidgetWithTZinfo):
         self.timeEdit.setTime(val)
         self.tzinfoEdit.setVal(val.tzinfo)
 
-
 class StandardInputWidget(QWidget):
+    closeClicked = pyqtSignal()
+
     types = (bool, str, int, float, decimal.Decimal, Enum, Type)
 
     def __init__(self, attrType, parent=None, objVal=None, optional=False, useValidators=True, **kwargs):
@@ -245,10 +246,20 @@ class StandardInputWidget(QWidget):
         self.useValidators = useValidators
         self.widget = self._initWidget(**kwargs)
         self.setVal(objVal)
-        widgetLayout = QVBoxLayout(self)
+        self.setupLayout()
+
+    def setupLayout(self):
+        widgetLayout = QHBoxLayout(self)
         widgetLayout.setContentsMargins(1, 1, 1, 1)
         widgetLayout.addWidget(self.widget)
         self.setLayout(widgetLayout)
+
+    def setClosable(self, closable=True):
+        if closable:
+            # Add close btn next to widget
+            self.closeBtn = CloseButton(self)
+            self.closeBtn.clicked.connect(lambda x: self.closeClicked.emit())
+            self.layout().insertWidget(0, self.closeBtn)
 
     def _initWidget(self, **kwargs):
         if issubtype(self.objType, bool):
