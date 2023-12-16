@@ -40,7 +40,7 @@ class KwargPackage(Package):
 
     def add(self, obj):
         if isinstance(obj, StoredFile):
-            newName = self.fileStore.add_file(name=obj.name, file=obj.file(), content_type=obj.mime_type)
+            newName = self.fileStore.add_file(name=obj.name, file=obj.file(), content_type=obj.content_type)
             obj.setFileStore(newName, self.fileStore)
         else:
             self._objStore.append(obj)

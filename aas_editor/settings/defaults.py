@@ -95,10 +95,10 @@ DEFAULT_COMPLETIONS = {
         "value": []
     },
     File: {
-        "mime_type": MIME_TYPES
+        "content_type": MIME_TYPES
     },
     Blob: {
-        "mime_type": MIME_TYPES
+        "content_type": MIME_TYPES
     },
     DictItem: {
         "key": LANGUAGES

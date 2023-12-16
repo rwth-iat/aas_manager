@@ -25,7 +25,8 @@ import aas_editor.additional.classes
 import aas_editor.package
 from aas_editor.import_feature import import_util_classes
 from aas_editor.settings.util_constants import HIDDEN_ATTRS, CHANGED_PARENT_OBJ, ADD_ACT_AAS_TXT, \
-    ADD_TYPE, PACKVIEW_ATTRS_INFO, PARAMS_TO_ATTRS, DEFAULT_PARAMS_TO_HIDE, ITERABLE_ATTRS, POSITIONAL_ARG_DEFAULTS
+    ADD_TYPE, PACKVIEW_ATTRS_INFO, PARAMS_TO_ATTRS, DEFAULT_PARAMS_TO_HIDE, ITERABLE_ATTRS, POSITIONAL_ARG_DEFAULTS, \
+    CONTENT_TYPE_ATTR, CONTENT_VALUE_ATTR
 from aas_editor.settings.icons import getCharsIcon
 from aas_editor.utils import util_type
 import aas_editor.utils.util as util
@@ -46,7 +47,21 @@ FILTER_AAS_FILES = f"{AAS_FILES_FILTER};;{AASX_FILES_FILTER};;{XML_FILES_FILTER}
 EMPTY_VALUES = (None, tuple(), set(), list(), dict())
 
 LINK_TYPES = (ModelReference,)
-MEDIA_TYPES = (File, Blob, aas_editor.package.StoredFile)
+
+MEDIA_TYPES_INFOS = {
+    File: {
+        CONTENT_TYPE_ATTR: "content_type",
+        CONTENT_VALUE_ATTR: "value",
+    },
+    Blob: {
+        CONTENT_TYPE_ATTR: "content_type",
+        CONTENT_VALUE_ATTR: "value",
+    },
+    aas_editor.package.StoredFile: {
+        CONTENT_TYPE_ATTR: "mime_type",
+        CONTENT_VALUE_ATTR: "value",
+    }
+}
 
 # AnyXSDType = Base64Binary, HexBinary
 

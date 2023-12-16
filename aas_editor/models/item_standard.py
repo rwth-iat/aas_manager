@@ -32,7 +32,7 @@ from PyQt5.QtCore import Qt
 
 from aas_editor.utils.util_classes import ClassesInfo
 
-MediaContent = namedtuple("MediaContent", ("value", "mime_type"))
+MediaContent = namedtuple("MediaContent", ("value", "content_type"))
 
 
 class StandardItem(QObject):
@@ -125,11 +125,12 @@ class StandardItem(QObject):
         if isinstance(self.obj, StoredFile):
             try:
                 self.obj: StoredFile
-                mime_type: str = self.obj.mime_type
-                self.icon = QIcon(settings.MIME_TYPE_ICON_DICT[mime_type])
+                media_content_type: str = settings.MEDIA_TYPES_INFOS.get(
+                    type(self.obj), {settings.CONTENT_TYPE_ATTR: "N\A"})[settings.CONTENT_TYPE_ATTR]
+                self.icon = QIcon(settings.MIME_TYPE_ICON_DICT[media_content_type])
             except KeyError:
-                mime_type = mime_type.rsplit("/")[0]
-                self.icon = QIcon(settings.MIME_TYPE_ICON_DICT.get(mime_type, settings.FILE_ICON))
+                media_content_type = media_content_type.rsplit("/")[0]
+                self.icon = QIcon(settings.MIME_TYPE_ICON_DICT.get(media_content_type, settings.FILE_ICON))
         else:
             try:
                 self.icon = QIcon(settings.TYPE_ICON_DICT[type(self.obj)])
@@ -261,7 +262,7 @@ class StandardItem(QObject):
 
     @property
     def isMedia(self) -> bool:
-        if self.obj and isinstance(self.obj, settings.MEDIA_TYPES):
+        if self.obj and isinstance(self.obj, tuple(settings.MEDIA_TYPES_INFOS.keys())):
             return True
         return False
 
@@ -297,13 +298,19 @@ class StandardItem(QObject):
         return attrTypehint
 
     def getMediaContent(self):
-        if self.isUrlMedia or isinstance(self.obj.value, bytes):
-            return MediaContent(self.obj.value, str(self.obj.mime_type))
-        elif isinstance(self.obj.value, str) and self.obj.value in self.package.fileStore:
-            file_content = io.BytesIO()
-            self.package.fileStore.write_file(self.obj.value, file_content)
-            return MediaContent(file_content.getvalue(), str(self.obj.mime_type))
-        elif not self.obj.value:
-            return MediaContent(b"Value is not given", "text/plain")
-        else:
-            return MediaContent(b"Media not found", "text/plain")
+        if type(self.obj) in settings.MEDIA_TYPES_INFOS:
+            info = settings.MEDIA_TYPES_INFOS[type(self.obj)]
+            content_type_attr = info[settings.CONTENT_TYPE_ATTR]
+            content_value_attr = info[settings.CONTENT_VALUE_ATTR]
+            content_type = str(getattr(self.obj, content_type_attr))
+            content_value = getattr(self.obj, content_value_attr)
+
+            if self.isUrlMedia or isinstance(content_value, bytes):
+                return MediaContent(content_value, content_type)
+            elif isinstance(content_value, str) and content_value in self.package.fileStore:
+                file_content = io.BytesIO()
+                self.package.fileStore.write_file(content_value, file_content)
+                return MediaContent(file_content.getvalue(), content_type)
+            elif not content_value:
+                return MediaContent(b"Value is not given", "text/plain")
+        return MediaContent(b"Media not found", "text/plain")

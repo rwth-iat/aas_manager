@@ -26,3 +26,5 @@ NOT_GIVEN = "NotGivenValueAASEditor"
 DEFAULT_PARAMS_TO_HIDE = "default_params_to_hide"  # params, which will be hide from user and will have default values
 POSITIONAL_ARG_DEFAULTS = "default_positional_args"  # params, which will be set to default vals if nothing is given
 PARAMS_TO_ATTRS = "params_attrs"
+CONTENT_VALUE_ATTR = "media_content_value_attr"
+CONTENT_TYPE_ATTR = "media_content_type_attr"

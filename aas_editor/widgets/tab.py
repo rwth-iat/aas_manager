@@ -379,11 +379,11 @@ class Tab(QWidget):
                 self.splitter.setSizes(newSizes)
 
             try:
-                mediaContent = self.packItem.data(MEDIA_CONTENT_ROLE)
+                mediaContent: "MediaContent" = self.packItem.data(MEDIA_CONTENT_ROLE)
                 if self.packItem.data(IS_URL_MEDIA_ROLE):
                     self.mediaWidget.load(QUrl(mediaContent.value))
                 else:
-                    self.mediaWidget.setContent(mediaContent.value, mediaContent.mime_type)
+                    self.mediaWidget.setContent(mediaContent.value, mediaContent.content_type)
             except Exception as e:
                 logging.exception(e)
                 self.mediaWidget.setContent(b"Error occurred while loading media")
