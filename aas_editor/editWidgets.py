@@ -413,8 +413,8 @@ class SpecialInputWidget(StandardInputWidget):
                     and isoftype(val, dateutil.relativedelta.relativedelta):
                 self.widget.setDuration(val)
             elif issubtype(self.objType, bytes) and isoftype(val, bytes):
-                text = val.decode("utf-8")
-                self.widget.setPlainText(text)
+                # text = val.decode("utf-8")
+                self.widget.setPlainText(str(val))
 
 
 class CreateOptionalParamBtn(QPushButton):
