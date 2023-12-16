@@ -28,7 +28,7 @@ CONTACT = "i.garmaev@iat.rwth-aachen.de"
 REPORT_ERROR_LINK = "https://github.com/rwth-iat/aas_manager/issues"
 APPLICATION_LINK = "https://github.com/rwth-iat/aas_manager"
 ACPLT = "ACPLT"
-VERSION = "0.3.4"
+VERSION = "0.3.5"
 AAS_METAMODEL_VERSION = "2.0.1"
 LICENSE = "GNU General Public License v3.0"
 
