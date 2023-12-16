@@ -25,7 +25,7 @@ import aas_editor.additional.classes
 import aas_editor.package
 from aas_editor.import_feature import import_util_classes
 from aas_editor.settings.util_constants import HIDDEN_ATTRS, CHANGED_PARENT_OBJ, ADD_ACT_AAS_TXT, \
-    ADD_TYPE, PACKVIEW_ATTRS_INFO, PARAMS_TO_ATTRS, DEFAULT_PARAMS_TO_HIDE, ITERABLE_ATTRS
+    ADD_TYPE, PACKVIEW_ATTRS_INFO, PARAMS_TO_ATTRS, DEFAULT_PARAMS_TO_HIDE, ITERABLE_ATTRS, POSITIONAL_ARG_DEFAULTS
 from aas_editor.settings.icons import getCharsIcon
 from aas_editor.utils import util_type
 import aas_editor.utils.util as util
@@ -112,7 +112,8 @@ CLASSES_INFO = {
         }
     },
     Referable: {
-        DEFAULT_PARAMS_TO_HIDE: {"parent": None}
+        DEFAULT_PARAMS_TO_HIDE: {"parent": None},
+        POSITIONAL_ARG_DEFAULTS: {"id_short": None},
     },
     Identifiable: {
         PARAMS_TO_ATTRS: {

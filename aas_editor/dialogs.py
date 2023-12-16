@@ -421,20 +421,23 @@ class ObjGroupBox(GroupBox):
         return title
 
     def getPreObj(self):
-        paramValueDict = {}
+        kwargs = {}
         for param, widget in self.paramWidgets.items():
-            paramValueDict[param] = widget.getPreObj()
+            kwargs[param] = widget.getPreObj()
         for param, value in self.paramsToHide.items():
-            paramValueDict[param] = value
+            kwargs[param] = value
         try:
-            return PreObject(self.objTypeHint, (), paramValueDict)
+            return PreObject(self.objTypeHint, (), kwargs)
         except TypeError:
-            for key in ClassesInfo.default_params_to_hide(object):
+            positional_arg_defaults = ClassesInfo.positional_arg_defaults(self.objTypeHint)
+            for arg in positional_arg_defaults:
+                kwargs[arg] = positional_arg_defaults[arg]
+            for arg in ClassesInfo.default_params_to_hide(object):
                 try:
-                    paramValueDict.pop(key)
+                    kwargs.pop(arg)
                 except KeyError:
                     continue
-        return PreObject(self.objTypeHint, (), paramValueDict)
+        return PreObject(self.objTypeHint, (), kwargs)
 
     def getObj2add(self):
         """Return resulting obj due to user input data"""
@@ -528,8 +531,8 @@ class IterableGroupBox(GroupBox):
         super().__init__(objTypeHint, **kwargs)
         self.argTypes = list(self.objTypeHint.__args__)
         self.kwargs = kwargs.copy() if kwargs else {}
-        plusButton = QPushButton(f"+", self,
-                                 toolTip="Add element",
+        plusButton = QPushButton(f"Add Item", self,
+                                 toolTip="Add item",
                                  clicked=self._addInputWidget)
         self.layout().addRow(plusButton)
         self.inputWidgets = []

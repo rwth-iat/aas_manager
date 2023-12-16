@@ -69,6 +69,23 @@ class PreObject:
         if self.existingObjUsed:
             return self.existingObj
 
+        args = self.initArgs()
+        kwargs = self.initKwargs()
+
+        try:
+            return self.objType(*args, **kwargs)
+        except TypeError:
+            positional_arg_defaults = ClassesInfo.positional_arg_defaults(self.objType)
+            for arg in positional_arg_defaults:
+                kwargs[arg] = positional_arg_defaults[arg]
+            for key in ClassesInfo.default_params_to_hide(object):
+                try:
+                    kwargs.pop(key)
+                except KeyError:
+                    continue
+            return self.objType(*args, **kwargs)
+
+    def initArgs(self):
         args = []
         for arg in self.args:
             if isinstance(arg, PreObject):
@@ -76,7 +93,9 @@ class PreObject:
             elif arg and type(arg) == list and isinstance(arg[0], PreObject):
                 arg = [i.init() for i in arg]
             args.append(arg)
+        return args
 
+    def initKwargs(self):
         kwargs = {}
         for key in self.kwargs:
             value = self.kwargs[key]
@@ -85,17 +104,7 @@ class PreObject:
             if isinstance(key, PreObject):
                 key = key.init()
             kwargs[key] = value
-
-        try:
-            return self.objType(*args, **kwargs)
-        except TypeError:
-            for key in ClassesInfo.default_params_to_hide(object):
-                try:
-                    kwargs.pop(key)
-                except KeyError:
-                    continue
-            return self.objType(*args, **kwargs)
-
+        return kwargs
 
 class ClassesInfo:
     @staticmethod
@@ -114,51 +123,38 @@ class ClassesInfo:
         return list(attrs)
 
     @staticmethod
-    def hiddenAttrs(cls) -> Tuple[str]:
-        res = set()
-        for typ in s.CLASSES_INFO:
-            if issubtype(cls, typ):
-                try:
-                    res.update(s.CLASSES_INFO[typ][HIDDEN_ATTRS])
-                except KeyError:
-                    continue
-        return tuple(res)
-
-    @staticmethod
-    def iterAttrs(cls) -> Tuple[str]:
-        res = set()
-        for typ in s.CLASSES_INFO:
-            if issubtype(cls, typ):
-                try:
-                    res.update(s.CLASSES_INFO[typ][ITERABLE_ATTRS])
-                except KeyError:
-                    continue
-        return tuple(res)
-
-    @staticmethod
-    def default_params_to_hide(cls) -> Dict[str, str]:
-        res = dict()
-        for typ in s.CLASSES_INFO:
-            if issubtype(cls, typ):
-                try:
-                    res.update(s.CLASSES_INFO[typ][DEFAULT_PARAMS_TO_HIDE])
-                except KeyError:
-                    continue
-        return res
-
-    @staticmethod
-    def params_to_attrs(cls) -> Dict[str, str]:
-        res = dict()
+    def findInfoForClass(cls, attr: str, objToUpdate) -> List[object]:
         for typ in s.CLASSES_INFO:
             try:
                 if issubtype(cls, typ):
                     try:
-                        res.update(s.CLASSES_INFO[typ][PARAMS_TO_ATTRS])
+                        objToUpdate.update(s.CLASSES_INFO[typ][attr])
                     except KeyError:
                         continue
             except TypeError as e:
-                print(f"Error in the function params_to_attrs: {e}")
-        return res
+                print(f"{e}")
+        return objToUpdate
+
+    @staticmethod
+    def hiddenAttrs(cls) -> Tuple[str]:
+        return tuple(ClassesInfo.findInfoForClass(cls, HIDDEN_ATTRS, set()))
+
+    @staticmethod
+    def iterAttrs(cls) -> Tuple[str]:
+        return tuple(ClassesInfo.findInfoForClass(cls, ITERABLE_ATTRS, set()))
+
+    @staticmethod
+    def default_params_to_hide(cls) -> Dict[str, str]:
+        return ClassesInfo.findInfoForClass(cls, DEFAULT_PARAMS_TO_HIDE, dict())
+
+    @staticmethod
+    def positional_arg_defaults(cls) -> Dict[str, str]:
+        return ClassesInfo.findInfoForClass(cls, POSITIONAL_ARG_DEFAULTS, dict())
+
+
+    @staticmethod
+    def params_to_attrs(cls) -> Dict[str, str]:
+        return ClassesInfo.findInfoForClass(cls, PARAMS_TO_ATTRS, dict())
 
     @staticmethod
     def addActText(cls, attr: Optional[str] = None) -> str:
