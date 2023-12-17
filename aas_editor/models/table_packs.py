@@ -61,11 +61,6 @@ class PacksTable(StandardTable):
         else:
             return super().editItem(index, value)
 
-    def update(self, index: QModelIndex):
-        self.dataChanged.emit(index.siblingAtColumn(0),
-                              index.siblingAtColumn(self.columnCount()))
-        return True
-
     def _addItemObjToParentObj(self, obj: Union[Package, 'SubmodelElement', Iterable], parent: QModelIndex):
         parentObj = parent.data(OBJECT_ROLE)
         parentObjCls = type(parentObj)
