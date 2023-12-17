@@ -79,7 +79,7 @@ class PacksTable(StandardTable):
             parentObj = getattr(parentObj, ClassesInfo.changedParentObject(parentObjCls))
             parentObj.add(obj)
         else:
-            return super()._addItemObjToParentObj(obj, parentObj)
+            return super()._addItemObjToParentObj(obj, parent)
 
     def _getKwargsForItemInit(self, obj: Union[Package, 'SubmodelElement', Iterable], parent):
         kwargs = super()._getKwargsForItemInit(obj, parent)
