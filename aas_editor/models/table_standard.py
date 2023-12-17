@@ -224,17 +224,18 @@ class StandardTable(QAbstractItemModel):
             self.removeRows(0, self.rowCount(index), index)
             self.endRemoveRows()
             self.rowsRemoved.emit(index, 0, max(self.rowCount(index)-1, 0))
-            self.dataChanged.emit(index, index.child(self.rowCount(index) - 1,
-                                                     self.columnCount(index) - 1))
+            self.dataChanged.emit(index.siblingAtColumn(0),
+                                  index.child(self.rowCount(index) - 1, self.columnCount(index) - 1))
 
         self.objByIndex(index).populate()
         if self.hasChildren(index):
             self.beginInsertRows(index, 0, max(self.rowCount(index)-1, 0))
             self.endInsertRows()
             self.rowsInserted.emit(index, 0, max(self.rowCount(index)-1, 0))
-            self.dataChanged.emit(index, index.child(self.rowCount(index)-1, self.columnCount(index)-1))
+            self.dataChanged.emit(index.siblingAtColumn(0),
+                                  index.child(self.rowCount(index)-1, self.columnCount(index)-1))
         else:
-            self.dataChanged.emit(index, index)
+            self.dataChanged.emit(index.siblingAtColumn(0), index.siblingAtColumn(self.columnCount()))
         return True
 
     def data(self, index: QModelIndex, role: int = ...) -> Any:

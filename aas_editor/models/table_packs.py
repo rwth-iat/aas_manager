@@ -58,8 +58,3 @@ class PacksTable(StandardTable):
             return value, oldValue
         else:
             return super().editItem(index, value)
-
-    def update(self, index: QModelIndex):
-        self.dataChanged.emit(index.siblingAtColumn(0),
-                              index.siblingAtColumn(self.columnCount()))
-        return True
