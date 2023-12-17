@@ -156,8 +156,12 @@ class AddDialog(QDialog):
 
     # Save dialog position on exit
     def closeEvent(self, event):
-        super().closeEvent(event)
         self.saveSettings()
+        super().closeEvent(event)
+
+    def reject(self):
+        self.saveSettings()
+        super().reject()
 
     def saveSettings(self):
         AddDialog.INITIAL_POSITION = self.pos()
