@@ -118,9 +118,7 @@ class Package:
                 for obj in self.objStore:
                     if isinstance(obj, AssetAdministrationShell):
                         aas_ids.append(obj.id)
-                for aas_id in aas_ids:
-                    writer.write_aas(aas_id, self.objStore, self.fileStore,
-                                     write_json=self.writeJsonInAasx)
+                writer.write_aas(aas_ids, self.objStore, self.fileStore, write_json=self.writeJsonInAasx)
                 # Create OPC/AASX core properties
                 cp = pyecma376_2.OPCCoreProperties()
                 cp.created = datetime.now()
