@@ -228,7 +228,8 @@ def resolveForwardRef(typeHint: Any) -> Any:
     if origin is None and not args:
         # It's neither a generic type nor a Union
         if type(typeHint) is typing.ForwardRef:
-            referencedTypeName = typeHint.__forward_arg__
+            fullReferencedTypeName = typeHint.__forward_arg__
+            referencedTypeName = fullReferencedTypeName.split(".")[-1]
             typeHint = settings.AAS_CLASSES[referencedTypeName]
         return typeHint
 
