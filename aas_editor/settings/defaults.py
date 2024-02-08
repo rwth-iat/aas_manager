@@ -26,11 +26,11 @@ from aas_editor.additional.classes import DictItem
 CATEGORIES = ["CONSTANT", "PARAMETER", "VARIABLE"]
 
 LANGUAGES = [
-    "DE",
-    "EN",
-    "FR",
-    "IT",
-    "JA",
+    "de",
+    "en",
+    "fr",
+    "it",
+    "ja",
 ]
 
 MIME_TYPES = [
