@@ -542,7 +542,7 @@ class IterableGroupBox(GroupBox):
         self.inputWidgets = []
         self.setVal(self.objVal)
 
-    def _addInputWidget(self, objVal=None):
+    def _getItemType(self):
         if ... in self.argTypes:
             self.argTypes.remove(...)
 
@@ -558,13 +558,17 @@ class IterableGroupBox(GroupBox):
                 argType = DictItem
             else:
                 raise TypeError(f"expected 2 arguments, got {len(self.argTypes)}", self.argTypes)
+        return argType
+
+    def _addInputWidget(self, objVal=None):
+        itemType = self._getItemType()
 
         self.kwargs.update({
-            "title": f"{getTypeName(argType)} {len(self.inputWidgets) + 1}",
+            "title": f"{getTypeName(itemType)} {len(self.inputWidgets) + 1}",
             "rmDefParams": self.rmDefParams,
             "objVal": objVal
         })
-        widget = InputWidgetUtil.getInputWidget(argType, **self.kwargs)
+        widget = InputWidgetUtil.getInputWidget(itemType, **self.kwargs)
         if not isinstance(widget, GroupBox):
             widget = SingleWidgetGroupBox(widget)
         widget.setClosable(True)
@@ -617,12 +621,13 @@ class IterableGroupBox(GroupBox):
 
 class LangStringSetGroupBox(IterableGroupBox):
     def __init__(self, objTypeHint, **kwargs):
+        self.langStringTypeHint = objTypeHint
         objTypeHint = Dict[str, str]
         super().__init__(objTypeHint, **kwargs)
 
     def getPreObj(self):
         preObjDict = super().getPreObj()
-        return PreObject(LangStringSet, (preObjDict,), {})
+        return PreObject(self.langStringTypeHint, (preObjDict,), {})
 
     def setVal(self, val):
         if isinstance(val, LangStringSet):
