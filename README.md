@@ -1,18 +1,18 @@
 <!-- PROJECT LOGO -->
 <br />
 <p align="center">
-  <a href="https://github.com/zrgt/pygui40aas">
+  <a href="https://github.com/rwth-iat/aas_manager">
     <img src="aas_editor/icons/full_logo3.svg" alt="Logo" width="240" height="80">
   </a>
   <p align="center">
     AAS Manager is a free, open source, cross-platform visual viewer/editor based on <a href="https://www.riverbankcomputing.com/software/pyqt/"><strong>PyQt</strong></a> Framework and <a href="https://github.com/eclipse-basyx/basyx-python-sdk"><strong>Eclipse BaSyx Python SDK</strong></a>
     <br />
     <br />
-    <a href="https://github.com/zrgt/pygui40aas/releases">Download</a>
+    <a href="https://github.com/rwth-iat/aas_manager/releases">Download</a>
     ·
-    <a href="https://github.com/zrgt/pygui40aas/issues">Report Bug</a>
+    <a href="https://github.com/rwth-iat/aas_manager/issues">Report Bug</a>
     ·
-    <a href="https://github.com/zrgt/pygui40aas/issues">Request Feature</a>
+    <a href="https://github.com/rwth-iat/aas_manager/issues">Request Feature</a>
   </p>
 </p>
 
@@ -20,10 +20,10 @@
 
 |                                                      Screenshots                                                      |                                                                                                                   |
 | :--------------------------------------------------------------------------------------------------------------: | :----------------------------------------------------------------------------------------------------------------------------: |
-|   ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/dark_theme.PNG) Grey theme        |        ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/light_theme.PNG) Light theme        |
-|   ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/add_dialog.PNG) Dialog for creating objects   |   ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/edit_in_dialog.PNG) Dialog for value editing   |
-|   ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/edit_in_cell.PNG) Edit value in the treetable cell   |   ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/columns_management.PNG) Columns management in the treetable   |
-|   ![](https://github.com/zrgt/pygui40aas/raw/master/screenshots/context_menu.PNG) Context menu of object in the treetable  |  |
+|   ![](https://github.com/rwth-iat/aas_manager/raw/master/screenshots/dark_theme.PNG) Grey theme        |        ![](https://github.com/rwth-iat/aas_manager/raw/master/screenshots/light_theme.PNG) Light theme        |
+|   ![](https://github.com/rwth-iat/aas_manager/raw/master/screenshots/add_dialog.PNG) Dialog for creating objects   |   ![](https://github.com/rwth-iat/aas_manager/raw/master/screenshots/edit_in_dialog.PNG) Dialog for value editing   |
+|   ![](https://github.com/rwth-iat/aas_manager/raw/master/screenshots/edit_in_cell.PNG) Edit value in the treetable cell   |   ![](https://github.com/rwth-iat/aas_manager/raw/master/screenshots/columns_management.PNG) Columns management in the treetable   |
+|   ![](https://github.com/rwth-iat/aas_manager/raw/master/screenshots/context_menu.PNG) Context menu of object in the treetable  |  |
 
 
 For further information about the Asset Administration Shell, see the publication "Details of the Asset Administration Shell" [(Version 3) ](
@@ -34,21 +34,21 @@ https://www.plattform-i40.de/PI40/Redaktion/EN/Downloads/Publikation/Details_of_
 
 ## Installation
 ### User version
-You can find binaries of the editor for Windows or Linux systems in [the releases](https://github.com/zrgt/pygui40aas/releases).
+You can find binaries of the editor for Windows or Linux systems in [the releases](https://github.com/rwth-iat/aas_manager/releases).
 
 ### Development version
 1. Clone the repo
    ```sh
-   git clone https://github.com/zrgt/pygui40aas.git
+   git clone https://github.com/rwth-iat/aas_manager.git
    ```
 2. Install requirements
    ```sh
-   pip install -r requirements.txt
+   pip install -e .
    ```
    Note: If errors occur, try installing the packages one by one in the same order linke in requirements.txt 
 
 
-3. Run ``main.py``
+3. Run ``aas_editor``
 
 OR
 

@@ -1,2 +1,7 @@
 # Project exclude paths
 /venv/
+*.pyc
+*.log
+*.egg-info
+dist
+build

@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aas_editor"
+version = "v0.3.7"
+dependencies = [
+    "pyqt5>=5.15.10",
+    "qtawesome>=1.2.3",
+    "basyx-python-sdk @ git+https://github.com/zrgt/basyx-python-sdk@aas_manager/v30",
+    "pytz>=2023.3",
+    "qpageview>=0.6.2",
+    "PyQtWebEngine>=5.15.6",
+    "pyinstaller",
+    "openpyxl>=3.1.2",
+]
+
+requires-python = ">=3.10"
+authors = [
+  {name = "Igor Garmaev", email = "i.garmaev@plt.rwth-aachen.de"},
+]
+maintainers = [
+  {name = "Igor Garmaev", email = "i.garmaev@plt.rwth-aachen.de"},
+]
+description = "AAS Manager is an editor and viewer for Asset Administration Shells. Powered by https://github.com/eclipse-basyx/basyx-python-sdk"
+readme = "README.md"
+license = {file = "LICENSE"}
+keywords = ["AAX"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python"
+]
+
+[tool.setuptools.packages.find]
+where = ["aas_editor"]
+include = ["."]
+
+
+[project.urls]
+Homepage = "https://github.com/rwth-iat/aas_manager"
+Repository = "https://github.com/rwth-iat/aas_manager.git"
+"Bug Tracker" = "https://github.com/rwth-iat/aas_manager/issues"
+
+[project.entry-points."spam"]
+aas_editor = "main:main"
+
+[project.gui-scripts]
+aas_editor = "main:main"

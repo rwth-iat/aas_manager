@@ -11,10 +11,8 @@
 import sys
 import logging
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWebEngineWidgets import *
 from PyQt5 import QtWidgets
-from aas_editor.utils import exceptionhook
+from PyQt5 import QtWebEngineWidgets
 
 logging.basicConfig(level=logging.INFO, filename="log.log", filemode="w",
                     format="%(asctime)s | %(levelname)s | %(message)s")
