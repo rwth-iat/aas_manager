@@ -169,8 +169,8 @@ def getParams4init(objType: Type) -> List[str]:
     objType = resolveBaseType(objType)
     g = getfullargspecoftypeinit(objType)
     paramsAndTypehints = g.annotations.copy()
-    if 'return' in paramsAndTypehints:
-        paramsAndTypehints.pop('return')
+    if "return" in paramsAndTypehints:
+        paramsAndTypehints.pop("return")
     return list(paramsAndTypehints.keys())
 
 

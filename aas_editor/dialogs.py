@@ -337,7 +337,7 @@ class GroupBox(QGroupBox):
         self.toggled.connect(lambda x: self.closeClicked.emit())
 
     def layout(self) -> QFormLayout:
-        return self.layout()
+        return super().layout()
 
     def setClosable(self, b: bool) -> None:
         self.type = GroupBoxType.CLOSABLE if b else GroupBoxType.SIMPLE

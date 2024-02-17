@@ -78,7 +78,7 @@ class EditDelegate(ColorDelegate):
     def createEditor(self, parent: QWidget, option: 'QStyleOptionViewItem',
                      index: QtCore.QModelIndex) -> QWidget:
         objType = type(index.data(Qt.ItemDataRole.EditRole))
-        attr = index.data(Qt.ItemDataRole.ItemDataRole.DisplayRole)
+        attr = index.data(Qt.ItemDataRole.DisplayRole)
         if issubtype(objType, bool):
             widget = QCheckBox(parent)
         elif issubtype(objType, str):
@@ -120,7 +120,7 @@ class EditDelegate(ColorDelegate):
         return widget
 
     def setEditorData(self, editor: QWidget, index: QtCore.QModelIndex) -> None:
-        if isinstance(index.data(Qt.ItemDataRole.ItemDataRole.EditRole), Enum):
+        if isinstance(index.data(Qt.ItemDataRole.EditRole), Enum):
             currItem = index.data(Qt.ItemDataRole.EditRole)
             items = [member for member in type(currItem)]
             for item in items:
