@@ -336,6 +336,9 @@ class GroupBox(QGroupBox):
         self.type = GroupBoxType.SIMPLE
         self.toggled.connect(lambda x: self.closeClicked.emit())
 
+    def layout(self) -> QFormLayout:
+        return self.layout()
+
     def setClosable(self, b: bool) -> None:
         self.type = GroupBoxType.CLOSABLE if b else GroupBoxType.SIMPLE
         self.setCheckable(b)
@@ -640,7 +643,7 @@ class LangStringSetGroupBox(IterableGroupBox):
 class TypeOptionObjGroupBox(GroupBox):
     """GroupBox with option to choose widget for which type will be generated"""
 
-    def __init__(self, objTypes: List, defType=None, **kwargs):
+    def __init__(self, objTypes: Iterable, defType=None, **kwargs):
         objTypes = list(objTypes)
         super(TypeOptionObjGroupBox, self).__init__(objTypes[0], **kwargs)
 

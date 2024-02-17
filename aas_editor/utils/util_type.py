@@ -136,7 +136,7 @@ def checkTypeModelRef(aasref, typehint):
             try:
                 return issubclass(aasref.type, args)
             except TypeError as e:
-                logging.exception(f"Error occured while checking: {aasref.type} and {args}", e)
+                logging.exception(f"Error occurred while checking: {aasref.type} and {args}", e)
                 return False
         else:
             return True
@@ -372,7 +372,7 @@ def getAttrTypeHint(objType, attr, delOptional=True):
 
 
 def getIterItemTypeHint(iterableTypehint):
-    """Return typehint for item which shoulb be in iterable"""
+    """Return typehint for item which should be in iterable"""
     if not isTypehint(iterableTypehint):
         raise TypeError("Arg 1 must be type or typehint:", iterableTypehint)
 

@@ -140,7 +140,7 @@ def getLimitStr(obj, max_sgns=settings.MAX_SIGNS_TO_SHOW) -> str:
 
 def getDescription(descriptions: dict) -> str:
     if descriptions:
-        for lang in settings.PREFERED_LANGS_ORDER:
+        for lang in settings.PREFERRED_LANGS_ORDER:
             if lang in descriptions:
                 return descriptions.get(lang)
         return tuple(descriptions.values())[0]

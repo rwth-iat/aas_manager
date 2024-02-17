@@ -55,7 +55,7 @@ class SearchBar(ToolBar):
                                    statusTip="Navigate to the next occurrence")
         self.nextBtn.setAutoRaise(True)
         self.prevBtn = QToolButton(self, icon=PREV_ICON, toolTip="Previous",
-                                   statusTip="Navigate to the prevous occurrence")
+                                   statusTip="Navigate to the previous occurrence")
         self.prevBtn.setAutoRaise(True)
         self.closeBtn = QToolButton(self, icon=CLOSE_ICON, toolTip="Close",
                                     statusTip="Close search bar")

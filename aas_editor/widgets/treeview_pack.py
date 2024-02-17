@@ -30,7 +30,7 @@ from aas_editor.package import Package, StoredFile
 from aas_editor.settings import FILTER_AAS_FILES, \
     FILE_TYPE_FILTERS, NOT_GIVEN, REFERABLE_INHERITORS_ATTRS
 from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE, \
-    MAX_RECENT_FILES, ACPLT, \
+    MAX_RECENT_FILES, IAT, \
     APPLICATION_NAME, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, \
     CLEAR_ROW_ROLE, AppSettings, COLUMN_NAME_ROLE, OBJECT_COLUMN_NAME, \
     OBJECT_VALUE_COLUMN_NAME, DEFAULT_COLUMNS_IN_PACKS_TABLE_TO_SHOW, COPY_ROLE
@@ -624,14 +624,14 @@ class PackTreeView(TreeView):
 
     def updateRecentFiles(self, file: str):
         self.removeFromRecentFiles(file)
-        settings = QSettings(ACPLT, APPLICATION_NAME)
+        settings = QSettings(IAT, APPLICATION_NAME)
         files = settings.value('recentFiles', [])
         files.insert(0, file)
         del files[MAX_RECENT_FILES:]
         settings.setValue('recentFiles', files)
 
     def removeFromRecentFiles(self, file: str):
-        settings = QSettings(ACPLT, APPLICATION_NAME)
+        settings = QSettings(IAT, APPLICATION_NAME)
         files = settings.value('recentFiles', [])
         try:
             files.remove(file)
@@ -642,7 +642,7 @@ class PackTreeView(TreeView):
         settings.setValue('recentFiles', files)
 
     def updateRecentFileActs(self):
-        settings = QSettings(ACPLT, APPLICATION_NAME)
+        settings = QSettings(IAT, APPLICATION_NAME)
         files = settings.value('recentFiles', [])
         try:
             files = files[:MAX_RECENT_FILES]

@@ -94,7 +94,7 @@ ATTR_ORDER = (
     "administration",
     "id",
 )
-PREFERED_LANGS_ORDER = ("en-us", "en", "de")
+PREFERRED_LANGS_ORDER = ("en-us", "en", "de")
 
 CLASSES_INFO = {
     object: {
