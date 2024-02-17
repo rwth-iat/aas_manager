@@ -7,7 +7,7 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-from PyQt5.QtGui import QColor
+from PyQt6.QtGui import QColor
 
 LIGHT_BLUE = QColor(132, 185, 255)
 LIGHT_BLUE_ALTERNATE = QColor(132, 185, 255, 30)

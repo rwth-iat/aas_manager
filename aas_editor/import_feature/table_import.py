@@ -11,7 +11,7 @@ import copy
 import traceback
 from typing import Any
 
-from PyQt5.QtCore import QModelIndex, Qt, QPersistentModelIndex
+from PyQt6.QtCore import QModelIndex, Qt, QPersistentModelIndex
 from basyx.aas.model import Referable
 
 from aas_editor.import_feature.import_settings import MAPPING_ATTR
@@ -29,10 +29,10 @@ class ImportTable(PacksTable):
         return super(ImportTable, self)._addItem(parent, kwargs)
 
     def data(self, index: QModelIndex, role: int = ...) -> Any:
-        if role == Qt.EditRole:
+        if role == Qt.ItemDataRole.EditRole:
             parentObj = super(ImportTable, self).data(index, OBJECT_ROLE)
             if isinstance(parentObj, Referable):
-                objVal = super(ImportTable, self).data(index, Qt.EditRole)
+                objVal = super(ImportTable, self).data(index, Qt.ItemDataRole.EditRole)
 
                 if index.column() == ATTRIBUTE_COLUMN:
                     objVal = copy.deepcopy(objVal)  # important to handle NamespaceSets in basyx-python
@@ -58,7 +58,7 @@ class ImportTable(PacksTable):
 
             result = super(ImportTable, self).setData(index, value, role)
 
-            if preObject and result and role in (Qt.EditRole, ADD_ITEM_ROLE):
+            if preObject and result and role in (Qt.ItemDataRole.EditRole, ADD_ITEM_ROLE):
                 if isinstance(value, Referable):
                     setattr(value, MAPPING_ATTR, preObject.getMapping())
                 elif isinstance(self.data(index, OBJECT_ROLE), Referable):
@@ -68,7 +68,7 @@ class ImportTable(PacksTable):
                     mapping[attrName] = preObject.getMapping()
 
             if preObject and result:
-                if role == Qt.EditRole:
+                if role == Qt.ItemDataRole.EditRole:
                     self.undo.pop()
                     self.undo.append(SetDataItem(index=QPersistentModelIndex(index), value=preObject, role=role))
                 elif role == CLEAR_ROW_ROLE:

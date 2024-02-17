@@ -17,10 +17,10 @@ from typing import Type, TypeVar
 
 import dateutil
 import pytz
-from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QIntValidator, QDoubleValidator
+from PyQt6.QtCore import Qt, pyqtSignal
+from PyQt6.QtGui import QIntValidator, QDoubleValidator
 
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QDateTimeEdit, QCheckBox, QCompleter, \
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QDateTimeEdit, QCheckBox, QCompleter, \
     QDateEdit, QHBoxLayout, QPlainTextEdit, QPushButton, QFileDialog, QLineEdit, QToolButton
 from basyx.aas.model.datatypes import Date
 
@@ -268,7 +268,7 @@ class StandardInputWidget(QWidget):
             widget = widgets.LineEdit(self)
             if kwargs.get("completions"):
                 completer = QCompleter(kwargs["completions"], self)
-                completer.setCaseSensitivity(Qt.CaseInsensitive)
+                completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
                 widget.setCompleter(completer)
         elif issubtype(self.objType, int):
             widget = widgets.LineEdit(self)
@@ -296,7 +296,7 @@ class StandardInputWidget(QWidget):
 
             for typ in types:
                 widget.addItem(getTypeName(typ), typ)
-            widget.model().sort(0, Qt.AscendingOrder)
+            widget.model().sort(0, Qt.SortOrder.AscendingOrder)
 
             if widget.count():
                 widget.setCurrentIndex(0)

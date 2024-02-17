@@ -10,8 +10,8 @@
 
 from typing import Any, Union, Iterable
 
-from PyQt5.QtCore import QModelIndex, Qt
-from PyQt5.QtGui import QFont
+from PyQt6.QtCore import QModelIndex, Qt
+from PyQt6.QtGui import QFont
 
 from aas_editor.models import StandardTable, PackTreeViewItem
 from aas_editor.package import Package
@@ -41,7 +41,7 @@ class PacksTable(StandardTable):
         return files
 
     def data(self, index: QModelIndex, role: int = ...) -> Any:
-        if role == Qt.ForegroundRole:
+        if role == Qt.ItemDataRole.ForegroundRole:
             return self._getFgColor(index)
         elif role == OPENED_PACKS_ROLE:
             return self.openedPacks()

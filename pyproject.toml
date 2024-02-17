@@ -6,12 +6,12 @@ build-backend = "setuptools.build_meta"
 name = "aas_editor"
 version = "v0.3.7"
 dependencies = [
-    "pyqt5>=5.15.10",
+    "PyQt6",
     "qtawesome>=1.2.3",
     "basyx-python-sdk @ git+https://github.com/zrgt/basyx-python-sdk@aas_manager/v30",
     "pytz>=2023.3",
     "qpageview>=0.6.2",
-    "PyQtWebEngine>=5.15.6",
+    "PyQt6-WebEngine",
     "pyinstaller",
     "openpyxl>=3.1.2",
 ]

@@ -18,16 +18,16 @@
 
 from typing import Optional
 
-from PyQt5 import QtGui
-from PyQt5.QtCore import Qt, pyqtSignal, QTimer
-from PyQt5.QtGui import QMouseEvent
-from PyQt5.QtWidgets import QComboBox, QWidget, QLineEdit, QCompleter
+from PyQt6 import QtGui
+from PyQt6.QtCore import Qt, pyqtSignal, QTimer
+from PyQt6.QtGui import QMouseEvent
+from PyQt6.QtWidgets import QComboBox, QWidget, QLineEdit, QCompleter
 
 
 class ComboBox(QComboBox):
     def __init__(self, parent: Optional[QWidget] = ...):
         super(ComboBox, self).__init__(parent)
-        self.setFocusPolicy(Qt.StrongFocus)
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
     def wheelEvent(self, e: QtGui.QWheelEvent) -> None:
         if not self.hasFocus():
@@ -44,10 +44,10 @@ class CompleterComboBox(ComboBox):
         lineEdit.setStyleSheet("#comboLine{border:0;}")
         self.setLineEdit(lineEdit)
         self.setEditable(True)
-        self.setInsertPolicy(QComboBox.NoInsert)
+        self.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
         completer = self.completer()
-        completer.setFilterMode(Qt.MatchContains)
-        completer.setCaseSensitivity(Qt.CaseInsensitive)
+        completer.setFilterMode(Qt.MatchFlag.MatchContains)
+        completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
 
 
 class CompleterLineEdit(QLineEdit):
@@ -61,9 +61,9 @@ class CompleterLineEdit(QLineEdit):
         self.textEdited.connect(self.onTextEdited)
 
     def mouseReleaseEvent(self, a0: QMouseEvent) -> None:
-        if a0.button() == Qt.LeftButton:
+        if a0.button() == Qt.MouseButton.LeftButton:
             self.clicked.emit()
-            self.completer().setCompletionMode(QCompleter.UnfilteredPopupCompletion)
+            self.completer().setCompletionMode(QCompleter.CompletionMode.UnfilteredPopupCompletion)
             self.callPopup()
             self.selectAll()
         super(CompleterLineEdit, self).mouseReleaseEvent(a0)
@@ -71,11 +71,11 @@ class CompleterLineEdit(QLineEdit):
     def onTextEdited(self):
         # force to show all items when text is empty
         if not self.text():
-            self.completer().setCompletionMode(QCompleter.UnfilteredPopupCompletion)
+            self.completer().setCompletionMode(QCompleter.CompletionMode.UnfilteredPopupCompletion)
             # completion list will be hidden now; we will show it again after a delay
             QTimer.singleShot(100, self.callPopup)
         else:
-            self.completer().setCompletionMode(QCompleter.PopupCompletion)
+            self.completer().setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
 
     def callPopup(self):
         self.completer().setCompletionPrefix("")

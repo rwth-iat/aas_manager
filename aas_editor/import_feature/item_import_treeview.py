@@ -18,12 +18,9 @@
 import logging
 from types import GeneratorType
 
-from PyQt5.QtCore import QVariant, Qt
-from PyQt5.QtWidgets import QMessageBox, QDialog
 from basyx.aas.adapter.aasx import DictSupplementaryFileContainer
 from basyx.aas.model import ModelReference, Referable
 
-from aas_editor import dialogs
 from aas_editor.import_feature.import_settings import MAPPING_ATTR
 from aas_editor.models import PackTreeViewItem, StandardItem
 from aas_editor.package import Package

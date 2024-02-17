@@ -16,9 +16,9 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
-from PyQt5 import QtCore
-from PyQt5.QtCore import Qt, QModelIndex
-from PyQt5.QtWidgets import QAbstractScrollArea
+from PyQt6 import QtCore
+from PyQt6.QtCore import Qt, QModelIndex
+from PyQt6.QtWidgets import QAbstractScrollArea
 
 from aas_editor.models import DetailedInfoTable
 from aas_editor.delegates import EditDelegate
@@ -41,8 +41,8 @@ class AttrsTreeView(TreeView):
     def initTreeView(self, packItem):
         self.setExpandsOnDoubleClick(False)
         self.setBaseSize(QtCore.QSize(429, 555))
-        self.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
+        self.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
+        self.setSizeAdjustPolicy(QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
         self.setObjectName("attrsTreeView")
         self.setModelWithProxy(self.treeModel(packItem))
         self.setColumnWidth(ATTRIBUTE_COLUMN, ATTR_COLUMN_WIDTH)
@@ -84,7 +84,7 @@ class AttrsTreeView(TreeView):
         super().updateEditActs(index)
         # update edit action
         valColIndex = index.siblingAtColumn(VALUE_COLUMN)
-        if valColIndex.flags() & Qt.ItemIsEditable:
+        if valColIndex.flags() & Qt.ItemFlag.ItemIsEditable:
             self.setCurrentIndex(valColIndex)
             self.editCreateInDialogAct.setEnabled(True)
         if self.isEditableInsideCell(valColIndex):
@@ -111,7 +111,7 @@ class AttrsTreeView(TreeView):
         if not index.isValid():
             index = self.currentIndex()
         if index.isValid():
-            objVal = objVal if objVal else index.siblingAtColumn(VALUE_COLUMN).data(Qt.EditRole)
+            objVal = objVal if objVal else index.siblingAtColumn(VALUE_COLUMN).data(Qt.ItemDataRole.EditRole)
             attribute = index.data(NAME_ROLE)
             parentObj = index.data(PARENT_OBJ_ROLE)
             try:

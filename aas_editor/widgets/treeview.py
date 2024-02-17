@@ -8,12 +8,11 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 import logging
-import time
 from typing import Optional, Any, List
 
-from PyQt5.QtCore import Qt, pyqtSignal, QModelIndex, QTimer, QAbstractItemModel, QPoint
-from PyQt5.QtGui import QClipboard, QPalette, QColor, QMouseEvent, QKeyEvent
-from PyQt5.QtWidgets import QAction, QMenu, QApplication, QDialog, QMessageBox, QHeaderView, QWidget, QAbstractItemView
+from PyQt6.QtCore import Qt, pyqtSignal, QModelIndex, QTimer, QAbstractItemModel, QPoint
+from PyQt6.QtGui import QClipboard, QPalette, QColor, QMouseEvent, QKeyEvent, QAction
+from PyQt6.QtWidgets import QMenu, QApplication, QDialog, QHeaderView, QWidget, QAbstractItemView
 
 from aas_editor.delegates import EditDelegate
 from aas_editor.models import StandardTable
@@ -22,13 +21,13 @@ from aas_editor.settings.app_settings import *
 from aas_editor.settings.icons import COPY_ICON, PASTE_ICON, CUT_ICON, ADD_ICON, DEL_ICON, UNDO_ICON, REDO_ICON, \
     ZOOM_IN_ICON, ZOOM_OUT_ICON, EXPAND_ALL_ICON, COLLAPSE_ALL_ICON, UPDATE_ICON, EDIT_ICON
 from aas_editor.settings.shortcuts import SC_COPY, SC_CUT, SC_PASTE, SC_DELETE, SC_NEW, SC_REDO, SC_UNDO, SC_ZOOM_IN, \
-    SC_ZOOM_OUT, SC_EXPAND_RECURS, SC_EXPAND_ALL, SC_COLLAPSE_RECURS, SC_COLLAPSE_ALL, SC_EXPAND, SC_COLLAPSE
+    SC_ZOOM_OUT, SC_EXPAND_RECURS, SC_EXPAND_ALL, SC_COLLAPSE_RECURS, SC_COLLAPSE_ALL, SC_EXPAND, SC_COLLAPSE, \
+    SC_EDIT_IN_DIALOG
 from aas_editor.utils.util import getDefaultVal, getReqParams4init
 from aas_editor.utils.util_type import checkType, isSimpleIterable, isIterable, getIterItemTypeHint, isoftype
 
 from aas_editor.utils.util_classes import ClassesInfo
 from aas_editor.additional.classes import DictItem
-from aas_editor.package import Package
 from aas_editor.widgets.treeview_basic import BasicTreeView
 from aas_editor import dialogs
 
@@ -53,7 +52,7 @@ class HeaderView(QHeaderView):
         self.sectionClicked.connect(self.onSectionClicked)
 
     def openMenu(self, point: QPoint):
-        self.menu.exec_(self.viewport().mapToGlobal(point))
+        self.menu.exec(self.viewport().mapToGlobal(point))
 
     def initMenu(self) -> None:
         self.menu = QMenu(self)
@@ -206,9 +205,9 @@ class TreeView(BasicTreeView):
         self.buildHandlers()
         self.setItemDelegate(EditDelegate(self))  # set ColorDelegate as standard delegate
         self.setSortingEnabled(True)
-        self.setHeader(HeaderView(Qt.Horizontal, self))
+        self.setHeader(HeaderView(Qt.Orientation.Horizontal, self))
         p = self.palette()
-        p.setColor(QPalette.AlternateBase, QColor(settings.LIGHT_BLUE_ALTERNATE))
+        p.setColor(QPalette.ColorRole.AlternateBase, QColor(settings.LIGHT_BLUE_ALTERNATE))
         self.setPalette(p)
 
     # noinspection PyArgumentList
@@ -216,7 +215,7 @@ class TreeView(BasicTreeView):
         self.copyAct = QAction(COPY_ICON, "Copy", self,
                                statusTip="Copy selected item",
                                shortcut=SC_COPY,
-                               shortcutContext=Qt.WidgetWithChildrenShortcut,
+                               shortcutContext=Qt.ShortcutContext.WidgetWithChildrenShortcut,
                                triggered=lambda: self.onCopy(),
                                enabled=False)
         self.addAction(self.copyAct)
@@ -224,7 +223,7 @@ class TreeView(BasicTreeView):
         self.pasteAct = QAction(PASTE_ICON, "Paste", self,
                                 statusTip="Paste from clipboard",
                                 shortcut=SC_PASTE,
-                                shortcutContext=Qt.WidgetWithChildrenShortcut,
+                                shortcutContext=Qt.ShortcutContext.WidgetWithChildrenShortcut,
                                 triggered=lambda: self.onPaste(),
                                 enabled=False)
         self.addAction(self.pasteAct)
@@ -232,7 +231,7 @@ class TreeView(BasicTreeView):
         self.cutAct = QAction(CUT_ICON, "Cut", self,
                               statusTip="Cut selected item",
                               shortcut=SC_CUT,
-                              shortcutContext=Qt.WidgetWithChildrenShortcut,
+                              shortcutContext=Qt.ShortcutContext.WidgetWithChildrenShortcut,
                               triggered=lambda: self.onCut(),
                               enabled=False)
         self.addAction(self.cutAct)
@@ -240,7 +239,7 @@ class TreeView(BasicTreeView):
         self.addAct = QAction(ADD_ICON, "&Add", self,
                               statusTip="Add item to selected",
                               shortcut=SC_NEW,
-                              shortcutContext=Qt.WidgetWithChildrenShortcut,
+                              shortcutContext=Qt.ShortcutContext.WidgetWithChildrenShortcut,
                               triggered=lambda: self.onAddAct(),
                               enabled=False)
         self.addAction(self.addAct)
@@ -248,8 +247,8 @@ class TreeView(BasicTreeView):
         self.editCreateInDialogAct = QAction("E&dit/create in dialog", self,
                                              icon=EDIT_ICON,
                                              statusTip="Edit/create selected item in dialog",
-                                             shortcut=Qt.CTRL + Qt.Key_E,
-                                             shortcutContext=Qt.WidgetWithChildrenShortcut,
+                                             shortcut=SC_EDIT_IN_DIALOG,
+                                             shortcutContext=Qt.ShortcutContext.WidgetWithChildrenShortcut,
                                              triggered=lambda: self.editCreateInDialog(),
                                              enabled=False)
         self.addAction(self.editCreateInDialogAct)
@@ -263,14 +262,14 @@ class TreeView(BasicTreeView):
         self.delClearAct = QAction(DEL_ICON, "Delete/clear", self,
                                    statusTip="Delete/clear selected item",
                                    shortcut=SC_DELETE,
-                                   shortcutContext=Qt.WidgetWithChildrenShortcut,
+                                   shortcutContext=Qt.ShortcutContext.WidgetWithChildrenShortcut,
                                    triggered=lambda: self.onDelClear(),
                                    enabled=False)
         self.addAction(self.delClearAct)
 
         self.updateAct = QAction(UPDATE_ICON, "Update/reload", self,
                                  statusTip="Update/reload selected item",
-                                 shortcutContext=Qt.WidgetWithChildrenShortcut,
+                                 shortcutContext=Qt.ShortcutContext.WidgetWithChildrenShortcut,
                                  triggered=lambda: self.onUpdate(),
                                  enabled=True)
         self.addAction(self.updateAct)
@@ -278,7 +277,7 @@ class TreeView(BasicTreeView):
         self.undoAct = QAction(UNDO_ICON, "Undo", self,
                                statusTip="Undo last edit action",
                                shortcut=SC_UNDO,
-                               shortcutContext=Qt.WidgetWithChildrenShortcut,
+                               shortcutContext=Qt.ShortcutContext.WidgetWithChildrenShortcut,
                                triggered=lambda: self.onUndo(),
                                enabled=False)
         self.addAction(self.undoAct)
@@ -286,7 +285,7 @@ class TreeView(BasicTreeView):
         self.redoAct = QAction(REDO_ICON, "Redo", self,
                                statusTip="Redo last edit action",
                                shortcut=SC_REDO,
-                               shortcutContext=Qt.WidgetWithChildrenShortcut,
+                               shortcutContext=Qt.ShortcutContext.WidgetWithChildrenShortcut,
                                triggered=lambda: self.onRedo(),
                                enabled=False)
         self.addAction(self.redoAct)
@@ -294,20 +293,20 @@ class TreeView(BasicTreeView):
         self.collapseAct = QAction("Collapse", self,
                                    shortcut=SC_COLLAPSE,
                                    statusTip="Collapse selected item",
-                                   shortcutContext=Qt.WidgetWithChildrenShortcut,
+                                   shortcutContext=Qt.ShortcutContext.WidgetWithChildrenShortcut,
                                    triggered=lambda: self.collapse(self.currentIndex()))
         self.addAction(self.collapseAct)
 
         self.collapseRecAct = QAction("Collapse recursively", self,
                                       shortcut=SC_COLLAPSE_RECURS,
-                                      shortcutContext=Qt.WidgetWithChildrenShortcut,
+                                      shortcutContext=Qt.ShortcutContext.WidgetWithChildrenShortcut,
                                       statusTip="Collapse recursively selected item",
                                       triggered=lambda: self.collapse(self.currentIndex()))
         self.addAction(self.collapseRecAct)
 
         self.collapseAllAct = QAction(COLLAPSE_ALL_ICON, "Collapse all", self,
                                       shortcut=SC_COLLAPSE_ALL,
-                                      shortcutContext=Qt.WidgetWithChildrenShortcut,
+                                      shortcutContext=Qt.ShortcutContext.WidgetWithChildrenShortcut,
                                       statusTip="Collapse all items",
                                       triggered=lambda: self.collapseAll())
         self.addAction(self.collapseAllAct)
@@ -315,20 +314,20 @@ class TreeView(BasicTreeView):
         self.expandAct = QAction("Expand", self,
                                  shortcut=SC_EXPAND,
                                  statusTip="Expand selected item",
-                                 shortcutContext=Qt.WidgetWithChildrenShortcut,
+                                 shortcutContext=Qt.ShortcutContext.WidgetWithChildrenShortcut,
                                  triggered=lambda: self.expand(self.currentIndex()))
         self.addAction(self.expandAct)
 
         self.expandRecAct = QAction("Expand recursively", self,
                                     shortcut=SC_EXPAND_RECURS,
-                                    shortcutContext=Qt.WidgetWithChildrenShortcut,
+                                    shortcutContext=Qt.ShortcutContext.WidgetWithChildrenShortcut,
                                     statusTip="Expand recursively selected item",
                                     triggered=lambda: self.expandRecursively(self.currentIndex()))
         self.addAction(self.expandRecAct)
 
         self.expandAllAct = QAction(EXPAND_ALL_ICON, "Expand all", self,
                                     shortcut=SC_EXPAND_ALL,
-                                    shortcutContext=Qt.WidgetWithChildrenShortcut,
+                                    shortcutContext=Qt.ShortcutContext.WidgetWithChildrenShortcut,
                                     statusTip="Expand all items",
                                     triggered=lambda: self.expandAll())
         self.addAction(self.expandAllAct)
@@ -351,14 +350,14 @@ class TreeView(BasicTreeView):
 
         self.zoomInAct = QAction(ZOOM_IN_ICON, "Zoom in", self,
                                  shortcut=SC_ZOOM_IN,
-                                 shortcutContext=Qt.WidgetShortcut,
+                                 shortcutContext=Qt.ShortcutContext.WidgetShortcut,
                                  statusTip="Zoom in",
                                  triggered=lambda: self.zoomIn())
         self.addAction(self.zoomInAct)
 
         self.zoomOutAct = QAction(ZOOM_OUT_ICON, "Zoom out", self,
                                   shortcut=SC_ZOOM_OUT,
-                                  shortcutContext=Qt.WidgetShortcut,
+                                  shortcutContext=Qt.ShortcutContext.WidgetShortcut,
                                   statusTip="Zoom out",
                                   triggered=lambda: self.zoomOut())
         self.addAction(self.zoomOutAct)
@@ -398,7 +397,7 @@ class TreeView(BasicTreeView):
         foldingMenu.addAction(self.expandAllAct)
 
     def openMenu(self, point):
-        self.attrsMenu.exec_(self.viewport().mapToGlobal(point))
+        self.attrsMenu.exec(self.viewport().mapToGlobal(point))
 
     def buildHandlers(self):
         self.customContextMenuRequested.connect(self.openMenu)
@@ -425,7 +424,7 @@ class TreeView(BasicTreeView):
         # self.setCurrentIndex(bottomRight)
 
     def onRowsInserted(self, parent: QModelIndex, first: int, last: int):
-        index = parent.child(last, 0)
+        index = self.model().index(last, 0, parent)
         self.setCurrentIndex(index)
         QTimer.singleShot(100, self.updateUndoRedoActs)
 
@@ -463,7 +462,7 @@ class TreeView(BasicTreeView):
             self.delClearAct.setEnabled(False)
 
     def updateEditActs(self, index: QModelIndex):
-        if index.flags() & Qt.ItemIsEditable:
+        if index.flags() & Qt.ItemFlag.ItemIsEditable:
             self.editCreateInDialogAct.setEnabled(True)
         else:
             self.editCreateInDialogAct.setEnabled(False)
@@ -506,7 +505,7 @@ class TreeView(BasicTreeView):
 
     def zoom(self, pointSize: int = DEFAULT_FONT.pointSize(), delta: int = 0):
         if self.model():
-            font = QFont(self.model().data(QModelIndex(), Qt.FontRole))
+            font = QFont(self.model().data(QModelIndex(), Qt.ItemDataRole.FontRole))
             if delta > 0:
                 fontSize = min(font.pointSize() + 2, MAX_FONT_SIZE)
             elif delta < 0:
@@ -517,7 +516,7 @@ class TreeView(BasicTreeView):
                 return
             font.setPointSize(fontSize)
             font.setItalic(False)
-            self.model().setData(QModelIndex(), font, Qt.FontRole)
+            self.model().setData(QModelIndex(), font, Qt.ItemDataRole.FontRole)
             self.setFont(font)
         else:
             print("zoom pressed with no model")
@@ -545,11 +544,11 @@ class TreeView(BasicTreeView):
     def onCopy(self):
         index = self.currentIndex()
         data2copy = index.data(COPY_ROLE)
-        text2copy = index.data(Qt.DisplayRole)
+        text2copy = index.data(Qt.ItemDataRole.DisplayRole)
         self.treeClipboard.clear()
         self.treeClipboard.append(data2copy, objRepr=text2copy)
         clipboard = QApplication.clipboard()
-        clipboard.setText(text2copy, QClipboard.Clipboard)
+        clipboard.setText(text2copy, QClipboard.Mode.Clipboard)
         if self.isPasteOk(index):
             self.pasteAct.setEnabled(True)
         else:
@@ -624,7 +623,7 @@ class TreeView(BasicTreeView):
             self.replItemWithDialog(index, type(obj2paste), objVal=obj2paste,
                                     title=f"Paste element")
         else:
-            self._setItemData(index, obj2paste, Qt.EditRole)
+            self._setItemData(index, obj2paste, Qt.ItemDataRole.EditRole)
 
     def onCut(self):
         self.onCopy()
@@ -640,14 +639,14 @@ class TreeView(BasicTreeView):
             return False
 
         result = False
-        while not result and dialog.exec_() == QDialog.Accepted:
+        while not result and dialog.exec() == QDialog.DialogCode.Accepted:
             try:
                 obj = self._getObjFromDialog(dialog)
             except Exception as e:
                 dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
                 continue
             result = self._setItemData(parent, obj, ADD_ITEM_ROLE)
-        if dialog.result() == QDialog.Rejected:
+        if dialog.result() == QDialog.DialogCode.Rejected:
             print("Item adding cancelled")
         dialog.deleteLater()
         self.setFocus()
@@ -662,14 +661,14 @@ class TreeView(BasicTreeView):
             dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
             return False
         result = False
-        while not result and dialog.exec_() == QDialog.Accepted:
+        while not result and dialog.exec() == QDialog.DialogCode.Accepted:
             try:
                 obj = self._getObjFromDialog(dialog)
             except Exception as e:
                 dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
                 continue
-            result = self._setItemData(index, obj, Qt.EditRole)
-        if dialog.result() == QDialog.Rejected:
+            result = self._setItemData(index, obj, Qt.ItemDataRole.EditRole)
+        if dialog.result() == QDialog.DialogCode.Rejected:
             print("Item editing cancelled")
         dialog.deleteLater()
         self.setFocus()
@@ -680,8 +679,8 @@ class TreeView(BasicTreeView):
         return dialog.getObj2add()
 
     def _setItemData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
-        if role == Qt.EditRole:
-            result = self.model().setData(index, value, Qt.EditRole)
+        if role == Qt.ItemDataRole.EditRole:
+            result = self.model().setData(index, value, Qt.ItemDataRole.EditRole)
         elif role == ADD_ITEM_ROLE:
             if isinstance(value, dict):
                 for key, value in value.items():
@@ -713,8 +712,8 @@ class TreeView(BasicTreeView):
             dialogs.ErrorMessageBox.withDetailedText(self, self.model().data(topLeft, DATA_CHANGE_FAILED_ROLE)).exec()
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
-        if event.key() in (Qt.Key_Return, Qt.Key_Enter):
-            if self.state() == QAbstractItemView.EditingState:
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            if self.state() == QAbstractItemView.State.EditingState:
                 # if we are editing, inform base
                 super(TreeView, self).keyPressEvent(event)
             else:
@@ -728,13 +727,13 @@ class TreeView(BasicTreeView):
         return None
 
     def keyReleaseEvent(self, event) -> None:
-        if event.key() in (Qt.Key_Right, Qt.Key_Left):
+        if event.key() in (Qt.Key.Key_Right, Qt.Key.Key_Left):
             return
         else:
             super(TreeView, self).keyReleaseEvent(event)
 
     def mouseDoubleClickEvent(self, e: QMouseEvent) -> None:
-        if e.button() == Qt.LeftButton:
+        if e.button() == Qt.MouseButton.LeftButton:
             self.onDoubleClickEvent()
         else:
             super(TreeView, self).mouseDoubleClickEvent(e)
@@ -742,7 +741,7 @@ class TreeView(BasicTreeView):
     def onDoubleClickEvent(self):
         index = self.currentIndex()
         # if we're not editing, check if editable and start editing or expand/collapse
-        if index.flags() & Qt.ItemIsEditable:
+        if index.flags() & Qt.ItemFlag.ItemIsEditable:
             self.editInCellOrInDialog(index)
         else:
             self.toggleFold(index)
@@ -750,7 +749,7 @@ class TreeView(BasicTreeView):
     def onEnterEvent(self):
         index = self.currentIndex()
         # if we're not editing, check if editable and start editing or expand/collapse
-        if index.flags() & Qt.ItemIsEditable:
+        if index.flags() & Qt.ItemFlag.ItemIsEditable:
             self.editInCellOrInDialog(index)
         else:
             self.toggleFold(index)
@@ -764,8 +763,8 @@ class TreeView(BasicTreeView):
             self.editCreateInDialogAct.trigger()
 
     def isEditableInsideCell(self, index: QModelIndex):
-        if index.flags() & Qt.ItemIsEditable:
-            data = index.data(Qt.EditRole)
+        if index.flags() & Qt.ItemFlag.ItemIsEditable:
+            data = index.data(Qt.ItemDataRole.EditRole)
             if isoftype(data, self.itemDelegate().editableTypesInTable) and data not in settings.EMPTY_VALUES:
                 return True
         return False

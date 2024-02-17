@@ -16,10 +16,10 @@ import typing
 from pathlib import Path
 from typing import Optional
 
-from PyQt5 import QtCore
-from PyQt5.QtCore import Qt, QModelIndex, QSettings, QPoint
-from PyQt5.QtGui import QDropEvent, QDragEnterEvent, QKeyEvent, QClipboard
-from PyQt5.QtWidgets import QAction, QMessageBox, QFileDialog, QMenu, QWidget, QDialog, QApplication
+from PyQt6 import QtCore
+from PyQt6.QtCore import Qt, QModelIndex, QSettings, QPoint
+from PyQt6.QtGui import QDropEvent, QDragEnterEvent, QKeyEvent, QClipboard, QAction
+from PyQt6.QtWidgets import QMessageBox, QFileDialog, QMenu, QWidget, QApplication
 from basyx.aas.adapter.aasx import AASXReader, DictSupplementaryFileContainer
 from basyx.aas.adapter.json import read_aas_json_file, AASToJsonEncoder
 from basyx.aas.adapter.xml import read_aas_xml_file
@@ -27,12 +27,11 @@ from basyx.aas.model import DictObjectStore, Submodel
 
 from aas_editor.delegates import EditDelegate
 from aas_editor.package import Package, StoredFile
-from aas_editor.settings import FILTER_AAS_FILES, CLASSES_INFO, PACKVIEW_ATTRS_INFO, \
+from aas_editor.settings import FILTER_AAS_FILES, \
     FILE_TYPE_FILTERS, NOT_GIVEN, REFERABLE_INHERITORS_ATTRS
 from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE, \
     MAX_RECENT_FILES, ACPLT, \
     APPLICATION_NAME, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, \
-    TYPE_ROLE, \
     CLEAR_ROW_ROLE, AppSettings, COLUMN_NAME_ROLE, OBJECT_COLUMN_NAME, \
     OBJECT_VALUE_COLUMN_NAME, DEFAULT_COLUMNS_IN_PACKS_TABLE_TO_SHOW, COPY_ROLE
 from aas_editor.settings.shortcuts import SC_OPEN, SC_SAVE_ALL
@@ -116,7 +115,7 @@ class PackHeaderView(HeaderView):
                                     statusTip=f"Hide column",
                                     triggered=lambda: self.hideSection(chosenSection))
         self.menu.addAction(hideChosenSection)
-        self.menu.exec_(self.viewport().mapToGlobal(point))
+        self.menu.exec(self.viewport().mapToGlobal(point))
         self.menu.removeAction(hideChosenSection)
 
 
@@ -134,8 +133,8 @@ class PackTreeView(TreeView):
         self.recentFilesSeparator = None
         self.setAcceptDrops(True)
         self.setExpandsOnDoubleClick(False)
-        self.setSelectionBehavior(self.SelectItems)
-        self.setHeader(PackHeaderView(Qt.Horizontal, self))
+        self.setSelectionBehavior(self.SelectionBehavior.SelectItems)
+        self.setHeader(PackHeaderView(Qt.Orientation.Horizontal, self))
 
     # Scan the folder "aas_files" and creat a dict filesObjStores of DictObjectStore elements and its names
     def scanFolderForExistFiles(self):
@@ -288,7 +287,7 @@ class PackTreeView(TreeView):
         if not index.isValid():
             index = self.currentIndex()
         if index.isValid():
-            objVal = objVal if objVal else index.data(Qt.EditRole)
+            objVal = objVal if objVal else index.data(Qt.ItemDataRole.EditRole)
             return self._onEditCreate(objVal, index)
 
     def _onEditCreate(self, objVal, index) -> bool:
@@ -447,7 +446,7 @@ class PackTreeView(TreeView):
         self.treeClipboard.clear()
         self.treeClipboard.append(json2copy, objRepr=json2copy)
         clipboard = QApplication.clipboard()
-        clipboard.setText(json2copy, QClipboard.Clipboard)
+        clipboard.setText(json2copy, QClipboard.Mode.Clipboard)
 
     def newPackWithDialog(self, filter=FILTER_AAS_FILES):
         saved = False
@@ -496,17 +495,17 @@ class PackTreeView(TreeView):
                 pack = Package(file, failsafe=False)
             except Exception as e:
                 msgBox = QMessageBox()
-                msgBox.setIcon(QMessageBox.Warning)
+                msgBox.setIcon(QMessageBox.Icon.Warning)
                 msgBox.setText(f"Error while reading package:\n{file}")
                 msgBox.setInformativeText(
                     "The file might not align with the official schema. "
                     "Verify with the Tools/compliance tool for specifics. \n\n"
                     "Proceeding may result in missing or incorrect objects. Continue anyway?")
-                msgBox.setStandardButtons(QMessageBox.Cancel | QMessageBox.Yes)
-                msgBox.setDefaultButton(QMessageBox.Yes)
+                msgBox.setStandardButtons(QMessageBox.StandardButton.Cancel | QMessageBox.StandardButton.Yes)
+                msgBox.setDefaultButton(QMessageBox.StandardButton.Yes)
                 msgBox.setDetailedText(f"{traceback.format_exc()}")
                 ret = msgBox.exec()
-                if ret == QMessageBox.Yes:
+                if ret == QMessageBox.StandardButton.Yes:
                     pack = Package(file, failsafe=True)
                 else:
                     return False
@@ -577,15 +576,15 @@ class PackTreeView(TreeView):
                 if self.isWindowModified():
                     dialog = QMessageBox(QMessageBox.NoIcon, f"Close {pack}",
                                          f"Do you want to save your changes in {pack} before closing?",
-                                         standardButtons=QMessageBox.Save |
-                                                         QMessageBox.Cancel |
-                                                         QMessageBox.Discard)
-                    dialog.setDefaultButton = QMessageBox.Save
-                    dialog.button(QMessageBox.Save).setText("&Save&Close")
+                                         standardButtons=QMessageBox.StandardButton.Save |
+                                                         QMessageBox.StandardButton.Cancel |
+                                                         QMessageBox.StandardButton.Discard)
+                    dialog.setDefaultButton = QMessageBox.StandardButton.Save
+                    dialog.button(QMessageBox.StandardButton.Save).setText("&Save&Close")
                     res = dialog.exec()
-                    if res == QMessageBox.Save:
+                    if res == QMessageBox.StandardButton.Save:
                         self.savePack()
-                    elif res == QMessageBox.Cancel:
+                    elif res == QMessageBox.StandardButton.Cancel:
                         return
                 self.closeFile(packItem)
             except AttributeError as e:
@@ -595,16 +594,16 @@ class PackTreeView(TreeView):
         if self.isWindowModified():
             dialog = QMessageBox(QMessageBox.NoIcon, f"Close all AAS files",
                                  f"Do you want to save your changes before closing? ",
-                                 standardButtons=QMessageBox.Save |
-                                                 QMessageBox.Cancel |
-                                                 QMessageBox.Discard)
-            dialog.setDefaultButton = QMessageBox.Save
-            dialog.button(QMessageBox.Save).setText("&Save and Close All")
+                                 standardButtons=QMessageBox.StandardButton.Save |
+                                                 QMessageBox.StandardButton.Cancel |
+                                                 QMessageBox.StandardButton.Discard)
+            dialog.setDefaultButton = QMessageBox.StandardButton.Save
+            dialog.button(QMessageBox.StandardButton.Save).setText("&Save and Close All")
             res = dialog.exec()
-            if res == QMessageBox.Save:
+            if res == QMessageBox.StandardButton.Save:
                 for pack in self.model().data(QModelIndex(), OPENED_PACKS_ROLE):
                     self.savePack(pack)
-            elif res == QMessageBox.Cancel:
+            elif res == QMessageBox.StandardButton.Cancel:
                 return
         self.closeAllFiles()
 
@@ -665,17 +664,17 @@ class PackTreeView(TreeView):
 
     def collapse(self, index: QtCore.QModelIndex) -> None:
         newIndex = index.siblingAtColumn(0)
-        if not self.isExpanded(index) or not index.child(0, 0).isValid():
+        if not self.isExpanded(index) or not self.model().index(0, 0, index).isValid():
             if newIndex.parent() != self.rootIndex():
                 newIndex = newIndex.parent()
         self.setCurrentIndex(newIndex)
         super(PackTreeView, self).collapse(newIndex)
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
-        if event.key() in (Qt.Key_Right, Qt.Key_Left):
+        if event.key() in (Qt.Key.Key_Right, Qt.Key.Key_Left):
             self.setFocus()
             currIndex = self.currentIndex()
-            if event.key() == Qt.Key_Right:
+            if event.key() == Qt.Key.Key_Right:
                 self.navigate2nextEnabledItemInRow(currIndex)
             else:
                 self.navigate2nextEnabledItemInRow(currIndex, leftDirection=True)
@@ -693,7 +692,7 @@ class PackTreeView(TreeView):
                 nextItem = index.siblingAtColumn(newLogCol)
                 if visCol + i < 0 or visCol + i >= self.header().count():
                     break
-                if not self.header().isSectionHidden(newLogCol) and nextItem.flags() & Qt.ItemIsEnabled:
+                if not self.header().isSectionHidden(newLogCol) and nextItem.flags() & Qt.ItemFlag.ItemIsEnabled:
                     self.setCurrentIndex(index.siblingAtColumn(newLogCol))
                     break
                 i += delta
@@ -721,7 +720,7 @@ class PackTreeView(TreeView):
         else:
             parentObjType = type(index.data(OBJECT_ROLE))
             defaultVal = getDefaultVal(parentObjType, attribute)
-            self._setItemData(index, defaultVal, Qt.EditRole)
+            self._setItemData(index, defaultVal, Qt.ItemDataRole.EditRole)
 
     def isPasteOk(self, index: QModelIndex) -> bool:
         if self.treeClipboard.isEmpty() or not index.isValid():

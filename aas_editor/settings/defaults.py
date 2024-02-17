@@ -16,8 +16,8 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
-from basyx.aas.model import Key, KeyTypes, AssetKind, File, Blob, SubmodelElement, \
-    Property, Qualifier, Referable, AssetAdministrationShell, Submodel, \
+from basyx.aas.model import Key, KeyTypes, File, Blob, SubmodelElement, \
+    Property, AssetAdministrationShell, Submodel, \
     SubmodelElementList
 from basyx.aas.model.datatypes import String
 

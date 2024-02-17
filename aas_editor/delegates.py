@@ -13,19 +13,18 @@ from basyx.aas.model.concept import *
 from basyx.aas.model.submodel import *
 
 from enum import Enum
-from typing import AbstractSet, Dict, Type, TypeVar
+from typing import Dict, Type, TypeVar
 
-from PyQt5 import QtWidgets
-from PyQt5.QtGui import QPainter, QBrush, QDoubleValidator, QIntValidator
-from PyQt5.QtWidgets import QWidget, QStyledItemDelegate, QStyleOptionViewItem, QStyle, \
+from PyQt6.QtGui import QPainter, QBrush, QDoubleValidator, QIntValidator
+from PyQt6.QtWidgets import QWidget, QStyledItemDelegate, QStyleOptionViewItem, QStyle, \
     QCompleter, QCheckBox
-from PyQt5 import QtCore
-from PyQt5.QtCore import Qt, QModelIndex
+from PyQt6 import QtCore
+from PyQt6.QtCore import Qt, QModelIndex
 
 from aas_editor.settings import DEFAULT_COMPLETIONS
 from aas_editor.utils.util import inheritors
 from aas_editor.additional.classes import DictItem
-from aas_editor.utils.util_type import issubtype, getTypeName, isoftype
+from aas_editor.utils.util_type import issubtype, isoftype
 from aas_editor.widgets import CompleterComboBox
 from aas_editor.widgets.combobox import ComboBox
 from aas_editor.widgets.dictItemEdit import DictItemEdit
@@ -41,12 +40,12 @@ class ColorDelegate(QStyledItemDelegate):
     def paint(self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex):
         opt = QStyleOptionViewItem(option)
         # paint row of the tree with MouseOver style if one cell of the row is chosen
-        if not opt.state & QStyle.State_HasFocus \
-                and not opt.state & QStyle.State_Selected:
+        if not opt.state & QStyle.StateFlag.State_HasFocus \
+                and not opt.state & QStyle.StateFlag.State_Selected:
             view = opt.styleObject
             hoverIndex: QModelIndex = view.currentIndex()
-            if not opt.state & QStyle.State_MouseOver and index.siblingAtColumn(0) == hoverIndex.siblingAtColumn(0):
-                opt.state |= QStyle.State_MouseOver
+            if not opt.state & QStyle.StateFlag.State_MouseOver and index.siblingAtColumn(0) == hoverIndex.siblingAtColumn(0):
+                opt.state |= QStyle.StateFlag.State_MouseOver
                 model = view.model()
                 model.dataChanged.emit(index, index)
 
@@ -55,7 +54,7 @@ class ColorDelegate(QStyledItemDelegate):
             opt.backgroundBrush = self.indexColors[index]
             widget = opt.widget
             style = widget.style()
-            style.drawControl(QStyle.CE_ItemViewItem, opt, painter, widget)
+            style.drawControl(QStyle.ControlElement.CE_ItemViewItem, opt, painter, widget)
         else:
             super(ColorDelegate, self).paint(painter, opt, index)
 
@@ -78,8 +77,8 @@ class EditDelegate(ColorDelegate):
 
     def createEditor(self, parent: QWidget, option: 'QStyleOptionViewItem',
                      index: QtCore.QModelIndex) -> QWidget:
-        objType = type(index.data(Qt.EditRole))
-        attr = index.data(Qt.DisplayRole)
+        objType = type(index.data(Qt.ItemDataRole.EditRole))
+        attr = index.data(Qt.ItemDataRole.ItemDataRole.DisplayRole)
         if issubtype(objType, bool):
             widget = QCheckBox(parent)
         elif issubtype(objType, str):
@@ -87,7 +86,7 @@ class EditDelegate(ColorDelegate):
             completions = DEFAULT_COMPLETIONS.get(objType, {}).get(attr, [])
             if completions:
                 completer = QCompleter(parent, completions=completions)
-                completer.setCaseSensitivity(Qt.CaseInsensitive)
+                completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
                 widget.setCompleter(completer)
         elif issubtype(objType, int):
             widget = LineEdit(parent)
@@ -121,24 +120,24 @@ class EditDelegate(ColorDelegate):
         return widget
 
     def setEditorData(self, editor: QWidget, index: QtCore.QModelIndex) -> None:
-        if isinstance(index.data(Qt.EditRole), Enum):
-            currItem = index.data(Qt.EditRole)
+        if isinstance(index.data(Qt.ItemDataRole.ItemDataRole.EditRole), Enum):
+            currItem = index.data(Qt.ItemDataRole.EditRole)
             items = [member for member in type(currItem)]
             for item in items:
                 editor.addItem(item.name, item)
-            editor.model().sort(0, Qt.AscendingOrder)
+            editor.model().sort(0, Qt.SortOrder.AscendingOrder)
             editor.setCurrentText(currItem.name)
-        elif isinstance(index.data(Qt.EditRole), DictItem):
-            currItem = index.data(Qt.EditRole)
+        elif isinstance(index.data(Qt.ItemDataRole.EditRole), DictItem):
+            currItem = index.data(Qt.ItemDataRole.EditRole)
             editor.setCurrentData(currItem)
         else:
             super().setEditorData(editor, index)
 
     def setModelData(self, editor: QWidget, model: QtCore.QAbstractItemModel,
                      index: QtCore.QModelIndex) -> None:
-        if isoftype(index.data(Qt.EditRole), (Enum, DictItem)):
+        if isoftype(index.data(Qt.ItemDataRole.EditRole), (Enum, DictItem)):
             obj = editor.currentData()
-            model.setData(index, obj, Qt.EditRole)
+            model.setData(index, obj, Qt.ItemDataRole.EditRole)
         else:
             super().setModelData(editor, model, index)
 

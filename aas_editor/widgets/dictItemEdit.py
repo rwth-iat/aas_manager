@@ -7,8 +7,7 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QFormLayout
+from PyQt6.QtWidgets import QWidget, QHBoxLayout
 
 from aas_editor.additional.classes import DictItem
 from aas_editor.widgets.lineEdit import LineEdit

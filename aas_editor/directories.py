@@ -9,7 +9,7 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 from pathlib import Path
 
-from PyQt5.QtCore import QDir
+from PyQt6.QtCore import QDir
 
 
 def get_settings_file():

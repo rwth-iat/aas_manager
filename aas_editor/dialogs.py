@@ -11,16 +11,16 @@ import copy
 import traceback
 import webbrowser
 
-from PyQt5 import QtGui
+from PyQt6.QtGui import QGuiApplication
 from basyx.aas.model.base import *
 
 from enum import Enum, unique
 from inspect import isabstract
 from typing import Union, List, Dict, Optional
 
-from PyQt5.QtCore import Qt, QRect, QSize, QTimer, pyqtSignal
-from PyQt5.QtWidgets import QPushButton, QDialog, QDialogButtonBox, \
-    QGroupBox, QWidget, QVBoxLayout, QMessageBox, QScrollArea, QFrame, QFormLayout, QApplication
+from PyQt6.QtCore import Qt, QRect, QSize, QTimer, pyqtSignal
+from PyQt6.QtWidgets import QPushButton, QDialog, QDialogButtonBox, \
+    QGroupBox, QWidget, QVBoxLayout, QMessageBox, QScrollArea, QFrame, QFormLayout
 
 from aas_editor.editWidgets import StandardInputWidget
 from aas_editor.settings import DEFAULTS, DEFAULT_COMPLETIONS, ATTRIBUTE_COLUMN, OBJECT_ROLE, \
@@ -52,7 +52,7 @@ class AboutDialog(QMessageBox):
     def __init__(self, parent=None):  # <1>
         super().__init__(parent)
         self.setWindowTitle("About")
-        self.setTextFormat(Qt.RichText)
+        self.setTextFormat(Qt.TextFormat.RichText)
         self.setText(
             f"{APPLICATION_NAME}<br>"
             f"{APPLICATION_INFO}<br><br>"
@@ -72,12 +72,12 @@ class ErrorMessageBox(QMessageBox):
     def __init__(self, parent):
         super().__init__(parent)
         self.setMinimumWidth(400)
-        self.setIcon(QMessageBox.Critical)
+        self.setIcon(QMessageBox.Icon.Critical)
         self.setWindowTitle("Error")
 
         # Each Error message box will have "Report Button" for opening an url
-        self.setStandardButtons(QMessageBox.Ok)
-        reportButton = self.addButton("Report Bug", QMessageBox.HelpRole)
+        self.setStandardButtons(QMessageBox.StandardButton.Ok)
+        reportButton = self.addButton("Report Bug", QMessageBox.ButtonRole.HelpRole)
         reportButton.clicked.disconnect()
         reportButton.clicked.connect(self.reportButtonClicked)
 
@@ -104,7 +104,7 @@ class ErrorMessageBox(QMessageBox):
 
 class AddDialog(QDialog):
     """Base abstract class for custom dialogs for adding data"""
-    REC = QApplication.desktop().screenGeometry()
+    REC = QGuiApplication.primaryScreen().geometry()
     MAX_HEIGHT = int(REC.height() * 0.9)
     MIN_WIDTH = 450
     INITIAL_POSITION = None
@@ -112,17 +112,18 @@ class AddDialog(QDialog):
     def __init__(self, parent=None, title=""):
         QDialog.__init__(self, parent)
         self.setWindowTitle(title)
-        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel, self)
-        self.buttonCancel = self.buttonBox.button(QDialogButtonBox.Cancel)
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | 
+                                          QDialogButtonBox.StandardButton.Cancel, self)
+        self.buttonCancel = self.buttonBox.button(QDialogButtonBox.StandardButton.Cancel)
         self.buttonCancel.released.connect(self.reject)
-        self.buttonOk = self.buttonBox.button(QDialogButtonBox.Ok)
+        self.buttonOk = self.buttonBox.button(QDialogButtonBox.StandardButton.Ok)
         self.buttonOk.released.connect(self.accept)
         self.buttonOk.setDisabled(True)
 
         self.scrollArea = QScrollArea(self)
-        self.scrollArea.setFrameShape(QFrame.NoFrame)
-        self.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.scrollArea.setFrameShape(QFrame.Shape.NoFrame)
+        self.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget(self.scrollArea)
         self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 300, 600))
@@ -171,7 +172,7 @@ def checkIfAccepted(func):
     """Decorator for checking if user clicked ok"""
 
     def wrap(addDialog):
-        if addDialog.result() == QDialog.Accepted:
+        if addDialog.result() == QDialog.DialogCode.Accepted:
             return func(addDialog)
         else:
             raise ValueError("Adding was cancelled")
@@ -330,7 +331,7 @@ class GroupBox(QGroupBox):
         self.objVal = objVal
         self.optional = optional
 
-        self.setAlignment(Qt.AlignLeft)
+        self.setAlignment(Qt.AlignmentFlag.AlignLeft)
         self.setLayout(QFormLayout(self))
         self.type = GroupBoxType.SIMPLE
         self.toggled.connect(lambda x: self.closeClicked.emit())
@@ -472,7 +473,7 @@ class ObjGroupBox(GroupBox):
     def findWidgetRow(self, widget: QWidget):
         layout: QFormLayout = self.layout()
         for row in range(layout.rowCount()):
-            item = layout.itemAt(row, QFormLayout.FieldRole)
+            item = layout.itemAt(row, QFormLayout.ItemRole.FieldRole)
             if widget == item.widget():
                 return row
         return None
@@ -487,7 +488,7 @@ class ObjGroupBox(GroupBox):
         layout: QFormLayout = self.layout()
         for row in range(layout.rowCount()):
             try:
-                item = layout.itemAt(row, QFormLayout.FieldRole)
+                item = layout.itemAt(row, QFormLayout.ItemRole.FieldRole)
                 if self.sender() == item.widget():
                     createBtn: editWidgets.CreateOptionalParamBtn = item.widget()
                     kwargs = copy.copy(self.kwargs)
@@ -651,7 +652,7 @@ class TypeOptionObjGroupBox(GroupBox):
 
         self.initTypeComboBox()
         if defType is not None and defType in objTypes:
-            index = self.typeComboBox.findText(getTypeName(defType), Qt.MatchExactly)
+            index = self.typeComboBox.findText(getTypeName(defType), Qt.MatchFlag.MatchExactly)
             if index > -1:
                 self.typeComboBox.setCurrentIndex(index)
         currObjType = self.typeComboBox.currentData()
@@ -671,7 +672,7 @@ class TypeOptionObjGroupBox(GroupBox):
         self.typeComboBox = widgets.CompleterComboBox(self)
         for typ in self.objTypes:
             self.typeComboBox.addItem(getTypeName(typ), typ)
-            self.typeComboBox.model().sort(0, Qt.AscendingOrder)
+            self.typeComboBox.model().sort(0, Qt.SortOrder.AscendingOrder)
         if self.objVal:
             objValType = self.objVal.objType if isoftype(self.objVal, PreObject) else type(self.objVal)
             self.typeComboBox.setCurrentIndex(self.typeComboBox.findData(objValType))
@@ -777,7 +778,7 @@ class ModelReferenceGroupBox(ObjGroupBox):
             view=tree, parent=self, title="Choose item for reference",
             validator=lambda chosenIndex: isinstance(chosenIndex.data(OBJECT_ROLE), Referable))
 
-        if dialog.exec_() == QDialog.Accepted:
+        if dialog.exec() == QDialog.DialogCode.Accepted:
             print("Item adding accepted")
             item = dialog.getChosenItem()
             referable = item.data(OBJECT_ROLE)

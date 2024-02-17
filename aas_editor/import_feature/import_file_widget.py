@@ -11,9 +11,9 @@ import datetime
 from dataclasses import dataclass
 
 import openpyxl
-from PyQt5.QtCore import QModelIndex
-from PyQt5.QtGui import QIntValidator
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QPushButton, QFileDialog, QMessageBox, QFormLayout, QDialog, \
+from PyQt6.QtCore import QModelIndex
+from PyQt6.QtGui import QIntValidator
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QPushButton, QFileDialog, QMessageBox, QFormLayout, QDialog, \
     QDialogButtonBox, QLabel, QLineEdit
 
 from aas_editor.import_feature import import_util
@@ -118,7 +118,7 @@ class ImportManageWidget(QWidget):
     def initImportSettingsDialog(self):
         dialog = ImportSettingsDialog(self)
         result = False
-        while not result and dialog.exec_() == QDialog.Accepted:
+        while not result and dialog.exec() == QDialog.DialogCode.Accepted:
             try:
                 try:
                     aasFile = dialog.aasFileLine.text()
@@ -155,7 +155,7 @@ class ImportManageWidget(QWidget):
     def initSettingsDialog(self):
         dialog = SettingsDialog(self, importSettings=ImportManageWidget.IMPORT_SETTINGS)
         result = False
-        while not result and dialog.exec_() == QDialog.Accepted:
+        while not result and dialog.exec() == QDialog.DialogCode.Accepted:
             try:
                 ImportManageWidget.IMPORT_SETTINGS.sourceFile = dialog.importExcelFileLine.text()
                 ImportManageWidget.IMPORT_SETTINGS.sheetname = dialog.sheetnameLine.text()
@@ -219,7 +219,7 @@ class ImportManageWidget(QWidget):
     def initRunImportDialog(self):
         dialog = RunImportDialog(self, importSettings=ImportManageWidget.IMPORT_SETTINGS)
         result = False
-        while not result and dialog.exec_() == QDialog.Accepted:
+        while not result and dialog.exec() == QDialog.DialogCode.Accepted:
             try:
                 self.importFromPack(templatePack=ImportManageWidget.IMPORT_SETTINGS.mappingPackage,
                                     sourcefile=ImportManageWidget.IMPORT_SETTINGS.sourceFile,
@@ -237,9 +237,9 @@ class SettingsDialog(QDialog):
     def __init__(self, parent=None, title="AAS Manager Import Tool", *, importSettings: ImportSettings):
         super().__init__(parent)
         self.setWindowTitle(title)
-        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Apply | QDialogButtonBox.Cancel, self)
-        self.applyBtn = self.buttonBox.button(QDialogButtonBox.Apply)
-        self.cancelBtn = self.buttonBox.button(QDialogButtonBox.Cancel)
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.StandardButton.Apply | QDialogButtonBox.StandardButton.Cancel, self)
+        self.applyBtn = self.buttonBox.button(QDialogButtonBox.StandardButton.Apply)
+        self.cancelBtn = self.buttonBox.button(QDialogButtonBox.StandardButton.Cancel)
         self.applyBtn.released.connect(self.accept)
         self.cancelBtn.released.connect(self.reject)
 
@@ -303,8 +303,8 @@ class ImportSettingsDialog(SettingsDialog):
     def __init__(self, parent=None, title="AAS Manager Excel Import Tool"):
         super(SettingsDialog, self).__init__(parent)
         self.setWindowTitle(title)
-        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Apply, self)
-        self.applyBtn = self.buttonBox.button(QDialogButtonBox.Apply)
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.StandardButton.Apply, self)
+        self.applyBtn = self.buttonBox.button(QDialogButtonBox.StandardButton.Apply)
         self.applyBtn.released.connect(self.accept)
 
         # 6x4
@@ -361,9 +361,9 @@ class RunImportDialog(QDialog):
     def __init__(self, parent: ImportManageWidget, *, importSettings: ImportSettings):
         super().__init__(parent)
         self.setWindowTitle("Run import")
-        self.buttonBox = QDialogButtonBox(QDialogButtonBox.Apply | QDialogButtonBox.Cancel, self)
-        self.applyBtn = self.buttonBox.button(QDialogButtonBox.Apply)
-        self.cancelBtn = self.buttonBox.button(QDialogButtonBox.Cancel)
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.StandardButton.Apply | QDialogButtonBox.StandardButton.Cancel, self)
+        self.applyBtn = self.buttonBox.button(QDialogButtonBox.StandardButton.Apply)
+        self.cancelBtn = self.buttonBox.button(QDialogButtonBox.StandardButton.Cancel)
         self.applyBtn.released.connect(self.accept)
         self.cancelBtn.released.connect(self.reject)
 

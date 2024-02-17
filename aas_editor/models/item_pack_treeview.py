@@ -15,15 +15,12 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-import logging
 from types import GeneratorType
 
-from PyQt5.QtCore import Qt
 from basyx.aas.adapter.aasx import DictSupplementaryFileContainer
 
 from aas_editor.models import StandardItem
 from aas_editor.settings.app_settings import PACKAGE_ROLE, ATTRIBUTE_COLUMN
-from aas_editor.utils.util import getDescription
 from aas_editor.utils.util_classes import ClassesInfo
 from aas_editor.utils.util_type import isIterable
 from aas_editor.package import Package, StoredFile

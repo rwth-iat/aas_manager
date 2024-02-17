@@ -20,15 +20,15 @@ import io
 import logging
 from collections import namedtuple
 
-from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import QObject, QVariant
+from PyQt6.QtGui import QIcon
+from PyQt6.QtCore import QObject, QVariant
 
 from aas_editor.package import StoredFile
 from aas_editor import settings
 from aas_editor.utils.util import getAttrDoc, simplifyInfo, getLimitStr
 from aas_editor.utils.util_type import checkType, getTypeName, getTypeHintName, isIterable, \
     getAttrTypeHint, getIterItemTypeHint
-from PyQt5.QtCore import Qt
+from PyQt6.QtCore import Qt
 
 from aas_editor.utils.util_classes import ClassesInfo
 
@@ -57,7 +57,7 @@ class StandardItem(QObject):
         self.typecheck = checkType(self.obj, self.typehint)
 
     def __str__(self):
-        return f"{getTypeName(type(self))}: {self.data(Qt.DisplayRole)}"
+        return f"{getTypeName(type(self))}: {self.data(Qt.ItemDataRole.DisplayRole)}"
 
     @property
     def displayValue(self):
@@ -164,15 +164,15 @@ class StandardItem(QObject):
         if role == settings.MEDIA_CONTENT_ROLE:
             return self.getMediaContent()
         # qt roles
-        if role == Qt.DecorationRole and column == settings.ATTRIBUTE_COLUMN:
+        if role == Qt.ItemDataRole.DecorationRole and column == settings.ATTRIBUTE_COLUMN:
             return self.icon
-        if role == Qt.WhatsThisRole:
+        if role == Qt.ItemDataRole.WhatsThisRole:
             return self.doc
-        if role in (Qt.ToolTipRole, Qt.StatusTipRole):
+        if role in (Qt.ItemDataRole.ToolTipRole, Qt.ItemDataRole.StatusTipRole):
             return self._getTooltipRoleData(column)
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             return self._getDisplayRoleData(column, column_name)
-        if role == Qt.EditRole:
+        if role == Qt.ItemDataRole.EditRole:
             return self._getEditRoleData(column, column_name)
         return QVariant()
 

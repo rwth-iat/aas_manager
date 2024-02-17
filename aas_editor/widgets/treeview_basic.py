@@ -16,10 +16,9 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
-from PyQt5 import QtCore
-from PyQt5.QtCore import Qt, pyqtSignal, QRect
-from PyQt5.QtGui import QMouseEvent, QPaintEvent, QPainter, QWheelEvent
-from PyQt5.QtWidgets import QTreeView
+from PyQt6.QtCore import Qt, pyqtSignal, QRect
+from PyQt6.QtGui import QMouseEvent, QPaintEvent, QPainter, QWheelEvent
+from PyQt6.QtWidgets import QTreeView
 
 from aas_editor.models.search_proxy_model import SearchProxyModel
 from aas_editor.settings.app_settings import *
@@ -64,13 +63,13 @@ class BasicTreeView(QTreeView):
         super(BasicTreeView, self).expand(newIndex)
 
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
-        if event.button() == Qt.MiddleButton:
+        if event.button() == Qt.MouseButton.MiddleButton:
             self.wheelClicked.emit(self.indexAt(event.pos()))
         else:
             super(BasicTreeView, self).mouseReleaseEvent(event)
 
     def wheelEvent(self, a0: QWheelEvent) -> None:
-        if a0.modifiers() & Qt.ControlModifier:
+        if a0.modifiers() & Qt.KeyboardModifier.ControlModifier:
             # ctrl press + scroll
             delta = a0.angleDelta().y()
             self.ctrlWheelScrolled.emit(delta)
@@ -89,7 +88,7 @@ class BasicTreeView(QTreeView):
                 painter = QPainter(self.viewport())
                 textRect = painter.fontMetrics().boundingRect(self.emptyViewMsg)
                 textRect.moveCenter(position)
-                painter.drawText(textRect, Qt.AlignCenter, self.emptyViewMsg)
+                painter.drawText(textRect, Qt.AlignmentFlag.AlignCenter, self.emptyViewMsg)
                 # set position for icon
                 position.setY(position.y()+textRect.height()+25)
 

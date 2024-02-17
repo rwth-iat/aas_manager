@@ -18,8 +18,8 @@
 
 from typing import Any
 
-from PyQt5.QtCore import QModelIndex, QPersistentModelIndex
-from PyQt5.QtGui import QFont
+from PyQt6.QtCore import QModelIndex, QPersistentModelIndex
+from PyQt6.QtGui import QFont
 
 from aas_editor.models import DetailedInfoItem, StandardTable
 from aas_editor.settings.app_settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, DEFAULT_COLUMNS_IN_DETAILED_INFO,\

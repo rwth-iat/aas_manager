@@ -18,8 +18,8 @@
 
 from typing import Any, List
 
-from PyQt5.QtCore import QModelIndex, QPersistentModelIndex, Qt
-from PyQt5.QtGui import QFont
+from PyQt6.QtCore import QModelIndex, QPersistentModelIndex, Qt
+from PyQt6.QtGui import QFont
 from basyx.aas.model import Referable
 
 from aas_editor.import_feature.import_settings import MAPPING_ATTR
@@ -70,11 +70,11 @@ class DetailedInfoImportTable(DetailedInfoTable):
         return mapping
 
     def data(self, index: QModelIndex, role: int = ...) -> Any:
-        if role == Qt.DisplayRole and super().data(index, COLUMN_NAME_ROLE) == MAPPING_COLUMN_NAME:
+        if role == Qt.ItemDataRole.DisplayRole and super().data(index, COLUMN_NAME_ROLE) == MAPPING_COLUMN_NAME:
             objPath = self.getChildPath(index)
             mapping = self.getMapping4ChildPath(objPath)
             return mapping
-        elif role == Qt.EditRole and isinstance(self.mainObj, Referable):
+        elif role == Qt.ItemDataRole.EditRole and isinstance(self.mainObj, Referable):
             objVal = super().data(index, OBJECT_ROLE)
             preObj = PreObjectImport.fromObject(objVal)
             objPath = self.getChildPath(index)
@@ -91,7 +91,7 @@ class DetailedInfoImportTable(DetailedInfoTable):
 
         result = super().setData(index, value, role)
 
-        if preObject and result and role in (Qt.EditRole, ADD_ITEM_ROLE) and isinstance(self.mainObj, Referable):
+        if preObject and result and role in (Qt.ItemDataRole.EditRole, ADD_ITEM_ROLE) and isinstance(self.mainObj, Referable):
             mapping = getattr(self.mainObj, MAPPING_ATTR)
             childPath = self.getChildPath(index)
             for attr in childPath:
@@ -100,7 +100,7 @@ class DetailedInfoImportTable(DetailedInfoTable):
                 mapping = mapping[attr]
 
         if preObject and result:
-            if role == Qt.EditRole:
+            if role == Qt.ItemDataRole.EditRole:
                 self.undo.pop()
                 self.undo.append(SetDataItem(index=QPersistentModelIndex(index), value=preObject, role=role))
             elif role == CLEAR_ROW_ROLE:

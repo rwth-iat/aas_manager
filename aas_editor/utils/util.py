@@ -23,8 +23,8 @@ from abc import ABCMeta
 from enum import Enum
 from typing import List, Dict, Type, Set, Any, Tuple, Iterable
 
-from PyQt5.QtCore import Qt, QFile, QTextStream, QModelIndex
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtCore import Qt, QFile, QTextStream, QModelIndex
+from PyQt6.QtWidgets import QApplication
 from basyx.aas.model import Referable, NamespaceSet
 
 from aas_editor import settings
@@ -310,6 +310,7 @@ def getDoc(typ: type) -> str:
 def getAttrDoc(attr: str, parentObj: type = None, doc: str = None) -> str:
     """
     Returns doc of specified parameter
+
     :param attr: parameter of obj init
     :param parentObj: if no doc is given, doc will be extracted from typ
     :param doc: doc of obj init
@@ -356,7 +357,7 @@ def inheritors(klass) -> set:
     return subclasses
 
 
-def getTreeItemPath(index: QModelIndex, role=Qt.DisplayRole, separator="/") -> str:
+def getTreeItemPath(index: QModelIndex, role=Qt.ItemDataRole.DisplayRole, separator="/") -> str:
     path = ""
     while index.isValid():
         path = f"{index.data(role)}{separator}{path}"

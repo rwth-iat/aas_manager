@@ -2,18 +2,16 @@
 <!-- Copyright (C) 2021  Igor Garmaev, garmaev@gmx.net -->
 
 <svg
-   width="119.39687mm"
-   height="44.37635mm"
-   viewBox="0 0 119.39687 44.37635"
-   version="1.1"
-   id="svg5"
-   inkscape:version="1.1 (c68e22c387, 2021-05-23)"
-   sodipodi:docname="full_logo.svg"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:xlink="http://www.w3.org/1999/xlink"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:svg="http://www.w3.org/2000/svg">
+        width="119.39687mm"
+        height="44.37635mm"
+        viewBox="0 0 119.39687 44.37635"
+        version="1.1"
+        id="svg5"
+        xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+        xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        xmlns="http://www.w3.org/2000/svg"
+>
   <sodipodi:namedview
      id="namedview7"
      pagecolor="#ffffff"
@@ -38,7 +36,7 @@
      id="defs2">
     <linearGradient
        id="linearGradient15133"
-       inkscape:swatch="solid">
+    >
       <stop
          style="stop-color:#00243e;stop-opacity:1;"
          offset="0"
@@ -46,7 +44,7 @@
     </linearGradient>
     <linearGradient
        id="linearGradient7939"
-       inkscape:swatch="solid">
+    >
       <stop
          style="stop-color:#0091ea;stop-opacity:1;"
          offset="0"
@@ -54,7 +52,7 @@
     </linearGradient>
     <linearGradient
        id="linearGradient7245"
-       inkscape:swatch="solid">
+    >
       <stop
          style="stop-color:#000000;stop-opacity:1;"
          offset="0"
@@ -62,15 +60,14 @@
     </linearGradient>
     <linearGradient
        id="linearGradient7221"
-       inkscape:swatch="solid">
+    >
       <stop
          style="stop-color:#000000;stop-opacity:1;"
          offset="0"
          id="stop7219" />
     </linearGradient>
     <linearGradient
-       inkscape:collect="always"
-       xlink:href="#linearGradient15133"
+            xlink:href="#linearGradient15133"
        id="linearGradient15736"
        gradientUnits="userSpaceOnUse"
        gradientTransform="matrix(0.94729662,0,0,0.94729665,13.009622,2.5423626)"
@@ -80,9 +77,7 @@
        y2="35.476868" />
   </defs>
   <g
-     inkscape:label="Ebene 1"
-     inkscape:groupmode="layer"
-     id="layer1"
+          id="layer1"
      transform="translate(-32.171768,-12.74605)">
     <rect
        style="fill:#0064ea;fill-opacity:1;fill-rule:evenodd;stroke-width:0.132551"
@@ -104,7 +99,7 @@
        style="fill:#0091ea;fill-opacity:1;stroke:#0091ea;stroke-width:0.249545px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
        d="m 32.512374,18.128749 5.515271,-5.25788 28.438078,0.02625 5.619289,5.232225 z"
        id="path432-6"
-       sodipodi:nodetypes="ccccc" />
+    />
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:40.468px;line-height:1.25;font-family:'Gill Sans MT Condensed';-inkscape-font-specification:'Gill Sans MT Condensed, ';letter-spacing:-2.94038px;word-spacing:-2.28696px;fill:#00243e;fill-opacity:1;stroke:none;stroke-width:1.0117;stroke-opacity:1"
@@ -112,7 +107,6 @@
        y="45.787376"
        id="text10818"
        transform="scale(0.97702305,1.0235173)"><tspan
-         sodipodi:role="line"
          id="tspan10816"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Gill Sans MT Condensed';-inkscape-font-specification:'Gill Sans MT Condensed, ';fill:#00243e;fill-opacity:1;stroke:none;stroke-width:1.0117;stroke-opacity:1"
          x="38.432941"
@@ -124,7 +118,6 @@
        y="45.788239"
        id="text10818-8"
        transform="scale(0.97702305,1.0235173)"><tspan
-         sodipodi:role="line"
          id="tspan10816-6"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Gill Sans MT Condensed';-inkscape-font-specification:'Gill Sans MT Condensed, ';fill:#00243e;fill-opacity:1;stroke:none;stroke-width:1.0117;stroke-opacity:1"
          x="48.846115"
@@ -137,7 +130,6 @@
       <path
          d="m 63.12836,42.4187 c 0.994526,-0.274725 1.382821,-0.431087 1.881519,-0.928848 0.4987,-0.497762 0.748208,-1.097447 0.748527,-1.799062 2.72e-4,-0.599561 -0.139992,-1.326615 -0.420794,-2.181164 -0.280802,-0.85455 -1.040575,-2.429605 -2.279322,-4.725164 -1.22596,-2.308322 -2.024,-4.055572 -2.394119,-5.241748 -0.37012,-1.186176 -0.554974,-2.232123 -0.554562,-3.137841 7.99e-4,-1.760413 0.260158,-3.217061 1.257607,-4.327392 0.604543,-0.680844 0.995076,-0.88073 2.676246,-1.353781 0.236623,1.125407 0.376357,1.700552 0.626175,2.926108 -0.520496,0.168443 -1.299791,0.642178 -1.300552,2.313294 -2.78e-4,0.612318 0.139981,1.352129 0.420775,2.219435 0.293584,0.854544 1.05336,2.42322 2.279332,4.706029 1.238757,2.270047 2.036804,4.004539 2.394137,5.203478 0.37012,1.186176 0.554972,2.238502 0.554554,3.156978 -8.12e-4,1.785923 -0.506336,3.240433 -1.516572,4.363528 -0.99745,1.110331 -2.305457,1.612123 -3.903124,1.612934 C 62.894083,43.526403 62.882446,43.464992 63.12836,42.4187 Z"
          id="path40245"
-         sodipodi:nodetypes="cssscsscccscccsccc"
          style="stroke-width:0.980659" />
     </g>
     <text
@@ -147,7 +139,6 @@
        y="44.522293"
        id="text2053"
        transform="scale(0.94935305,1.0533489)"><tspan
-         sodipodi:role="line"
          id="tspan2051"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:39.6016px;font-family:'Gill Sans MT Condensed';-inkscape-font-specification:'Gill Sans MT Condensed, ';fill:url(#linearGradient15736);fill-opacity:1;stroke-width:0.265189"
          x="80.241638"

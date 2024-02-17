@@ -68,10 +68,10 @@ class ImportApp(EditorApp):
 
     def setupMainTreeView(self, parent, model: StandardTable) -> ImportTreeView:
         mainTreeView = ImportTreeView(parent, importManageWidget=self.importWidget)
-        mainTreeView.setFocusPolicy(QtCore.Qt.StrongFocus)
-        mainTreeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        mainTreeView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
-        mainTreeView.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        mainTreeView.setFocusPolicy(QtCore.Qt.FocusPolicy.StrongFocus)
+        mainTreeView.setContextMenuPolicy(QtCore.Qt.ContextMenuPolicy.CustomContextMenu)
+        mainTreeView.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        mainTreeView.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
 
         mainTreeView.setModelWithProxy(model)
         for column in range(model.columnCount(), 2, -1):

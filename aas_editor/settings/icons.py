@@ -8,7 +8,7 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 import qtawesome as qta
-from PyQt5.QtGui import QColor, QIcon
+from PyQt6.QtGui import QColor
 
 from aas_editor.settings.colors import LIGHT_BLUE
 

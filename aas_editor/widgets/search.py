@@ -19,9 +19,9 @@
 from typing import List
 import logging
 
-from PyQt5.QtCore import QModelIndex, QPersistentModelIndex
-from PyQt5.QtGui import QBrush
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QToolButton, QAction, QTreeView
+from PyQt6.QtCore import QModelIndex, QPersistentModelIndex
+from PyQt6.QtGui import QBrush, QAction
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QToolButton, QTreeView
 
 from aas_editor.models.search_proxy_model import SearchProxyModel
 from aas_editor.settings.app_settings import NAME_ROLE

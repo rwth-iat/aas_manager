@@ -12,14 +12,13 @@ import copy
 import logging
 import traceback
 from collections import namedtuple, deque
-from enum import Enum
 from typing import Any, Iterable, Union, AbstractSet, List
 
-from PyQt5.QtCore import QAbstractItemModel, QVariant, QModelIndex, Qt, QItemSelection, QSize, \
+from PyQt6.QtCore import QAbstractItemModel, QVariant, QModelIndex, Qt, QItemSelection, QSize, \
     QPersistentModelIndex
-from PyQt5.QtGui import QFont
+from PyQt6.QtGui import QFont
 
-from aas_editor.models import DetailedInfoItem, StandardItem, PackTreeViewItem
+from aas_editor.models import StandardItem
 from aas_editor.package import Package
 from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_COLUMN, \
     VALUE_COLUMN, PACKAGE_ROLE, PACK_ITEM_ROLE, DEFAULT_FONT, ADD_ITEM_ROLE, CLEAR_ROW_ROLE, \
@@ -80,19 +79,19 @@ class StandardTable(QAbstractItemModel):
         return len(self._columns)
 
     def headerData(self, section: int, orientation: Qt.Orientation, role: int = ...) -> Any:
-        if role != Qt.DisplayRole:
+        if role != Qt.ItemDataRole.DisplayRole:
             return None
-        if orientation == Qt.Horizontal:
+        if orientation == Qt.Orientation.Horizontal:
             return self._columns[section]
 
-    def flags(self, index: QModelIndex) -> Qt.ItemFlags:
-        if not index.isValid() or index.data(Qt.DisplayRole) is None:
-            return Qt.NoItemFlags
+    def flags(self, index: QModelIndex) -> Qt.ItemFlag:
+        if not index.isValid() or index.data(Qt.ItemDataRole.DisplayRole) is None:
+            return Qt.ItemFlag.NoItemFlags
 
         if index.column() in (TYPE_COLUMN, TYPE_HINT_COLUMN):
-            return Qt.ItemIsEnabled | Qt.ItemIsSelectable
+            return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
 
-        return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
+        return Qt.ItemFlag.ItemIsEditable | Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
 
     def hasChildren(self, parent: QModelIndex = ...) -> bool:
         return True if self.rowCount(parent) else False
@@ -113,7 +112,7 @@ class StandardTable(QAbstractItemModel):
         yield from recurse(parent)
 
     def match(self, start: QModelIndex, role: int, value: Any, hits: int = ...,
-              flags: Union[Qt.MatchFlags, Qt.MatchFlag] = ...) -> List[QModelIndex]:
+              flags: Qt.MatchFlag = ...) -> List[QModelIndex]:
         kwargs = {}
         if hits is not ...:
             kwargs["hits"] = hits
@@ -144,12 +143,12 @@ class StandardTable(QAbstractItemModel):
                 if hits == len(res):
                     break
             return res
-        elif role == Qt.DisplayRole and hits != 0:
+        elif role == Qt.ItemDataRole.DisplayRole and hits != 0:
             res = []
             for item in self.iterItems(start):
                 logging.info("match for: %s", item.data(NAME_ROLE))
                 try:
-                    if value == item.data(Qt.DisplayRole):
+                    if value == item.data(Qt.ItemDataRole.DisplayRole):
                         res.append(item)
                 except AttributeError:
                     continue
@@ -210,7 +209,7 @@ class StandardTable(QAbstractItemModel):
             self.endRemoveRows()
             self.rowsRemoved.emit(index, 0, max(self.rowCount(index)-1, 0))
             self.dataChanged.emit(index.siblingAtColumn(0),
-                                  index.child(self.rowCount(index) - 1, self.columnCount(index) - 1))
+                                  index.model().index(self.rowCount(index) - 1, self.columnCount(index) - 1, index))
 
         self.objByIndex(index).populate()
         if self.hasChildren(index):
@@ -218,21 +217,21 @@ class StandardTable(QAbstractItemModel):
             self.endInsertRows()
             self.rowsInserted.emit(index, 0, max(self.rowCount(index)-1, 0))
             self.dataChanged.emit(index.siblingAtColumn(0),
-                                  index.child(self.rowCount(index)-1, self.columnCount(index)-1))
+                                  index.model().index(self.rowCount(index) - 1, self.columnCount(index) - 1, index))
         else:
             self.dataChanged.emit(index.siblingAtColumn(0), index.siblingAtColumn(self.columnCount()))
         return True
 
     def data(self, index: QModelIndex, role: int = ...) -> Any:
-        if role == Qt.ForegroundRole:
+        if role == Qt.ItemDataRole.ForegroundRole:
             return self._getFgColor(index)
-        if role == Qt.FontRole:
+        if role == Qt.ItemDataRole.FontRole:
             return self._getFont(index)
-        if role == Qt.SizeHintRole:
+        if role == Qt.ItemDataRole.SizeHintRole:
             fontSize = self.currFont.pointSize()
             return QSize(-1, int((fontSize+2)*1.9))
-        if role == Qt.TextAlignmentRole:
-            return Qt.AlignLeft | Qt.AlignVCenter
+        if role == Qt.ItemDataRole.TextAlignmentRole:
+            return Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
         if role == DATA_CHANGE_FAILED_ROLE:
             return self.lastErrorMsg
         if role == UNDO_ROLE:
@@ -252,9 +251,9 @@ class StandardTable(QAbstractItemModel):
                     delAASParents(objToCopy)  # TODO check if there is a better solution to del aas parents
                     return objToCopy
                 elif index.column() in (TYPE_COLUMN, TYPE_HINT_COLUMN):
-                    return index.data(Qt.DisplayRole)
+                    return index.data(Qt.ItemDataRole.DisplayRole)
                 else:
-                    objToCopy = index.data(Qt.EditRole)
+                    objToCopy = index.data(Qt.ItemDataRole.EditRole)
                     objToCopy = copy.deepcopy(objToCopy)
                     delAASParents(objToCopy)  # TODO check if there is a better solution to del aas parents
                     return objToCopy
@@ -308,9 +307,9 @@ class StandardTable(QAbstractItemModel):
     def setData(self, index: QModelIndex, value: Any, role: int = ...) -> bool:
         if isinstance(index, QPersistentModelIndex):
             index = QModelIndex(index)
-        if not index.isValid() and role not in (Qt.FontRole, ADD_ITEM_ROLE, UNDO_ROLE, REDO_ROLE):
+        if not index.isValid() and role not in (Qt.ItemDataRole.FontRole, ADD_ITEM_ROLE, UNDO_ROLE, REDO_ROLE):
             return QVariant()
-        elif role == Qt.FontRole:
+        elif role == Qt.ItemDataRole.FontRole:
             if isinstance(value, QFont):
                 font = QFont(value)
                 self.currFont.setPointSize(font.pointSize())
@@ -335,7 +334,7 @@ class StandardTable(QAbstractItemModel):
                 tb = traceback.format_exc()
                 self.lastErrorMsg = f"{index.data(NAME_ROLE)} could not be deleted or set to default: {e}\n\n{tb}"
                 self.dataChanged.emit(index, index, [DATA_CHANGE_FAILED_ROLE])
-        elif role == Qt.EditRole:
+        elif role == Qt.ItemDataRole.EditRole:
             try:
                 newValue, oldValue = self.editItem(index, value)
                 self.setChanged(index)
@@ -407,8 +406,8 @@ class StandardTable(QAbstractItemModel):
             except TypeError as e:
                 # FIXME: Warning:pyi40aas specific code part for setting Property.value
                 try:
-                    valueTypeItem = self.match(QModelIndex(), Qt.DisplayRole, "value_type", 1)[0]
-                    self.setData(valueTypeItem, type(newValue), Qt.EditRole)
+                    valueTypeItem = self.match(QModelIndex(), Qt.ItemDataRole.DisplayRole, "value_type", 1)[0]
+                    self.setData(valueTypeItem, type(newValue), Qt.ItemDataRole.EditRole)
                 except IndexError:
                     raise e
                 setattr(parentObj, item.objName, newValue)
@@ -483,7 +482,7 @@ class StandardTable(QAbstractItemModel):
             else:
                 if not defaultVal == NOT_GIVEN:
                     index = self.index(currRow, 0, parent)
-                    self.setData(index, defaultVal, Qt.EditRole)
+                    self.setData(index, defaultVal, Qt.ItemDataRole.EditRole)
                 elif isinstance(child.obj, Package):
                     # close package
                     oldValue = child.obj

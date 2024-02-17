@@ -12,8 +12,8 @@ import sys
 from time import sleep
 from unittest import TestCase
 
-from PyQt5.QtCore import QTimer
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtCore import QTimer
+from PyQt6.QtWidgets import QApplication
 
 from aas_editor.editorApp import EditorApp
 from aas_editor.settings.app_settings import NAME_ROLE

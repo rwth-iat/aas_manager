@@ -9,8 +9,8 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 from typing import Dict
 
-from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout, QLabel, QGroupBox, QHBoxLayout, QRadioButton
-from PyQt5.QtCore import Qt
+from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout, QLabel, QGroupBox, QHBoxLayout, QRadioButton
+from PyQt6.QtCore import Qt
 
 from aas_editor.settings import FILE_TYPE_FILTERS, AppSettings, Setting
 
@@ -31,7 +31,7 @@ class RadioBtnsGroupBox(OptionGroupBox):
     def __init__(self, parent, title, options: Dict[str, any], appSetting: Setting, **kwargs):
         super().__init__(parent, **kwargs)
         self.setTitle(title)
-        self.setAlignment(Qt.AlignLeft)
+        self.setAlignment(Qt.AlignmentFlag.AlignLeft)
         layout = QHBoxLayout(self)
         self.setLayout(layout)
 
@@ -69,7 +69,7 @@ class SettingsDialog(QDialog):
 
         self.setWindowTitle("Settings")
 
-        QBtn = QDialogButtonBox.Ok | QDialogButtonBox.Cancel
+        QBtn = QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         self.buttonBox = QDialogButtonBox(QBtn)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)

@@ -18,16 +18,16 @@
 import logging
 from typing import List
 
-from PyQt5.QtCore import QModelIndex, Qt, QAbstractProxyModel, qDebug, \
+from PyQt6.QtCore import QModelIndex, Qt, QAbstractProxyModel, qDebug, \
     qCritical, pyqtSignal, QObject, QAbstractItemModel
-from PyQt5.QtWidgets import QMessageBox, QCompleter, QStyledItemDelegate
+from PyQt6.QtWidgets import QMessageBox, QCompleter, QStyledItemDelegate
 
 from aas_editor.models import StandardTable
 from aas_editor.utils.util import getTreeItemPath
 from aas_editor.widgets.lineEdit import LineEdit
 
-COMPLETION_ROLE = Qt.DisplayRole
-CASE_SENSITIVITY = Qt.CaseInsensitive
+COMPLETION_ROLE = Qt.ItemDataRole.DisplayRole
+CASE_SENSITIVITY = Qt.CaseSensitivity.CaseInsensitive
 
 
 class Signal(QObject):

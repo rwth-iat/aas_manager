@@ -17,13 +17,14 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 import logging
 
-from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineSettings
-from PyQt5.QtCore import pyqtSignal, QModelIndex, QPersistentModelIndex, QPoint, QMimeData, QUrl, \
+from PyQt6.QtWebEngineCore import QWebEngineSettings, QWebEngineProfile
+from PyQt6.QtWebEngineWidgets import QWebEngineView
+from PyQt6.QtCore import pyqtSignal, QModelIndex, QPersistentModelIndex, QPoint, QMimeData, QUrl, \
     QStandardPaths, Qt
-from PyQt5.QtGui import QIcon, QPixmap, QRegion, QDrag, QCursor, QMouseEvent, \
-    QDragEnterEvent, QDragLeaveEvent, QDropEvent, QCloseEvent
-from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QTabWidget, QAction, QHBoxLayout, QFrame, \
-    QTabBar, QMenu, QSplitter, QShortcut, QPushButton, QMessageBox, QToolButton, QFileDialog
+from PyQt6.QtGui import QPixmap, QRegion, QDrag, QCursor, QMouseEvent, \
+    QDragEnterEvent, QDragLeaveEvent, QDropEvent, QCloseEvent, QAction, QShortcut
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QHBoxLayout, QFrame, \
+    QTabBar, QMenu, QSplitter, QPushButton, QMessageBox, QToolButton, QFileDialog
 
 from aas_editor.settings.app_settings import *
 from aas_editor.settings.icons import FORWARD_ICON, BACK_ICON, SPLIT_VERT_ICON, SPLIT_HORIZ_ICON, ZOOM_IN_ICON, \
@@ -43,8 +44,8 @@ class TabBar(QTabBar):
         self.menuIndexTab = None
 
         self.setFixedHeight(TOOLBARS_HEIGHT)
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.setElideMode(Qt.ElideRight)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.setElideMode(Qt.TextElideMode.ElideRight)
         self.setUsesScrollButtons(True)
         self.setTabsClosable(True)
         self.setMouseTracking(True)
@@ -55,12 +56,12 @@ class TabBar(QTabBar):
         self.customContextMenuRequested.connect(self.openMenu)
 
     def mousePressEvent(self, a0: QMouseEvent) -> None:
-        if a0.button() == Qt.RightButton:
+        if a0.button() == Qt.MouseButton.RightButton:
             self.menuIndexTab = self.tabAt(a0.pos())
         super(TabBar, self).mousePressEvent(a0)
 
     def mouseMoveEvent(self, a0: QMouseEvent) -> None:
-        if (a0.buttons() == Qt.LeftButton) and abs(a0.pos().y()) > 30:
+        if (a0.buttons() == Qt.MouseButton.LeftButton) and abs(a0.pos().y()) > 30:
             globalPos = self.mapToGlobal(a0.pos())
             posInTab = self.mapFromGlobal(globalPos)
 
@@ -74,14 +75,14 @@ class TabBar(QTabBar):
             drag = QDrag(self)
             drag.setMimeData(mimeData)
             drag.setPixmap(pixmap)
-            cursor = QCursor(Qt.OpenHandCursor)
+            cursor = QCursor(Qt.CursorShape.OpenHandCursor)
             drag.setHotSpot(cursor.pos())
             drag.setHotSpot(a0.pos() - posInTab)
-            drag.setDragCursor(cursor.pixmap(), Qt.MoveAction)
-            dropAction = drag.exec(Qt.MoveAction)
-            # If the drag completed outside of the tab bar, detach the tab and move
+            drag.setDragCursor(cursor.pixmap(), Qt.DropAction.MoveAction)
+            dropAction = drag.exec(Qt.DropAction.MoveAction)
+            # If the drag completed outside the tab bar, detach the tab and move
             # the content to the current cursor position
-            if dropAction == Qt.IgnoreAction:
+            if dropAction == Qt.DropAction.IgnoreAction:
                 a0.accept()
                 self.detachTab(self.indexTabToDrag, self.cursor().pos())
         else:
@@ -98,7 +99,7 @@ class TabBar(QTabBar):
             a0.accept()
             return
 
-        a0.setDropAction(Qt.MoveAction)
+        a0.setDropAction(Qt.DropAction.MoveAction)
         a0.accept()
 
         insertAfter = self.tabAt(a0.pos())
@@ -169,12 +170,12 @@ class TabBar(QTabBar):
                 self.tabCloseRequested.emit(i)
 
     def splitHorizontally(self):
-        self.addTabWidget(orientation=Qt.Vertical)
+        self.addTabWidget(orientation=Qt.Orientation.Vertical)
 
     def splitVertically(self):
-        self.addTabWidget(orientation=Qt.Horizontal)
+        self.addTabWidget(orientation=Qt.Orientation.Horizontal)
 
-    def addTabWidget(self, orientation=Qt.Horizontal):
+    def addTabWidget(self, orientation=Qt.Orientation.Horizontal):
         tabWidget: TabWidget = self.parentWidget()
         if not isinstance(tabWidget, QTabWidget):
             raise TypeError("Parent widget of Tabbar must be of type QTabWidget",
@@ -191,7 +192,7 @@ class TabBar(QTabBar):
         newTabWidget = type(tabWidget)()
         newTabWidget.openItem(packItem)
 
-        if orientation == Qt.Horizontal:
+        if orientation == Qt.Orientation.Horizontal:
             size = int(tabWidget.width()/2)
         else:
             size = int(tabWidget.height()/2)
@@ -215,7 +216,7 @@ class TabBar(QTabBar):
         self.menu.addAction(self.splitHorizontallyAct)
 
     def openMenu(self, point):
-        self.menu.exec_(self.mapToGlobal(point))
+        self.menu.exec(self.mapToGlobal(point))
 
 
 class Tab(QWidget):
@@ -239,14 +240,15 @@ class Tab(QWidget):
         self.objTypeLine.setFixedWidth(168)
         self.objTypeLine.setReadOnly(True)
 
-        QWebEngineSettings.defaultSettings().setAttribute(QWebEngineSettings.PluginsEnabled, True)
+        globalSettings = QWebEngineProfile.defaultProfile().settings()
+        globalSettings.setAttribute(QWebEngineSettings.WebAttribute.PluginsEnabled, True)
         self.mediaWidget = QWebEngineView()
         self.saveMediaAsBtn = QPushButton(f"Save media as..", self,
                                           toolTip="Save media file as..",
-                                          clicked=lambda: self.saveMediaAsWithDialog(QStandardPaths.writableLocation(QStandardPaths.DocumentsLocation)))
+                                          clicked=lambda: self.saveMediaAsWithDialog(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.DocumentsLocation)))
         self.saveMediaBtn = QPushButton(f"Save media on desktop", self,
                                         toolTip="Save media file on desktop",
-                                        clicked=lambda: self.saveMediaAsWithDialog(QStandardPaths.writableLocation(QStandardPaths.DesktopLocation)))
+                                        clicked=lambda: self.saveMediaAsWithDialog(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.DesktopLocation)))
         self.mediaViewWidget = QWidget()
         mediaViewWidgetLayout = QVBoxLayout(self.mediaViewWidget)
         mediaViewWidgetLayout.setContentsMargins(0, 0, 0, 0)
@@ -256,7 +258,7 @@ class Tab(QWidget):
         self.mediaViewWidget.hide()
 
         self.attrsTreeView = treeViewCls(self) if not treeViewClsKwargs else treeViewCls(self, **treeViewClsKwargs)
-        self.attrsTreeView.setFrameShape(QFrame.NoFrame)
+        self.attrsTreeView.setFrameShape(QFrame.Shape.NoFrame)
 
         self.initToolbar()
         self.searchBar = SearchBar(self.attrsTreeView, parent=self,
@@ -278,7 +280,7 @@ class Tab(QWidget):
         self.toolBar = ToolBar(self)
 
         settingsBtn = QToolButton(icon=SETTINGS_ICON)
-        settingsBtn.setPopupMode(QToolButton.InstantPopup)
+        settingsBtn.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
         menuSettings = QMenu("Settings")
         menuSettings.addAction(QAction("Hide/show tabs bar", self,
                        statusTip="Hide/show tabs bar",
@@ -317,7 +319,7 @@ class Tab(QWidget):
         return self.packItem.data(NAME_ROLE)
 
     def windowIcon(self) -> QIcon:
-        return self.packItem.data(Qt.DecorationRole)
+        return self.packItem.data(Qt.ItemDataRole.DecorationRole)
 
     def openItem(self, packItem: QModelIndex):
         if not packItem == QModelIndex(self.packItem):
@@ -356,10 +358,10 @@ class Tab(QWidget):
         self.pathLine.setText(getTreeItemPath(self.packItem))
         self.objTypeLine.setText(getTypeName(type(self.packItemObj)))
 
-        icon = self.packItem.data(Qt.DecorationRole)
+        icon = self.packItem.data(Qt.ItemDataRole.DecorationRole)
         if icon:
             self.setWindowIcon(icon)
-        self.setWindowTitle(self.packItem.data(Qt.DisplayRole))
+        self.setWindowTitle(self.packItem.data(Qt.ItemDataRole.DisplayRole))
         self.attrsTreeView.newPackItem(self.packItem)
         self.currItemChanged.emit(QModelIndex(self.packItem))
 
@@ -435,7 +437,7 @@ class Tab(QWidget):
         treeViewLayout.addWidget(self.attrsTreeView)
 
         self.splitter = QSplitter()
-        self.splitter.setOrientation(Qt.Horizontal)
+        self.splitter.setOrientation(Qt.Orientation.Horizontal)
         self.splitter.setContentsMargins(0, 0, 0, 0)
         self.splitter.addWidget(treeViewWidget)
         self.splitter.addWidget(self.mediaViewWidget)
@@ -531,7 +533,7 @@ class TabWidget(QTabWidget):
     def openItemInNewWindow(cls, packItem: QModelIndex) -> int:
         tabWindow = cls()
         tabWindow.openItemInNewTab(packItem)
-        tabWindow.setWindowModality(Qt.NonModal)
+        tabWindow.setWindowModality(Qt.WindowModality.NonModal)
         tabWindow.setWindowTitle("Tabs")
         tabWindow.show()
         return tabWindow

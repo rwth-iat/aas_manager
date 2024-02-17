@@ -112,8 +112,6 @@ def setMappingFromFile(pack: Package, mappingFile: str):
 
     for refRepr in mapDict:
         aasref: ModelReference = eval(refRepr, { #FIXME V30RC02
-            "KeyElements": KeyElements,
-            "KeyType": KeyType,
             "Key": Key,
             "ModelReference": ModelReference,
             "basyx": basyx,

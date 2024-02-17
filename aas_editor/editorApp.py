@@ -9,11 +9,10 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 import json
 import webbrowser
-import os
 
-from PyQt5.QtCore import QModelIndex
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
+from PyQt6.QtCore import QModelIndex
+from PyQt6.QtGui import *
+from PyQt6.QtWidgets import *
 
 from aas_editor.settings.app_settings import *
 from aas_editor.settings.icons import EXIT_ICON, SETTINGS_ICON
@@ -92,10 +91,10 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.setHOrientationAct = QAction("Horizontal", self,
                                           statusTip=f"Set horizontal orientation",
-                                          triggered=lambda: self.setOrientation(QtCore.Qt.Horizontal))
+                                          triggered=lambda: self.setOrientation(QtCore.Qt.Orientation.Horizontal))
         self.setVOrientationAct = QAction("Vertical", self,
                                           statusTip=f"Set vertical orientation",
-                                          triggered=lambda: self.setOrientation(QtCore.Qt.Vertical))
+                                          triggered=lambda: self.setOrientation(QtCore.Qt.Orientation.Vertical))
 
     def showImportApp(self):
         self.writeSettings()
@@ -176,7 +175,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
     def initToolbars(self):
         settingsBtn = QToolButton(icon=SETTINGS_ICON)
-        settingsBtn.setPopupMode(QToolButton.InstantPopup)
+        settingsBtn.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
         menuSettings = QMenu("Settings")
         menuSettings.addAction(self.mainTreeView.zoomInAct)
         menuSettings.addAction(self.mainTreeView.zoomOutAct)
@@ -260,13 +259,13 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         elif self.isWindowModified():
             reply = QMessageBox.question(self, 'Window Close',
                                          'Do you want to save files before closing the window?',
-                                         QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel,
-                                         QMessageBox.No)
+                                         QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Cancel,
+                                         QMessageBox.StandardButton.No)
 
-            if reply == QMessageBox.Yes:
+            if reply == QMessageBox.StandardButton.Yes:
                 self.mainTreeView.saveAll()
                 a0.accept()
-            elif reply == QMessageBox.No:
+            elif reply == QMessageBox.StandardButton.No:
                 a0.accept()
             else:
                 return a0.ignore()

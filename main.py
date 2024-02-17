@@ -11,8 +11,9 @@
 import sys
 import logging
 
-from PyQt5 import QtWidgets
-from PyQt5 import QtWebEngineWidgets
+from PyQt6 import QtWidgets
+# from aas_editor.utils import exceptionhook
+from PyQt6 import QtWebEngineWidgets
 
 logging.basicConfig(level=logging.INFO, filename="log.log", filemode="w",
                     format="%(asctime)s | %(levelname)s | %(message)s")
@@ -30,7 +31,7 @@ def main():
     window.show()
 
     # splash.setFocus()
-    app.exec_()
+    app.exec()
 
 
 if __name__ == '__main__':

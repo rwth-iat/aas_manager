@@ -16,13 +16,10 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
-from typing import List, Union, Any, Optional
+from typing import List, Any, Optional
 
-from PyQt5.QtCore import QSortFilterProxyModel, QModelIndex, Qt, \
+from PyQt6.QtCore import QSortFilterProxyModel, QModelIndex, Qt, \
     QPersistentModelIndex, QObject, QAbstractItemModel
-from PyQt5.QtGui import QBrush, QColor
-
-from aas_editor.settings.app_settings import OBJECT_ROLE
 
 
 class SearchProxyModel(QSortFilterProxyModel):
@@ -31,7 +28,7 @@ class SearchProxyModel(QSortFilterProxyModel):
         if sourceModel:
             self.setSourceModel(sourceModel)
 
-    def match(self, start: QModelIndex, role: int, value: Any, hits: int = ..., flags: Union[Qt.MatchFlags, Qt.MatchFlag] = ...) -> List[QModelIndex]:
+    def match(self, start: QModelIndex, role: int, value: Any, hits: int = ..., flags: Qt.MatchFlag = ...) -> List[QModelIndex]:
         items = self.sourceModel().match(start, role, value, hits, flags)
         return [self.mapFromSource(item) for item in items]
 
@@ -45,9 +42,9 @@ class SearchProxyModel(QSortFilterProxyModel):
             return foundItems
 
         if matchCase:
-            self.setFilterCaseSensitivity(Qt.CaseSensitive)
+            self.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseSensitive)
         else:
-            self.setFilterCaseSensitivity(Qt.CaseInsensitive)
+            self.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
 
         if regExp:
             self.setFilterRegExp(pattern)

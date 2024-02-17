@@ -1,6 +1,6 @@
 import sys
 import logging
-from PyQt5 import QtWidgets
+from PyQt6 import QtWidgets
 
 
 def handle_exception(exc_type, exc_value, exc_traceback):
@@ -15,7 +15,7 @@ def handle_exception(exc_type, exc_value, exc_traceback):
         return
 
     box = QtWidgets.QMessageBox(None)
-    box.setIcon(QtWidgets.QMessageBox.Critical)
+    box.setIcon(QtWidgets.QMessageBox.Icon.Critical)
     box.setText(f"An Exception was raised. Caught Exception: {exc_value}")
     box.setDetailedText(f"Traceback: {exc_traceback}")
     logging.error("Uncaught exception", exc_info=(exc_type, exc_value, exc_traceback))

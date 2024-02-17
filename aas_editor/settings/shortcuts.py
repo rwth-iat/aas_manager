@@ -7,26 +7,27 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QKeySequence
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QKeySequence
 
-SC_COPY = QKeySequence.Copy
-SC_CUT = QKeySequence.Cut
-SC_PASTE = QKeySequence.Paste
-SC_DELETE = QKeySequence.Delete
-SC_NEW = QKeySequence.New
-SC_REDO = QKeySequence.Redo
-SC_UNDO = QKeySequence.Undo
-SC_ZOOM_IN = QKeySequence(Qt.CTRL + Qt.Key_Plus)
-SC_ZOOM_OUT = QKeySequence(Qt.CTRL + Qt.Key_Minus)
-SC_EXPAND_RECURS = QKeySequence(Qt.CTRL + Qt.ALT + Qt.Key_Plus)
-SC_EXPAND = QKeySequence(Qt.CTRL + Qt.Key_Right)
-SC_EXPAND_ALL = QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_Plus)
-SC_COLLAPSE = QKeySequence(Qt.CTRL + Qt.Key_Left)
-SC_COLLAPSE_RECURS = QKeySequence(Qt.CTRL + Qt.ALT + Qt.Key_Minus)
-SC_COLLAPSE_ALL = QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_Minus)
-SC_OPEN = QKeySequence(Qt.CTRL + Qt.Key_O)
-SC_SAVE_ALL = QKeySequence(Qt.CTRL + Qt.Key_S)
-SC_BACK = QKeySequence.Back
-SC_FORWARD = QKeySequence.Forward
-SC_SEARCH = QKeySequence(Qt.CTRL + Qt.Key_F)
+SC_COPY = QKeySequence.StandardKey.Copy
+SC_CUT = QKeySequence.StandardKey.Cut
+SC_PASTE = QKeySequence.StandardKey.Paste
+SC_DELETE = QKeySequence.StandardKey.Delete
+SC_NEW = QKeySequence.StandardKey.New
+SC_REDO = QKeySequence.StandardKey.Redo
+SC_UNDO = QKeySequence.StandardKey.Undo
+SC_EDIT_IN_DIALOG = QKeySequence(Qt.KeyboardModifier.ControlModifier | Qt.Key.Key_E)
+SC_ZOOM_IN = QKeySequence(QKeySequence.StandardKey.ZoomIn)
+SC_ZOOM_OUT = QKeySequence(QKeySequence.StandardKey.ZoomOut)
+SC_BACK = QKeySequence.StandardKey.Back
+SC_FORWARD = QKeySequence.StandardKey.Forward
+SC_SEARCH = QKeySequence(QKeySequence.StandardKey.Find)
+SC_OPEN = QKeySequence(QKeySequence.StandardKey.Open)
+SC_SAVE_ALL = QKeySequence(Qt.KeyboardModifier.ControlModifier | Qt.Key.Key_S)
+SC_EXPAND_RECURS = QKeySequence(Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.AltModifier | Qt.Key.Key_Plus)
+SC_EXPAND = QKeySequence(Qt.KeyboardModifier.ControlModifier | Qt.Key.Key_Right)
+SC_EXPAND_ALL = QKeySequence(Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier | Qt.Key.Key_Plus)
+SC_COLLAPSE = QKeySequence(Qt.KeyboardModifier.ControlModifier | Qt.Key.Key_Left)
+SC_COLLAPSE_RECURS = QKeySequence(Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.AltModifier | Qt.Key.Key_Minus)
+SC_COLLAPSE_ALL = QKeySequence(Qt.KeyboardModifier.ControlModifier | Qt.KeyboardModifier.ShiftModifier | Qt.Key.Key_Minus)

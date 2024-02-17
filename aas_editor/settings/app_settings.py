@@ -10,9 +10,9 @@
 import typing
 from dataclasses import dataclass
 
-from PyQt5.QtCore import QSize, QSettings
-from PyQt5.QtGui import QFont, QIcon
-from PyQt5 import QtCore
+from PyQt6.QtCore import QSize, QSettings
+from PyQt6.QtGui import QFont, QIcon
+from PyQt6 import QtCore
 
 from aas_editor.directories import get_settings_file, get_themes_folder, get_custom_column_lists_file, get_icons_folder
 from aas_editor.settings.util_constants import NOT_GIVEN
@@ -122,7 +122,7 @@ class Setting:
 class AppSettings:
     THEME = Setting('theme', DEFAULT_THEME, str)
     SIZE = Setting('size', DEFAULT_MAINWINDOW_SIZE)
-    ORIENTATION = Setting('orientation', QtCore.Qt.Vertical, int)
+    ORIENTATION = Setting('orientation', QtCore.Qt.Orientation.Vertical, int)
     LEFT_ZONE_SIZE = Setting('leftZoneSize', QSize(300, 624))
     RIGHT_ZONE_SIZE = Setting('rightZoneSize', QSize(300, 624))
     AAS_FILES_TO_OPEN_ON_START = Setting('openedAasFiles', set())

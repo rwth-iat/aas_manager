@@ -7,7 +7,7 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-from PyQt5.QtCore import QModelIndex
+from PyQt6.QtCore import QModelIndex
 
 from aas_editor.import_feature.import_util_classes import PreObjectImport
 from aas_editor.widgets import PackTreeView, AttrsTreeView
