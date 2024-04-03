@@ -18,10 +18,10 @@ dependencies = [
 
 requires-python = ">=3.10"
 authors = [
-  {name = "Igor Garmaev", email = "i.garmaev@plt.rwth-aachen.de"},
+  {name = "Igor Garmaev", email = "i.garmaev@iat.rwth-aachen.de"},
 ]
 maintainers = [
-  {name = "Igor Garmaev", email = "i.garmaev@plt.rwth-aachen.de"},
+  {name = "Igor Garmaev", email = "i.garmaev@iat.rwth-aachen.de"},
 ]
 description = "AAS Manager is an editor and viewer for Asset Administration Shells. Powered by https://github.com/eclipse-basyx/basyx-python-sdk"
 readme = "README.md"
