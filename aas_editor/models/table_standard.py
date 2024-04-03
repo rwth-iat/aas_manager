@@ -27,7 +27,7 @@ from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_C
     LINKED_ITEM_ROLE, COPY_ROLE
 from aas_editor.settings import NOT_GIVEN
 from aas_editor.settings.colors import LINK_BLUE, CHANGED_BLUE, RED, NEW_GREEN
-from aas_editor.utils.util import delAASParents
+from aas_editor.utils.util import actualizeAASParents
 
 from aas_editor.utils.util_classes import ClassesInfo
 from aas_editor.additional.classes import DictItem
@@ -248,14 +248,14 @@ class StandardTable(QAbstractItemModel):
                 if index.column() in (ATTRIBUTE_COLUMN, VALUE_COLUMN):
                     objToCopy = index.data(OBJECT_ROLE)
                     objToCopy = copy.deepcopy(objToCopy) #FIXME
-                    delAASParents(objToCopy)  # TODO check if there is a better solution to del aas parents
+                    actualizeAASParents(objToCopy)  # TODO check if there is a better solution to del aas parents
                     return objToCopy
                 elif index.column() in (TYPE_COLUMN, TYPE_HINT_COLUMN):
                     return index.data(Qt.ItemDataRole.DisplayRole)
                 else:
                     objToCopy = index.data(Qt.ItemDataRole.EditRole)
                     objToCopy = copy.deepcopy(objToCopy)
-                    delAASParents(objToCopy)  # TODO check if there is a better solution to del aas parents
+                    actualizeAASParents(objToCopy)  # TODO check if there is a better solution to del aas parents
                     return objToCopy
             except Exception as e:
                 tb = traceback.format_exc()

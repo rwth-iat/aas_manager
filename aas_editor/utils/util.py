@@ -25,7 +25,7 @@ from typing import List, Dict, Type, Set, Any, Tuple, Iterable
 
 from PyQt6.QtCore import Qt, QFile, QTextStream, QModelIndex
 from PyQt6.QtWidgets import QApplication
-from basyx.aas.model import Referable, NamespaceSet
+from basyx.aas.model import NamespaceSet, Namespace
 
 from aas_editor import settings
 import aas_editor.utils.util_classes as util_classes
@@ -276,32 +276,25 @@ def getReqParams4init(objType: Type, rmDefParams=True,
     return paramsTypehints
 
 
-def _delRecursivlyParent(aasObj, iter_num=0):
-    if iter_num > 10:
-        return
+def _actualizeParents(aasObj, parent=None):
+    if hasattr(aasObj, "parent"):
+        aasObj.parent = parent
+    if isinstance(aasObj, Namespace):
+        for namespaceset in aasObj.namespace_element_sets:
+            namespaceset.parent = aasObj
+            for element in namespaceset:
+                _actualizeParents(element, aasObj)
+
+def actualizeAASParents(aasObj):  # TODO change if aas changes
+    _actualizeParents(aasObj)
+
+def delAASParent(aasObj):  # TODO change if aas changes
     if hasattr(aasObj, "parent"):
         aasObj.parent = None
-    if iter_num == 0 or util_type.isIterable(aasObj) or isinstance(aasObj, Referable):
-        params = getParams4init(type(aasObj))
-        for param in params:
-            if hasattr(aasObj, param.rstrip("_")):
-                lowerObj = getattr(aasObj, param.rstrip("_"))
-            elif hasattr(aasObj, param):
-                lowerObj = getattr(aasObj, param)
-            else:
-                continue
-            _delRecursivlyParent(lowerObj, iter_num + 1)
-
-        if util_type.isSimpleIterable(aasObj):
-            if type(aasObj) is dict:
-                aasObj = list(aasObj.values())
-            for item in aasObj:
-                _delRecursivlyParent(item, iter_num + 1)
-
-
-def delAASParents(aasObj):  # TODO change if aas changes
-    _delRecursivlyParent(aasObj)
-
+    if isinstance(aasObj, NamespaceSet):
+        for element in aasObj:
+            element.parent = None
+    return aasObj
 
 def getDoc(typ: type) -> str:
     return typ.__doc__

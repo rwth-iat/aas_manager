@@ -27,7 +27,7 @@ from aas_editor.settings import DEFAULTS, DEFAULT_COMPLETIONS, ATTRIBUTE_COLUMN,
     APPLICATION_NAME, CONTRIBUTORS, CONTACT, COPYRIGHT_YEAR, VERSION, DEFAULT_INHERITOR, APPLICATION_INFO, \
     DEVELOPER_WEB, APPLICATION_LINK, LICENSE, REPORT_ERROR_LINK,  AAS_METAMODEL_VERSION
 from aas_editor.utils.util import inheritors, getReqParams4init, getParamsAndTypehints4init, getDefaultVal, \
-    delAASParents
+    actualizeAASParents, delAASParent
 from aas_editor.utils.util_type import getTypeName, issubtype, isoftype, isSimpleIterableType, \
     isIterableType, isIterable, isOptional, removeOptional, typeHintToType
 from aas_editor.utils.util_classes import ClassesInfo, PreObject
@@ -281,7 +281,7 @@ class AddObjDialog(AddDialog):
 
         if not isoftype(objVal, PreObject):
             objVal = copy.deepcopy(objVal)
-        delAASParents(objVal)
+        actualizeAASParents(objVal)
 
         kwargs = {
             **kwargs,
@@ -433,6 +433,7 @@ class ObjGroupBox(GroupBox):
         for param, widget in self.paramWidgets.items():
             kwargs[param] = widget.getPreObj()
         for param, value in self.paramsToHide.items():
+            value = delAASParent(value)
             kwargs[param] = value
         try:
             return PreObject(self.objTypeHint, (), kwargs)
