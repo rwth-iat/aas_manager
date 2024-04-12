@@ -36,14 +36,23 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: macos-latest
+          - os: macos-14
             TARGET: macos
             CMD_BUILD: >
                 pyinstaller aas_manager.spec &&
                 cp -r basyx dist/AAS_Manager/basyx &&
                 cd dist/ &&
-                zip -r AAS_Manager_MacOS.zip AAS_Manager
-            OUT_FILE_NAME: AAS_Manager_MacOS.zip
+                zip -r AAS_Manager_MacOS_M1.zip AAS_Manager
+            OUT_FILE_NAME: AAS_Manager_MacOS_M1.zip
+            ASSET_MIME: application/zip
+          - os: macos-12
+            TARGET: macos
+            CMD_BUILD: >
+              pyinstaller aas_manager.spec &&
+              cp -r basyx dist/AAS_Manager/basyx &&
+              cd dist/ &&
+              zip -r AAS_Manager_MacOS_x86.zip AAS_Manager
+            OUT_FILE_NAME: AAS_Manager_MacOS_x86.zip
             ASSET_MIME: application/zip
           - os: ubuntu-latest
             TARGET: ubuntu
