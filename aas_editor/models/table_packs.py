@@ -82,3 +82,14 @@ class PacksTable(StandardTable):
             kwargs["parent"] = self._rootItem
             kwargs["new"] = False
         return kwargs
+
+    def flags(self, index: QModelIndex) -> Qt.ItemFlag:
+        flags = super().flags(index)
+
+        if Qt.ItemFlag.ItemIsEditable & flags and not self._isEditable(index):
+            flags ^= Qt.ItemFlag.ItemIsEditable
+        return flags
+
+    def _isEditable(self, index: QModelIndex):
+        objtype = type(index.data(OBJECT_ROLE))
+        return not ClassesInfo.isForbiddenToEditInGui(objtype)

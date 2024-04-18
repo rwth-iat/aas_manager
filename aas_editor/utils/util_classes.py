@@ -107,6 +107,13 @@ class ClassesInfo:
         return False
 
     @staticmethod
+    def isForbiddenToEditInGui(cls) -> bool:
+        allowed = ClassesInfo.findSpecificInfoForClass(cls, IS_EDITABLE_IN_GUI)
+        if allowed is not None:
+            return not allowed
+        return False
+
+    @staticmethod
     def packViewAttrs(cls) -> List[str]:
         attrs = ClassesInfo.findSpecificInfoForClass(cls, PACKVIEW_ATTRS_INFO)
         return list(attrs) if attrs else list()

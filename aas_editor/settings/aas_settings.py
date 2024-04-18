@@ -19,14 +19,14 @@ from basyx.aas.model import AssetAdministrationShell, ConceptDescription, Submod
     Entity, Capability, Operation, RelationshipElement, AnnotatedRelationshipElement, Range, Blob, File, \
     ReferenceElement, DataElement, AdministrativeInformation, AbstractObjectStore, \
     Namespace, SubmodelElementCollection, SubmodelElement, ModelReference, Referable, Identifiable, \
-    Key, Qualifier, BasicEventElement, SubmodelElementList, datatypes, LangStringSet
+    Key, Qualifier, BasicEventElement, SubmodelElementList, datatypes, LangStringSet, DictObjectStore
 
 import aas_editor.additional.classes
 import aas_editor.package
 from aas_editor.import_feature import import_util_classes
 from aas_editor.settings.util_constants import HIDDEN_ATTRS, CHANGED_PARENT_OBJ, ADD_ACT_AAS_TXT, \
     ADD_TYPE, PACKVIEW_ATTRS_INFO, PARAMS_TO_ATTRS, DEFAULT_PARAMS_TO_HIDE, ITERABLE_ATTRS, POSITIONAL_ARG_DEFAULTS, \
-    CONTENT_TYPE_ATTR, CONTENT_VALUE_ATTR
+    CONTENT_TYPE_ATTR, CONTENT_VALUE_ATTR, IS_EDITABLE_IN_GUI
 from aas_editor.settings.icons import getCharsIcon
 from aas_editor.utils import util_type
 import aas_editor.utils.util as util
@@ -124,7 +124,11 @@ CLASSES_INFO = {
                 ADD_ACT_AAS_TXT: "Add file",
                 ADD_TYPE: aas_editor.package.StoredFile,
             },
-        }
+        },
+        IS_EDITABLE_IN_GUI: False,
+    },
+    DictObjectStore: {
+        IS_EDITABLE_IN_GUI: False,
     },
     Referable: {
         DEFAULT_PARAMS_TO_HIDE: {"parent": None},
