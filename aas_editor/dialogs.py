@@ -201,7 +201,7 @@ class InputWidgetUtil:
             print("Given object type does not match to real object type:", objTypeHint, objVal)
             objVal = None
 
-        paramsToAttrs = paramsToAttrs if paramsToAttrs else ClassesInfo.params_to_attrs(objTypeHint)
+        paramsToAttrs = paramsToAttrs if paramsToAttrs else ClassesInfo.paramsToAttrs(objTypeHint)
         paramsToHide = cls.handleParamsToHide(objTypeHint, objVal, rmDefParams, paramsToHide, paramsToAttrs)
 
         kwargs = {
@@ -223,7 +223,7 @@ class InputWidgetUtil:
         # if obj is given and rmDefParams = False, save all hidden init params of obj with val in paramsToHide
         # and show user only required params to set
 
-        paramsToHide = paramsToHide if paramsToHide else ClassesInfo.default_params_to_hide(objTypeHint)
+        paramsToHide = paramsToHide if paramsToHide else ClassesInfo.defaultParamsToHide(objTypeHint)
 
         params, paramsDefaults = getParamsAndTypehints4init(objTypeHint)
         reqParams = getReqParams4init(objTypeHint, rmDefParams=True)
@@ -325,8 +325,8 @@ class GroupBox(QGroupBox):
             self.setTitle(title)
 
         self.objTypeHint = objTypeHint
-        self.paramsToHide = paramsToHide if paramsToHide else ClassesInfo.default_params_to_hide(objTypeHint)
-        self.paramsToAttrs = paramsToAttrs if paramsToAttrs else ClassesInfo.params_to_attrs(objTypeHint)
+        self.paramsToHide = paramsToHide if paramsToHide else ClassesInfo.defaultParamsToHide(objTypeHint)
+        self.paramsToAttrs = paramsToAttrs if paramsToAttrs else ClassesInfo.paramsToAttrs(objTypeHint)
         self.rmDefParams = rmDefParams
         self.objVal = objVal
         self.optional = optional
@@ -438,10 +438,10 @@ class ObjGroupBox(GroupBox):
         try:
             return PreObject(self.objTypeHint, (), kwargs)
         except TypeError:
-            positional_arg_defaults = ClassesInfo.positional_arg_defaults(self.objTypeHint)
+            positional_arg_defaults = ClassesInfo.positionalArgDefaults(self.objTypeHint)
             for arg in positional_arg_defaults:
                 kwargs[arg] = positional_arg_defaults[arg]
-            for arg in ClassesInfo.default_params_to_hide(object):
+            for arg in ClassesInfo.defaultParamsToHide(object):
                 try:
                     kwargs.pop(arg)
                 except KeyError:

@@ -86,7 +86,7 @@ def getAttrsOfCls(cls) -> Set[str]:
 
 def convertParams2Attrs(params: List[str], cls) -> List[str]:
     """Convert params to attrs"""
-    params_to_attrs = util_classes.ClassesInfo.params_to_attrs(cls)
+    params_to_attrs = util_classes.ClassesInfo.paramsToAttrs(cls)
     attrs = params.copy()
     for param, attr in params_to_attrs.items():
         try:

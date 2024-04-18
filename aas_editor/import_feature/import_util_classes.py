@@ -35,7 +35,7 @@ class PreObjectImport(util_classes.PreObject):
     def __init__(self, objType, args, kwargs: Dict[str, object]):
         super(PreObjectImport, self).__init__(objType, args, kwargs)
         self._fromPreObjs2KwargObjs()
-        paramsToAttrs: Dict[str, str] = util_classes.ClassesInfo.params_to_attrs(objType)
+        paramsToAttrs: Dict[str, str] = util_classes.ClassesInfo.paramsToAttrs(objType)
         self.attrsToParams: Dict[str, str] = dict((v, k) for k, v in paramsToAttrs.items())
 
     @staticmethod
@@ -86,7 +86,7 @@ class PreObjectImport(util_classes.PreObject):
             params = list(util.getReqParams4init(objType, rmDefParams=False, delOptional=False).keys())
             iterParams = util_classes.ClassesInfo.iterAttrs(objType)
             [params.remove(i) for i in iterParams]
-            paramsToAttrs = util_classes.ClassesInfo.params_to_attrs(objType)
+            paramsToAttrs = util_classes.ClassesInfo.paramsToAttrs(objType)
             for param in params:
                 attr = paramsToAttrs.get(param, param)
                 val = getattr(obj, attr)
@@ -97,7 +97,7 @@ class PreObjectImport(util_classes.PreObject):
                     iterAttr = paramsToAttrs.get(iterParam, iterParam)
                     kwargs[iterParam] = getattr(obj, iterAttr)
 
-            defaultParams2hide = dict(util_classes.ClassesInfo.default_params_to_hide(objType))
+            defaultParams2hide = dict(util_classes.ClassesInfo.defaultParamsToHide(objType))
             kwargs.update(defaultParams2hide)
             return PreObjectImport(objType, [], kwargs)
 

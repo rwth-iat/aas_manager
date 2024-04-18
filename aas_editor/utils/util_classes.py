@@ -7,14 +7,6 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-#
-#  This program is made available under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-#  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-#
-#  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
 from typing import Type, Tuple, Optional, List, Dict
 
@@ -75,10 +67,10 @@ class PreObject:
         try:
             return self.objType(*args, **kwargs)
         except TypeError:
-            positional_arg_defaults = ClassesInfo.positional_arg_defaults(self.objType)
+            positional_arg_defaults = ClassesInfo.positionalArgDefaults(self.objType)
             for arg in positional_arg_defaults:
                 kwargs[arg] = positional_arg_defaults[arg]
-            for key in ClassesInfo.default_params_to_hide(object):
+            for key in ClassesInfo.defaultParamsToHide(object):
                 try:
                     kwargs.pop(key)
                 except KeyError:
@@ -109,56 +101,115 @@ class PreObject:
 class ClassesInfo:
     @staticmethod
     def hasPackViewAttrs(cls) -> bool:
-        for typ in s.CLASSES_INFO:
-            if issubclass(cls, typ) and PACKVIEW_ATTRS_INFO in s.CLASSES_INFO[typ]:
-                return True
+        hasAttrs = ClassesInfo.findSpecificInfoForClass(cls, PACKVIEW_ATTRS_INFO)
+        if hasAttrs is not None:
+            return True
         return False
 
     @staticmethod
     def packViewAttrs(cls) -> List[str]:
-        attrs = set()
-        for typ in s.CLASSES_INFO:
-            if issubclass(cls, typ) and PACKVIEW_ATTRS_INFO in s.CLASSES_INFO[typ]:
-                attrs.update(s.CLASSES_INFO[typ][PACKVIEW_ATTRS_INFO].keys())
-        return list(attrs)
+        attrs = ClassesInfo.findSpecificInfoForClass(cls, PACKVIEW_ATTRS_INFO)
+        return list(attrs) if attrs else list()
 
     @staticmethod
-    def findInfoForClass(cls, attr: str, objToUpdate) -> List[object]:
-        for typ in s.CLASSES_INFO:
+    def getClsAndItsParents(cls: Type) -> List[Type]:
+        try:
+            return cls.mro()
+        except (TypeError, AttributeError):
+            return [cls]
+
+    @staticmethod
+    def findAllInfoForClass(cls) -> Dict:
+        cls_and_parents = ClassesInfo.getClsAndItsParents(cls)
+        info = dict()
+        # iterate over all classes and their parents to get all infos.
+        # If a value is already in info, and it is iterable, update it such that the values are combined
+        for cls in reversed(cls_and_parents):
             try:
-                if issubtype(cls, typ):
-                    try:
-                        objToUpdate.update(s.CLASSES_INFO[typ][attr])
-                    except KeyError:
-                        continue
-            except TypeError as e:
-                print(f"{e}")
-        return objToUpdate
+                newinfo = s.CLASSES_INFO[cls]
+                for key in newinfo:
+                    if key in info:
+                        if isinstance(info[key], (set, dict)):
+                            info[key].update(newinfo[key])
+                        elif isinstance(info[key], tuple):
+                            info[key] = tuple(set(info[key] + newinfo[key]))
+                    else:
+                        info[key] = newinfo[key]
+            except KeyError:
+                pass
+        return info
+
+    @staticmethod
+    def findSpecificInfoForClass(cls, infoType):
+        cls_and_parents = ClassesInfo.getClsAndItsParents(cls)
+        infos = []
+        for cls in reversed(cls_and_parents):
+            try:
+                specificInfo = s.CLASSES_INFO[cls][infoType]
+                infos.append(specificInfo)
+            except KeyError:
+                pass
+        return ClassesInfo.unite(infos)
+
+    @staticmethod
+    def unite(infos):
+        if not infos:
+            return None
+
+        if isinstance(infos[0], set):
+            unitedinfo = set()
+            for info in infos:
+                unitedinfo.update(info)
+        elif isinstance(infos[0], dict):
+            unitedinfo = dict()
+            for info in infos:
+                unitedinfo.update(info)
+        elif isinstance(infos[0], tuple):
+            unitedinfo = tuple()
+            for info in infos:
+                unitedinfo = tuple(set(unitedinfo + info))
+        else:
+            unitedinfo = infos[-1]
+        return unitedinfo
+
+    @staticmethod
+    def findInfoOnlyForClass(cls) -> Dict:
+        info = dict()
+        if cls in s.CLASSES_INFO:
+            try:
+                info.update(s.CLASSES_INFO[cls])
+            except KeyError:
+                pass
+        return info
 
     @staticmethod
     def hiddenAttrs(cls) -> Tuple[str]:
-        return tuple(ClassesInfo.findInfoForClass(cls, HIDDEN_ATTRS, set()))
+        val = ClassesInfo.findSpecificInfoForClass(cls, HIDDEN_ATTRS)
+        return val if val else tuple()
 
     @staticmethod
     def iterAttrs(cls) -> Tuple[str]:
-        return tuple(ClassesInfo.findInfoForClass(cls, ITERABLE_ATTRS, set()))
+        val = ClassesInfo.findSpecificInfoForClass(cls, ITERABLE_ATTRS)
+        return val if val else tuple()
 
     @staticmethod
-    def default_params_to_hide(cls) -> Dict[str, str]:
-        return ClassesInfo.findInfoForClass(cls, DEFAULT_PARAMS_TO_HIDE, dict())
+    def defaultParamsToHide(cls) -> Dict[str, str]:
+        val = ClassesInfo.findSpecificInfoForClass(cls, DEFAULT_PARAMS_TO_HIDE)
+        return val if val else dict()
 
     @staticmethod
-    def positional_arg_defaults(cls) -> Dict[str, str]:
-        return ClassesInfo.findInfoForClass(cls, POSITIONAL_ARG_DEFAULTS, dict())
-
+    def positionalArgDefaults(cls) -> Dict[str, str]:
+        val = ClassesInfo.findSpecificInfoForClass(cls, POSITIONAL_ARG_DEFAULTS)
+        return val if val else dict()
 
     @staticmethod
-    def params_to_attrs(cls) -> Dict[str, str]:
-        return ClassesInfo.findInfoForClass(cls, PARAMS_TO_ATTRS, dict())
+    def paramsToAttrs(cls) -> Dict[str, str]:
+        val = ClassesInfo.findSpecificInfoForClass(cls, PARAMS_TO_ATTRS)
+        return val if val else dict()
 
     @staticmethod
     def addActText(cls, attr: Optional[str] = None) -> str:
-        clsInfo = s.CLASSES_INFO.get(cls, {})
+        clsInfo = ClassesInfo.findAllInfoForClass(cls)
 
         if attr is None:
             res = clsInfo.get(ADD_ACT_AAS_TXT, "")
@@ -166,54 +217,21 @@ class ClassesInfo:
             attrsInfo = clsInfo.get(PACKVIEW_ATTRS_INFO, {})
             attrInfo = attrsInfo.get(attr, {})
             res = attrInfo.get(ADD_ACT_AAS_TXT, "")
-
-        if not res:
-            for typ in s.CLASSES_INFO:
-                if issubtype(cls, typ):
-                    try:
-                        clsInfo = s.CLASSES_INFO[typ]
-                        if attr is None:
-                            return clsInfo[ADD_ACT_AAS_TXT]
-                        else:
-                            return clsInfo[PACKVIEW_ATTRS_INFO][attr][ADD_ACT_AAS_TXT]
-                    except KeyError:
-                        continue
         return res
 
     @staticmethod
     def changedParentObject(cls) -> str:
-        clsInfo = s.CLASSES_INFO.get(cls, {})
+        clsInfo = ClassesInfo.findAllInfoForClass(cls)
         res = clsInfo.get(CHANGED_PARENT_OBJ, "")
-        if not res:
-            for typ in s.CLASSES_INFO:
-                if issubtype(cls, typ):
-                    try:
-                        res = s.CLASSES_INFO[typ][CHANGED_PARENT_OBJ]
-                        if cls is typ:
-                            return res
-                    except KeyError:
-                        continue
         return res
 
     @staticmethod
     def addType(cls, attr: Optional[str] = None) -> Type:
-        clsInfo = s.CLASSES_INFO.get(cls, {})
+        clsInfo = ClassesInfo.findAllInfoForClass(cls)
         if attr is None:
             res = clsInfo.get(ADD_TYPE, None)
         else:
             attrsInfo = clsInfo.get(PACKVIEW_ATTRS_INFO, {})
             attrInfo = attrsInfo.get(attr, {})
             res = attrInfo.get(ADD_TYPE, None)
-
-        if not res:
-            for typ in s.CLASSES_INFO:
-                if issubtype(cls, typ):
-                    try:
-                        clsInfo = s.CLASSES_INFO[typ]
-                        if attr is None:
-                            return clsInfo[ADD_TYPE]
-                        else:
-                            return clsInfo[PACKVIEW_ATTRS_INFO][attr][ADD_TYPE]
-                    except KeyError:
-                        continue
         return res
