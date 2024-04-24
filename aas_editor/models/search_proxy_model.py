@@ -19,7 +19,7 @@
 from typing import List, Any, Optional
 
 from PyQt6.QtCore import QSortFilterProxyModel, QModelIndex, Qt, \
-    QPersistentModelIndex, QObject, QAbstractItemModel
+    QPersistentModelIndex, QObject, QAbstractItemModel, QRegularExpression
 
 
 class SearchProxyModel(QSortFilterProxyModel):
@@ -39,6 +39,7 @@ class SearchProxyModel(QSortFilterProxyModel):
                matchCase: bool = False) -> List[QPersistentModelIndex]:
         foundItems = []
         if not pattern:
+            self.show_all_items()
             return foundItems
 
         if matchCase:
@@ -47,7 +48,7 @@ class SearchProxyModel(QSortFilterProxyModel):
             self.setFilterCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
 
         if regExp:
-            self.setFilterRegExp(pattern)
+            self.setFilterRegularExpression(QRegularExpression(pattern))
         else:
             self.setFilterFixedString(pattern)
 
@@ -60,11 +61,13 @@ class SearchProxyModel(QSortFilterProxyModel):
                 foundItems.append(QPersistentModelIndex(srcIndex))
 
         if not filter:
-            # show all items
-            self.setFilterRegExp("")
+            self.show_all_items()
 
         foundItems = [QPersistentModelIndex(self.mapFromSource(QModelIndex(i))) for i in foundItems]
         return foundItems
+
+    def show_all_items(self):
+        self.setFilterRegularExpression(QRegularExpression(""))
 
     def iterItems(self, parent: QModelIndex = QModelIndex()) -> QModelIndex:
         def recurse(parent: QModelIndex):
