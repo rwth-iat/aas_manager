@@ -97,7 +97,9 @@ class StandardItem(QObject):
     def objectName(self) -> str:
         if self.objName:
             return self.objName
-        elif hasattr(self.obj, "id_short") and self.obj.id_short:
+        elif (hasattr(self.obj, "id_short")
+              and self.obj.id_short
+              and not self.obj.id_short.startswith("generated_submodel_list_hack_")):  # FIXME: Refactor after basyx fix
             return self.obj.id_short
         elif hasattr(self.obj, "name") and self.obj.name:
             return self.obj.name
