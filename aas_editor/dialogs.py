@@ -105,7 +105,7 @@ class ErrorMessageBox(QMessageBox):
 class AddDialog(QDialog):
     """Base abstract class for custom dialogs for adding data"""
     REC = QGuiApplication.primaryScreen().geometry()
-    MAX_HEIGHT = int(REC.height() * 0.9)
+    MAX_HEIGHT = int(REC.height() * 0.6)
     MIN_WIDTH = 450
     INITIAL_POSITION = None
 
