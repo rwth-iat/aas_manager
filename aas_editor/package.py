@@ -114,17 +114,8 @@ class Package:
 
         elif fileType == ".aasx":
             with AASXWriter(self.file.as_posix()) as writer:
-                aas_ids = []
-                for obj in self.objStore:
-                    if isinstance(obj, AssetAdministrationShell):
-                        aas_ids.append(obj.id)
-                writer.write_aas(aas_ids, self.objStore, self.fileStore, write_json=self.writeJsonInAasx)
-                # Create OPC/AASX core properties
-                cp = pyecma376_2.OPCCoreProperties()
-                cp.created = datetime.now()
-                from aas_editor.settings.app_settings import AAS_CREATOR
-                cp.creator = AAS_CREATOR
-                writer.write_core_properties(cp)
+                writer.write_all_aas_objects("/aasx/data.{}".format("json" if self.writeJsonInAasx else "xml"),
+                                             self.objStore, self.fileStore, self.writeJsonInAasx)
         else:
             raise TypeError("Wrong file type:", self.file.suffix)
 
