@@ -1,0 +1,42 @@
+name: Test Build and Run on Operating Systems
+
+on:
+#  push:
+#  pull_request:
+
+jobs:
+  build:
+    runs-on: [macos-latest, ubuntu-latest, windows-latest]
+    timeout-minutes: 30
+    
+    env:
+      QT_SELECT: "qt6"
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v3
+      with:
+        python-version: 3.11
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip wheel
+        pip install -e .
+        
+    - name: Test build Linux and MacOS
+      if: ${{ (runner.os == 'Linux') || (runner.os == 'MacOS') }}
+      run: |
+        pyinstaller aas_manager.spec
+        dist/AAS_Manager/AAS_Manager
+
+    - name: Test build Windows
+      if: ${{ runner.os == 'Windows' }}
+      run: |
+        pyinstaller aas_manager.spec
+        dist\AAS_Manager\AAS_Manager
+        
+    - name: Test Run
+      run: |
+        python test.py
