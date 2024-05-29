@@ -107,7 +107,7 @@ class AddDialog(QDialog):
     REC = QGuiApplication.primaryScreen().geometry()
     MAX_HEIGHT = int(REC.height() * 0.9)
     MIN_WIDTH = 450
-    INITIAL_POSITION = None
+    SAVED_POSITION = None
 
     def __init__(self, parent=None, title=""):
         QDialog.__init__(self, parent)
@@ -139,8 +139,7 @@ class AddDialog(QDialog):
         self.verticalLayoutScroll = QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayoutScroll.setContentsMargins(0, 0, 0, 0)
 
-        if self.INITIAL_POSITION:
-            self.move(self.INITIAL_POSITION)
+        self.restorePosition()
 
     def adjustSize(self) -> None:
         layoutSize = self.layout().sizeHint()
@@ -155,18 +154,24 @@ class AddDialog(QDialog):
     def getObj2add(self):
         pass
 
-    # Save dialog position on exit
     def closeEvent(self, event):
-        self.saveSettings()
+        self.savePosition()
         super().closeEvent(event)
 
     def reject(self):
-        self.saveSettings()
+        self.savePosition()
         super().reject()
-
-    def saveSettings(self):
-        AddDialog.INITIAL_POSITION = self.pos()
-
+        
+    def accept(self):
+        self.savePosition()
+        super().accept()
+        
+    def savePosition(self):
+        AddDialog.SAVED_POSITION = self.pos()
+        
+    def restorePosition(self):
+        if AddDialog.SAVED_POSITION:
+            self.move(AddDialog.SAVED_POSITION)
 
 def checkIfAccepted(func):
     """Decorator for checking if user clicked ok"""
