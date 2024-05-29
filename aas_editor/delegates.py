@@ -72,8 +72,7 @@ class ColorDelegate(QStyledItemDelegate):
 
 
 class EditDelegate(ColorDelegate):
-    # FIXME check if other types are also editable
-    editableTypesInTable = (bool, int, float, str, Enum, Type, type(None))
+    editableTypesInTable = (bool, int, float, str, Enum)
 
     def createEditor(self, parent: QWidget, option: 'QStyleOptionViewItem',
                      index: QtCore.QModelIndex) -> QWidget:
@@ -94,21 +93,10 @@ class EditDelegate(ColorDelegate):
         elif issubtype(objType, float):
             widget = LineEdit(parent)
             widget.setValidator(QDoubleValidator())
-        elif issubtype(objType, (Enum, Type)):
-            if issubtype(objType, Enum):
-                # add enum types to types
-                types = [member for member in objType]
-            else:  # Type
-                union = objType.__args__[0]
-                if type(union) == TypeVar:
-                    # add Type inheritors to types
-                    baseType = union.__bound__
-                    types = inheritors(baseType)
-                else:
-                    # add Union Type attrs to types
-                    types = union.__args__
-
-            if len(types) <= 6:
+        elif issubtype(objType, Enum):
+            # add enum types to types
+            enums = [member for member in objType]
+            if len(enums) <= 6:
                 widget = ComboBox(parent)
             else:
                 widget = CompleterComboBox(parent)
