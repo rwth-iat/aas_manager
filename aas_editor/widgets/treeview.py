@@ -158,7 +158,7 @@ class HeaderView(QHeaderView):
             self.currSortSection = logicalIndex
             self.currOrder = 1
         else:
-            self.setSortIndicator(-1, 0)
+            self.setSortIndicator(-1, Qt.SortOrder.AscendingOrder)
             self.currSortSection = -1
 
 
