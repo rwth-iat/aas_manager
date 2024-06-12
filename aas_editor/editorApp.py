@@ -160,7 +160,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.menuTools = QMenu("&Tools", self.menubar)
         self.menuTools.addAction(self.complToolDialogAct)
-        self.menuTools.addAction(self.importToolAct)
+        # self.menuTools.addAction(self.importToolAct)
 
         self.menuHelp = QMenu("&Help", self.menubar)
         self.menuHelp.addAction(self.aboutDialogAct)
