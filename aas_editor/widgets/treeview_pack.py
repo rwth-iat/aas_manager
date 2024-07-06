@@ -13,6 +13,7 @@ import json
 import logging
 import traceback
 import typing
+from functools import partial
 from pathlib import Path
 from typing import Optional
 
@@ -27,16 +28,14 @@ from basyx.aas.model import DictObjectStore, Submodel
 
 from aas_editor.delegates import EditDelegate
 from aas_editor.package import Package, StoredFile
-from aas_editor.settings import FILTER_AAS_FILES, \
-    FILE_TYPE_FILTERS, NOT_GIVEN, REFERABLE_INHERITORS_ATTRS
+from aas_editor.settings import FILTER_AAS_FILES, FILE_TYPE_FILTERS, NOT_GIVEN, REFERABLE_INHERITORS_ATTRS
 from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE, \
     MAX_RECENT_FILES, IAT, \
     APPLICATION_NAME, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, \
     CLEAR_ROW_ROLE, AppSettings, COLUMN_NAME_ROLE, OBJECT_COLUMN_NAME, \
     OBJECT_VALUE_COLUMN_NAME, DEFAULT_COLUMNS_IN_PACKS_TABLE_TO_SHOW, COPY_ROLE
 from aas_editor.settings.shortcuts import SC_OPEN, SC_SAVE_ALL
-from aas_editor.settings.icons import NEW_PACK_ICON, OPEN_ICON, OPEN_DRAG_ICON, SAVE_ICON, SAVE_ALL_ICON, \
-    ADD_ICON
+from aas_editor.settings.icons import NEW_PACK_ICON, OPEN_ICON, OPEN_DRAG_ICON, SAVE_ICON, SAVE_ALL_ICON, ADD_ICON
 from aas_editor.utils import util_type
 from aas_editor.utils.util import getDefaultVal, getReqParams4init
 from aas_editor.utils.util_classes import ClassesInfo
@@ -171,12 +170,12 @@ class PackTreeView(TreeView):
                 logging.exception(f"Error while reading {file}: {e}. Submodels can not be read")
 
     @property
-    def defaultNewFileTypeFilter(self):
-        return AppSettings.DEFAULT_NEW_FILETYPE_FILTER.value()
+    def defaultNewFileType(self):
+        return AppSettings.DEFAULT_NEW_FILETYPE.value()
 
-    @defaultNewFileTypeFilter.setter
-    def defaultNewFileTypeFilter(self, value):
-        AppSettings.DEFAULT_NEW_FILETYPE_FILTER.setValue(value)
+    @defaultNewFileType.setter
+    def defaultNewFileType(self, value):
+        AppSettings.DEFAULT_NEW_FILETYPE.setValue(value)
 
     # noinspection PyArgumentList
     def initActions(self):
@@ -189,10 +188,14 @@ class PackTreeView(TreeView):
                                    triggered=lambda: self.onJsonCopy(),
                                    enabled=True)
 
-        self.newPackAct = QAction(NEW_PACK_ICON, "&New AAS file", self,
-                                  statusTip="Create new AAS file",
-                                  triggered=lambda: self.newPackWithDialog(),
-                                  enabled=True)
+        self.newPackActs = []
+        for filetype in FILE_TYPE_FILTERS:
+            newPackAct = QAction(NEW_PACK_ICON, f"New AAS file as {filetype}", self,
+                                 statusTip=f"Create new AAS file as {filetype}",
+                                 triggered=partial(self.newPackWithDialog, filetype=filetype),
+                                 enabled=True)
+            self.newPackActs.append(newPackAct)
+
 
         self.openPackAct = QAction(OPEN_ICON, "&Open AAS file", self,
                                    shortcut=SC_OPEN,
@@ -311,7 +314,7 @@ class PackTreeView(TreeView):
         action = self.sender()
         if action:
             typ = action.text()
-            self.defaultNewFileTypeFilter = FILE_TYPE_FILTERS[typ]
+            self.defaultNewFileType = FILE_TYPE_FILTERS[typ]
 
     # noinspection PyUnresolvedReferences
     def initMenu(self):
@@ -449,14 +452,15 @@ class PackTreeView(TreeView):
         clipboard = QApplication.clipboard()
         clipboard.setText(json2copy, QClipboard.Mode.Clipboard)
 
-    def newPackWithDialog(self, filter=FILTER_AAS_FILES):
+    def newPackWithDialog(self, filetype=None, filter=FILTER_AAS_FILES):
         saved = False
-        file = 'new_aas_file.aasx'
+        filetype = self.defaultNewFileType if filetype is None else filetype
+        file = f'new_aas_file.{filetype}'
 
         while not saved:
             file, _ = QFileDialog.getSaveFileName(self, 'Create new AAS File', file,
                                                   filter=filter,
-                                                  initialFilter=self.defaultNewFileTypeFilter)
+                                                  initialFilter=FILE_TYPE_FILTERS[filetype])
             if file:
                 pack = Package()
                 saved = self.savePack(pack, file)

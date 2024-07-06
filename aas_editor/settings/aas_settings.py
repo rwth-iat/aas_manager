@@ -37,10 +37,15 @@ XML_FILES_FILTER = "XML files (*.xml)"
 JSON_FILES_FILTER = "JSON files (*.json)"
 ALL_FILES_FILTER = "All files (*.*)"
 
+FILE_TYPES = {
+    "json": "json",
+    "xml": "xml",
+    "aasx": "aasx",
+}
 FILE_TYPE_FILTERS = {
-    "AASX": AASX_FILES_FILTER,
-    "XML": XML_FILES_FILTER,
-    "JSON": JSON_FILES_FILTER
+    "json": JSON_FILES_FILTER,
+    "xml": XML_FILES_FILTER,
+    "aasx": AASX_FILES_FILTER,
 }
 FILTER_AAS_FILES = f"{AAS_FILES_FILTER};;{AASX_FILES_FILTER};;{XML_FILES_FILTER};;{JSON_FILES_FILTER};;{ALL_FILES_FILTER}"
 

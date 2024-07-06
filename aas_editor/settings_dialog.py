@@ -12,7 +12,7 @@ from typing import Dict
 from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout, QLabel, QGroupBox, QHBoxLayout, QRadioButton
 from PyQt6.QtCore import Qt
 
-from aas_editor.settings import FILE_TYPE_FILTERS, AppSettings, Setting
+from aas_editor.settings import AppSettings, Setting, FILE_TYPES
 
 
 class OptionGroupBox(QGroupBox):
@@ -76,8 +76,8 @@ class SettingsDialog(QDialog):
 
         self.optionGroupBoxes = [
             RadioBtnsGroupBox(self, title="Standard initialisation file type",
-                              options=FILE_TYPE_FILTERS,
-                              appSetting=AppSettings.DEFAULT_NEW_FILETYPE_FILTER),
+                              options=FILE_TYPES,
+                              appSetting=AppSettings.DEFAULT_NEW_FILETYPE),
             RadioBtnsGroupBox(self, title="Filetype for saving in AASX",
                               options={"JSON": True, "XML": False},
                               appSetting=AppSettings.WRITE_JSON_IN_AASX),

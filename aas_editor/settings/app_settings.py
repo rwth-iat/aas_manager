@@ -96,7 +96,7 @@ CUSTOM_COLUMN_LISTS_FILE = get_custom_column_lists_file()
 
 # Themes
 APP_LOGO = QIcon(str(ICONS_FOLDER / 'logo.svg'))
-DEFAULT_THEME = "default"
+DEFAULT_THEME = "grey"
 
 SETTINGS = QSettings(str(SETTINGS_FILE), QSettings.IniFormat)
 
@@ -131,7 +131,7 @@ class AppSettings:
     PACKTREEVIEW_HEADER_STATE = Setting('packTreeViewHeaderState', None)
     PACKTREEVIEW_HEADER_CUSTOM_COLUMN_LISTS_FILE = CUSTOM_COLUMN_LISTS_FILE
     TABTREEVIEW_HEADER_STATE = Setting('tabTreeViewHeaderState', None)
-    DEFAULT_NEW_FILETYPE_FILTER = Setting('defaultNewFileTypeFilter', "AASX files (*.aasx)", str)
+    DEFAULT_NEW_FILETYPE = Setting('defaultNewFileType', "json", str)
 
     # If True, JSON parts are created for the AAS and each submodel
     # in the AASX file instead of XML parts.

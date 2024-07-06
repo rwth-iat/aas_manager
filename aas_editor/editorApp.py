@@ -15,7 +15,7 @@ from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 
 from aas_editor.settings.app_settings import *
-from aas_editor.settings.icons import EXIT_ICON, SETTINGS_ICON
+from aas_editor.settings.icons import EXIT_ICON, SETTINGS_ICON, NEW_PACK_ICON
 from aas_editor.settings_dialog import SettingsDialog
 from aas_editor.widgets.compliance_tool import ComplianceToolDialog
 from aas_editor.widgets import AddressLine
@@ -107,7 +107,11 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.setMenuBar(self.menubar)
 
         self.menuFile = QMenu("&File", self.menubar)
-        self.menuFile.addAction(self.mainTreeView.newPackAct)
+        self.menuNewAasFile = QMenu("New AAS file...", self.menuFile)
+        self.menuNewAasFile.setIcon(NEW_PACK_ICON)
+        for newPackAct in self.mainTreeView.newPackActs:
+            self.menuNewAasFile.addAction(newPackAct)
+        self.menuFile.addMenu(self.menuNewAasFile)
         self.menuFile.addAction(self.mainTreeView.openPackAct)
         # self.menuFile.addAction(self.mainTreeView.openPackFromServerAct)
 
@@ -189,7 +193,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.toolBar.addAction(self.mainTreeView.saveAct)
         self.toolBar.addAction(self.mainTreeView.openPackAct)
         # self.toolBar.addAction(self.mainTreeView.openPackFromServerAct)
-        self.toolBar.addAction(self.mainTreeView.newPackAct)
+        self.toolBar.addAction(self.mainTreeView.newPackActs[0])
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.mainTreeView.collapseAllAct)
         self.toolBar.addAction(self.mainTreeView.expandAllAct)
@@ -341,5 +345,5 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         AppSettings.PACKTREEVIEW_HEADER_STATE.setValue(self.mainTreeView.header().saveState())
         AppSettings.TABTREEVIEW_HEADER_STATE.setValue(
             self.mainTabWidget.currentWidget().attrsTreeView.header().saveState())
-        # AppSettings.DEFAULT_NEW_FILETYPE_FILTER.setValue(self.packTreeView.defaultNewFileTypeFilter)
+        # AppSettings.DEFAULT_NEW_FILETYPE_FILTER.setValue(self.packTreeView.defaultNewFileType)
 
