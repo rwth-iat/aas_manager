@@ -46,8 +46,8 @@ QMdiArea {
     border-color: #2b2b2b;
     selection-background-color: #2f65ca;
     selection-color: #bbbbbb;
-    border-right: 0.2ex solid rgba(118, 121, 124, 0.4);
-    border-bottom: 0.2ex solid rgba(118, 121, 124, 0.4);
+    border-right: 0.2ex solid #2b2b2b;
+    border-bottom: 0.2ex solid #2b2b2b;
 }
 
 QTreeView::item:!enabled
@@ -184,7 +184,7 @@ QTabBar::tab {
 }
 QTabBar::tab:selected {
     font: normal;
-    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #535353, stop:1 #444);
+    border-bottom: 2px solid #666;
 }
 QTabBar::close-button {
     image: url(themes:grey/close.svg);
@@ -211,7 +211,6 @@ QDialog QTabBar::tab:selected {
     height: 21px;
     padding: 1px 12px 3px;
     font: normal;
-    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #535353, stop:1 #444);
 }
 QDialog QTabBar::tab:!selected {
     margin: 0 -1px 0 0;
@@ -241,7 +240,6 @@ QDialog QTabWidget::tab-bar {
 QDialog QTabWidget::pane {
     border: 1px solid #292b2d;
     background-color: #3c3f41;
-    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #444, stop:0.03 #3c3f41, stop:0.05 #3c3f41, stop:1 #3c3f41);
 }
 
 QLabel {
@@ -591,7 +589,8 @@ QComboBox::drop-down:no-frame::disabled {
 
 QMenuBar {
     background: #3c3f41;
-    padding: 0;
+    padding: 4px 4px;
+    border-bottom: 1px solid #292b2d;
 }
 QMenuBar::item {
     spacing: 3px;
