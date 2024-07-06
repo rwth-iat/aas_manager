@@ -36,7 +36,8 @@ class HeaderView(QHeaderView):
     def __init__(self, orientation, parent: Optional[QWidget] = ...) -> None:
         super(HeaderView, self).__init__(orientation, parent)
         self.setSectionsMovable(True)
-        self.setStretchLastSection(True)
+        self.setStretchLastSection(False)
+        self.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self.setFixedHeight(TOOLBARS_HEIGHT)
 
         self.sortIndicatorChanged.connect(lambda a, b: print(a, b))
