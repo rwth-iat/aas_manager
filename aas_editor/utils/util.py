@@ -25,7 +25,7 @@ from typing import List, Dict, Type, Set, Any, Tuple, Iterable
 
 from PyQt6.QtCore import Qt, QFile, QTextStream, QModelIndex
 from PyQt6.QtWidgets import QApplication
-from basyx.aas.model import NamespaceSet, Namespace
+from basyx.aas.model import NamespaceSet, Namespace, Reference
 
 from aas_editor import settings
 import aas_editor.utils.util_classes as util_classes
@@ -114,6 +114,9 @@ def simplifyInfo(obj, attrName: str = "") -> str:
         if isinstance(obj, settings.ATTR_INFOS_TO_SIMPLIFY):
             res = re.sub("^[A-Z]\w*[(]", "", res)
             res = res.rstrip(")")
+        elif util_type.issubtype(type(obj), Reference):
+            lastKey = obj.key[-1]
+            res = f"{lastKey.value} - {lastKey.type.name}"
         elif util_type.issubtype(type(obj), NamespaceSet):
             res = f"{{{str([i for i in obj]).strip('[]')}}}"
         elif inspect.isclass(obj):

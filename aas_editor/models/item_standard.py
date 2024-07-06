@@ -167,7 +167,7 @@ class StandardItem(QObject):
         if role == Qt.ItemDataRole.WhatsThisRole:
             return self.doc
         if role in (Qt.ItemDataRole.ToolTipRole, Qt.ItemDataRole.StatusTipRole):
-            return self._getTooltipRoleData(column)
+            return self._getTooltipRoleData(column, column_name)
         if role == Qt.ItemDataRole.DisplayRole:
             return self._getDisplayRoleData(column, column_name)
         if role == Qt.ItemDataRole.EditRole:
@@ -207,8 +207,7 @@ class StandardItem(QObject):
         else:
             return QVariant()
 
-    def _getTooltipRoleData(self, column):
-        tooltip = ""
+    def _getTooltipRoleData(self, column, column_name):
         if column == settings.ATTRIBUTE_COLUMN:
             if self.doc:
                 tooltip = self.doc.replace(": ", "\n\n", 1)
@@ -226,6 +225,8 @@ class StandardItem(QObject):
                 tooltip = f"{self.objTypeName}\n\nThe value must be of type '{self.typehintName}', not of type '{self.objTypeName}'!"
         elif column == settings.TYPE_HINT_COLUMN:
             tooltip = self.typehintName
+        else:
+            tooltip = self._getDisplayRoleData(column, column_name)
 
         tooltip = getLimitStr(tooltip)
         return tooltip if tooltip else QVariant()
