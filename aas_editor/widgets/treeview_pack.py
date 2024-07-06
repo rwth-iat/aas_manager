@@ -28,7 +28,7 @@ from basyx.aas.model import DictObjectStore, Submodel
 
 from aas_editor.delegates import EditDelegate
 from aas_editor.package import Package, StoredFile
-from aas_editor.settings import FILTER_AAS_FILES, FILE_TYPE_FILTERS, NOT_GIVEN, REFERABLE_INHERITORS_ATTRS
+from aas_editor.settings import FILTER_AAS_FILES, AAS_FILE_TYPE_FILTERS, NOT_GIVEN, REFERABLE_INHERITORS_ATTRS
 from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE, \
     MAX_RECENT_FILES, IAT, \
     APPLICATION_NAME, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, \
@@ -42,6 +42,7 @@ from aas_editor.utils.util_classes import ClassesInfo
 from aas_editor.widgets import TreeView
 from aas_editor.widgets.treeview import HeaderView
 from aas_editor import dialogs
+from settings import AAS_FILE_TYPES
 
 
 class PackHeaderView(HeaderView):
@@ -199,7 +200,7 @@ class PackTreeView(TreeView):
                                    enabled=True)
 
         self.newPackActs = []
-        for filetype in FILE_TYPE_FILTERS:
+        for filetype in AAS_FILE_TYPE_FILTERS:
             newPackAct = QAction(NEW_PACK_ICON, f"New AAS file as {filetype}", self,
                                  statusTip=f"Create new AAS file as {filetype}",
                                  triggered=partial(self.newPackWithDialog, filetype=filetype),
@@ -230,6 +231,14 @@ class PackTreeView(TreeView):
                                  statusTip="Save current file as..",
                                  triggered=lambda: self.savePackAsWithDialog(),
                                  enabled=False)
+
+        self.saveInActs = []
+        for filetype in AAS_FILE_TYPES:
+            saveInAct = QAction(f"Save in {filetype}", self,
+                                statusTip=f"Save in {filetype}",
+                                triggered=partial(self.savePackInTypeWithDialog, filetype=filetype),
+                                enabled=False)
+            self.saveInActs.append(saveInAct)
 
         self.saveAllAct = QAction(SAVE_ALL_ICON, "&Save All", self,
                                   shortcut=SC_SAVE_ALL,
@@ -323,7 +332,7 @@ class PackTreeView(TreeView):
         action = self.sender()
         if action:
             typ = action.text()
-            self.defaultNewFileType = FILE_TYPE_FILTERS[typ]
+            self.defaultNewFileType = AAS_FILE_TYPE_FILTERS[typ]
 
     # noinspection PyUnresolvedReferences
     def initMenu(self):
@@ -334,6 +343,8 @@ class PackTreeView(TreeView):
         self.attrsMenu.addAction(self.openPackAct)
         self.attrsMenu.addAction(self.saveAct)
         self.attrsMenu.addAction(self.saveAsAct)
+        for act in self.saveInActs:
+            self.attrsMenu.addAction(act)
         self.attrsMenu.addAction(self.saveAllAct)
         self.attrsMenu.addAction(self.closeAct)
         self.attrsMenu.addAction(self.closeAllAct)
@@ -376,16 +387,16 @@ class PackTreeView(TreeView):
         self.updateCopyPasteSubmodelActs(index)
 
         if index.isValid():
-            self.openInCurrTabAct.setEnabled(True)
-            self.openInNewTabAct.setEnabled(True)
-            self.openInBackgroundAct.setEnabled(True)
-            self.openInNewWindowAct.setEnabled(True)
+            for act in self.openInActs:
+                act.setEnabled(True)
 
         # update save and close actions
         self.saveAct.setEnabled(self.isSaveOk())
         self.saveAct.setText(f"Save {index.data(PACKAGE_ROLE)}")
         self.saveAct.setToolTip(f"Save {index.data(PACKAGE_ROLE)}")
         self.saveAsAct.setEnabled(self.isSaveOk())
+        for act in self.saveInActs:
+            act.setEnabled(self.isSaveOk())
         self.saveAllAct.setEnabled(self.isSaveAllOk())
         self.closeAct.setEnabled(self.isCloseOk())
         self.closeAllAct.setEnabled(self.isCloseAllOk())
@@ -469,7 +480,7 @@ class PackTreeView(TreeView):
         while not saved:
             file, _ = QFileDialog.getSaveFileName(self, 'Create new AAS File', file,
                                                   filter=filter,
-                                                  initialFilter=FILE_TYPE_FILTERS[filetype])
+                                                  initialFilter=AAS_FILE_TYPE_FILTERS[filetype])
             if file:
                 pack = Package()
                 saved = self.savePack(pack, file)
@@ -554,10 +565,15 @@ class PackTreeView(TreeView):
             dialogs.ErrorMessageBox.withTraceback(self, f"No chosen package to save: {e}").exec()
         return False
 
-    def savePackAsWithDialog(self, pack: Package = None, filter=FILTER_AAS_FILES) -> bool:
+    def savePackInTypeWithDialog(self, filetype=None, pack: Package = None) -> bool:
+        pack = self.currentIndex().data(PACKAGE_ROLE) if pack is None else pack
+        file = pack.file.as_posix() if filetype is None else pack.file.with_suffix(f".{filetype}").as_posix()
+        self.savePackAsWithDialog(file, pack)
+
+    def savePackAsWithDialog(self, file=None, pack: Package = None, filter=FILTER_AAS_FILES) -> bool:
         pack = self.currentIndex().data(PACKAGE_ROLE) if pack is None else pack
         saved = False
-        file = pack.file.as_posix()
+        file = pack.file.as_posix() if file is None else file
         while not saved:
             try:
                 file, _ = QFileDialog.getSaveFileName(self, 'Save AAS File', file,

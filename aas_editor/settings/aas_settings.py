@@ -37,12 +37,12 @@ XML_FILES_FILTER = "XML files (*.xml)"
 JSON_FILES_FILTER = "JSON files (*.json)"
 ALL_FILES_FILTER = "All files (*.*)"
 
-FILE_TYPES = {
+AAS_FILE_TYPES = {
     "json": "json",
     "xml": "xml",
     "aasx": "aasx",
 }
-FILE_TYPE_FILTERS = {
+AAS_FILE_TYPE_FILTERS = {
     "json": JSON_FILES_FILTER,
     "xml": XML_FILES_FILTER,
     "aasx": AASX_FILES_FILTER,

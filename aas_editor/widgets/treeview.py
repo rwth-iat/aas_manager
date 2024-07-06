@@ -348,6 +348,9 @@ class TreeView(BasicTreeView):
                                           statusTip="Open selected item in new window",
                                           enabled=False)
 
+        self.openInActs = [self.openInCurrTabAct, self.openInNewTabAct, self.openInBackgroundAct,
+                           self.openInNewWindowAct]
+
         self.zoomInAct = QAction(ZOOM_IN_ICON, "Zoom in", self,
                                  shortcut=SC_ZOOM_IN,
                                  shortcutContext=Qt.ShortcutContext.WidgetShortcut,
@@ -395,10 +398,8 @@ class TreeView(BasicTreeView):
 
     def initMenuOpenIn(self):
         openInMenu = self.attrsMenu.addMenu("Open in...")
-        openInMenu.addAction(self.openInCurrTabAct)
-        openInMenu.addAction(self.openInNewTabAct)
-        openInMenu.addAction(self.openInBackgroundAct)
-        openInMenu.addAction(self.openInNewWindowAct)
+        for act in self.openInActs:
+            openInMenu.addAction(act)
 
     def openMenu(self, point):
         self.attrsMenu.exec(self.viewport().mapToGlobal(point))
