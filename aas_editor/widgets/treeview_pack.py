@@ -102,6 +102,16 @@ class PackHeaderView(HeaderView):
                                 triggered=lambda: self.hideAllSections())
         self.menu.addAction(hideAllColAct)
 
+        resizeEqualAct = QAction("Resize columns equally", self,
+                                 toolTip="Resize columns equally",
+                                 statusTip="Resize columns equally",
+                                 triggered=lambda: self.resizeSectionsEqual())
+        self.menu.addAction(resizeEqualAct)
+
+    def resizeSectionsEqual(self):
+        self.resizeSections(HeaderView.ResizeMode.Stretch)
+        self.resizeSections(HeaderView.ResizeMode.Interactive)
+
     def onShowListOfSectionsAct(self):
         action: QAction = self.sender()
         sectionNames = action.data()
