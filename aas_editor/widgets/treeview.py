@@ -382,10 +382,7 @@ class TreeView(BasicTreeView):
         self.attrsMenu.addSeparator()
         self.initMenuFolding()
         self.attrsMenu.addSeparator()
-        self.attrsMenu.addAction(self.openInCurrTabAct)
-        self.attrsMenu.addAction(self.openInNewTabAct)
-        self.attrsMenu.addAction(self.openInBackgroundAct)
-        self.attrsMenu.addAction(self.openInNewWindowAct)
+        self.initMenuOpenIn()
 
     def initMenuFolding(self):
         foldingMenu = self.attrsMenu.addMenu("Folding")
@@ -395,6 +392,13 @@ class TreeView(BasicTreeView):
         foldingMenu.addAction(self.expandAct)
         foldingMenu.addAction(self.expandRecAct)
         foldingMenu.addAction(self.expandAllAct)
+
+    def initMenuOpenIn(self):
+        openInMenu = self.attrsMenu.addMenu("Open in...")
+        openInMenu.addAction(self.openInCurrTabAct)
+        openInMenu.addAction(self.openInNewTabAct)
+        openInMenu.addAction(self.openInBackgroundAct)
+        openInMenu.addAction(self.openInNewWindowAct)
 
     def openMenu(self, point):
         self.attrsMenu.exec(self.viewport().mapToGlobal(point))
