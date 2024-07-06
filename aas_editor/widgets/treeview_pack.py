@@ -282,6 +282,7 @@ class PackTreeView(TreeView):
     def onEditCreate(self, objVal=None, index=QModelIndex()) -> bool:
         """
         :param objVal: value to set in dialog input widgets
+        :param index: QModelIndex of the item to edit
         :raise KeyError if no typehint found and no objVal was given
         """
         if not index.isValid():

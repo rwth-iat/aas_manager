@@ -721,7 +721,7 @@ class TypeOptionObjGroupBox(GroupBox):
 
 
 class ChooseItemDialog(AddDialog):
-    def __init__(self, view: 'TreeView', columnsToShow=[ATTRIBUTE_COLUMN],
+    def __init__(self, view: 'TreeView', columnsToShow=(ATTRIBUTE_COLUMN,),
                  validator=lambda chosenIndex: chosenIndex.isValid(),
                  parent: Optional[QWidget] = None, title: str = ""):
         super(ChooseItemDialog, self).__init__(parent, title)

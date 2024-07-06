@@ -132,11 +132,11 @@ class DurationEdit(QWidget):
         return self.getObj2add()
 
     def setVal(self, val: dateutil.relativedelta.relativedelta):
+        Duration_kwargs = namedtuple("Duration_kwargs", "years months days hours minutes seconds microseconds")
         if isoftype(val, PreObject):
             if val.existingObjUsed:
                 val = val.existingObj
             else:
-                Duration_kwargs = namedtuple("Duration_kwargs", "years months days hours minutes seconds microseconds")
                 val = Duration_kwargs(**val.kwargs)
         if isinstance(val, (dateutil.relativedelta.relativedelta, Duration_kwargs)):
             self.yearsEdit.setText(val.years)
@@ -300,6 +300,8 @@ class StandardInputWidget(QWidget):
 
             if widget.count():
                 widget.setCurrentIndex(0)
+        else:
+            raise TypeError(f"Unsupported type: {self.objType}")
 
         return widget
 
@@ -357,6 +359,8 @@ class SpecialInputWidget(StandardInputWidget):
             widget = DurationEdit(self, useValidators=self.useValidators)
         elif issubtype(self.objType, (bytes, bytearray)):
             widget = BytesEdit(self)
+        else:
+            raise TypeError(f"Unsupported type: {self.objType}")
         return widget
 
     def getPreObj(self):
@@ -393,6 +397,8 @@ class SpecialInputWidget(StandardInputWidget):
             obj = self.widget.getObj2add()
             if obj is not None and issubtype(self.objType, bytearray):
                 obj = bytearray(obj)
+        else:
+            raise TypeError(f"Unsupported type: {self.objType}")
         return obj
 
     def setVal(self, val):

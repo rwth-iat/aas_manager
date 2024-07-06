@@ -476,6 +476,11 @@ class StandardTable(QAbstractItemModel):
                 elif isinstance(parentObj, AbstractSet):
                     parentObj.discard(child.obj)
                     oldValue = child.obj
+                else:
+                    raise TypeError(
+                        f"Unknown parent object type: "
+                        f"object could not be deleted or set to default: "
+                        f"{type(parentObj)}")
                 self.removeRow(currRow, parent)
                 self.undo.append(SetDataItem(index=QPersistentModelIndex(parent), value=oldValue, role=ADD_ITEM_ROLE))
                 self.redo.clear()

@@ -180,8 +180,8 @@ class ImportManageWidget(QWidget):
         if maxRow == -1:
             sheet = excelfile[ImportManageWidget.IMPORT_SETTINGS.sheetname]
             maxRow = sheet.max_row
-        try:
-            for row in range(minRow, maxRow + 1):
+        for row in range(minRow, maxRow + 1):
+            try:
                 newPack = self.newPackFromTemplate(templatePack, row, sourceWB=excelfile)
                 if not fileNameScheme:
                     fileName = f"{row}.aasx"
@@ -192,8 +192,8 @@ class ImportManageWidget(QWidget):
                     if "." not in fileName:
                         fileName = f"{fileName}.aasx"
                 newPack.write(f"{exportFolder}/{fileName}")
-        except Exception as e:
-            raise Exception(f"Problem occured by importing values from the row {row}") from e
+            except Exception as e:
+                raise Exception(f"Problem occured by importing values from the row {row}") from e
 
         QMessageBox.information(self, "Export was successful", f"{maxRow-minRow+1} AAS files were successfully generated!")
 

@@ -163,9 +163,10 @@ class PreObjectImport(util_classes.PreObject):
         elif objtype:
             try:
                 value = util_type.typecast(obj, objtype)
+                return value
             except Exception as e:
-                print(f"Could not typecast value '{value}' to type '{objtype}': {e}")
-            return value
+                print(f"Could not typecast value '{obj}' to type '{objtype}': {e}")
+                return obj
         else:
             return obj
 

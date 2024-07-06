@@ -13,7 +13,7 @@ from basyx.aas.model.concept import *
 from basyx.aas.model.submodel import *
 
 from enum import Enum
-from typing import Dict, Type, TypeVar
+from typing import Dict
 
 from PyQt6.QtGui import QPainter, QBrush, QDoubleValidator, QIntValidator
 from PyQt6.QtWidgets import QWidget, QStyledItemDelegate, QStyleOptionViewItem, QStyle, \
@@ -22,7 +22,6 @@ from PyQt6 import QtCore
 from PyQt6.QtCore import Qt, QModelIndex
 
 from aas_editor.settings import DEFAULT_COMPLETIONS
-from aas_editor.utils.util import inheritors
 from aas_editor.additional.classes import DictItem
 from aas_editor.utils.util_type import issubtype, isoftype
 from aas_editor.widgets import CompleterComboBox

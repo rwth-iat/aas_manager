@@ -125,14 +125,10 @@ class StandardItem(QObject):
 
     def updateIcon(self):
         if isinstance(self.obj, StoredFile):
-            try:
-                self.obj: StoredFile
-                media_content_type: str = settings.MEDIA_TYPES_INFOS.get(
-                    type(self.obj), {settings.CONTENT_TYPE_ATTR: "N\A"})[settings.CONTENT_TYPE_ATTR]
-                self.icon = QIcon(settings.MIME_TYPE_ICON_DICT[media_content_type])
-            except KeyError:
-                media_content_type = media_content_type.rsplit("/")[0]
-                self.icon = QIcon(settings.MIME_TYPE_ICON_DICT.get(media_content_type, settings.FILE_ICON))
+            self.obj: StoredFile
+            content_type: str = settings.MEDIA_TYPES_INFOS.get(
+                type(self.obj),{settings.CONTENT_TYPE_ATTR: "N\A"})[settings.CONTENT_TYPE_ATTR]
+            self.icon = QIcon(settings.MIME_TYPE_ICON_DICT.get(content_type, settings.FILE_ICON))
         else:
             try:
                 self.icon = QIcon(settings.TYPE_ICON_DICT[type(self.obj)])

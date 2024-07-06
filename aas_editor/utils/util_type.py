@@ -260,7 +260,7 @@ def _issubtype(typ1, typ2: type) -> bool:
         typ2 = typ2.__origin__
 
     if type(None) in (typ1, typ2):
-        return (typ1 == typ2)
+        return typ1 == typ2
 
     try:
         return issubclass(typ1, typ2)

@@ -176,14 +176,15 @@ class KwargObject:
             super(KwargObject, self).__setattr__(key, value)
 
     def __dir__(self) -> Iterable[str]:
-        names = set([
-    "_updateKwargsOptional",
-    "_updateKwargsWithDefaults",
-    "objtype",
-    "args",
-    "kwargs",
-    "kwargsTypehints",
-    "kwargsOptional",])
+        names = {
+            "_updateKwargsOptional",
+            "_updateKwargsWithDefaults",
+            "objtype",
+            "args",
+            "kwargs",
+            "kwargsTypehints",
+            "kwargsOptional",
+        }
         names.update(self.kwargs.keys())
         return names
 
