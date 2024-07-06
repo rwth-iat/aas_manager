@@ -208,7 +208,6 @@ class PackTreeView(TreeView):
         for i in range(MAX_RECENT_FILES):
             recentFileAct = QAction("", self,
                                     statusTip=f"Open recent file",
-                                    triggered=lambda: self.openRecentSlot(),
                                     visible=False)
             self.recentFileActs.append(recentFileAct)
 
@@ -622,11 +621,6 @@ class PackTreeView(TreeView):
         if self.model().data(QModelIndex(), OPENED_PACKS_ROLE):
             self.setWindowModified(False)
 
-    def openRecentSlot(self):
-        action = self.sender()
-        if action:
-            self.openPack(action.data())
-
     def updateRecentFiles(self, file: str):
         self.removeFromRecentFiles(file)
         settings = QSettings(IAT, APPLICATION_NAME)
@@ -655,12 +649,11 @@ class PackTreeView(TreeView):
             files = []
 
         for i, file in enumerate(files):
-            if len(file) < 30:
-                self.recentFileActs[i].setText(file)
-            else:
-                self.recentFileActs[i].setText(f"..{file[len(file) - 30:]}")
-            self.recentFileActs[i].setData(file)
-            self.recentFileActs[i].setVisible(True)
+            recentFileAct = self.recentFileActs[i]
+            display_text = file if len(file) < 30 else f"..{file[-30:]}"
+            recentFileAct.setText(display_text)
+            recentFileAct.setVisible(True)
+            recentFileAct.triggered.connect(partial(self.openPack, file=file))
 
         for i in range(len(files), MAX_RECENT_FILES):
             self.recentFileActs[i].setVisible(False)
