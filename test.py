@@ -1,4 +1,4 @@
-#  Copyright (C) Igor Garmaev, IAT der RWTH Aachen
+#  Copyright (C) 2021  Igor Garmaev, garmaev@gmx.net
 #
 #  This program is made available under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -10,99 +10,95 @@
 
 import sys
 import logging
-
-import pytest
+import time
 
 from PyQt6 import QtWidgets
-from PyQt6 import QtWebEngineWidgets
 from PyQt6.QtWidgets import *
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QPushButton, QAbstractButton
+from PyQt6 import QtWebEngineWidgets
 from PyQt6.QtCore import Qt
 from PyQt6.QtTest import QTest
 
+from basyx.aas.model import AssetAdministrationShell, ConceptDescription, Submodel, Property, \
+    Entity, Capability, Operation, RelationshipElement, AnnotatedRelationshipElement, Range, Blob, File, \
+    ReferenceElement, DataElement, AdministrativeInformation, AbstractObjectStore, \
+    Namespace, SubmodelElementCollection, SubmodelElement, ModelReference, Referable, Identifiable, \
+    Key, Qualifier, BasicEventElement, SubmodelElementList, datatypes, LangStringSet, DictObjectStore
+
+
 logging.basicConfig(level=logging.INFO, filename="log.log", filemode="w",
                     format="%(asctime)s | %(levelname)s | %(message)s")
-
-@pytest.fixture
-def app(qtbot):
-    app = QtWidgets.QApplication("./main.py")
-    return app
         
-def find_button_by_text(widget, text):
-    if isinstance(widget, QToolButton) and widget.text() == text:
-        return widget
-
-    for child in widget.findChildren(QWidget):
-        result = find_button_by_text(child, text)
-        if result:
-            return result
-
-    return None
-    
-def find_menu_by_text(widget, text):
-    if isinstance(widget, QMenu) and widget.title() == text:
-        return widget
-
-    for child in widget.findChildren(QWidget):
-        result = find_menu_by_text(child, text)
-        if result:
-            return result
-
-    return None
-    
-def print_widgets_text(widget, depth=0):
-    if isinstance(widget, QMenu):
-        print("  " * depth + widget.title())
-    elif isinstance(widget, QToolButton):
-        print("  " * depth + widget.text())
-    else:
-        print("  " * depth + widget.objectName() + " - " + widget.metaObject().className())
-
-    for child in widget.findChildren(QWidget):
-        print_widgets_text(child, depth + 1)
-
-def click_widget(widget):
-    if widget:
-        QTest.mouseClick(widget, Qt.LeftButton)
-        
-def test_gui(qtbot):
-    from aas_editor.editorApp import EditorApp as CurrentApp
-    window = CurrentApp("./test.aasx")
-    window.show()
-    qtbot.addWidget(window)
-    qtbot.waitUntil(window.isVisible)
-    assert window.isVisible(), f"Window not visible"
-    
-    tree = window.mainTreeView
-    tree.expandAll()
-    model = tree.model()
-
-    if root.isValid():
-    root_data = model.data(root)
-    print(f"Iterating Through {root_data}")
-    for row in range(model.rowCount(root)):
-        item_index = model.index(row, 0, root)
-        item_data = model.data(item_index)
-        print(f"Itering Items Under {item_data}")
-        for subrow in range(model.rowCount(item_index)):
-            subitem_index = model.index(subrow, 0, item_index)
-            subitem_data = model.data(subitem_index)
-            print(f"Item: {subitem_data}")
-
-
-
-    subm = find_menu_by_text(window, "Add existing submodel")
-    click_widget(subm)
-    
-    QTest.keyPress(window, Qt.Key_N, Qt.ControlModifier)
-    QTest.keyRelease(window, Qt.Key_N, Qt.ControlModifier)
-    
-    current_focus_window = None
-    
-    for widget in QApplication.topLevelWidgets():
-        #print(widget)
-        if widget.isActiveWindow():
-            current_focus_window = widget
-            break
+def find_focused_widget():
+    app = QApplication.instance()
+    if app is not None:
+        focused_widget = app.focusWidget()
+        if focused_widget is not None:
+            print("Widget with focus:", focused_widget)
+        else:
+            print("No widget currently has focus.")
             
-    #print(current_focus_window)
+def main():
+    app = QtWidgets.QApplication(sys.argv)
+    from aas_editor.editorApp import EditorApp as CurrentApp
+    
+    fileToOpen = sys.argv[1] if len(sys.argv) > 1 else None
+
+    window = CurrentApp(fileToOpen)
+    
+    window.show()
+    window.mainTreeView.setFocus()
+                
+    tree = window.mainTreeView
+    
+    prev_time = time.time()
+    while True:
+        app.processEvents()
+        current_time = time.time()
+        if int(current_time) != int(prev_time):
+        
+            tree = window.mainTreeView
+            
+            tree.setFocusPolicy(Qt.StrongFocus)
+            QTest.mouseClick(tree, Qt.LeftButton)
+            tree.setFocus(Qt.NoFocusReason) 
+                    
+            tree.expandAll()
+            
+            model = tree.model()
+            root = model.index(0, 0)
+            
+            if (int(current_time) - int(prev_time)) > 10:
+                break
+            
+            elif root.isValid():
+                root_data = model.data(root)
+                print(f"Iterating Through {root_data}")
+                for row in range(model.rowCount(root)):
+                    item_index = model.index(row, 0, root)
+                    item_data = model.data(item_index)
+            
+                    if item_data == 'submodels':
+                        tree.setCurrentIndex(item_index)
+                        app.processEvents()
+                        time.sleep(1)
+                        from aas_editor import dialogs
+                        dialog = dialogs.AddObjDialog(Submodel, parent=tree, objVal=None, title='', rmDefParams=False)
+                        dialog.show()
+                        app.processEvents()
+                        dialog.accept()
+                        obj = tree._getObjFromDialog(dialog)
+                        dialog.deleteLater()
+                        result = tree._setItemData(item_index, obj, 1130)   
+                        
+                        time.sleep(1)
+                        app.processEvents()
+                        time.sleep(1)
+                        
+                        tree.onDelClear()
+                        
+                        time.sleep(1)
+                        app.processEvents()
+                        time.sleep(1)
+
+if __name__ == "__main__":
+    main()
