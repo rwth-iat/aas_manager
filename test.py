@@ -18,6 +18,7 @@ from PyQt6 import QtWebEngineWidgets
 from PyQt6.QtCore import Qt
 from PyQt6.QtTest import QTest
 
+                        
 from basyx.aas.model import AssetAdministrationShell, ConceptDescription, Submodel, Property, \
     Entity, Capability, Operation, RelationshipElement, AnnotatedRelationshipElement, Range, Blob, File, \
     ReferenceElement, DataElement, AdministrativeInformation, AbstractObjectStore, \
@@ -52,6 +53,7 @@ def main():
     
     prev_time = time.time()
     while True:
+        from aas_editor import dialogs
         app.processEvents()
         current_time = time.time()
         if int(current_time) != int(prev_time):
@@ -67,7 +69,7 @@ def main():
             model = tree.model()
             root = model.index(0, 0)
             
-            if (int(current_time) - int(prev_time)) > 10:
+            if (int(current_time) - int(prev_time)) > 100:
                 break
             
             elif root.isValid():
@@ -81,9 +83,13 @@ def main():
                         tree.setCurrentIndex(item_index)
                         app.processEvents()
                         time.sleep(1)
-                        from aas_editor import dialogs
                         dialog = dialogs.AddObjDialog(Submodel, parent=tree, objVal=None, title='', rmDefParams=False)
                         dialog.show()
+                        
+                        time.sleep(1)
+                        app.processEvents()
+                        time.sleep(1)
+                        
                         app.processEvents()
                         dialog.accept()
                         obj = tree._getObjFromDialog(dialog)
@@ -95,6 +101,57 @@ def main():
                         time.sleep(1)
                         
                         tree.onDelClear()
+                        
+                        time.sleep(1)
+                        app.processEvents()
+                        time.sleep(1)
+                        
+                    elif item_data == 'shells':
+                        tree.setCurrentIndex(item_index)
+                        app.processEvents()
+                        dialog = dialogs.AddObjDialog(AssetAdministrationShell, parent=tree, objVal=None, title='', rmDefParams=False)
+                        dialog.show()
+                        
+                        time.sleep(1)
+                        app.processEvents()
+                        time.sleep(1)
+                        
+                        dialog.reject()
+                        dialog.deleteLater()
+                        
+                        time.sleep(1)
+                        app.processEvents()
+                        time.sleep(1)
+                       
+                    elif item_data == 'fileStore':
+                        tree.setCurrentIndex(item_index)
+                        app.processEvents()
+                        dialog = dialogs.AddObjDialog(File, parent=tree, objVal=None, title='', rmDefParams=False)
+                        dialog.show()
+
+                        time.sleep(1)
+                        app.processEvents()
+                        time.sleep(1)
+                        
+                        dialog.reject()
+                        dialog.deleteLater()
+                        
+                        time.sleep(1)
+                        app.processEvents()
+                        time.sleep(1)
+                        
+                    elif item_data == 'concept_descriptions':
+                        tree.setCurrentIndex(item_index)
+                        app.processEvents()
+                        dialog = dialogs.AddObjDialog(ConceptDescription, parent=tree, objVal=None, title='', rmDefParams=False)
+                        dialog.show()
+
+                        time.sleep(1)
+                        app.processEvents()
+                        time.sleep(1)
+                        
+                        dialog.reject()
+                        dialog.deleteLater()
                         
                         time.sleep(1)
                         app.processEvents()
