@@ -7,9 +7,12 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
+import datetime
 import typing
 from dataclasses import dataclass
+from pathlib import Path
 
+import toml
 from PyQt6.QtCore import QSize, QSettings
 from PyQt6.QtGui import QFont, QIcon
 from PyQt6 import QtCore
@@ -17,20 +20,21 @@ from PyQt6 import QtCore
 from aas_editor.directories import get_settings_file, get_themes_folder, get_custom_column_lists_file, get_icons_folder
 from aas_editor.settings.util_constants import NOT_GIVEN
 
-AAS_CREATOR = "PyI40AAS Testing Framework"
-APPLICATION_NAME = "AAS Manager"
-APPLICATION_INFO = "Free, open source, cross-platform viewer/editor based on PyQt Framework and Eclipse BaSyx Python SDK.\n" \
-                   "Developed at the Chair of Information and Automation Systems for Process and Material Technology at RWTH Aachen."
-COPYRIGHT_YEAR = 2023
-CONTRIBUTORS = "Igor Garmaev"
+PYPROJECT_TOML_FILE = Path(__file__).parent.parent.parent / "pyproject.toml"
+PYPROJECT_TOML = toml.load(PYPROJECT_TOML_FILE)
+
+VERSION = PYPROJECT_TOML["project"]["version"]
+APPLICATION_NAME = PYPROJECT_TOML["project"]["display_name"]
+APPLICATION_INFO = PYPROJECT_TOML["project"]["description"]
+COPYRIGHT_YEAR = datetime.datetime.now().year
+CONTRIBUTORS = ", ".join([f"{author['name']}: {author['email']}" for author in PYPROJECT_TOML["project"]["authors"]])
 DEVELOPER_WEB = "www.iat.rwth-aachen.de"
-CONTACT = "i.garmaev@iat.rwth-aachen.de"
-REPORT_ERROR_LINK = "https://github.com/rwth-iat/aas_manager/issues"
-APPLICATION_LINK = "https://github.com/rwth-iat/aas_manager"
+CONTACT = PYPROJECT_TOML["project"]["authors"][0]["email"]
+REPORT_ERROR_LINK = PYPROJECT_TOML["project"]["urls"]["Issues"]
+APPLICATION_LINK = PYPROJECT_TOML["project"]["urls"]["Homepage"]
 IAT = "IAT"
-VERSION = "0.3.12"
+LICENSE = PYPROJECT_TOML["project"]["license"]["text"]
 AAS_METAMODEL_VERSION = "3.0"
-LICENSE = "GNU General Public License v3.0"
 
 WINDOW_TITLE = f"{APPLICATION_NAME} {VERSION} (Metamodel V{AAS_METAMODEL_VERSION})"
 

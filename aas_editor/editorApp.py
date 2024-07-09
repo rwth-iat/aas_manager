@@ -24,6 +24,7 @@ from aas_editor.models import DetailedInfoTable, PacksTable
 from aas_editor.utils.util import toggleStylesheet
 from aas_editor import dialogs
 from aas_editor.widgets.treeview import HeaderView
+from settings import APPLICATION_NAME, REPORT_ERROR_LINK
 
 
 class EditorApp(QMainWindow, design.Ui_MainWindow):

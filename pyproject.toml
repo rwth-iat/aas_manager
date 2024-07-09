@@ -3,8 +3,9 @@ requires = ["setuptools >= 61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
+display_name = "AAS Manager"
 name = "aas_editor"
-version = "v0.3.12"
+version = "0.3.12"
 dependencies = [
     "PyQt6",
     "qtawesome>=1.2.3",
@@ -22,9 +23,13 @@ authors = [
 maintainers = [
   {name = "Igor Garmaev", email = "i.garmaev@iat.rwth-aachen.de"},
 ]
-description = "AAS Manager is an editor and viewer for Asset Administration Shells. Powered by https://github.com/eclipse-basyx/basyx-python-sdk"
+description = """
+AAS Manager is a free, open source, cross-platform viewer/editor based for Asset Administration Shell (AAS).
+The editor is based on PyQt Framework and Eclipse BaSyx Python SDK (https://github.com/eclipse-basyx/basyx-python-sdk).
+Developed at the Chair of Information and Automation Systems for Process and Material Technology at RWTH Aachen.
+"""
 readme = "README.md"
-license = {file = "LICENSE"}
+license = {text = "GNU General Public License v3.0"}
 keywords = ["AAX"]
 classifiers = [
   "Development Status :: 4 - Beta",
@@ -39,7 +44,7 @@ include = ["."]
 [project.urls]
 Homepage = "https://github.com/rwth-iat/aas_manager"
 Repository = "https://github.com/rwth-iat/aas_manager.git"
-"Bug Tracker" = "https://github.com/rwth-iat/aas_manager/issues"
+Issues = "https://github.com/rwth-iat/aas_manager/issues"
 
 [project.entry-points."spam"]
 aas_editor = "main:main"
