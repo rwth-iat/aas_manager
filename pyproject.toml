@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 display_name = "AAS Manager"
 name = "aas_editor"
-version = "0.3.12"
+version = "0.3.13"
 dependencies = [
     "PyQt6",
     "qtawesome>=1.2.3",
