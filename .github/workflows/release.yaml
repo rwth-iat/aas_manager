@@ -18,6 +18,10 @@ jobs:
         with:
           python-version: 3.11
 
+      - name: Install dependencies
+        run: |
+          pip install -e .
+
       - name: Get version from pyproject.toml
         id: get_version
         run: |

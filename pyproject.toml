@@ -14,6 +14,7 @@ dependencies = [
     "PyQt6-WebEngine",
     "pyinstaller==6.4.0",
     "openpyxl>=3.1.2",
+    "toml>=0.10.2",
 ]
 
 requires-python = ">=3.10"
