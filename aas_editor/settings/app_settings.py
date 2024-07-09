@@ -24,7 +24,7 @@ PYPROJECT_TOML_FILE = Path(__file__).parent.parent.parent / "pyproject.toml"
 PYPROJECT_TOML = toml.load(PYPROJECT_TOML_FILE)
 
 VERSION = PYPROJECT_TOML["project"]["version"]
-APPLICATION_NAME = PYPROJECT_TOML["project"]["display_name"]
+APPLICATION_NAME = "AAS Manager"
 APPLICATION_INFO = PYPROJECT_TOML["project"]["description"]
 COPYRIGHT_YEAR = datetime.datetime.now().year
 CONTRIBUTORS = ", ".join([f"{author['name']}: {author['email']}" for author in PYPROJECT_TOML["project"]["authors"]])
