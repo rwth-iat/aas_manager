@@ -10,14 +10,25 @@ jobs:
     name: Create Release
     runs-on: [ubuntu-latest]
     steps:
-    - name: Create Release
+    - name: Checkout repository
+      uses: actions/checkout@v1
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v3
+      with:
+        python-version: 3.11
+    - name: Get version from pyproject.toml
+      id: get_version
+      run: |
+        VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
+        echo "::set-output name=version::$VERSION"
+    - name: Create GitHub Release
       id: create_release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        tag_name: ${{ github.run_id }}
-        release_name: Release ${{ github.event.repository.updated_at}} ${{ github.ref_name }}
+        tag_name: v${{ steps.get_version.outputs.version }}
+        release_name: Release V${{ steps.get_version.outputs.version }} (Support of AAS Metamodel V3.0)
         draft: false
         prerelease: false
     - name: Output Release URL File
