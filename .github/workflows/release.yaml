@@ -60,7 +60,7 @@ jobs:
 
   build:
     name: Build packages
-    needs: createrelease
+    needs: create_release
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
