@@ -6,38 +6,57 @@ on:
       - master
 
 jobs:
-  createrelease:
+  create_release:
     name: Create Release
-    runs-on: [ubuntu-latest]
+    runs-on: [ ubuntu-latest ]
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v1
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v3
-      with:
-        python-version: 3.11
-    - name: Get version from pyproject.toml
-      id: get_version
-      run: |
-        VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
-        echo "::set-output name=version::$VERSION"
-    - name: Create GitHub Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: v${{ steps.get_version.outputs.version }}
-        release_name: Release V${{ steps.get_version.outputs.version }} (Support of AAS Metamodel V3.0)
-        draft: false
-        prerelease: false
-    - name: Output Release URL File
-      run: echo "${{ steps.create_release.outputs.upload_url }}" > release_url.txt
-    - name: Save Release URL File for publish
-      uses: actions/upload-artifact@v1
-      with:
-        name: release_url
-        path: release_url.txt
+      - name: Checkout repository
+        uses: actions/checkout@v1
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.11
+
+      - name: Get version from pyproject.toml
+        id: get_version
+        run: |
+          VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
+          echo "::set-output name=version::$VERSION"
+
+      - name: Get previous tag
+        id: get_prev_tag
+        run: echo ::set-output name=prev-tag::$(git describe --tags --abbrev=0 HEAD^)
+
+      - name: Generate release notes
+        id: generate_release_notes
+        run: |
+          PREV_TAG=${{ steps.get_prev_tag.outputs.prev-tag }}
+          CURRENT_TAG=v${{ steps.get_version.outputs.version }}
+          RELEASE_NOTES=$(git log $PREV_TAG..HEAD --pretty=format:"%h - %s (%an)")
+          echo "${RELEASE_NOTES}" > release_notes.txt
+          echo "::set-output name=notes::${RELEASE_NOTES}"
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.get_version.outputs.version }}
+          release_name: Release V${{ steps.get_version.outputs.version }} (Support of AAS Metamodel V3.0)
+          body: ${{ steps.generate_release_notes.outputs.notes }}
+          draft: false
+          prerelease: false
+
+      - name: Output Release URL File
+        run: echo "${{ steps.create_release.outputs.upload_url }}" > release_url.txt
+
+      - name: Save Release URL File for publish
+        uses: actions/upload-artifact@v1
+        with:
+          name: release_url
+          path: release_url.txt
 
   build:
     name: Build packages
@@ -49,10 +68,10 @@ jobs:
           - os: macos-14
             TARGET: macos
             CMD_BUILD: >
-                pyinstaller aas_manager.spec &&
-                cp -r basyx dist/AAS_Manager/basyx &&
-                cd dist/ &&
-                zip -r AAS_Manager_MacOS_M1.zip AAS_Manager
+              pyinstaller aas_manager.spec &&
+              cp -r basyx dist/AAS_Manager/basyx &&
+              cd dist/ &&
+              zip -r AAS_Manager_MacOS_M1.zip AAS_Manager
             OUT_FILE_NAME: AAS_Manager_MacOS_M1.zip
             ASSET_MIME: application/zip
           - os: macos-12
@@ -67,49 +86,49 @@ jobs:
           - os: ubuntu-latest
             TARGET: ubuntu
             CMD_BUILD: >
-                pyinstaller aas_manager.spec &&
-                cp -r basyx dist/AAS_Manager/basyx &&
-                cd dist/ &&
-                zip -r AAS_Manager_Linux.zip AAS_Manager
+              pyinstaller aas_manager.spec &&
+              cp -r basyx dist/AAS_Manager/basyx &&
+              cd dist/ &&
+              zip -r AAS_Manager_Linux.zip AAS_Manager
             OUT_FILE_NAME: AAS_Manager_Linux.zip
             ASSET_MIME: application/zip
           - os: windows-latest
             TARGET: windows
             CMD_BUILD: |
-                pyinstaller aas_manager.spec
-                xcopy /E /I basyx dist\AAS_Manager\basyx
-                cd dist
-                7z a AAS_Manager_Win.zip AAS_Manager
+              pyinstaller aas_manager.spec
+              xcopy /E /I basyx dist\AAS_Manager\basyx
+              cd dist
+              7z a AAS_Manager_Win.zip AAS_Manager
             OUT_FILE_NAME: AAS_Manager_Win.zip
             ASSET_MIME: application/vnd.microsoft.portable-executable
     steps:
-    - uses: actions/checkout@v1
-    - name: Set up Python 3.11
-      uses: actions/setup-python@v3
-      with:
-        python-version: 3.11
-    - name: Install dependencies
-      run: |
-        pip install -e .
-    - name: Build with pyinstaller for ${{matrix.TARGET}}
-      run: ${{matrix.CMD_BUILD}}
-    - name: Load Release URL File from release job
-      uses: actions/download-artifact@v1
-      with:
-        name: release_url
-    - name: Get Release File Name & Upload URL
-      id: get_release_info
-      shell: bash
-      run: |
-        value=`cat release_url/release_url.txt`
-        echo ::set-output name=upload_url::$value
-    - name: Upload Release Asset
-      id: upload-release-asset
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.get_release_info.outputs.upload_url }}
-        asset_path: ./dist/${{ matrix.OUT_FILE_NAME}}
-        asset_name: ${{ matrix.OUT_FILE_NAME}}
-        asset_content_type: ${{ matrix.ASSET_MIME}}
+      - uses: actions/checkout@v1
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.11
+      - name: Install dependencies
+        run: |
+          pip install -e .
+      - name: Build with pyinstaller for ${{matrix.TARGET}}
+        run: ${{matrix.CMD_BUILD}}
+      - name: Load Release URL File from release job
+        uses: actions/download-artifact@v1
+        with:
+          name: release_url
+      - name: Get Release File Name & Upload URL
+        id: get_release_info
+        shell: bash
+        run: |
+          value=`cat release_url/release_url.txt`
+          echo ::set-output name=upload_url::$value
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release_info.outputs.upload_url }}
+          asset_path: ./dist/${{ matrix.OUT_FILE_NAME}}
+          asset_name: ${{ matrix.OUT_FILE_NAME}}
+          asset_content_type: ${{ matrix.ASSET_MIME}}
