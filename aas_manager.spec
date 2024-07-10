@@ -8,6 +8,7 @@ a = Analysis(['main.py'],
              binaries=[],
              datas=[
                 ('LICENSE', '.'),
+                ('pyproject.toml', '.'),
                 ('aas_editor/settings/settings.ini', 'aas_editor/settings'),
                 ('aas_editor/custom_column_lists.json', 'aas_editor'),
                 ('aas_editor/icons', 'aas_editor/icons'),
