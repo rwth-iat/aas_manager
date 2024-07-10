@@ -16,6 +16,10 @@ def get_settings_file():
     return Path(__file__).resolve().with_name("settings") / "settings.ini"
 
 
+def get_pyproject_toml_file():
+    return Path(__file__).resolve().parent.parent / "pyproject.toml"
+
+
 def create_alias_for_themes_folder(path):
     QDir.addSearchPath('themes', str(path.resolve()))
 

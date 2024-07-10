@@ -10,18 +10,17 @@
 import datetime
 import typing
 from dataclasses import dataclass
-from pathlib import Path
 
 import toml
 from PyQt6.QtCore import QSize, QSettings
 from PyQt6.QtGui import QFont, QIcon
 from PyQt6 import QtCore
 
-from aas_editor.directories import get_settings_file, get_themes_folder, get_custom_column_lists_file, get_icons_folder
+from aas_editor.directories import get_settings_file, get_themes_folder, get_custom_column_lists_file, get_icons_folder, \
+    get_pyproject_toml_file
 from aas_editor.settings.util_constants import NOT_GIVEN
 
-PYPROJECT_TOML_FILE = Path(__file__).parent.parent.parent / "pyproject.toml"
-PYPROJECT_TOML = toml.load(PYPROJECT_TOML_FILE)
+PYPROJECT_TOML = toml.load(get_pyproject_toml_file())
 
 VERSION = PYPROJECT_TOML["project"]["version"]
 APPLICATION_NAME = "AAS Manager"
