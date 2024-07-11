@@ -341,32 +341,30 @@ def isIterable(obj):
 
 def getAttrTypeHint(objType, attr, delOptional=True):
     params = util.getReqParams4init(objType, rmDefParams=False, delOptional=delOptional)
-    if attr in params or f"{attr}_" in params:
-        try:
-            typeHint = params[attr]
-        except KeyError:
-            typeHint = params[f"{attr}_"]  # TODO fix if aas changes
-    else:
-        try:
-            # get typehint of property
+
+    # Determine type hint from initialization parameters or property type hint
+    try:
+        typeHint = params.get(attr, params.get(f"{attr}_", None))
+        if typeHint is None:
             func = getattr(objType, attr)
             typehints = typing.get_type_hints(func.fget)
             typeHint = typehints["return"]
-        except Exception as e:
-            logging.exception(e)
-            raise KeyError
+    except KeyError:
+        raise KeyError(f"Attribute {attr} not found in {objType}")
+    except Exception as e:
+        logging.exception(e)
+        raise KeyError(f"Failed to get type hint for attribute {attr} in {objType}")
 
+    # Process type hint arguments to remove Ellipsis if present
     try:
-        if getArgs(typeHint):
-            args = list(getArgs(typeHint))
-            if ... in args:
-                args.remove(...)
-                typeHint.__args__ = args
-            if Ellipsis in args:
-                args.remove(Ellipsis)
-                typeHint.__args__ = args
-    except AttributeError:
-        pass
+        args = list(getArgs(typeHint))
+        if Ellipsis in args:
+            args.remove(Ellipsis)
+            origin = typing.get_origin(typeHint)
+            if origin:
+                typeHint = origin[tuple(args)]
+    except AttributeError as e:
+        logging.exception(e)
 
     return typeHint
 
