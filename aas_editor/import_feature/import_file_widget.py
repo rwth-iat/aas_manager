@@ -115,7 +115,7 @@ class ImportManageWidget(QWidget):
         except AttributeError as e:
             dialogs.ErrorMessageBox.withTraceback(self, f"No chosen package to save: {e}").exec()
 
-    def initImportSettingsDialog(self):
+    def execImportSettingsDialog(self) -> bool:
         dialog = ImportSettingsDialog(self)
         result = False
         while not result and dialog.exec() == QDialog.DialogCode.Accepted:
@@ -147,10 +147,11 @@ class ImportManageWidget(QWidget):
                     dialogs.ErrorMessageBox.withTraceback(self, f"Could not open Mapping File: {e}").exec()
                     continue
 
-                result = 1
+                result = True
             except Exception as e:
                 dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
                 continue
+        return result
 
     def initSettingsDialog(self):
         dialog = SettingsDialog(self, importSettings=ImportManageWidget.IMPORT_SETTINGS)

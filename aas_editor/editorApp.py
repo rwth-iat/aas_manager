@@ -10,7 +10,7 @@
 import json
 import webbrowser
 
-from PyQt6.QtCore import QModelIndex
+from PyQt6.QtCore import QModelIndex, pyqtSignal
 from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 
@@ -28,6 +28,8 @@ from settings import APPLICATION_NAME, REPORT_ERROR_LINK
 
 
 class EditorApp(QMainWindow, design.Ui_MainWindow):
+    closed = pyqtSignal()
+
     def __init__(self, fileToOpen=None, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -100,7 +102,10 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
     def showImportApp(self):
         self.writeSettings()
         from aas_editor.importApp import ImportApp
-        ImportApp(parent=self).show()
+        self.hide()
+        importApp = ImportApp(parent=self)
+        importApp.closed.connect(self.show)
+        importApp.show()
 
     def initMenu(self):
         self.menubar = QMenuBar(self)
@@ -165,7 +170,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.menuTools = QMenu("&Tools", self.menubar)
         self.menuTools.addAction(self.complToolDialogAct)
-        # self.menuTools.addAction(self.importToolAct)
+        self.menuTools.addAction(self.importToolAct)
 
         self.menuHelp = QMenu("&Help", self.menubar)
         self.menuHelp.addAction(self.aboutDialogAct)
@@ -275,6 +280,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             else:
                 return a0.ignore()
         self.writeSettings()
+        self.closed.emit()
 
     def restoreSettingsFromLastSession(self):
         self.applyLastSessionTheme()

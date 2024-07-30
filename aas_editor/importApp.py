@@ -21,6 +21,7 @@ from aas_editor.import_feature.import_file_widget import ImportManageWidget
 from aas_editor.utils.util_type import issubtype, removeOptional, isUnion, getArgs
 from aas_editor.widgets import TabWidget
 from aas_editor.import_feature.table_import_detailed_info import DetailedInfoImportTable
+from import_feature.item_import_treeview import ImportTreeViewItem
 
 
 def handleTypeHint4import(objTypeHint, parent):
@@ -56,10 +57,13 @@ def handleTypeHint4import(objTypeHint, parent):
 
 
 class ImportApp(EditorApp):
-    def __init__(self, parent=None):
-        super().__init__(parent=parent)
-        self.importWidget.initImportSettingsDialog()
+
+    def show(self):
+        if not self.importWidget.execImportSettingsDialog():
+            self.close()
+            return
         setattr(dialogs.InputWidgetUtil, "handleTypeHint", handleTypeHint4import)
+        super().show()
 
     def __del__(self):
         setattr(dialogs.InputWidgetUtil, "handleTypeHint", dialogs.InputWidgetUtil._handleTypeHint)
