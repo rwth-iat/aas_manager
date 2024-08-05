@@ -7,7 +7,6 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-import datetime
 from dataclasses import dataclass
 
 import openpyxl
@@ -194,7 +193,8 @@ class ImportManageWidget(QWidget):
                         fileName = f"{fileName}.aasx"
                 newPack.write(f"{exportFolder}/{fileName}")
             except Exception as e:
-                raise Exception(f"Problem occured by importing values from the row {row}") from e
+                e.add_note(f"Problem occurred by importing values from the row {row}")
+                raise e
 
         QMessageBox.information(self, "Export was successful", f"{maxRow-minRow+1} AAS files were successfully generated!")
 
@@ -270,7 +270,6 @@ class SettingsDialog(QDialog):
         self.exampleRow.setValidator(QIntValidator(1, 100000))
         if exampleRow:
             self.exampleRow.setText(str(exampleRow))
-            datetime.date()
         self.formLayout.addRow("Example Row*", self.exampleRow)
 
     def sheetnameGB(self, sheetname=None):

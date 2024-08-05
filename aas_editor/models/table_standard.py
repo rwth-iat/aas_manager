@@ -26,7 +26,7 @@ from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, ATTRIBUTE_C
     TYPE_CHECK_ROLE, TYPE_ROLE, UNDO_ROLE, REDO_ROLE, MAX_UNDOS, UPDATE_ROLE, TYPE_HINT_COLUMN, COLUMN_NAME_ROLE, \
     LINKED_ITEM_ROLE, COPY_ROLE
 from aas_editor.settings import NOT_GIVEN
-from aas_editor.settings.colors import LINK_BLUE, CHANGED_BLUE, RED, NEW_GREEN
+from aas_editor.settings.colors import LINK_BLUE, CHANGED_BLUE, NEW_GREEN
 from aas_editor.utils.util import actualizeAASParents
 
 from aas_editor.utils.util_classes import ClassesInfo
@@ -185,9 +185,9 @@ class StandardTable(QAbstractItemModel):
             raise AttributeError(
                 f"Object couldn't be added: parent obj type is not appendable: {type(parentObj)}")
 
-    def _addItem(self, parent: QModelIndex, kwargs):
+    def _addItem(self, parent: QModelIndex, itemInitKwargs):
         self.beginInsertRows(parent, self.rowCount(parent), self.rowCount(parent))
-        item = self.itemTyp(**kwargs)
+        item = self.itemTyp(**itemInitKwargs)
         self.endInsertRows()
         itemIndex = self.index(item.row(), 0, parent)
         self.undo.append(SetDataItem(index=QPersistentModelIndex(itemIndex), value=NOT_GIVEN, role=CLEAR_ROW_ROLE))
@@ -270,9 +270,7 @@ class StandardTable(QAbstractItemModel):
     def _getFgColor(self, index: QModelIndex):
         column = index.column()
         # color fg in red if obj type and typehint don't fit
-        if column in (VALUE_COLUMN, TYPE_COLUMN) and not index.data(TYPE_CHECK_ROLE):
-            return RED
-        elif index.data(IS_LINK_ROLE):
+        if index.data(IS_LINK_ROLE):
             return LINK_BLUE
         elif column == ATTRIBUTE_COLUMN:
             if self.objByIndex(index).new:

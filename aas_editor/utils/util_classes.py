@@ -15,7 +15,7 @@ from aas_editor.settings import aas_settings as s
 
 
 # DictItem = NamedTuple("DictItem", key=Any, value=Any)
-from aas_editor.utils.util_type import issubtype, getTypeName
+from aas_editor.utils.util_type import getTypeName
 
 
 class PreObject:

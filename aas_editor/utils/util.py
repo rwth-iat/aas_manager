@@ -93,7 +93,7 @@ def convertParams2Attrs(params: List[str], cls) -> List[str]:
             attrs.remove(param)
             attrs.append(attr)
         except ValueError:
-            logging.exception("Error occurred while replacing param to attr: probably CLASSES_INFO is corrupted")
+            logging.info(f"Attribute {param} not found in {cls}")
     return attrs
 
 
@@ -104,7 +104,7 @@ def removeHiddenAttrs(attrs: List[str], cls) -> List[str]:
         try:
             attrs.remove(hidden_attr)
         except ValueError:
-            logging.exception("Error occurred while removing hidden attr: probably CLASSES_INFO is corrupted")
+            logging.info(f"Attribute {hidden_attr} not found in {cls}")
     return attrs
 
 

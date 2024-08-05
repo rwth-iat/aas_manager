@@ -279,10 +279,7 @@ class PackTreeView(TreeView):
             copyExistSubmodelActs = []
             for obj in objStore:
                 if isinstance(obj, Submodel):
-                    if not obj.id_short == "":
-                        name = obj.id_short
-                    else:
-                        name = obj.id
+                    name = obj.id_short if not obj.id_short == "" else obj.id
                     existSubmodelAct = QAction(name, self,
                                                statusTip=f"Copy existing submodel in current package",
                                                triggered=lambda: self.onAddExistingSubmodelPushed())
