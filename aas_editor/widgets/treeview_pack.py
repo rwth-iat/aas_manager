@@ -370,23 +370,24 @@ class PackTreeView(TreeView):
                 nameMenu.addAction(copyPasteSubmodelAct)
         self.attrsMenu.insertMenu(self.addAct, self.addExistSubmodelsMenu)
 
-    # This function makes the 'Add existing submodel' menu visible only if the 'submodel' element is clicked.
-    def updateCopyPasteSubmodelActs(self, index: QModelIndex):
-        attrName = index.data(NAME_ROLE)
-        if attrName == "submodels":
-            self.addExistSubmodelsMenu.menuAction().setEnabled(True)
-        else:
-            self.addExistSubmodelsMenu.menuAction().setEnabled(False)
-
     def updateActions(self, index: QModelIndex):
         super(PackTreeView, self).updateActions(index)
         self.updateCopyPasteSubmodelActs(index)
+        self.updateOpenInActs(index)
+        self.updateSaveActs(index)
+        self.updateCloseActs(index)
 
+    def updateCopyPasteSubmodelActs(self, index: QModelIndex):
+        """Make the 'Add existing submodel' menu visible if the 'submodel' element is clicked."""
+        attrName = index.data(NAME_ROLE)
+        self.addExistSubmodelsMenu.menuAction().setEnabled(attrName == "submodels")
+
+    def updateOpenInActs(self, index: QModelIndex):
         if index.isValid():
             for act in self.openInActs:
                 act.setEnabled(True)
 
-        # update save and close actions
+    def updateSaveActs(self, index: QModelIndex):
         self.saveAct.setEnabled(self.isSaveOk())
         self.saveAct.setText(f"Save {index.data(PACKAGE_ROLE)}")
         self.saveAct.setToolTip(f"Save {index.data(PACKAGE_ROLE)}")
@@ -394,6 +395,8 @@ class PackTreeView(TreeView):
         for act in self.saveInActs:
             act.setEnabled(self.isSaveOk())
         self.saveAllAct.setEnabled(self.isSaveAllOk())
+
+    def updateCloseActs(self, index: QModelIndex):
         self.closeAct.setEnabled(self.isCloseOk())
         self.closeAllAct.setEnabled(self.isCloseAllOk())
 

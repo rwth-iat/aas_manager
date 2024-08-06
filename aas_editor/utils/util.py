@@ -114,10 +114,10 @@ def simplifyInfo(obj, attrName: str = "") -> str:
         if isinstance(obj, settings.ATTR_INFOS_TO_SIMPLIFY):
             res = re.sub("^[A-Z]\w*[(]", "", res)
             res = res.rstrip(")")
-        elif util_type.issubtype(type(obj), Reference):
+        elif issubclass(type(obj), Reference):
             lastKey = obj.key[-1]
             res = f"{lastKey.value} - {lastKey.type.name}"
-        elif util_type.issubtype(type(obj), NamespaceSet):
+        elif issubclass(type(obj), NamespaceSet):
             res = f"{{{str([i for i in obj]).strip('[]')}}}"
         elif inspect.isclass(obj):
             res = util_type.getTypeName(obj)

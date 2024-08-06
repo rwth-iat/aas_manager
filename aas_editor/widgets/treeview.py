@@ -197,6 +197,7 @@ class TreeView(BasicTreeView):
     def __init__(self, parent=None, editEnabled: bool = True, **kwargs):
         super(TreeView, self).__init__(parent, **kwargs)
         self.editEnabled = editEnabled
+        self.editingActions = []
         self.setAlternatingRowColors(True)
         self.setAnimated(True)
         self.initActions()
@@ -209,6 +210,10 @@ class TreeView(BasicTreeView):
         p = self.palette()
         p.setColor(QPalette.ColorRole.AlternateBase, QColor(settings.LIGHT_BLUE_ALTERNATE))
         self.setPalette(p)
+
+    def addEditingAction(self, action: QAction):
+        self.addAction(action)
+        self.editingActions.append(action)
 
     # noinspection PyArgumentList
     def initActions(self):
@@ -226,7 +231,7 @@ class TreeView(BasicTreeView):
                                 shortcutContext=Qt.ShortcutContext.WidgetWithChildrenShortcut,
                                 triggered=lambda: self.onPaste(),
                                 enabled=False)
-        self.addAction(self.pasteAct)
+        self.addEditingAction(self.pasteAct)
 
         self.cutAct = QAction(CUT_ICON, "Cut", self,
                               statusTip="Cut selected item",
@@ -234,7 +239,7 @@ class TreeView(BasicTreeView):
                               shortcutContext=Qt.ShortcutContext.WidgetWithChildrenShortcut,
                               triggered=lambda: self.onCut(),
                               enabled=False)
-        self.addAction(self.cutAct)
+        self.addEditingAction(self.cutAct)
 
         self.addAct = QAction(ADD_ICON, "&Add", self,
                               statusTip="Add item to selected",
@@ -242,7 +247,7 @@ class TreeView(BasicTreeView):
                               shortcutContext=Qt.ShortcutContext.WidgetWithChildrenShortcut,
                               triggered=lambda: self.onAddAct(),
                               enabled=False)
-        self.addAction(self.addAct)
+        self.addEditingAction(self.addAct)
 
         self.editCreateInDialogAct = QAction("E&dit/create in dialog", self,
                                              icon=EDIT_ICON,
@@ -251,13 +256,13 @@ class TreeView(BasicTreeView):
                                              shortcutContext=Qt.ShortcutContext.WidgetWithChildrenShortcut,
                                              triggered=lambda: self.editCreateInDialog(),
                                              enabled=False)
-        self.addAction(self.editCreateInDialogAct)
+        self.addEditingAction(self.editCreateInDialogAct)
 
         self.editAct = QAction("&Edit", self,
                                statusTip="Edit selected item",
                                triggered=lambda: self.edit(self.currentIndex()),
                                enabled=False)
-        self.addAction(self.editAct)
+        self.addEditingAction(self.editAct)
 
         self.delClearAct = QAction(DEL_ICON, "Delete/clear", self,
                                    statusTip="Delete/clear selected item",
@@ -265,7 +270,7 @@ class TreeView(BasicTreeView):
                                    shortcutContext=Qt.ShortcutContext.WidgetWithChildrenShortcut,
                                    triggered=lambda: self.onDelClear(),
                                    enabled=False)
-        self.addAction(self.delClearAct)
+        self.addEditingAction(self.delClearAct)
 
         self.updateAct = QAction(UPDATE_ICON, "Update/reload", self,
                                  statusTip="Update/reload selected item",
@@ -280,7 +285,7 @@ class TreeView(BasicTreeView):
                                shortcutContext=Qt.ShortcutContext.WidgetWithChildrenShortcut,
                                triggered=lambda: self.onUndo(),
                                enabled=False)
-        self.addAction(self.undoAct)
+        self.addEditingAction(self.undoAct)
 
         self.redoAct = QAction(REDO_ICON, "Redo", self,
                                statusTip="Redo last edit action",
@@ -288,7 +293,7 @@ class TreeView(BasicTreeView):
                                shortcutContext=Qt.ShortcutContext.WidgetWithChildrenShortcut,
                                triggered=lambda: self.onRedo(),
                                enabled=False)
-        self.addAction(self.redoAct)
+        self.addEditingAction(self.redoAct)
 
         self.collapseAct = QAction("Collapse", self,
                                    shortcut=SC_COLLAPSE,
@@ -402,6 +407,7 @@ class TreeView(BasicTreeView):
             openInMenu.addAction(act)
 
     def openMenu(self, point):
+        self.pasteAct.setEnabled(self.isPasteOk(self.currentIndex()))
         self.attrsMenu.exec(self.viewport().mapToGlobal(point))
 
     def buildHandlers(self):
@@ -439,43 +445,26 @@ class TreeView(BasicTreeView):
 
     def updateActions(self, index: QModelIndex):
         if self.editEnabled:
-            self.pasteAct.setEnabled(self.isPasteOk(index))
-            self.updateCopyCutDelActs(index)
+            self.updateCopyCutPasteDelActs(index)
             self.updateEditActs(index)
             self.updateAddAct(index)
         else:
             self.disableAllEditingActs()
 
     def disableAllEditingActs(self):
-        self.copyAct.setEnabled(False)
-        self.cutAct.setEnabled(False)
-        self.delClearAct.setEnabled(False)
-        self.editCreateInDialogAct.setEnabled(False)
-        self.editAct.setEnabled(False)
-        self.addAct.setEnabled(False)
-        self.undoAct.setEnabled(False)
-        self.redoAct.setEnabled(False)
+        for act in self.editingActions:
+            act.setEnabled(False)
 
-    def updateCopyCutDelActs(self, index: QModelIndex):
-        if index.isValid():
-            self.copyAct.setEnabled(True)
-            self.cutAct.setEnabled(True)
-            self.delClearAct.setEnabled(True)
-        else:
-            self.copyAct.setEnabled(False)
-            self.cutAct.setEnabled(False)
-            self.delClearAct.setEnabled(False)
+    def updateCopyCutPasteDelActs(self, index: QModelIndex):
+        indexValid = index.isValid()
+        self.pasteAct.setEnabled(indexValid)
+        self.copyAct.setEnabled(indexValid)
+        self.cutAct.setEnabled(indexValid)
+        self.delClearAct.setEnabled(indexValid)
 
     def updateEditActs(self, index: QModelIndex):
-        if index.flags() & Qt.ItemFlag.ItemIsEditable:
-            self.editCreateInDialogAct.setEnabled(True)
-        else:
-            self.editCreateInDialogAct.setEnabled(False)
-
-        if self.isEditableInsideCell(index):
-            self.editAct.setEnabled(True)
-        else:
-            self.editAct.setEnabled(False)
+        self.editCreateInDialogAct.setEnabled(bool(index.flags() & Qt.ItemFlag.ItemIsEditable))
+        self.editAct.setEnabled(self.isEditableInsideCell(index))
 
     def updateAddAct(self, index: QModelIndex):
         obj = index.data(OBJECT_ROLE)
@@ -554,10 +543,7 @@ class TreeView(BasicTreeView):
         self.treeClipboard.append(data2copy, objRepr=text2copy)
         clipboard = QApplication.clipboard()
         clipboard.setText(text2copy, QClipboard.Mode.Clipboard)
-        if self.isPasteOk(index):
-            self.pasteAct.setEnabled(True)
-        else:
-            self.pasteAct.setEnabled(False)
+        self.pasteAct.setEnabled(self.isPasteOk(index))
 
     def isPasteOk(self, index: QModelIndex) -> bool:
         if self.treeClipboard.isEmpty() or not index.isValid():
@@ -595,6 +581,8 @@ class TreeView(BasicTreeView):
     def onPaste(self):
         obj2paste = self.treeClipboard.objects[-1]
         index = self.currentIndex()
+        if not self.isPasteOk(index):
+            return
         targetParentObj = index.parent().data(OBJECT_ROLE)
         targetObj = index.data(OBJECT_ROLE)
         targetTypeHint = index.data(TYPE_HINT_ROLE)
@@ -610,11 +598,10 @@ class TreeView(BasicTreeView):
             if checkType(obj2paste, iterItemTypehint):
                 self._onPasteAdd(index, obj2paste, withDialog=bool(reqAttrsDict))
                 return
-        if checkType(obj2paste, targetTypeHint):
-            if isIterable(targetParentObj):
-                self._onPasteAdd(index.parent(), obj2paste, withDialog=bool(reqAttrsDict))
-            else:
-                self._onPasteReplace(index, obj2paste, withDialog=bool(reqAttrsDict))
+        if isIterable(targetParentObj):
+            self._onPasteAdd(index.parent(), obj2paste, withDialog=bool(reqAttrsDict))
+        else:
+            self._onPasteReplace(index, obj2paste, withDialog=bool(reqAttrsDict))
 
     def _onPasteAdd(self, index, obj2paste, withDialog):
         if withDialog:

@@ -204,31 +204,22 @@ def issubtype(typ, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:
     """
     if not isTypehint(typ):
         raise TypeError("Arg 1 must be type or typehint:", typ)
-    try:
-        for tp in types:
-            if not isTypehint(tp):
-                raise TypeError("Arg 2 must be type, typehint or tuple of types/typehints:", types)
-    except TypeError:
-        if not isTypehint(types):
+
+    if not isinstance(types, tuple):
+        types = (types,)
+
+    for tp in types:
+        if not isTypehint(tp):
             raise TypeError("Arg 2 must be type, typehint or tuple of types/typehints:", types)
 
-    try:
-        if issubclass(types, Enum):
-            return _issubtype(typ, types)
-    except TypeError:
-        pass
-
-    if type(types) == typing.TypeVar:
-        types = types.__bound__
-        return issubtype(typ, types)
-
-    try:
-        for tp in types:
+    for tp in types:
+        if type(tp) == typing.TypeVar:
+            tp = tp.__bound__
             if issubtype(typ, tp):
                 return True
-        return False
-    except TypeError:
-        return _issubtype(typ, types)
+        elif _issubtype(typ, tp):
+            return True
+    return False
 
 
 def _issubtype(typ1, typ2: type) -> bool:
@@ -319,11 +310,7 @@ def _isoftype(obj, typ) -> bool:
 def isSimpleIterableType(objType):
     if not isTypehint(objType):
         raise TypeError("Arg 1 must be type or typehint:", objType)
-
-    if not issubtype(objType, settings.COMPLEX_ITERABLE_TYPES):
-        return isIterableType(objType)
-    else:
-        return False
+    return False if issubtype(objType, settings.COMPLEX_ITERABLE_TYPES) else isIterableType(objType)
 
 
 def isSimpleIterable(obj):
