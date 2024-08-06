@@ -162,11 +162,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menuNavigate = QMenu("&Navigate", self.menubar)
         self.menuNavigate.addAction(self.mainTreeView.autoScrollToSrcAct)
         self.menuNavigate.addAction(self.mainTreeView.autoScrollFromSrcAct)
-        self.menuNavigate.addSeparator()
-        self.menuNavigate.addAction(self.mainTreeView.openInNewTabAct)
-        self.menuNavigate.addAction(self.mainTreeView.openInCurrTabAct)
-        self.menuNavigate.addAction(self.mainTreeView.openInBackgroundAct)
-        self.menuNavigate.addAction(self.mainTreeView.openInNewWindowAct)
 
         self.menuTools = QMenu("&Tools", self.menubar)
         self.menuTools.addAction(self.complToolDialogAct)
