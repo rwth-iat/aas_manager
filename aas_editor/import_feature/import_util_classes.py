@@ -19,6 +19,7 @@ import datetime
 from enum import Enum
 from typing import Dict, Type
 
+from basyx.aas.model import NamespaceSet
 from basyx.aas.model.datatypes import Date
 from dateutil.relativedelta import relativedelta
 
@@ -69,18 +70,19 @@ class PreObjectImport(util_classes.PreObject):
         elif util_type.issubtype(objType, Type) or objType == type:
             return PreObjectImport.useExistingObject(obj)
         elif util_type.issubtype(objType, dict):
-            listObj = []
+            items = []
             for item in obj:
                 key = PreObjectImport.fromObject(item)
                 value = PreObjectImport.fromObject(obj[item])
-                listObj.append((key, value))
-            return PreObjectImport(objType, (listObj,), {})
+                items.append((key, value))
+            return PreObjectImport(objType, (items,), {})
         elif util_type.isSimpleIterableType(objType):
-            listObj = []
+            objType = tuple if util_type.issubtype(objType, NamespaceSet) else objType
+            items = []
             for item in obj:
                 item = PreObjectImport.fromObject(item)
-                listObj.append(item)
-            return PreObjectImport(objType, (listObj,), {})
+                items.append(item)
+            return PreObjectImport(objType, (items,), {})
         else:
             kwargs = {}
             params = list(util.getReqParams4init(objType, rmDefParams=False, delOptional=False).keys())
@@ -284,8 +286,11 @@ class DateImport(str):
         elif len(args) == 1 and isinstance(args[0], datetime.date):
             date = args[0]
             return Date(year=date.year, month=date.month, day=date.day)
+        elif len(args) == 1 and isinstance(args[0], str):
+            datetime_obj = datetime.datetime.fromisoformat(args[0])
+            return Date(year=datetime_obj.year, month=datetime_obj.month, day=datetime_obj.day)
         else:
-            raise TypeError("Value must be of type datetime.datetime or datetime.date", args)
+            raise TypeError("Value must be of type datetime.datetime or datetime.date or str in isoformat", args)
 
 
 class TimeImport(str):
@@ -294,16 +299,22 @@ class TimeImport(str):
             return args[0]
         elif len(args) == 1 and isinstance(args[0], datetime.datetime):
             return args[0].time()
+        elif len(args) == 1 and isinstance(args[0], str):
+            datetime_obj = datetime.datetime.fromisoformat(args[0])
+            return datetime_obj.time()
         else:
-            raise TypeError("Value must be of type datetime.datetime or datetime.time", args)
+            raise TypeError("Value must be of type datetime.datetime or datetime.time or str in isoformat", args)
 
 
 class DateTimeImport(str):
     def __new__(cls, *args, **kwargs):
         if len(args) == 1 and isinstance(args[0], datetime.datetime):
             return args[0]
+        elif len(args) == 1 and isinstance(args[0], str):
+            datetime_obj = datetime.datetime.fromisoformat(args[0])
+            return datetime_obj
         else:
-            raise TypeError("Value must be of type datetime.datetime", args)
+            raise TypeError("Value must be of type datetime.datetime or str in isoformat", args)
 
 
 class BooleanImport(str):

@@ -23,10 +23,7 @@ from aas_editor.settings import ATTRIBUTE_COLUMN, OBJECT_ROLE, COLUMN_NAME_ROLE,
 
 
 class ImportTable(PacksTable):
-    def _addItem(self, parent: QModelIndex, itemTyp, kwargs):
-        if itemTyp is PackTreeViewItem:
-            self.itemTyp = ImportTreeViewItem
-        return super(ImportTable, self)._addItem(parent, kwargs)
+    itemTyp = ImportTreeViewItem
 
     def data(self, index: QModelIndex, role: int = ...) -> Any:
         if role == Qt.ItemDataRole.EditRole:

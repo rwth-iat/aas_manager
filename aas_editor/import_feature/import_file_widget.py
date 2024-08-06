@@ -210,11 +210,13 @@ class ImportManageWidget(QWidget):
         preobj.setMapping(getattr(obj, MAPPING_ATTR, {}))
         newObj = preobj.initWithImport(rowNum=row, sourceWB=sourceWB,
                                        sheetname=ImportManageWidget.IMPORT_SETTINGS.sheetname)
-        if isIterable(obj):
-            iterAttr = ClassesInfo.iterAttrs(type(obj))[0]  # TODO if pyi40aas changes
-            for iterObj in obj:
-                newIterObj = self._initObjWithMappingImport(iterObj, row=row, sourceWB=sourceWB)
-                getattr(newObj, iterAttr).add(newIterObj)
+
+        if isIterable(obj) and ClassesInfo.iterAttrs(type(obj)):
+            iterAttrs = ClassesInfo.iterAttrs(type(obj))  # TODO if pyi40aas changes
+            for iterAttr in iterAttrs:
+                for iterObj in getattr(obj, iterAttr):
+                    newIterObj = self._initObjWithMappingImport(iterObj, row=row, sourceWB=sourceWB)
+                    getattr(newObj, iterAttr).add(newIterObj)
         return newObj
 
     def initRunImportDialog(self):
@@ -361,7 +363,7 @@ class RunImportDialog(QDialog):
     def __init__(self, parent: ImportManageWidget, *, importSettings: ImportSettings):
         super().__init__(parent)
         self.setWindowTitle("Run import")
-        self.buttonBox = QDialogButtonBox(QDialogButtonBox.StandardButton.Apply | QDialogButtonBox.StandardButton.Cancel, self)
+        self.buttonBox = QDialogButtonBox(QDialogButtonBox.StandardButton.Cancel | QDialogButtonBox.StandardButton.Apply, self)
         self.applyBtn = self.buttonBox.button(QDialogButtonBox.StandardButton.Apply)
         self.cancelBtn = self.buttonBox.button(QDialogButtonBox.StandardButton.Cancel)
         self.applyBtn.released.connect(self.accept)

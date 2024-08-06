@@ -85,7 +85,7 @@ class ImportApp(EditorApp):
     def setupMainTreeModel(self) -> StandardTable:
         columns_in_packs_table = list(DEFAULT_COLUMNS_IN_PACKS_TABLE)
         columns_in_packs_table.extend(EXTENDED_COLUMNS_IN_PACK_TABLE)
-        return ImportTable(columns_in_packs_table)
+        return ImportTable(columns_in_packs_table, ImportTreeViewItem(None, None))
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate

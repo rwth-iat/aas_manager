@@ -32,7 +32,9 @@ from aas_editor.utils.util_type import isIterable
 class ImportTreeViewItem(PackTreeViewItem):
     def __init__(self, obj, parent, **kwargs):
         StandardItem.__init__(self, obj, parent=parent, **kwargs)
-        if isinstance(obj, Package):
+        if obj is None and parent is None:
+            self.child = []
+        elif isinstance(obj, Package):
             self.typehint = Package
             self.package = obj
         else:

@@ -21,7 +21,7 @@ from typing import List, Dict
 
 import basyx
 import openpyxl
-from basyx.aas.model import ModelReference, Key
+from basyx.aas.model import ModelReference, Key, KeyTypes
 from openpyxl.worksheet.worksheet import Worksheet
 
 from . import import_settings
@@ -53,10 +53,9 @@ def _mapping4referableIntoDict(obj, mapDict):
     mapping = getattr(obj, import_settings.MAPPING_ATTR, {})
     if mapping:
         ref = ModelReference.from_referable(obj) # FIXME V30RC02
-        keys = ','.join(
-            [f"Key(type_={i.type}, local={i.local}, id_type={i.id_type}, value='{i.value}')" for i in ref.key])
+        keys = ','.join([f"Key(type_={i.type}, value='{i.value}')" for i in ref.key])
         target_type = repr(ref.type).lstrip("<class '").rstrip("'>")
-        mapDict[f"ModelReference(target_type={target_type}, key=({keys},))"] = mapping
+        mapDict[f"ModelReference(type_={target_type}, key=({keys},))"] = mapping
 
 
 def _mappingIntoDict(obj, mapDict):
@@ -110,8 +109,9 @@ def setMappingFromFile(pack: "Package", mappingFile: str):
         mapDict = json.load(jsonFile)
 
     for refRepr in mapDict:
-        aasref: ModelReference = eval(refRepr, { #FIXME V30RC02
+        aasref: ModelReference = eval(refRepr, {
             "Key": Key,
+            "KeyTypes": KeyTypes,
             "ModelReference": ModelReference,
             "basyx": basyx,
         })
@@ -120,35 +120,41 @@ def setMappingFromFile(pack: "Package", mappingFile: str):
         setattr(refObj, import_settings.MAPPING_ATTR, mapping)
 
 
-def importValueFromExampleRow(rawValue: str, row: Dict):
-    value = rawValue
-    # import value from row if only column reference is present in rawValue, else import value from row and try to typecast everything to str
-    # e.g. if rawValue == "$A$" -> return row["A"]
-    # if rawValue == "$A$ some text $B$" -> return f"{str(row["A"])} some text {str(row["B"])}"
-    colReferences: List[str] = re.findall(COLUMNS_PATTERN, rawValue)
-    if len(colReferences) == 1 and value == colReferences[0]:
-        column = colReferences[0]
-        value = row[column.strip("$")]
-    else:
-        for col in colReferences:
-            column = col.strip("$")
-            importedVal = str(row[column])
-            value = value.replace(f"${column}$", importedVal, -1)
+def importValueFromExampleRow(value: str, row: Dict):
+    """
+    Import value from a row based on a given raw value string.
+
+    e.g. if rawValue == "$A$" -> return row["A"]
+    if rawValue == "$A$ some text $B$" -> return f"{str(row["A"])} some text {str(row["B"])}"
+
+    :param raw_value: The raw value string containing column references.
+    :param row: The dictionary representing the row with column data.
+    :return: The imported value with column references replaced by actual values.
+    """
+    colReferences: List[str] = re.findall(COLUMNS_PATTERN, value)
+    for col in colReferences:
+        column = col.strip("$")
+        importedVal = str(row[column])
+        value = value.replace(f"${column}$", importedVal, -1)
     return value
 
 
 def importValueFromExcelWB(value: str, workbook: openpyxl.Workbook, sheetname, row=2):
-    sheet = workbook[sheetname]
+    """
+    Import value from an Excel workbook based on a given value string.
 
+    :param value: The value string containing column references.
+    :param workbook: The openpyxl Workbook object.
+    :param sheetname: The name of the sheet from which to import values.
+    :param row: The row number to import values from (default is 2).
+    :return: The imported value with column references replaced by actual values.
+    """
+    sheet = workbook[sheetname]
     colReferences: List[str] = re.findall(COLUMNS_PATTERN, value)
-    if len(colReferences) == 1 and value == colReferences[0]:
-        column = colReferences[0].strip("$")
-        value = sheet[f"{column}{row}"].value
-    else:
-        for col in colReferences:
-            column = col.strip("$")
-            importedVal = str(sheet[f"{column}{row}"].value)
-            value = value.replace(f"${column}$", importedVal, -1)
+    for col in colReferences:
+        column = col.strip("$")
+        importedVal = str(sheet[f"{column}{row}"].value)
+        value = value.replace(f"${column}$", importedVal, -1)
     return value
 
 
