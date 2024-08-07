@@ -103,7 +103,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.writeSettings()
         from aas_editor.importApp import ImportApp
         self.hide()
-        importApp = ImportApp(parent=self)
+        importApp = ImportApp()
         importApp.closed.connect(self.show)
         importApp.show()
 
