@@ -28,7 +28,7 @@ jobs:
         cd dist
         7z a AAS_Manager_Win.zip AAS_Manager
     - name: Save Build in artifacts
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v4
       with:
         name: AAS_Manager_Win
         path: ./dist/AAS_Manager_Win.zip
