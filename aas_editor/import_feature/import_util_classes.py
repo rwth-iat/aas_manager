@@ -19,7 +19,7 @@ import datetime
 from enum import Enum
 from typing import Dict, Type
 
-from basyx.aas.model import NamespaceSet
+from basyx.aas.model import NamespaceSet, LangStringSet
 from basyx.aas.model.datatypes import Date
 from dateutil.relativedelta import relativedelta
 
@@ -75,6 +75,9 @@ class PreObjectImport(util_classes.PreObject):
                 key = PreObjectImport.fromObject(item)
                 value = PreObjectImport.fromObject(obj[item])
                 items.append((key, value))
+            return PreObjectImport(objType, (items,), {})
+        elif util_type.issubtype(objType, LangStringSet):
+            items = PreObjectImport.fromObject(obj._dict)
             return PreObjectImport(objType, (items,), {})
         elif util_type.isSimpleIterableType(objType):
             objType = tuple if util_type.issubtype(objType, NamespaceSet) else objType

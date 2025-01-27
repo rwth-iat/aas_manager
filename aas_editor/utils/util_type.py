@@ -259,7 +259,7 @@ def _issubtype(typ1, typ2: type) -> bool:
         return issubclass(typ1.__origin__, typ2)
 
 
-def isoftype(obj, types) -> bool:
+def isoftype(obj, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:
     try:
         for tp in types:
             if not isTypehint(tp):
