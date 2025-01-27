@@ -23,7 +23,7 @@ from abc import ABCMeta
 from enum import Enum
 from typing import List, Dict, Type, Set, Any, Tuple, Iterable
 
-from PyQt6.QtCore import Qt, QFile, QTextStream, QModelIndex
+from PyQt6.QtCore import Qt, QFile, QTextStream, QModelIndex, QIODevice
 from PyQt6.QtWidgets import QApplication
 from basyx.aas.model import NamespaceSet, Namespace, Reference
 
@@ -385,7 +385,7 @@ def toggleStylesheet(path: str) -> None:
         raise RuntimeError("No Qt Application found.")
     if path:
         file = QFile(path)
-        file.open(QFile.ReadOnly | QFile.Text)
+        file.open(QIODevice.OpenModeFlag.ReadOnly | QIODevice.OpenModeFlag.Text)
         stream = QTextStream(file)
         app.setStyleSheet(stream.readAll())
     else:

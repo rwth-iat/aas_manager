@@ -101,7 +101,7 @@ CUSTOM_COLUMN_LISTS_FILE = get_custom_column_lists_file()
 APP_LOGO = QIcon(str(ICONS_FOLDER / 'logo.svg'))
 DEFAULT_THEME = "grey"
 
-SETTINGS = QSettings(str(SETTINGS_FILE), QSettings.IniFormat)
+SETTINGS = QSettings(str(SETTINGS_FILE), QSettings.Format.IniFormat)
 
 
 @dataclass(order=True)

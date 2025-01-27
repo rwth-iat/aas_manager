@@ -8,6 +8,8 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 from PyQt6.QtCore import Qt
+from directories import get_icons_folder
+
 from PyQt6.QtGui import QColor, QIcon, QPainter, QPixmap, QFont
 from PyQt6.QtSvg import QSvgRenderer
 
@@ -38,10 +40,10 @@ def create_colored_svg_icon(file_path,
         """Render an SVG file with a specific color."""
         renderer = QSvgRenderer(file_path)
         pixmap = QPixmap(renderer.defaultSize())
-        pixmap.fill(Qt.transparent)  # Transparent background
+        pixmap.fill(QColor("transparent"))  # Transparent background
         painter = QPainter(pixmap)
         renderer.render(painter)
-        painter.setCompositionMode(QPainter.CompositionMode_SourceIn)  # Apply color
+        painter.setCompositionMode(QPainter.CompositionMode.CompositionMode_SourceIn)  # Apply color
         painter.fillRect(pixmap.rect(), color)
         painter.end()
         return pixmap
@@ -53,52 +55,55 @@ def create_colored_svg_icon(file_path,
 
     # Create a QIcon and add the pixmaps for each state
     icon = QIcon()
-    icon.addPixmap(pixmap_normal, QIcon.Normal)  # Normal state
-    icon.addPixmap(pixmap_active, QIcon.Active)  # Active state
-    icon.addPixmap(pixmap_disabled, QIcon.Disabled)  # Disabled state
+    icon.addPixmap(pixmap_normal, QIcon.Mode.Normal)  # Normal state
+    icon.addPixmap(pixmap_active, QIcon.Mode.Active)  # Active state
+    icon.addPixmap(pixmap_disabled, QIcon.Mode.Disabled)  # Disabled state
 
     return icon
 
 
+ICONS_FOLDER = get_icons_folder()
+
+
 # Define icons using SVG/PNG files
-EXIT_ICON = create_colored_svg_icon("aas_editor/settings/svgs/exit-to-app.svg")
-NEW_PACK_ICON = create_colored_svg_icon("aas_editor/settings/svgs/folder-plus.svg")
-OPEN_ICON = create_colored_svg_icon("aas_editor/settings/svgs/folder-open.svg")
-OPEN_DRAG_ICON = create_colored_svg_icon("aas_editor/settings/svgs/open-in-app.svg")
-SAVE_ICON = create_colored_svg_icon("aas_editor/settings/svgs/content-save.svg")
-SAVE_ALL_ICON = create_colored_svg_icon("aas_editor/settings/svgs/content-save-all.svg")
-SETTINGS_ICON = create_colored_svg_icon("aas_editor/settings/svgs/cog.svg")
-COPY_ICON = create_colored_svg_icon("aas_editor/settings/svgs/content-copy.svg")
-PASTE_ICON = create_colored_svg_icon("aas_editor/settings/svgs/content-paste.svg")
-CUT_ICON = create_colored_svg_icon("aas_editor/settings/svgs/content-cut.svg")
-ADD_ICON = create_colored_svg_icon("aas_editor/settings/svgs/plus-circle.svg")
-DEL_ICON = create_colored_svg_icon("aas_editor/settings/svgs/delete.svg")
-UPDATE_ICON = create_colored_svg_icon("aas_editor/settings/svgs/update.svg")
-EDIT_ICON = create_colored_svg_icon("aas_editor/settings/svgs/playlist-edit.svg")
-UNDO_ICON = create_colored_svg_icon("aas_editor/settings/svgs/undo.svg")
-REDO_ICON = create_colored_svg_icon("aas_editor/settings/svgs/redo.svg")
-FORWARD_ICON = create_colored_svg_icon("aas_editor/settings/svgs/arrow-right-circle.svg")
-BACK_ICON = create_colored_svg_icon("aas_editor/settings/svgs/arrow-left-circle.svg")
-SPLIT_VERT_ICON = create_colored_svg_icon("aas_editor/settings/svgs/arrow-split-vertical.svg")
-SPLIT_HORIZ_ICON = create_colored_svg_icon("aas_editor/settings/svgs/arrow-split-horizontal.svg")
-ZOOM_IN_ICON = create_colored_svg_icon("aas_editor/settings/svgs/magnify-plus.svg")
-ZOOM_OUT_ICON = create_colored_svg_icon("aas_editor/settings/svgs/magnify-minus.svg")
-NEXT_ICON = create_colored_svg_icon("aas_editor/settings/svgs/arrow-down.svg")
-PREV_ICON = create_colored_svg_icon("aas_editor/settings/svgs/arrow-up.svg")
-FILTER_ICON = create_colored_svg_icon("aas_editor/settings/svgs/filter.svg")
-REGEX_ICON = create_colored_svg_icon("aas_editor/settings/svgs/regex.svg")
-CASE_ICON = create_colored_svg_icon("aas_editor/settings/svgs/format-letter-case.svg")
-CLOSE_ICON = create_colored_svg_icon("aas_editor/settings/svgs/close.svg")
-EXPAND_ALL_ICON = create_colored_svg_icon("aas_editor/settings/svgs/arrow-expand-vertical.svg")
-COLLAPSE_ALL_ICON = create_colored_svg_icon("aas_editor/settings/svgs/arrow-collapse-vertical.svg")
-AUTOSCROLL_TO_SRC_ICON = create_colored_svg_icon("aas_editor/settings/svgs/package-down.svg")
-AUTOSCROLL_FROM_SRC_ICON = create_colored_svg_icon("aas_editor/settings/svgs/package-up.svg")
-FILE_ICON = create_colored_svg_icon("aas_editor/settings/svgs/file.svg")
+EXIT_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/exit-to-app.svg")
+NEW_PACK_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/folder-plus.svg")
+OPEN_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/folder-open.svg")
+OPEN_DRAG_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/open-in-app.svg")
+SAVE_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/content-save.svg")
+SAVE_ALL_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/content-save-all.svg")
+SETTINGS_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/cog.svg")
+COPY_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/content-copy.svg")
+PASTE_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/content-paste.svg")
+CUT_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/content-cut.svg")
+ADD_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/plus-circle.svg")
+DEL_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/delete.svg")
+UPDATE_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/update.svg")
+EDIT_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/playlist-edit.svg")
+UNDO_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/undo.svg")
+REDO_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/redo.svg")
+FORWARD_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/arrow-right-circle.svg")
+BACK_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/arrow-left-circle.svg")
+SPLIT_VERT_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/arrow-split-vertical.svg")
+SPLIT_HORIZ_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/arrow-split-horizontal.svg")
+ZOOM_IN_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/magnify-plus.svg")
+ZOOM_OUT_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/magnify-minus.svg")
+NEXT_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/arrow-down.svg")
+PREV_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/arrow-up.svg")
+FILTER_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/filter.svg")
+REGEX_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/regex.svg")
+CASE_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/format-letter-case.svg")
+CLOSE_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/close.svg")
+EXPAND_ALL_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/arrow-expand-vertical.svg")
+COLLAPSE_ALL_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/arrow-collapse-vertical.svg")
+AUTOSCROLL_TO_SRC_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/package-down.svg")
+AUTOSCROLL_FROM_SRC_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/package-up.svg")
+FILE_ICON = create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/file.svg")
 
 MIME_TYPE_ICON_DICT = {
-    "application/pdf": create_colored_svg_icon("aas_editor/settings/svgs/file-pdf-box.svg"),
-    "image": create_colored_svg_icon("aas_editor/settings/svgs/file-image.svg"),
-    "text": create_colored_svg_icon("aas_editor/settings/svgs/file-document.svg"),
+    "application/pdf": create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/file-pdf-box.svg"),
+    "image": create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/file-image.svg"),
+    "text": create_colored_svg_icon(str(ICONS_FOLDER.absolute().as_posix()) + "/file-document.svg"),
 }
 
 # Distances between chars in icon
@@ -134,8 +139,8 @@ def getCharsIcon(chars: str, font_size: int = 24, color: QColor = LIGHT_BLUE, ba
 
     # Set up the painter
     painter = QPainter(pixmap)
-    painter.setRenderHint(QPainter.Antialiasing)
-    painter.setRenderHint(QPainter.TextAntialiasing)
+    painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+    painter.setRenderHint(QPainter.RenderHint.TextAntialiasing)
 
     # Set font
     font = QFont("Monospace")
