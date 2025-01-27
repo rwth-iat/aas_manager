@@ -6,6 +6,31 @@ on:
       - fixes
 
 jobs:
+  create_release:
+    name: Create Release
+    runs-on: [ ubuntu-latest ]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v1
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          pip install -e .
+
+      - name: Output Release URL File
+        run: echo "example.com" > release_url.txt
+
+      - name: Save Release URL File for publish
+        uses: actions/upload-artifact@v4
+        with:
+          name: release_url
+          path: release_url.txt
+
   build:
     name: Build packages
     needs: create_release
