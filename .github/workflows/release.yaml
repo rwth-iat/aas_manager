@@ -63,7 +63,7 @@ jobs:
         run: ${{matrix.CMD_BUILD}}
 
       - name: Load Release URL File from release job
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v4
         with:
           name: release_url
 
