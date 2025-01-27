@@ -50,7 +50,7 @@ class PreObjectImport(util_classes.PreObject):
 
         if obj is None:
             return PreObjectImport.useExistingObject(obj)
-        elif util_type.issubtype(objType, (bool, datetime.date, datetime.datetime, datetime.time)):
+        elif util_type.isoftype(objType, (bool, datetime.date, datetime.datetime, datetime.time)):
             return PreObjectImport(objType, (obj,), {})
         elif util_type.issubtype(objType, relativedelta):
             kwargs = {
