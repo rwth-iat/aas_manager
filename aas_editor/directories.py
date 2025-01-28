@@ -31,7 +31,9 @@ def get_themes_folder():
 
 
 def get_icons_folder():
-    return Path(__file__).resolve().with_name("icons")
+    icons_folder = Path(__file__).resolve().with_name("icons")
+    create_alias_for_themes_folder(icons_folder)
+    return icons_folder
 
 
 def get_custom_column_lists_file():
