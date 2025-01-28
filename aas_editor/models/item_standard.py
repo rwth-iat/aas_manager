@@ -131,11 +131,11 @@ class StandardItem(QObject):
             self.icon = QIcon(settings.MIME_TYPE_ICON_DICT.get(content_type, settings.FILE_ICON))
         else:
             try:
-                self.icon = QIcon(settings.TYPE_ICON_DICT[type(self.obj)])
+                self.icon = settings.getCharsIcon(settings.TYPE_SHORTS_DICT[type(self.obj)])
             except KeyError:
-                for cls in settings.TYPE_ICON_DICT:
+                for cls in settings.TYPE_SHORTS_DICT:
                     if isinstance(self.obj, cls):
-                        self.icon = QIcon(settings.TYPE_ICON_DICT[cls])
+                        self.icon = settings.getCharsIcon(settings.TYPE_SHORTS_DICT[cls])
 
     def data(self, role, column=settings.ATTRIBUTE_COLUMN, column_name=""):
         # custom roles

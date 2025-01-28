@@ -15,7 +15,7 @@ from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 
 from aas_editor.settings.app_settings import *
-from aas_editor.settings.icons import EXIT_ICON, SETTINGS_ICON, NEW_PACK_ICON
+from aas_editor.settings.icons import EXIT_ICON, SETTINGS_ICON, NEW_PACK_ICON, initialize_all_icons
 from aas_editor.settings_dialog import SettingsDialog
 from aas_editor.widgets.compliance_tool import ComplianceToolDialog
 from aas_editor.widgets import AddressLine
@@ -28,6 +28,7 @@ from settings import APPLICATION_NAME, REPORT_ERROR_LINK
 
 
 class EditorApp(QMainWindow, design.Ui_MainWindow):
+    initialize_all_icons()
     closed = pyqtSignal()
 
     def __init__(self, fileToOpen=None, parent=None):

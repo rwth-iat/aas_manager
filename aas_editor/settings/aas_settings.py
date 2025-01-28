@@ -253,6 +253,3 @@ TYPE_SHORTS_DICT = {
     ReferenceElement: "REF",
     DataElement: "DT",
 }
-
-# produce char icon objects from str dict
-TYPE_ICON_DICT = {typ: getCharsIcon(shortname) for typ, shortname in TYPE_SHORTS_DICT.items()}
