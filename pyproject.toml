@@ -8,7 +8,7 @@ version = "0.4.3"
 dependencies = [
     "PyQt6",
     "basyx-python-sdk@git+https://github.com/rwth-iat/basyx-python-sdk@aas_manager/v301#subdirectory=sdk",
-    "aas_compliance_tool@git+git+https://github.com/rwth-iat/basyx-python-sdk@aas_manager/v301#subdirectory=compliance_tool",
+    "aas_compliance_tool@git+https://github.com/rwth-iat/basyx-python-sdk@aas_manager/v301#subdirectory=compliance_tool",
     "pytz>=2023.3",
     "PyQt6-WebEngine",
     "pyinstaller==6.4.0",
