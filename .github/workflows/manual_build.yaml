@@ -24,7 +24,7 @@ jobs:
     - name: Build with pyinstaller for Windows
       run: |
         pyinstaller aas_manager.spec
-        xcopy /E /I basyx dist\AAS_Manager\basyx
+        xcopy /E /I aas_compliance_tool dist\AAS_Manager\aas_compliance_tool
         cd dist
         7z a AAS_Manager_Win.zip AAS_Manager
     - name: Save Build in artifacts
