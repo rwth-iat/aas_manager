@@ -275,7 +275,7 @@ class PreObjectImport(util_classes.PreObject):
                     if isinstance(attr, int) or (isinstance(attr, str) and attr.isdecimal()):
                         preObj = self.args[0][int(attr)]
                     else:
-                        preObj = self.kwargs[attr]
+                        preObj = self.kwargs[self.attrsToParams.get(attr, attr)]
                     preObj.setMapping(mapping[attr])
             else:
                 self.args = [mapping]
