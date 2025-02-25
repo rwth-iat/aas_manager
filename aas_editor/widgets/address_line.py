@@ -34,69 +34,6 @@ class Signal(QObject):
     modelChanged = pyqtSignal(['QAbstractItemModel'])
 
 
-# class AddressBar(QWidget):
-#     def __init__(self, parent: 'Tab' = None) -> None:
-#         super(AddressBar, self).__init__(parent=parent)
-#         self.tab = parent
-#         self.currItem = QModelIndex()
-#         self.prevItems = []
-#         self.nextItems = []
-#         self.initButtons()
-#         self.addressLine = AddressLine(self, tab=self.tab)
-#         self.initLayout()
-#
-#     # noinspection PyArgumentList
-#     def initButtons(self):
-#         self.backBtn = QToolButton(self, icon=BACK_ICON, toolTip="Go back one item",
-#                                    triggered=self.openPrevItem,
-#                                    statusTip="Go back one item",
-#                                    shortcut=SC_BACK,
-#                                    enabled=True)
-#
-#         self.forwardBtn = QToolButton(self, icon=FORWARD_ICON, toolTip="Go forward one item",
-#                                    triggered=self.openNextItem,
-#                                    statusTip="Go forward one item",
-#                                    shortcut=SC_FORWARD,
-#                                    enabled=True)
-#
-#     def openPrevItem(self):
-#         if self.prevItems:
-#             prevItem = self.prevItems.pop()
-#             self.nextItems.append(self.packItem)
-#             self.addressLine.open(QModelIndex(prevItem))
-#
-#     def openNextItem(self):
-#         if self.nextItems:
-#             nextItem = self.nextItems.pop()
-#             self.prevItems.append(self.packItem)
-#             self.addressLine.open(QModelIndex(nextItem))
-#
-#     def open(self, index: QModelIndex):
-#         model: QAbstractProxyModel = index.model()
-#         if not index == QModelIndex(self.currItem) and model and index.isValid():
-#             qDebug(f"Open address: {self.text()}")
-#             self.nextItems.clear()
-#             if self.packItem.isValid():
-#                 self.prevItems.append(self.packItem)
-#             index = model.mapToSource(index)
-#             self.tab._openItem(index)
-#             self.currItem = QPersistentModelIndex(index)
-#         else:
-#             qCritical(f"Index was not found for address {self.text()}")
-#             QMessageBox.critical(self, "Error", f"Item not found: {self.text()}")
-#
-#     def text(self):
-#         return self.addressLine.text()
-#
-#     def initLayout(self):
-#         pathLayout = QHBoxLayout(self)
-#         pathLayout.setContentsMargins(0, 0, 0, 0)
-#         pathLayout.setSpacing(0)
-#         pathLayout.addWidget(self.backBtn)
-#         pathLayout.addWidget(self.forwardBtn)
-#         pathLayout.addWidget(self.addressLine)
-
-
 class AddressLine(LineEdit):
     """Class for address line used in tabs"""
     signal = Signal()
