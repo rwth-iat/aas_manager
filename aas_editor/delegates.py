@@ -15,7 +15,7 @@ from basyx.aas.model.submodel import *
 from enum import Enum
 from typing import Dict
 
-from PyQt6.QtGui import QPainter, QBrush, QDoubleValidator, QIntValidator
+from PyQt6.QtGui import QPainter, QBrush, QIntValidator
 from PyQt6.QtWidgets import QWidget, QStyledItemDelegate, QStyleOptionViewItem, QStyle, \
     QCompleter, QCheckBox
 from PyQt6 import QtCore
@@ -71,7 +71,7 @@ class ColorDelegate(QStyledItemDelegate):
 
 
 class EditDelegate(ColorDelegate):
-    editableTypesInTable = (bool, int, float, str, Enum)
+    editableTypesInTable = (bool, int, str, Enum)
 
     def createEditor(self, parent: QWidget, option: 'QStyleOptionViewItem',
                      index: QtCore.QModelIndex) -> QWidget:
@@ -89,9 +89,6 @@ class EditDelegate(ColorDelegate):
         elif issubtype(objType, int):
             widget = LineEdit(parent)
             widget.setValidator(QIntValidator())
-        elif issubtype(objType, float):
-            widget = LineEdit(parent)
-            widget.setValidator(QDoubleValidator())
         elif issubtype(objType, Enum):
             # add enum types to types
             enums = [member for member in objType]

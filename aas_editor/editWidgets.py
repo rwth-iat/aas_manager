@@ -18,7 +18,7 @@ from typing import Type, TypeVar
 import dateutil
 import pytz
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QIntValidator, QDoubleValidator
+from PyQt6.QtGui import QIntValidator
 
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QDateTimeEdit, QCheckBox, QCompleter, \
     QDateEdit, QHBoxLayout, QPlainTextEdit, QPushButton, QFileDialog, QLineEdit, QToolButton
@@ -276,8 +276,6 @@ class StandardInputWidget(QWidget):
                 widget.setValidator(QIntValidator())
         elif issubtype(self.objType, (float, decimal.Decimal)):
             widget = widgets.LineEdit(self)
-            if self.useValidators:
-                widget.setValidator(QDoubleValidator())
         elif issubtype(self.objType, (Enum, Type)):
             if issubtype(self.objType, Enum):
                 # add enum types to types
