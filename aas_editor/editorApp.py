@@ -17,7 +17,7 @@ from PyQt6.QtWidgets import *
 from aas_editor.settings.app_settings import *
 from aas_editor.settings.icons import EXIT_ICON, SETTINGS_ICON, NEW_PACK_ICON, initialize_all_icons
 from aas_editor.settings_dialog import SettingsDialog
-from aas_editor.widgets.compliance_tool import ComplianceToolDialog
+from widgets.aas_test_engines_tool import AasTestEnginesToolDialog
 from aas_editor.widgets import AddressLine
 from aas_editor import design
 from aas_editor.models import DetailedInfoTable, PacksTable
@@ -70,9 +70,9 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                                       statusTip=f"Show information about {APPLICATION_NAME}",
                                       triggered=lambda: dialogs.AboutDialog(self).exec())
 
-        self.complToolDialogAct = QAction("Compliance tool", self,
-                                          statusTip="Open compliance tool",
-                                          triggered=lambda: ComplianceToolDialog(self).exec())
+        self.testEnginesToolDialogAct = QAction("AAS Test tool", self,
+                                          statusTip="Open AAS Test Engines tool",
+                                          triggered=lambda: AasTestEnginesToolDialog(self).exec())
 
         self.importToolAct = QAction("Excel AAS Generator tool", self,
                                      statusTip="Open Excel AAS Generator tool",
@@ -165,7 +165,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menuNavigate.addAction(self.mainTreeView.autoScrollFromSrcAct)
 
         self.menuTools = QMenu("&Tools", self.menubar)
-        self.menuTools.addAction(self.complToolDialogAct)
+        self.menuTools.addAction(self.testEnginesToolDialogAct)
         self.menuTools.addAction(self.importToolAct)
 
         self.menuHelp = QMenu("&Help", self.menubar)
