@@ -19,7 +19,7 @@ from basyx.aas.model import AssetAdministrationShell, ConceptDescription, Submod
     Entity, Capability, Operation, RelationshipElement, AnnotatedRelationshipElement, Range, Blob, File, \
     ReferenceElement, DataElement, AdministrativeInformation, AbstractObjectStore, \
     Namespace, SubmodelElementCollection, SubmodelElement, ModelReference, Referable, Identifiable, \
-    Key, Qualifier, BasicEventElement, SubmodelElementList, datatypes, LangStringSet, DictObjectStore
+    Key, Qualifier, BasicEventElement, SubmodelElementList, datatypes, LangStringSet, SetObjectStore
 
 import aas_editor.additional.classes
 import aas_editor.package
@@ -132,7 +132,7 @@ CLASSES_INFO = {
         },
         IS_EDITABLE_IN_GUI: False,
     },
-    DictObjectStore: {
+    SetObjectStore: {
         IS_EDITABLE_IN_GUI: False,
     },
     Referable: {

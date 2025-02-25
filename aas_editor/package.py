@@ -19,7 +19,7 @@ from basyx.aas.adapter.aasx import DictSupplementaryFileContainer, AASXReader, A
 from basyx.aas.adapter.json import read_aas_json_file, write_aas_json_file
 from basyx.aas.adapter.xml import read_aas_xml_file, write_aas_xml_file
 from basyx.aas.model import AssetAdministrationShell, Submodel, ConceptDescription, \
-    DictObjectStore, Key, ModelReference
+    SetObjectStore, Key, ModelReference
 
 from aas_editor.settings import DEFAULT_COMPLETIONS, AppSettings
 from aas_editor.utils.util_classes import ClassesInfo
@@ -28,7 +28,7 @@ from aas_editor.utils.util_classes import ClassesInfo
 class Package:
     def __init__(self, file: Union[str, Path] = "", failsafe=False):
         """:raise TypeError if file has wrong file type"""
-        self.objStore = DictObjectStore()
+        self.objStore = SetObjectStore()
         self.fileStore = DictSupplementaryFileContainer()
         self.file = file
         if file:
@@ -85,17 +85,7 @@ class Package:
         else:
             raise TypeError("Wrong file type:", self.file.suffix)
 
-    def _update_objstore(self):
-        old_identifiers = list(self.objStore._backend.keys())
-        for i in old_identifiers:
-            obj = self.objStore.get_identifiable(i)
-            if i != obj.id:
-                self.objStore._backend[obj.id] = obj
-                del self.objStore._backend[i]
-
     def write(self, file: str = None):
-        self._update_objstore()
-
         if self.allSubmodelRefsToAas:
             self.all_submodels_to_aas()
         if file:
