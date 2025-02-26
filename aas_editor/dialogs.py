@@ -614,7 +614,10 @@ class IterableGroupBox(GroupBox):
         if isinstance(val, dict):
             val = [DictItem(key, value) for key, value in val.items()]
         elif isoftype(val, PreObject) and issubtype(val.objType, dict):
-            val = [DictItem(item[0], item[1]) for item in val]  # FIXME: look how PreObjects for dicts are created
+            val = [DictItem(item[0], item[1]) for item in val.args]  # FIXME: look how PreObjects for dicts are created
+        elif isoftype(val, PreObject) and issubtype(val.objType, LangStringSet):
+            val = [DictItem(item[0], item[1]) for item in val.args[0].args[0]]  # FIXME: look how PreObjects for dicts are created
+
 
         if val and \
                 (isIterable(val) or

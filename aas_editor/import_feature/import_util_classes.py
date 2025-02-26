@@ -273,10 +273,15 @@ class PreObjectImport(util_classes.PreObject):
             if isinstance(mapping, dict):
                 for attr in mapping:
                     if isinstance(attr, int) or (isinstance(attr, str) and attr.isdecimal()):
-                        preObj = self.args[0][int(attr)]
+                        if self.args[0].objType is dict and "value" in mapping[attr]:
+                            preObj = self.args[0].args[0][int(attr)][1]
+                            preObj.setMapping(mapping[attr]["value"])
+                        else:
+                            preObj = self.args[0][int(attr)]
+                            preObj.setMapping(mapping[attr])
                     else:
                         preObj = self.kwargs[self.attrsToParams.get(attr, attr)]
-                    preObj.setMapping(mapping[attr])
+                        preObj.setMapping(mapping[attr])
             else:
                 self.args = [mapping]
 
