@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Test Result</title>
+    <style>
+        :root {
+            color-scheme: light dark;
+        }
+
+        #content {
+            margin: none;
+            padding: 16px;
+        }
+
+        .caret {
+            cursor: pointer;
+            -webkit-user-select: none;
+            /* Safari 3.1+ */
+            -moz-user-select: none;
+            /* Firefox 2+ */
+            -ms-user-select: none;
+            /* IE 10+ */
+            user-select: none;
+        }
+
+        .caret::before {
+            content: "\25B6";
+            color: light-dark(black, gray);
+            display: inline-block;
+            margin-left: 6px;
+        }
+
+        .caret-down::before {
+            -ms-transform: rotate(90deg);
+            /* IE 9 */
+            -webkit-transform: rotate(90deg);
+            /* Safari */
+            transform: rotate(90deg);
+        }
+
+        .sub-results {
+            margin-left: 32px;
+            display: none;
+        }
+
+        .visible {
+            display: block;
+        }
+
+        .info {
+            color: green;
+        }
+
+        .warning {
+            color: orange;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .critical {
+            color: red;
+            font-weight: bolder;
+        }
+
+        .help {
+            position: absolute;
+            right:0;
+            top:0
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>Test Result</h2>
+
+    <div class="help">
+        <table>
+            <tr>
+                <td>&rarr;</td>
+                <td>Expand one level</td>
+            </tr>
+            <tr>
+                <td>&larr;</td>
+                <td>Collapse one level</td>
+            </tr>
+        </table>
+    </div>
+
+    <div id="content">
+        <!-- CONTENT -->
+    </div>
+
+    <script>
+        function toggle(element) {
+            element.parentElement.parentElement.querySelector(".sub-results").classList.toggle("visible");
+            element.classList.toggle("caret-down");
+        }
+
+        function expand(element) {
+            element.parentElement.parentElement.querySelector(".sub-results").classList.add("visible");
+            element.classList.add("caret-down");
+        }
+
+        function collapse(element) {
+            element.parentElement.parentElement.querySelector(".sub-results").classList.remove("visible");
+            element.classList.remove("caret-down");
+        }
+
+        for (const caret of document.getElementsByClassName("caret")) {
+            caret.addEventListener("click", function (event) {
+                toggle(event.target);
+            });
+        }
+
+        let level = 0
+        document.addEventListener("keyup", (event => {
+            if (event.code == "ArrowRight") {
+                const carets = document.getElementsByClassName(`level-${level}`);
+                if(carets.length == 0) return;
+                for (const caret of document.getElementsByClassName(`level-${level}`)) {
+                    expand(caret)
+                }
+                level++;
+            } else if (event.code == "ArrowLeft") {
+                if(level==0) return;
+                level--;
+                const carets = document.getElementsByClassName(`level-${level}`);
+                for (const caret of carets) {
+                    collapse(caret)
+                }
+            }
+        }));
+
+    </script>
+
+</body>
+
+</html>
