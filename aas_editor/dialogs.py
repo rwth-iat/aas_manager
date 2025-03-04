@@ -663,11 +663,7 @@ class TypeOptionObjGroupBox(GroupBox):
             if isabstract(typ):
                 self.objTypes.remove(typ)
 
-        self.initTypeComboBox()
-        if defType is not None and defType in objTypes:
-            index = self.typeComboBox.findText(getTypeName(defType), Qt.MatchFlag.MatchExactly)
-            if index > -1:
-                self.typeComboBox.setCurrentIndex(index)
+        self.initTypeComboBox(defType=defType)
         currObjType = self.typeComboBox.currentData()
 
         kwargs["parent"] = self
@@ -680,7 +676,7 @@ class TypeOptionObjGroupBox(GroupBox):
         self.typeComboBox.currentIndexChanged.connect(
             lambda i: self.replaceGroupBoxWidget(self.typeComboBox.itemData(i), **kwargs))
 
-    def initTypeComboBox(self):
+    def initTypeComboBox(self, defType=str):
         """Init func for ComboBox where desired Type of input data will be chosen"""
         self.typeComboBox = widgets.CompleterComboBox(self)
         for typ in self.objTypes:
@@ -689,6 +685,10 @@ class TypeOptionObjGroupBox(GroupBox):
         if self.objVal:
             objValType = self.objVal.objType if isoftype(self.objVal, PreObject) else type(self.objVal)
             self.typeComboBox.setCurrentIndex(self.typeComboBox.findData(objValType))
+        elif defType is not None and defType in self.objTypes:
+            index = self.typeComboBox.findText(getTypeName(defType), Qt.MatchFlag.MatchExactly)
+            if index > -1:
+                self.typeComboBox.setCurrentIndex(index)
         else:
             self.typeComboBox.setCurrentIndex(0)
         self.layout().addRow(self.typeComboBox)
