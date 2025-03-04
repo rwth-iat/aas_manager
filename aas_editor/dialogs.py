@@ -653,7 +653,7 @@ class LangStringSetGroupBox(IterableGroupBox):
 class TypeOptionObjGroupBox(GroupBox):
     """GroupBox with option to choose widget for which type will be generated"""
 
-    def __init__(self, objTypes: Iterable, defType=None, **kwargs):
+    def __init__(self, objTypes: Iterable, defType=str, **kwargs):
         objTypes = list(objTypes)
         super(TypeOptionObjGroupBox, self).__init__(objTypes[0], **kwargs)
 
