@@ -216,6 +216,9 @@ class ImportManageWidget(QWidget):
             for iterAttr in iterAttrs:
                 for iterObj in getattr(obj, iterAttr):
                     newIterObj = self._initObjWithMappingImport(iterObj, row=row, sourceWB=sourceWB)
+                    if hasattr(newIterObj, "id_short") and isinstance(newIterObj.id_short, str) and (
+                            newIterObj.id_short.startswith("generated_submodel_list_hack_")):  # FIXME: Refactor after basyx fix
+                        newIterObj.id_short = None
                     getattr(newObj, iterAttr).add(newIterObj)
         return newObj
 
