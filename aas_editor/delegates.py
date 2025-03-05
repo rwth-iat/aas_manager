@@ -122,6 +122,9 @@ class EditDelegate(ColorDelegate):
         if isoftype(index.data(Qt.ItemDataRole.EditRole), (Enum, DictItem)):
             obj = editor.currentData()
             model.setData(index, obj, Qt.ItemDataRole.EditRole)
+        elif isoftype(index.data(Qt.ItemDataRole.EditRole), int):
+            obj = int(editor.text())
+            model.setData(index, obj, Qt.ItemDataRole.EditRole)
         else:
             super().setModelData(editor, model, index)
 
