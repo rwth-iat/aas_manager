@@ -658,10 +658,13 @@ class TreeView(BasicTreeView):
                 iterItemTypehint = getIterItemTypeHint(targetTypeHint)
             except TypeError:
                 iterItemTypehint = getIterItemTypeHint(type(targetObj))
+            paste_was_done = False
             for obj2paste in objs2paste:
                 if checkType(obj2paste, iterItemTypehint):
                     self._onPasteAdd(index, obj2paste, withDialog=pasteWithDialog)
-                    return
+                    paste_was_done = True
+            if paste_was_done:
+                return
         if isIterable(targetParentObj):
             for obj2paste in objs2paste:
                 self._onPasteAdd(index.parent(), obj2paste, withDialog=pasteWithDialog)
