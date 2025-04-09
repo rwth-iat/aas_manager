@@ -733,13 +733,12 @@ class PackTreeView(TreeView):
             file = str(url.toLocalFile())
             self.openPack(file)
 
-    def onDelClear(self):
-        index = self.currentIndex()
+    def onOneItemDelClear(self, index: QModelIndex):
         attribute = index.data(COLUMN_NAME_ROLE)
         if isinstance(index.data(OBJECT_ROLE), Package):
             self.closeAct.trigger()
         elif attribute in (OBJECT_COLUMN_NAME, OBJECT_VALUE_COLUMN_NAME):
-            super(PackTreeView, self).onDelClear()
+            super(PackTreeView, self).onOneItemDelClear(index)
         else:
             parentObjType = type(index.data(OBJECT_ROLE))
             defaultVal = getDefaultVal(parentObjType, attribute)
@@ -761,11 +760,10 @@ class PackTreeView(TreeView):
             logging.exception(e)
             return False
 
-        obj2paste = self.treeClipboard.objects[-1]
         try:
-            if util_type.checkType(obj2paste, attrTypehint):
+            if util_type.checkType(self.treeClipboard.objForPasteCheck, attrTypehint):
                 return True
-            if ClassesInfo.addType(currObjType) and isinstance(obj2paste, ClassesInfo.addType(currObjType)):
+            if ClassesInfo.addType(currObjType) and isinstance(self.treeClipboard.objForPasteCheck, ClassesInfo.addType(currObjType)):
                 return True
         except (AttributeError, TypeError) as e:
             logging.exception(e)
@@ -778,7 +776,6 @@ class PackTreeView(TreeView):
             super(PackTreeView, self).onPaste()
         else:
             obj2paste = self.treeClipboard.objects[-1]
-            targetParentObj = index.data(OBJECT_ROLE)
             targetTypeHint = util_type.getAttrTypeHint(type(index.data(OBJECT_ROLE)), attrName, delOptional=False)
             reqAttrsDict = getReqParams4init(type(obj2paste), rmDefParams=True)
 

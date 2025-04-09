@@ -185,6 +185,21 @@ class TreeClipboard:
         else:
             return True
 
+    @property
+    def objForPasteCheck(self):
+        if self.isEmpty():
+            return None
+        else:
+            if type(self.objects[-1]) is list:
+                return self.objects[-1][0]
+            return self.objects[-1]
+
+    @property
+    def objStrForPasteCheck(self):
+        if self.isEmpty():
+            return None
+        else:
+            return self.objStrings[-1]
 
 class TreeView(BasicTreeView):
     openInCurrTabClicked = pyqtSignal(QModelIndex)
@@ -210,6 +225,7 @@ class TreeView(BasicTreeView):
         p = self.palette()
         p.setColor(QPalette.ColorRole.AlternateBase, QColor(settings.LIGHT_BLUE_ALTERNATE))
         self.setPalette(p)
+        self.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
 
     def addEditingAction(self, action: QAction):
         self.addAction(action)
@@ -526,7 +542,13 @@ class TreeView(BasicTreeView):
         self.model().setData(index, NOT_GIVEN, UPDATE_ROLE)
 
     def onDelClear(self):
-        index = self.currentIndex()
+        indexes = self.getTopLevelSameLevelIndexes(self.selectedIndexes())
+        if indexes and len(indexes) == 1:
+            self.onOneItemDelClear(indexes[0])
+        elif indexes:
+            self.onMultipleDelClear(indexes)
+
+    def onOneItemDelClear(self, index: QModelIndex):
         attribute = index.data(NAME_ROLE)
         try:
             parentObjType = type(index.data(PARENT_OBJ_ROLE))
@@ -535,8 +557,18 @@ class TreeView(BasicTreeView):
         except (AttributeError, IndexError):
             self._setItemData(index, NOT_GIVEN, CLEAR_ROW_ROLE)
 
+    def onMultipleDelClear(self, indexes: List[QModelIndex]):
+        for index in indexes:
+            self.onOneItemDelClear(index)
+
     def onCopy(self):
-        index = self.currentIndex()
+        indexes = self.selectedIndexes()
+        if indexes and len(indexes) == 1:
+            self.onOneItemCopy(indexes[0])
+        elif indexes:
+            self.onMultipleItemsCopy(indexes)
+
+    def onOneItemCopy(self, index: QModelIndex):
         data2copy = index.data(COPY_ROLE)
         text2copy = index.data(Qt.ItemDataRole.DisplayRole)
         self.treeClipboard.clear()
@@ -545,22 +577,48 @@ class TreeView(BasicTreeView):
         clipboard.setText(text2copy, QClipboard.Mode.Clipboard)
         self.pasteAct.setEnabled(self.isPasteOk(index))
 
+    def onMultipleItemsCopy(self, indexes: List[QModelIndex]):
+        # Get top level indexes
+        top_same_level_indexes = self.getTopLevelSameLevelIndexes(indexes)
+        data2copy = [i.data(COPY_ROLE) for i in top_same_level_indexes if i.data(COPY_ROLE) is not None]
+        text2copy = "\n".join([i.data(Qt.ItemDataRole.DisplayRole) for i in indexes if i.isValid()])
+        self.treeClipboard.clear()
+        self.treeClipboard.append(data2copy, objRepr=text2copy)
+        clipboard = QApplication.clipboard()
+        clipboard.setText(self.treeClipboard.objStrings[-1], QClipboard.Mode.Clipboard)
+
+    def getTopLevelSameLevelIndexes(self, indexes):
+        # Remove invalid indexes just in case
+        valid_indexes = [idx for idx in indexes if idx.isValid()]
+
+        # Remove indexes whose parent is also in the list
+        top_level_candidates = []
+        for idx in valid_indexes:
+            if idx.parent() not in valid_indexes:
+                top_level_candidates.append(idx)
+
+        if len(valid_indexes) <= 1:
+            return valid_indexes
+
+        # Determine the common parent among remaining top-level candidates
+        first_parent = top_level_candidates[0].parent()
+        same_level_indexes = [idx for idx in top_level_candidates if idx.parent() == first_parent]
+
+        return same_level_indexes
+
     def isPasteOk(self, index: QModelIndex) -> bool:
         if self.treeClipboard.isEmpty() or not index.isValid():
             return False
 
-        obj2paste = self.treeClipboard.objects[-1]
-        objStr2paste = self.treeClipboard.objStrings[-1]
         targetTypeHint = index.data(TYPE_HINT_ROLE)
-
         try:
-            if checkType(obj2paste, targetTypeHint):
+            if checkType(self.treeClipboard.objForPasteCheck, targetTypeHint):
                 return True
             targetObj = index.data(OBJECT_ROLE)
             if isIterable(targetObj):
-                if checkType(obj2paste, getIterItemTypeHint(targetTypeHint)):
+                if checkType(self.treeClipboard.objForPasteCheck, getIterItemTypeHint(targetTypeHint)):
                     return True
-            if checkType(objStr2paste, targetTypeHint):
+            if checkType(self.treeClipboard.objStrForPasteCheck, targetTypeHint):
                 return True
         except (AttributeError, TypeError) as e:
             logging.exception(e)
@@ -579,14 +637,19 @@ class TreeView(BasicTreeView):
             self.treeClipboard.append(txtInSystemClipboard)
 
     def onPaste(self):
-        obj2paste = self.treeClipboard.objects[-1]
         index = self.currentIndex()
         if not self.isPasteOk(index):
             return
         targetParentObj = index.parent().data(OBJECT_ROLE)
         targetObj = index.data(OBJECT_ROLE)
         targetTypeHint = index.data(TYPE_HINT_ROLE)
-        reqAttrsDict = getReqParams4init(type(obj2paste), rmDefParams=True)
+
+        objs2paste = self.treeClipboard.objects[-1]
+        pasteWithDialog = False
+        if not isinstance(objs2paste, list):
+            reqAttrsDict = getReqParams4init(type(objs2paste), rmDefParams=True)
+            objs2paste = [objs2paste]
+            pasteWithDialog = bool(reqAttrsDict)
 
         # if no req. attrs, paste data without dialog
         # else paste data with dialog for asking to check req. attrs
@@ -595,13 +658,15 @@ class TreeView(BasicTreeView):
                 iterItemTypehint = getIterItemTypeHint(targetTypeHint)
             except TypeError:
                 iterItemTypehint = getIterItemTypeHint(type(targetObj))
-            if checkType(obj2paste, iterItemTypehint):
-                self._onPasteAdd(index, obj2paste, withDialog=bool(reqAttrsDict))
-                return
+            for obj2paste in objs2paste:
+                if checkType(obj2paste, iterItemTypehint):
+                    self._onPasteAdd(index, obj2paste, withDialog=pasteWithDialog)
+                    return
         if isIterable(targetParentObj):
-            self._onPasteAdd(index.parent(), obj2paste, withDialog=bool(reqAttrsDict))
+            for obj2paste in objs2paste:
+                self._onPasteAdd(index.parent(), obj2paste, withDialog=pasteWithDialog)
         else:
-            self._onPasteReplace(index, obj2paste, withDialog=bool(reqAttrsDict))
+            self._onPasteReplace(index, objs2paste[0], withDialog=pasteWithDialog)
 
     def _onPasteAdd(self, index, obj2paste, withDialog):
         if withDialog:
