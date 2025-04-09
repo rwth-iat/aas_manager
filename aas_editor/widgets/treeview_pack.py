@@ -44,6 +44,9 @@ from aas_editor import dialogs
 from settings import AAS_FILE_TYPES, APPLICATION_NAME, IAT
 
 
+SUBMODEL_TEMPLATES_FOLDER = 'submodel_templates'
+
+
 class PackHeaderView(HeaderView):
     def __init__(self, orientation, parent: Optional[QWidget] = ...) -> None:
         self.customLists = {}
@@ -145,10 +148,10 @@ class PackTreeView(TreeView):
         self.setSelectionBehavior(self.SelectionBehavior.SelectItems)
         self.setHeader(PackHeaderView(Qt.Orientation.Horizontal, self))
 
-    # Scan the folder "aas_files" and create a set filesObjStores of SetObjectStore elements and its names
+    # Scan the folder SUBMODEL_TEMPLATES_FOLDER and create a set filesObjStores of SetObjectStore elements and its names
     def scanFolderForExistFiles(self):
         path = Path.cwd()
-        path = path / 'aas_files'
+        path = path / SUBMODEL_TEMPLATES_FOLDER
 
         if not path.is_dir():
             path.mkdir()
