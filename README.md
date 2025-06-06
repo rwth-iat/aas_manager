@@ -46,7 +46,9 @@ You can find binaries of the editor for Windows or Linux systems in [the release
    pip install -e .
    ```
    Note: If errors occur, try installing the packages one by one in the same order linke in requirements.txt 
-
+  
+   **Linux Dependencies:**
+   On some Linux distributions, you may encounter PyQt5-related errors when running the application. If this happens, you'll need to install missing system dependencies. See issue [#38](https://github.com/rwth-iat/aas_manager/issues/38) for detailed instructions and solutions.
 
 3. Run ``aas_editor``
 
