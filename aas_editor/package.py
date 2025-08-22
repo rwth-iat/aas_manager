@@ -16,8 +16,8 @@ import mimetypes
 
 import pyecma376_2
 from basyx.aas.adapter.aasx import DictSupplementaryFileContainer, AASXReader, AASXWriter
-from basyx.aas.adapter.json import read_aas_json_file, write_aas_json_file
-from basyx.aas.adapter.xml import read_aas_xml_file, write_aas_xml_file
+from basyx.aas.adapter.json import write_aas_json_file, read_aas_json_file_into
+from basyx.aas.adapter.xml import write_aas_xml_file, read_aas_xml_file_into
 from basyx.aas.model import AssetAdministrationShell, Submodel, ConceptDescription, \
     SetObjectStore, Key, ModelReference
 
@@ -72,13 +72,13 @@ class Package:
         if fileType == ".xml":
             # The file must be opened in binary mode! The XML writer will handle
             # character encoding internally.
-            with open(self.file, 'rb') as xml_file:
-                self.objStore = read_aas_xml_file(xml_file, failsafe=failsafe)
+            with open(self.file, 'rb') as f:
+                read_aas_xml_file_into(self.objStore, f, failsafe=failsafe)
         elif fileType == ".json":
             # Using 'utf-8-sig' is recommended to handle unicode Byte Order
             # Marks (BOM) correctly.
             with open(self.file, "r", encoding='utf-8-sig') as f:
-                self.objStore = read_aas_json_file(f, failsafe=failsafe)
+                read_aas_json_file_into(self.objStore, f, failsafe=failsafe)
         elif fileType == ".aasx":
             reader = AASXReader(self.file.as_posix())
             reader.read_into(self.objStore, self.fileStore, failsafe=failsafe)
