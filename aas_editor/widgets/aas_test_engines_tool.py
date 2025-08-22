@@ -54,7 +54,7 @@ class AasTestEnginesToolDialog(QDialog):
         self.setMinimumSize(500, 300)
 
         description = 'Official test tooling for the Asset Administration Shell: https://github.com/admin-shell-io/aas-test-engines'
-        self.html_renderer = DropFileQWebEngineView(self, emptyViewMsg="Drop AAS file to test it", description=description)
+        self.html_renderer = DropFileQWebEngineView(self, emptyViewMsg="Drop AAS file to test here", description=description)
         self.html_renderer.setMinimumSize(300, 300)
         self.html_renderer.fileDropped.connect(self.checkFile)
 

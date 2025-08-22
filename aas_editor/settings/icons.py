@@ -7,8 +7,6 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-from directories import get_icons_folder
-
 from PyQt6.QtGui import QColor, QIcon, QPainter, QPixmap, QFont
 from PyQt6.QtSvg import QSvgRenderer
 
@@ -195,6 +193,6 @@ ICONS_SVG = {
 }
 
 def initialize_all_icons():
-    from settings.app_settings import ICONS_FOLDER
+    from aas_editor.settings.app_settings import ICONS_FOLDER
     for icon, svg_file in ICONS_SVG.items():
         transform_svg_to_icon(icon, str(ICONS_FOLDER / svg_file))

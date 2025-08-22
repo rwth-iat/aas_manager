@@ -25,7 +25,7 @@ from PyQt6.QtWidgets import QPushButton, QDialog, QDialogButtonBox, \
 from aas_editor.editWidgets import StandardInputWidget
 from aas_editor.settings import DEFAULTS, DEFAULT_COMPLETIONS, ATTRIBUTE_COLUMN, OBJECT_ROLE, \
     DEFAULT_INHERITOR, AAS_METAMODEL_VERSION
-from settings import VERSION, APPLICATION_NAME, APPLICATION_INFO, COPYRIGHT_YEAR, CONTRIBUTORS, DEVELOPER_WEB, CONTACT, \
+from aas_editor.settings import VERSION, APPLICATION_NAME, APPLICATION_INFO, COPYRIGHT_YEAR, CONTRIBUTORS, DEVELOPER_WEB, CONTACT, \
     REPORT_ERROR_LINK, APPLICATION_LINK, LICENSE
 from aas_editor.utils.util import inheritors, getReqParams4init, getParamsAndTypehints4init, getDefaultVal, \
     actualizeAASParents, delAASParent
