@@ -15,11 +15,13 @@ from enum import Enum
 from pathlib import Path
 
 import basyx.aas.model
+from basyx.aas.adapter.aasx import AbstractSupplementaryFileContainer
 from basyx.aas.model import AssetAdministrationShell, ConceptDescription, Submodel, Property, \
     Entity, Capability, Operation, RelationshipElement, AnnotatedRelationshipElement, Range, Blob, File, \
     ReferenceElement, DataElement, AdministrativeInformation, AbstractObjectStore, \
     Namespace, SubmodelElementCollection, SubmodelElement, ModelReference, Referable, Identifiable, \
-    Key, Qualifier, BasicEventElement, SubmodelElementList, datatypes, LangStringSet, SetObjectStore
+    Key, Qualifier, BasicEventElement, SubmodelElementList, datatypes, LangStringSet, \
+    AbstractObjectProvider
 
 import aas_editor.additional.classes
 import aas_editor.package
@@ -132,7 +134,10 @@ CLASSES_INFO = {
         },
         IS_EDITABLE_IN_GUI: False,
     },
-    SetObjectStore: {
+    AbstractObjectProvider: {
+        IS_EDITABLE_IN_GUI: False,
+    },
+    AbstractSupplementaryFileContainer: {
         IS_EDITABLE_IN_GUI: False,
     },
     Referable: {
