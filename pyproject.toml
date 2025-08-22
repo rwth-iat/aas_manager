@@ -8,10 +8,10 @@ version = "0.4.7"
 dependencies = [
     "PyQt6",
     "basyx-python-sdk@git+https://github.com/rwth-iat/basyx-python-sdk@aas_manager/v301#subdirectory=sdk",
-    "aas_test_engines",
+    "aas-test-engines==1.0.3",
     "pytz>=2023.3",
     "PyQt6-WebEngine",
-    "pyinstaller==6.4.0",
+    "pyinstaller==6.15.0",
     "openpyxl>=3.1.2",
     "toml>=0.10.2",
 ]
