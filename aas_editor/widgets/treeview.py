@@ -558,7 +558,7 @@ class TreeView(BasicTreeView):
             self._setItemData(index, NOT_GIVEN, CLEAR_ROW_ROLE)
 
     def onMultipleDelClear(self, indexes: List[QModelIndex]):
-        for index in indexes:
+        for index in sorted(indexes, key=lambda x: x.row(), reverse=True):  # reverse to avoid shifting rows
             self.onOneItemDelClear(index)
 
     def onCopy(self):
