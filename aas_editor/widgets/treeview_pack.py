@@ -24,7 +24,7 @@ from PyQt6.QtWidgets import QMessageBox, QFileDialog, QMenu, QWidget, QApplicati
 from basyx.aas.adapter.aasx import AASXReader, DictSupplementaryFileContainer
 from basyx.aas.adapter.json import read_aas_json_file, AASToJsonEncoder
 from basyx.aas.adapter.xml import read_aas_xml_file
-from basyx.aas.model import SetObjectStore, Submodel
+from basyx.aas.model import SetObjectStore, Submodel, Referable, Identifiable
 
 from aas_editor.delegates import EditDelegate
 from aas_editor.package import Package, StoredFile
@@ -201,6 +201,11 @@ class PackTreeView(TreeView):
                                    triggered=lambda: self.onJsonCopy(),
                                    enabled=True)
 
+        self.copyIdShortPathAct = QAction("Copy idShortPath", self,
+                                   statusTip="Copy idShort Path of the object",
+                                   triggered=lambda: self.onIdShortPathCopy(),
+                                   enabled=True)
+
         self.newPackActs = []
         for filetype in AAS_FILE_TYPE_FILTERS:
             newPackAct = QAction(NEW_PACK_ICON, f"New AAS file as {filetype}", self,
@@ -337,6 +342,7 @@ class PackTreeView(TreeView):
     def initMenu(self):
         super(PackTreeView, self).initMenu()
         self.attrsMenu.insertAction(self.pasteAct, self.copyJsonAct)
+        self.attrsMenu.insertAction(self.pasteAct, self.copyIdShortPathAct)
 
         self.attrsMenu.addSeparator()
         self.attrsMenu.addAction(self.openPackAct)
@@ -379,6 +385,16 @@ class PackTreeView(TreeView):
         self.updateOpenInActs(index)
         self.updateSaveActs(index)
         self.updateCloseActs(index)
+
+    def updateCopyCutPasteDelActs(self, index: QModelIndex):
+        super().updateCopyCutPasteDelActs(index)
+        indexValid = index.isValid()
+        obj = index.data(OBJECT_ROLE)
+        isReferable = isinstance(obj, Referable)
+        isIdentifiable = isinstance(obj, Identifiable)
+
+        self.copyJsonAct.setEnabled(indexValid and isReferable)
+        self.copyIdShortPathAct.setEnabled(indexValid and isReferable and not isIdentifiable)
 
     def updateCopyPasteSubmodelActs(self, index: QModelIndex):
         """Make the 'Add existing submodel' menu visible if the 'submodel' element is clicked."""
@@ -473,6 +489,16 @@ class PackTreeView(TreeView):
         self.treeClipboard.append(json2copy, objRepr=json2copy)
         clipboard = QApplication.clipboard()
         clipboard.setText(json2copy, QClipboard.Mode.Clipboard)
+
+    def onIdShortPathCopy(self):
+        index = self.currentIndex()
+        obj = index.data(OBJECT_ROLE)
+        if isinstance(obj, Referable):
+            idShortPath = obj.get_id_short_path()
+            self.treeClipboard.clear()
+            self.treeClipboard.append(idShortPath, objRepr=idShortPath)
+            clipboard = QApplication.clipboard()
+            clipboard.setText(idShortPath, QClipboard.Mode.Clipboard)
 
     def newPackWithDialog(self, filetype=None, filter=FILTER_AAS_FILES):
         saved = False
