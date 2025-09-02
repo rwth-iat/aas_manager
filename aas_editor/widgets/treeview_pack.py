@@ -298,7 +298,7 @@ class PackTreeView(TreeView):
             submodel = copy.deepcopy(action.data())
             self.treeClipboard.clear()
             self.treeClipboard.append(submodel)
-            self.pasteAct.trigger()
+            self.onPaste()
 
     def onEditCreate(self, objVal=None, index=QModelIndex()) -> bool:
         """
