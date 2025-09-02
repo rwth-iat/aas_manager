@@ -17,8 +17,10 @@ from PyQt6.QtGui import QFont, QIcon
 from PyQt6 import QtCore
 
 from aas_editor.directories import get_settings_file, get_themes_folder, get_custom_column_lists_file, get_icons_folder, \
-    get_pyproject_toml_file
+    get_pyproject_toml_file, get_submodel_templates_folder
 from aas_editor.settings.util_constants import NOT_GIVEN
+
+SUBMODEL_TEMPLATES_FOLDER = get_submodel_templates_folder()
 
 PYPROJECT_TOML = toml.load(get_pyproject_toml_file())
 

@@ -38,3 +38,8 @@ def get_icons_folder():
 
 def get_custom_column_lists_file():
     return Path(__file__).resolve().with_name("custom_column_lists.json")
+
+
+def get_submodel_templates_folder():
+    templates_folder = Path(__file__).resolve().with_name("submodel_templates")
+    return templates_folder

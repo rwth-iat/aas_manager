@@ -33,7 +33,7 @@ from aas_editor.settings import FILTER_AAS_FILES, AAS_FILE_TYPE_FILTERS, NOT_GIV
 from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE, \
     MAX_RECENT_FILES, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, \
     CLEAR_ROW_ROLE, AppSettings, COLUMN_NAME_ROLE, OBJECT_COLUMN_NAME, \
-    OBJECT_VALUE_COLUMN_NAME, DEFAULT_COLUMNS_IN_PACKS_TABLE_TO_SHOW, COPY_ROLE
+    OBJECT_VALUE_COLUMN_NAME, DEFAULT_COLUMNS_IN_PACKS_TABLE_TO_SHOW, COPY_ROLE, SUBMODEL_TEMPLATES_FOLDER
 from aas_editor.settings.shortcuts import SC_OPEN, SC_SAVE_ALL
 from aas_editor.settings.icons import NEW_PACK_ICON, OPEN_ICON, OPEN_DRAG_ICON, SAVE_ICON, SAVE_ALL_ICON, ADD_ICON
 from aas_editor.utils import util_type
@@ -42,9 +42,6 @@ from aas_editor.utils.util_classes import ClassesInfo
 from aas_editor.widgets import TreeView
 from aas_editor.widgets.treeview import HeaderView
 from aas_editor import dialogs
-
-
-SUBMODEL_TEMPLATES_FOLDER = 'submodel_templates'
 
 
 class PackHeaderView(HeaderView):
@@ -150,8 +147,7 @@ class PackTreeView(TreeView):
 
     # Scan the folder SUBMODEL_TEMPLATES_FOLDER and create a set filesObjStores of SetObjectStore elements and its names
     def scanFolderForExistFiles(self):
-        path = Path.cwd()
-        path = path / SUBMODEL_TEMPLATES_FOLDER
+        path = SUBMODEL_TEMPLATES_FOLDER
 
         if not path.is_dir():
             path.mkdir()
