@@ -70,18 +70,12 @@ class Package:
     def _read(self, failsafe):
         fileType = self.file.suffix.lower().strip()
         if fileType == ".xml":
-            # The file must be opened in binary mode! The XML writer will handle
-            # character encoding internally.
-            with open(self.file, 'rb') as f:
-                read_aas_xml_file_into(self.objStore, f, failsafe=failsafe)
+            read_aas_xml_file_into(self.objStore, self.file, failsafe=failsafe)
         elif fileType == ".json":
-            # Using 'utf-8-sig' is recommended to handle unicode Byte Order
-            # Marks (BOM) correctly.
-            with open(self.file, "r", encoding='utf-8-sig') as f:
-                read_aas_json_file_into(self.objStore, f, failsafe=failsafe)
+            read_aas_json_file_into(self.objStore, self.file, failsafe=failsafe)
         elif fileType == ".aasx":
-            reader = AASXReader(self.file.as_posix())
-            reader.read_into(self.objStore, self.fileStore, failsafe=failsafe)
+            reader = AASXReader(self.file.as_posix(), failsafe=failsafe)
+            reader.read_into(self.objStore, self.fileStore)
         else:
             raise TypeError("Wrong file type:", self.file.suffix)
 

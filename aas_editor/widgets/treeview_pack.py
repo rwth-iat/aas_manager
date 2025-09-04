@@ -155,28 +155,27 @@ class PackTreeView(TreeView):
         aasxFiles = [file for file in path.rglob('*.aasx')]
         xmlFiles = [file for file in path.rglob('*.xml')]
         jsonFiles = [file for file in path.rglob('*.json')]
-        files = aasxFiles + xmlFiles + jsonFiles
+        smFiles = aasxFiles + xmlFiles + jsonFiles
 
         # Read the aas files and store it in SetObjectStore in dictionary fileObjDict.
-        for file in files:
+        for smFile in smFiles:
             try:
-                fileType = file.suffix.lower().strip()
+                fileType = smFile.suffix.lower().strip()
                 if fileType == ".xml":
-                    objStore = read_aas_xml_file(file.as_posix())
+                    objStore = read_aas_xml_file(smFile.as_posix())
                 elif fileType == ".json":
-                    with open(file, "r") as f:  # TODO change if aas changes
-                        objStore = read_aas_json_file(f)
+                    objStore = read_aas_json_file(smFile.as_posix())
                 elif fileType == ".aasx":
                     objStore = SetObjectStore()
                     fileStore = DictSupplementaryFileContainer()  # prosto tak
-                    reader = AASXReader(file.as_posix())
+                    reader = AASXReader(smFile.as_posix())
                     reader.read_into(objStore, fileStore)
                 else:
-                    raise TypeError("Wrong file type:", self.file.suffix)
-                self.copyBufferObjStores[file.name] = objStore
+                    raise TypeError("Wrong file type:", smFile.suffix)
+                self.copyBufferObjStores[smFile.name] = objStore
             except Exception as e:
                 # If a package is with an error, that file will be skipped.
-                logging.exception(f"Error while reading {file}: {e}. Submodels can not be read")
+                logging.exception(f"Error while reading {smFile}: {e}. Submodels can not be read")
 
     @property
     def defaultNewFileType(self):
