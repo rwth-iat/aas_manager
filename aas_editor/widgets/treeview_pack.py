@@ -33,7 +33,7 @@ from aas_editor.settings import FILTER_AAS_FILES, AAS_FILE_TYPE_FILTERS, NOT_GIV
 from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE, \
     MAX_RECENT_FILES, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, \
     CLEAR_ROW_ROLE, AppSettings, COLUMN_NAME_ROLE, OBJECT_COLUMN_NAME, \
-    OBJECT_VALUE_COLUMN_NAME, DEFAULT_COLUMNS_IN_PACKS_TABLE_TO_SHOW, COPY_ROLE, SUBMODEL_TEMPLATES_FOLDER
+    OBJECT_VALUE_COLUMN_NAME, DEFAULT_COLUMNS_IN_PACKS_TABLE_TO_SHOW, COPY_ROLE, SUBMODEL_TEMPLATES_FOLDER, UPDATE_ROLE
 from aas_editor.settings.shortcuts import SC_OPEN, SC_SAVE_ALL
 from aas_editor.settings.icons import NEW_PACK_ICON, OPEN_ICON, OPEN_DRAG_ICON, SAVE_ICON, SAVE_ALL_ICON, ADD_ICON
 from aas_editor.utils import util_type
@@ -807,3 +807,78 @@ class PackTreeView(TreeView):
             # else paste data with dialog for asking to check req. attrs
             if util_type.checkType(obj2paste, targetTypeHint):
                 self._onPasteReplace(index, obj2paste, withDialog=bool(reqAttrsDict))
+
+    def add_handover_to_file(self, handover_submodel):
+        try:
+            package = self._ensure_package()
+            if not package:
+                return
+
+            submodel = self._add_submodel(package, handover_submodel)
+            if not submodel:
+                return
+
+            self._refresh_submodels(package)
+
+            QMessageBox.information(
+                self,
+                "Success",
+                f"Handover submodel added to {package.file.name}"
+            )
+
+        except Exception as e:
+            logging.exception("Failed to add handover submodel")
+            dialogs.ErrorMessageBox.withTraceback(
+                self, f"Failed to add handover submodel: {e}"
+            ).exec()
+
+    def _ensure_package(self):
+        currentIndex = self.currentIndex()
+        package = currentIndex.data(PACKAGE_ROLE)
+
+        if package:
+            return package
+
+        reply = QMessageBox.question(
+            self,
+            "No Package Open",
+            "No AAS file is currently open. Would you like to create a new file for the handover submodel?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel,
+            QMessageBox.StandardButton.Yes,
+        )
+
+        if reply == QMessageBox.StandardButton.Yes:
+            self.newPackWithDialog()
+            currentIndex = self.currentIndex()
+            return currentIndex.data(PACKAGE_ROLE)
+
+        return None
+
+    def _add_submodel(self, package, handover_submodel):
+        try:
+            submodel = copy.deepcopy(handover_submodel)
+            package.objStore.add(submodel)
+            self.setWindowModified(True)
+            return submodel
+        except Exception as e:
+            logging.exception("Failed to add submodel to package")
+            return None
+
+    def _refresh_submodels(self, package):
+        packItems = self.model().match(QModelIndex(), OBJECT_ROLE, package, hits=1)
+        if not packItems:
+            return
+
+        packIndex = packItems[0]
+
+        for row in range(self.model().rowCount(packIndex)):
+            childIndex = self.model().index(row, 0, packIndex)
+            if childIndex.data(NAME_ROLE) == "submodels":
+                self.model().setData(childIndex, NOT_GIVEN, UPDATE_ROLE)
+                break
+        else:
+            QMessageBox.warning(
+                self,
+                "Update Warning",
+                "Submodels node not found in package tree."
+            )
