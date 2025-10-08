@@ -1,4 +1,3 @@
-import csv
 import json
 
 from basyx.aas.adapter.json import AASToJsonEncoder
@@ -6,58 +5,6 @@ from basyx.aas.model import LangStringSet
 from basyx.aas.model.datatypes import Date
 
 from aas_editor.additional.handover import HandoverDocumentation
-
-
-def csv_to_handover_documentation(csv_file_path: str) -> HandoverDocumentation | None:
-    """
-    Convert a CSV file to a HandoverDocumentation object.
-
-    :param csv_file_path: Path to the CSV file.
-    :return: HandoverDocumentation object.
-    """
-
-    with open(csv_file_path, mode="r", newline="", encoding="utf-8") as csv_file:
-        reader = csv.DictReader(csv_file)
-
-        for row in reader:
-            if reader.line_num == 1:
-                continue
-
-            language = row.get('document.documentVersion.language', '')
-            date = row.get('document.documentVersion.statusSetDate', '').split('-')
-            handover_documentation = HandoverDocumentation(
-                id_=row.get('id', 0),
-                numberOfDocuments=int(row.get('numberOfDocuments', 0)),
-                document=[HandoverDocumentation.Document(
-                    documentId=[HandoverDocumentation.Document.DocumentId(
-                        documentDomainId=row.get('document.documentId.documentDomainId', "0"),
-                        valueId=row.get('document.documentId.valueId', ''),
-                        isPrimary=bool(row.get('document.documentId.isPrimary', "False")))],
-                    documentClassification=[HandoverDocumentation.Document.DocumentClassification(
-                        classId=row.get('document.documentClassification.classId', ''),
-                        className=LangStringSet({'en': row.get('document.documentClassification.className', '')}),
-                        classificationSystem=row.get('document.documentClassification.classificationSystem', ''),
-                    )],
-                    documentVersion=[HandoverDocumentation.Document.DocumentVersion(
-                        language=language,
-                        documentVersionId=row.get('document.documentVersion.documentVersionId', ''),
-                        title=LangStringSet({language: row.get('document.documentVersion.title', '')}),
-                        subTitle=LangStringSet({language: row.get('document.documentVersion.subTitle', '')}),
-                        summary=LangStringSet({language: row.get('document.documentVersion.summary', '')}),
-                        keyWords=LangStringSet({language: row.get('document.documentVersion.keyWords', '')}),
-                        statusSetDate=Date(int(date[0]), int(date[1]), int(date[2])),
-                        statusValue=row.get('document.documentVersion.statusValue', ''),
-                        organizationName=row.get('document.documentVersion.organizationName', ''),
-                        organizationOfficialName=row.get('document.documentVersion.organizationOfficialName', ''),
-                        digitalFile=[HandoverDocumentation.Document.DocumentVersion.DigitalFile(
-                            mimeType=row.get('document.documentVersion.digitalFile.mimeType', ''),
-                            documentPath=row.get('document.documentVersion.digitalFile.documentPath', ''))],
-                    )]), ],
-                entity=[HandoverDocumentation.Entity()]
-            )
-            return handover_documentation
-    return None
-
 
 def json2handover_documentation(json_str: str) -> HandoverDocumentation | None:
     """
@@ -155,12 +102,12 @@ def json2handover_documentation(json_str: str) -> HandoverDocumentation | None:
 if __name__ == "__main__":
     data = """```json
 {
-  "id": "280-101",
+  "id": "222-101",
   "numberOfDocuments": 1,
   "document": {
     "documentId": {
-      "documentDomainId": "WAGO",
-      "valueId": "280-101",
+      "documentDomainId": "example_company",
+      "valueId": "222-101",
       "isPrimary": true
     },
     "documentClassification": {
@@ -173,15 +120,15 @@ if __name__ == "__main__":
       "documentVersionId": "1",
       "title": ["Datensheet"],
       "subTitle": [],
-      "summary": ["Datensheet für 280-101"],
-      "keyWords": ["WAGO", "280-101"],
+      "summary": ["Datensheet für 222-101"],
+      "keyWords": ["example_company", "222-101"],
       "statusSetDate": "2025-09-22",
       "statusValue": "Released",
-      "organizationName": "WAGO",
-      "organizationOfficialName": "WAGO Kontakttechnik GmbH & Co. KG",
+      "organizationName": "example_company",
+      "organizationOfficialName": "example_company GmbH",
       "digitalFile": {
         "mimeType": "application/pdf",
-        "documentPath": "https://www.wago.com/280-101"
+        "documentPath": "https://www.example.com/222-101"
       }
     }
   }
