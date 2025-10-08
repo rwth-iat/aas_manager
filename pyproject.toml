@@ -14,6 +14,8 @@ dependencies = [
     "pyinstaller==6.15.0",
     "openpyxl>=3.1.2",
     "toml>=0.10.2",
+
+    # Handover Documentation Tool
     "langchain-huggingface",
     "langchain-openai",
     "langchain-anthropic",

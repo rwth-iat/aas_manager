@@ -1,20 +1,24 @@
+#  Copyright (C) 2025  Igor Garmaev, garmaev@gmx.net
+#
+#  This program is made available under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+#  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+#  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
+
 import os
 import json
 import tempfile
-from PyQt6.QtWebEngineWidgets import QWebEngineView
+import traceback
+
 from PyQt6.QtWidgets import QDialog, QPushButton, QVBoxLayout, QFileDialog, QLineEdit, QComboBox, \
     QHBoxLayout, QTextEdit, QLabel
 from PyQt6.QtCore import pyqtSignal, QThread
-from PyQt6.QtGui import QDropEvent, QDragEnterEvent, QIntValidator
+from PyQt6.QtGui import QIntValidator
 
 from basyx.aas.model import Submodel
-
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from langchain_anthropic import ChatAnthropic
-from langchain_groq import ChatGroq
-from langchain_google_vertexai import ChatVertexAI
-from langchain_mistralai import ChatMistralAI
 
 from langchain_community.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -23,49 +27,11 @@ from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
 
-from aas_editor.additional.documentation_generator import json2handover_documentation
+from tools.handover_doc_llm.documentation_generator import json2handover_documentation
 from aas_editor.settings.icons import INFO_ICON
 
-from aas_editor.additional.prompt import prompt as query
+from tools.handover_doc_llm.config import PROMPT, LLM_PROVIDERS, EMBEDDING_PROVIDERS
 from aas_editor.widgets.dropfilebox import DropFileQWebEngineView
-
-PROVIDERS = {
-    "OpenAI": {
-        "default_model": "gpt-40-mini",
-        "init": lambda model, key: ChatOpenAI(model=model, openai_api_key=key),
-    },
-    "Anthropic": {
-        "default_model": "claude-3-5-sonnet-latest",
-        "init": lambda model, key: ChatAnthropic(model=model, anthropic_api_key=key),
-    },
-    "Google Vertex": {
-        "default_model": "gemini-1.5-flash",
-        "init": lambda model, key: ChatVertexAI(model=model, google_api_key=key),
-    },
-    "Groq": {
-        "default_model": "llama-3.3-70b-versatile",
-        "init": lambda model, key: ChatGroq(model=model, groq_api_key=key),
-    },
-    "Mistral AI": {
-        "default_model": "mistral-large-latest",
-        "init": lambda model, key: ChatMistralAI(model=model, mistralai_api_key=key),
-    },
-}
-
-def init_embeddings(provider: str, api_key: str = None):
-    if provider == "openai":
-        return OpenAIEmbeddings(openai_api_key=api_key)
-    elif provider == "huggingface":
-        return HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
-    else:
-        raise ValueError(f"Unsupported embeddings provider: {provider}")
-
-
-def init_llm(provider: str, chat_model: str, api_key: str):
-    if provider in PROVIDERS:
-        return PROVIDERS[provider]["init"](chat_model, api_key)
-    else:
-        raise ValueError(f"Unsupported LLM provider: {provider}")
 
 
 class PdfProcessingThread(QThread):
@@ -81,6 +47,18 @@ class PdfProcessingThread(QThread):
         self.api_key = api_key
         self.pages_front = pages_front
         self.pages_end = pages_end
+
+    def init_embeddings(self, provider: str = "default", api_key: str = None):
+        if provider in EMBEDDING_PROVIDERS:
+            return EMBEDDING_PROVIDERS[provider](api_key)
+        else:
+            return EMBEDDING_PROVIDERS["default"](api_key)
+
+    def init_llm(self, provider: str, chat_model: str, api_key: str):
+        if provider in LLM_PROVIDERS:
+            return LLM_PROVIDERS[provider]["init"](chat_model, api_key)
+        else:
+            raise ValueError(f"Unsupported LLM provider: {provider}")
 
     def run(self):
         try:
@@ -100,12 +78,12 @@ class PdfProcessingThread(QThread):
             splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
             splits = splitter.split_documents(docs)
 
-            embeddings = init_embeddings("huggingface")  if not self.provider_text == "" else init_embeddings("openai", self.api_key)
+            embeddings = self.init_embeddings(self.provider_text, self.api_key)
             vector_store = FAISS.from_documents(splits, embeddings)
             retriever = vector_store.as_retriever()
 
-            llm = init_llm(self.provider_text, self.model_text, self.api_key)
-            prompt = ChatPromptTemplate.from_template(query)
+            llm = self.init_llm(self.provider_text, self.model_text, self.api_key)
+            prompt = ChatPromptTemplate.from_template(PROMPT)
 
             rag_chain = create_retrieval_chain(retriever, create_stuff_documents_chain(llm, prompt))
             llm_response = rag_chain.invoke({"input": ""})
@@ -120,8 +98,9 @@ class PdfProcessingThread(QThread):
 
             self.show_answer_dialog.emit(json_str)
 
-        except Exception as e:
-            self.processing_error.emit(f"Error: {str(e)}")
+        except Exception:
+            err_msg = traceback.format_exc()
+            self.processing_error.emit(f"Error: {err_msg}")
         finally:
             if tmp_path and os.path.exists(tmp_path):
                 os.remove(tmp_path)
@@ -159,7 +138,7 @@ class HandoverDocumentationToolDialog(QDialog):
         self.model = QLineEdit(self, toolTip="Choose model to use")
         self.provider = QComboBox(self, toolTip="LLM Provider",
                                   currentIndexChanged=self.provider_changed)
-        self.provider.addItems([k for k in PROVIDERS.keys()])
+        self.provider.addItems([k for k in LLM_PROVIDERS.keys()])
 
         self.model_info_label = QLabel(self)
         self.model_info_label.setPixmap(INFO_ICON.pixmap(24, 24))
@@ -258,7 +237,7 @@ class HandoverDocumentationToolDialog(QDialog):
         self.cleanup_thread()
 
     def provider_changed(self):
-        self.model.setPlaceholderText(PROVIDERS[self.provider.currentText()]["default_model"])
+        self.model.setPlaceholderText(LLM_PROVIDERS[self.provider.currentText()]["default_model"])
 
     def closeEvent(self, event):
         if self.processing_thread and self.processing_thread.isRunning():
@@ -275,5 +254,6 @@ class HandoverDocumentationToolDialog(QDialog):
                 handover = json2handover_documentation(json_str)
                 self.accept()
                 self.handoverExtracted.emit(handover)
-            except Exception as e:
-                self.html_renderer.setHtml(f"<div style='color:red;'>{e}</div>")
+            except Exception:
+                err_msg = traceback.format_exc()
+                self.html_renderer.setHtml(f"<div style='color:red;'>{err_msg}</div>")

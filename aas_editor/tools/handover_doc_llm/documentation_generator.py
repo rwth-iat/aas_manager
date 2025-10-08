@@ -1,10 +1,20 @@
+#  Copyright (C) 2025  Igor Garmaev, garmaev@gmx.net
+#
+#  This program is made available under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+#  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+#  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
+
 import json
 
 from basyx.aas.adapter.json import AASToJsonEncoder
 from basyx.aas.model import LangStringSet
 from basyx.aas.model.datatypes import Date
 
-from aas_editor.additional.handover import HandoverDocumentation
+from aas_editor.tools.handover_doc_llm.handover_submodel import HandoverDocumentation
 
 def json2handover_documentation(json_str: str) -> HandoverDocumentation | None:
     """

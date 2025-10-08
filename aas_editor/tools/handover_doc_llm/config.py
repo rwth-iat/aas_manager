@@ -1,4 +1,40 @@
-prompt = """
+from langchain_anthropic import ChatAnthropic
+from langchain_groq import ChatGroq
+from langchain_google_vertexai import ChatVertexAI
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_mistralai import ChatMistralAI
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+
+LLM_PROVIDERS = {
+    "OpenAI": {
+        "default_model": "gpt-40-mini",
+        "init": lambda model, key: ChatOpenAI(model=model, api_key=key),
+    },
+    "Anthropic": {
+        "default_model": "claude-3-5-sonnet-latest",
+        "init": lambda model, key: ChatAnthropic(model=model, api_key=key),
+    },
+    "Google Vertex": {
+        "default_model": "gemini-1.5-flash",
+        "init": lambda model, key: ChatVertexAI(model=model, api_key=key),
+    },
+    "Groq": {
+        "default_model": "llama-3.3-70b-versatile",
+        "init": lambda model, key: ChatGroq(model=model, api_key=key),
+    },
+    "Mistral AI": {
+        "default_model": "mistral-large-latest",
+        "init": lambda model, key: ChatMistralAI(model=model, api_key=key),
+    },
+}
+
+EMBEDDING_PROVIDERS = {
+    "default": lambda key: HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2"),
+    "huggingface": lambda key: HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2"),
+    "OpenAI": lambda key: OpenAIEmbeddings(api_key=key),
+}
+
+PROMPT = """
 {context}
 You are given a single PDF document containing data relevant to Asset Administration Shell (AAS) Submodels, specifically following the VDI 2770 guideline for Handover Documentation.
 

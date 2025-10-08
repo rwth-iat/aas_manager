@@ -18,8 +18,8 @@ from aas_editor.settings.app_settings import *
 from aas_editor.settings.icons import EXIT_ICON, SETTINGS_ICON, NEW_PACK_ICON, initialize_all_icons
 from aas_editor.settings import APPLICATION_NAME, REPORT_ERROR_LINK
 from aas_editor.settings_dialog import SettingsDialog
-from aas_editor.widgets.aas_test_engines_tool import AasTestEnginesToolDialog
-from aas_editor.widgets.handover_documentation_tool import HandoverDocumentationToolDialog
+from aas_editor.tools.aas_test.aas_test_engines_tool import AasTestEnginesToolDialog
+from aas_editor.tools.handover_doc_llm.handover_documentation_tool import HandoverDocumentationToolDialog
 from aas_editor.widgets import AddressLine
 from aas_editor import design
 from aas_editor.models import DetailedInfoTable, PacksTable
