@@ -27,6 +27,7 @@ from aas_editor.additional.documentation_generator import json2handover_document
 from aas_editor.settings.icons import INFO_ICON
 
 from aas_editor.additional.prompt import prompt as query
+from aas_editor.widgets.dropfilebox import DropFileQWebEngineView
 
 PROVIDERS = {
     "OpenAI": {
@@ -126,34 +127,6 @@ class PdfProcessingThread(QThread):
                 os.remove(tmp_path)
 
 
-class DropFileQWebEngineView(QWebEngineView):
-    fileDropped = pyqtSignal(str)
-
-    def __init__(self, parent=None, emptyViewMsg="Drop PDF file here", description=None):
-        super().__init__(parent)
-        svg = r'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12,10L8,14H11V20H13V14H16M19,4H5C3.89,4 3,4.9 3,6V18A2,2 0 0,0 5,20H9V18H5V8H19V18H15V20H19A2,2 0 0,0 21,18V6A2,2 0 0,0 19,4Z" /></svg>'
-        self.setHtml(f"""
-        <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;height:100%;">
-            <div style="width:50px;height:50px;margin-bottom:20px;">{svg}</div>
-            <div style="text-align:center;">{emptyViewMsg}</div>
-            <div style="text-align:center;">{description or ""}</div>
-        </div>
-        """)
-
-    def dragEnterEvent(self, event: QDragEnterEvent):
-        if event.mimeData().hasUrls:
-            event.accept()
-
-    def dragMoveEvent(self, event):
-        if event.mimeData().hasUrls:
-            event.accept()
-
-    def dropEvent(self, e: QDropEvent) -> None:
-        for url in e.mimeData().urls():
-            file = str(url.toLocalFile())
-            self.fileDropped.emit(file)
-
-
 class AnswerDialog(QDialog):
     def __init__(self, answer, parent=None):
         super().__init__(parent)
@@ -178,7 +151,7 @@ class HandoverDocumentationToolDialog(QDialog):
         self.setMinimumSize(600, 400)
 
         description = "Drop a PDF file to extract Handover Documentation (VDI 2770)."
-        self.html_renderer = DropFileQWebEngineView(self, description=description)
+        self.html_renderer = DropFileQWebEngineView(self, emptyViewMsg="Drop PDF file here", description=description)
         self.html_renderer.fileDropped.connect(self.processPdf)
 
         self.apiKey = QLineEdit(self, toolTip="API Key for LLM service", placeholderText="Enter API Key here",
