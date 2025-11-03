@@ -200,6 +200,13 @@ class StoredFile:
         else:
             return f"/{self._filePath.name}"
 
+    @name.setter
+    def name(self, name: str):
+        if self.savedInStore():
+            self._name = name
+        else:
+            raise AttributeError("Cannot set name for file not saved in store")
+
     @property
     def mime_type(self) -> str:
         if self.savedInStore():
