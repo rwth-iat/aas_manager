@@ -206,19 +206,8 @@ class StoredFile:
             raise TypeError("new name must be a non-empty string")
 
         if self.savedInStore():
-            data = self.file().getvalue()
-            content_type = self.mime_type
-
-            new_stored_name = self._fileStore.add_file(name=new_name, file=io.BytesIO(data),
-                                                       content_type=content_type)
-
-            if hasattr(self._fileStore, "remove_file") and self._name:
-                try:
-                    self._fileStore.remove_file(self._name)
-                except Exception:
-                    pass
-
-            self._name = new_stored_name if new_stored_name is not None else None
+            new_stored_name = self._fileStore.rename_file(self.name, new_name)
+            self._name = new_stored_name
         else:
             if self._filePath is None:
                 raise ValueError("No local file path available to rename")
