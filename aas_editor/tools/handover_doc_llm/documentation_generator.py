@@ -11,7 +11,7 @@
 import json
 
 from basyx.aas.adapter.json import AASToJsonEncoder
-from basyx.aas.model import LangStringSet
+from basyx.aas.model import LangStringSet, ModellingKind
 from basyx.aas.model.datatypes import Date
 
 from aas_editor.tools.handover_doc_llm.handover_submodel import HandoverDocumentation
@@ -34,12 +34,12 @@ def json2handover_documentation(json_str: str) -> HandoverDocumentation | None:
 
     date = obj['document']['documentVersion'].get('statusSetDate', '').split('-')
 
-    documentID = HandoverDocumentation.Document.DocumentId(
-        isPrimary=obj['document']['documentId'].get('isPrimary', None),
+    documentID = HandoverDocumentation.Documents.Documents_item.DocumentIds.Documentids_item(
+        documentIsPrimary=obj['document']['documentId'].get('isPrimary', None),
         documentDomainId=obj['document']['documentId'].get('documentDomainId', ''),
-        valueId=obj['document']['documentId'].get('valueId', ''))
+        documentIdentifier=obj['document']['documentId'].get('valueId', ''))
 
-    documentClassification = HandoverDocumentation.Document.DocumentClassification(
+    documentClassification = HandoverDocumentation.Documents.Documents_item.DocumentClassifications.Documentclassifications_item(
         classId=obj['document']['documentClassification'].get('classId', ''),
         className=(
             {} if not (result := {
@@ -51,13 +51,13 @@ def json2handover_documentation(json_str: str) -> HandoverDocumentation | None:
         classificationSystem=obj['document']['documentClassification'].get('classificationSystem', ''),
     )
 
-    digitalFile = HandoverDocumentation.Document.DocumentVersion.DigitalFile(
-        mimeType=obj['document']['documentVersion'].get('digitalFile', {}).get('mimeType', ''),
-        documentPath=obj['document']['documentVersion'].get('digitalFile', {}).get('documentPath', ''))
+    digitalFile = HandoverDocumentation.Documents.Documents_item.DocumentVersions.Documentversions_item.DigitalFiles.Digitalfiles_item(
+        value="SOME_PATH")
 
-    documentVersion = HandoverDocumentation.Document.DocumentVersion(
+
+    documentVersion = HandoverDocumentation.Documents.Documents_item.DocumentVersions.Documentversions_item(
         language=language,
-        documentVersionId=obj['document']['documentVersion'].get('documentVersionId', ''),
+        version=obj['document']['documentVersion'].get('documentVersionId', ''),
         title=(
             {} if not (result := {
                 lang: obj['document']['documentVersion'].get('title', [''])[i]
@@ -65,7 +65,14 @@ def json2handover_documentation(json_str: str) -> HandoverDocumentation | None:
                 if i < len(obj['document']['documentVersion'].get('title', []))
             }) else LangStringSet(result)
         ),
-        summary=(
+        subtitle=(
+            {} if not (result := {
+                lang: obj['document']['documentVersion'].get('subTitle', [''])[i]
+                for i, lang in enumerate(language)
+                if i < len(obj['document']['documentVersion'].get('subTitle', []))
+            }) else LangStringSet(result)
+        ),
+        description_=(
             {} if not (result := {
                 lang: obj['document']['documentVersion'].get('summary', [''])[i]
                 for i, lang in enumerate(language)
@@ -82,28 +89,23 @@ def json2handover_documentation(json_str: str) -> HandoverDocumentation | None:
         statusSetDate=Date(int(date[0]), int(date[1]), int(date[2])) if len(date) == 3 and all(
             part.isdigit() for part in date) else None,
         statusValue=obj['document']['documentVersion'].get('statusValue', ''),
-        organizationName=obj['document']['documentVersion'].get('organizationName', ''),
+        organizationShortName=obj['document']['documentVersion'].get('organizationName', ''),
         organizationOfficialName=obj['document']['documentVersion'].get('organizationOfficialName', ''),
-        digitalFile=[digitalFile] if digitalFile.MimeType or digitalFile.DocumentPath else [],
-        subTitle=(
-            {} if not (result := {
-                lang: obj['document']['documentVersion'].get('subTitle', [''])[i]
-                for i, lang in enumerate(language)
-                if i < len(obj['document']['documentVersion'].get('subTitle', []))
-            }) else LangStringSet(result)
-        )
+        digitalFiles=HandoverDocumentation.Documents.Documents_item.DocumentVersions.Documentversions_item.DigitalFiles([digitalFile])
     )
 
-    document = HandoverDocumentation.Document(
-        documentId=[documentID],
-        documentClassification=[documentClassification],
-        documentVersion=[documentVersion]
+    document = HandoverDocumentation.Documents.Documents_item(
+        documentIds=HandoverDocumentation.Documents.Documents_item.DocumentIds([documentID]),
+        documentClassifications=HandoverDocumentation.Documents.Documents_item.DocumentClassifications([documentClassification]),
+        documentVersions=HandoverDocumentation.Documents.Documents_item.DocumentVersions([documentVersion]),
+        documentedEntities=HandoverDocumentation.Documents.Documents_item.DocumentedEntities([])
     )
 
     handover_documentation = HandoverDocumentation(
         id_=obj.get('id', 0),
-        numberOfDocuments=int(obj.get('numberOfDocuments', 0)),
-        document=[document]
+        documents=HandoverDocumentation.Documents([document]),
+        entities=HandoverDocumentation.Entities([]),
+        kind = ModellingKind.INSTANCE
     )
 
     return handover_documentation
@@ -113,11 +115,10 @@ if __name__ == "__main__":
     data = """```json
 {
   "id": "222-101",
-  "numberOfDocuments": 1,
   "document": {
     "documentId": {
       "documentDomainId": "example_company",
-      "valueId": "222-101",
+      "documentIdentifier": "222-101",
       "isPrimary": true
     },
     "documentClassification": {
@@ -127,19 +128,15 @@ if __name__ == "__main__":
     },
     "documentVersion": {
       "language": ["de"],
-      "documentVersionId": "1",
+      "version": "1",
       "title": ["Datensheet"],
       "subTitle": [],
-      "summary": ["Datensheet für 222-101"],
+      "description": ["Datensheet für 222-101"],
       "keyWords": ["example_company", "222-101"],
       "statusSetDate": "2025-09-22",
       "statusValue": "Released",
-      "organizationName": "example_company",
-      "organizationOfficialName": "example_company GmbH",
-      "digitalFile": {
-        "mimeType": "application/pdf",
-        "documentPath": "https://www.example.com/222-101"
-      }
+      "organizationShortName": "example_company",
+      "organizationOfficialName": "example_company GmbH"
     }
   }
 }

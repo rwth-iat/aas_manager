@@ -30,8 +30,13 @@ from langchain_core.prompts import ChatPromptTemplate
 from tools.handover_doc_llm.documentation_generator import json2handover_documentation
 from aas_editor.settings.icons import INFO_ICON
 
-from tools.handover_doc_llm.config import PROMPT, LLM_PROVIDERS, EMBEDDING_PROVIDERS
+from tools.handover_doc_llm.config import PROMPT, LLM_PROVIDERS, EMBEDDING_PROVIDERS, TOOL_DESCRIPTION
 from aas_editor.widgets.dropfilebox import DropFileQWebEngineView
+
+# CONSTANTS:
+
+MIME_TYPE = "application/pdf"
+
 
 
 class PdfProcessingThread(QThread):
@@ -109,7 +114,7 @@ class PdfProcessingThread(QThread):
 class AnswerDialog(QDialog):
     def __init__(self, answer, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("LLM Extracted Answer")
+        self.setWindowTitle("Edit LLM Extracted Answer")
         self.setMinimumSize(600, 400)
         layout = QVBoxLayout(self)
         text = QTextEdit(self)
@@ -125,20 +130,19 @@ class HandoverDocumentationToolDialog(QDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self._initLayout()
         self.setWindowTitle("Handover Documentation Extractor")
         self.setMinimumSize(600, 400)
-
-        description = "Drop a PDF file to extract Handover Documentation (VDI 2770)."
-        self.html_renderer = DropFileQWebEngineView(self, emptyViewMsg="Drop PDF file here", description=description)
+        self.html_renderer = DropFileQWebEngineView(self, emptyViewMsg="Drop PDF file here",
+                             description="Drop a PDF file to extract Handover Documentation (VDI 2770).")
         self.html_renderer.fileDropped.connect(self.processPdf)
 
-        self.apiKey = QLineEdit(self, toolTip="API Key for LLM service", placeholderText="Enter API Key here",
-                                echoMode=QLineEdit.EchoMode.Password)
-        self.model = QLineEdit(self, toolTip="Choose model to use")
-        self.provider = QComboBox(self, toolTip="LLM Provider",
-                                  currentIndexChanged=self.provider_changed)
-        self.provider.addItems([k for k in LLM_PROVIDERS.keys()])
+        self.apiKeyLineEdit = QLineEdit(self, toolTip="API Key for LLM service",
+                                        placeholderText="Enter API Key here",
+                                        echoMode=QLineEdit.EchoMode.Password)
+        self.modelLineEdit = QLineEdit(self, toolTip="Choose model to use")
+        self.providerLineEdit = QComboBox(self, toolTip="LLM Provider",
+                                          currentIndexChanged=self.provider_changed)
+        self.providerLineEdit.addItems([k for k in LLM_PROVIDERS.keys()])
 
         self.model_info_label = QLabel(self)
         self.model_info_label.setPixmap(INFO_ICON.pixmap(24, 24))
@@ -150,36 +154,37 @@ class HandoverDocumentationToolDialog(QDialog):
                                         toolTip="The selected PDF file will be processed and the extracted Handover Documentation will be shown.",
                                         clicked=self.chooseAndProcessPdf)
 
-        self.pages_front = QLineEdit(self,
-                                     toolTip="Number of pages to use from the front of the document (empty = all)",
-                                     placeholderText="Front X pages")
-        self.pages_front.setValidator(QIntValidator())
-        self.pages_end = QLineEdit(self, toolTip="Number of pages to use from the end of the document (empty = all)",
-                                   placeholderText="End X pages")
-        self.pages_end.setValidator(QIntValidator())
-
-        self.layout().addWidget(self.html_renderer)
-
-        layout_pages = QHBoxLayout()
-        layout_pages.addWidget(self.pages_front)
-        layout_pages.addWidget(self.pages_end)
-        self.layout().addLayout(layout_pages)
-
-        layout_model = QHBoxLayout()
-        layout_model.addWidget(self.provider)
-        layout_model.addWidget(self.model)
-        layout_model.addWidget(self.model_info_label)
-        self.layout().addLayout(layout_model)
-
-        self.layout().addWidget(self.apiKey)
-        self.layout().addWidget(self.chooseButton)
-        self.layout().addWidget(self.apiKey)
-        self.layout().addWidget(self.chooseButton)
-
-        self.processing_thread = None
+        self.pagesFrontLineEdit = QLineEdit(self,
+                                            toolTip="Number of pages to use from the front of the document",
+                                            placeholderText="Front X pages to analyze (default: all)")
+        self.pagesFrontLineEdit.setValidator(QIntValidator())
+        self.pagesEndLineEdit = QLineEdit(self, toolTip="Number of pages to use from the end of the document",
+                                          placeholderText="End X pages to analyze (default: all)")
+        self.pagesEndLineEdit.setValidator(QIntValidator())
+        self.processingThread = None
+        self._initLayout()
 
     def _initLayout(self):
         layout = QVBoxLayout(self)
+
+        layout.addWidget(QLabel(TOOL_DESCRIPTION, self))
+        # Layout for LLM provider and model
+        layout_model = QHBoxLayout()
+        layout_model.addWidget(self.providerLineEdit)
+        layout_model.addWidget(self.modelLineEdit)
+        layout_model.addWidget(self.model_info_label)
+        layout.addLayout(layout_model)
+        layout.addWidget(self.apiKeyLineEdit)
+
+        # Layout for pages selection
+        layout_pages = QHBoxLayout()
+        layout_pages.addWidget(self.pagesFrontLineEdit)
+        layout_pages.addWidget(self.pagesEndLineEdit)
+        layout.addLayout(layout_pages)
+
+        layout.addWidget(self.html_renderer)
+
+        layout.addWidget(self.chooseButton)
         self.setLayout(layout)
 
     def chooseAndProcessPdf(self):
@@ -210,39 +215,39 @@ class HandoverDocumentationToolDialog(QDialog):
             </style>
         """)
 
-        model_text = self.model.text() if self.model.text() else self.model.placeholderText()
-        self.processing_thread = PdfProcessingThread(
+        model_text = self.modelLineEdit.text() if self.modelLineEdit.text() else self.modelLineEdit.placeholderText()
+        self.processingThread = PdfProcessingThread(
             file,
-            self.provider.currentText(),
+            self.providerLineEdit.currentText(),
             model_text,
-            self.apiKey.text(),
-            pages_front=self.pages_front.text(),
-            pages_end=self.pages_end.text(),
+            self.apiKeyLineEdit.text(),
+            pages_front=self.pagesFrontLineEdit.text(),
+            pages_end=self.pagesEndLineEdit.text(),
         )
 
-        self.processing_thread.processing_error.connect(self.on_processing_error)
-        self.processing_thread.show_answer_dialog.connect(self.show_answer_dialog)
+        self.processingThread.processing_error.connect(self.on_processing_error)
+        self.processingThread.show_answer_dialog.connect(self.show_answer_dialog)
 
-        self.processing_thread.start()
+        self.processingThread.start()
 
     def cleanup_thread(self):
-        if self.processing_thread:
-            self.processing_thread.quit()
-            self.processing_thread.wait()
-            self.processing_thread.deleteLater()
-            self.processing_thread = None
+        if self.processingThread:
+            self.processingThread.quit()
+            self.processingThread.wait()
+            self.processingThread.deleteLater()
+            self.processingThread = None
 
     def on_processing_error(self, error_message):
         self.html_renderer.setHtml(f"<div style='color:red;'>{error_message}</div>")
         self.cleanup_thread()
 
     def provider_changed(self):
-        self.model.setPlaceholderText(LLM_PROVIDERS[self.provider.currentText()]["default_model"])
+        self.modelLineEdit.setPlaceholderText(LLM_PROVIDERS[self.providerLineEdit.currentText()]["default_model"])
 
     def closeEvent(self, event):
-        if self.processing_thread and self.processing_thread.isRunning():
-            self.processing_thread.quit()
-            self.processing_thread.wait()
+        if self.processingThread and self.processingThread.isRunning():
+            self.processingThread.quit()
+            self.processingThread.wait()
         super().closeEvent(event)
 
     def show_answer_dialog(self, answer):
