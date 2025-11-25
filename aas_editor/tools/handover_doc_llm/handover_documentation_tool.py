@@ -17,6 +17,7 @@ from PyQt6.QtWidgets import QDialog, QPushButton, QVBoxLayout, QFileDialog, QLin
     QHBoxLayout, QTextEdit, QLabel
 from PyQt6.QtCore import pyqtSignal, QThread
 from PyQt6.QtGui import QIntValidator
+from basyx.aas.adapter.json import AASToJsonEncoder, AASFromJsonDecoder
 
 from basyx.aas.model import Submodel
 
@@ -32,11 +33,6 @@ from aas_editor.settings.icons import INFO_ICON
 
 from tools.handover_doc_llm.config import PROMPT, LLM_PROVIDERS, EMBEDDING_PROVIDERS, TOOL_DESCRIPTION
 from aas_editor.widgets.dropfilebox import DropFileQWebEngineView
-
-# CONSTANTS:
-
-MIME_TYPE = "application/pdf"
-
 
 
 class PdfProcessingThread(QThread):
@@ -131,7 +127,7 @@ class HandoverDocumentationToolDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Handover Documentation Extractor")
-        self.setMinimumSize(600, 400)
+        self.setMinimumSize(600, 600)
         self.html_renderer = DropFileQWebEngineView(self, emptyViewMsg="Drop PDF file here",
                              description="Drop a PDF file to extract Handover Documentation (VDI 2770).")
         self.html_renderer.fileDropped.connect(self.processPdf)
@@ -256,9 +252,12 @@ class HandoverDocumentationToolDialog(QDialog):
         if dialog.exec():
             json_str = dialog.findChild(QTextEdit).toPlainText()
             try:
-                handover = json2handover_documentation(json_str)
+                handover_sm = json2handover_documentation(json_str)
+                normalized_json = json.dumps(handover_sm, cls=AASToJsonEncoder)
+                normalized_json = normalized_json.replace('\\', '\\\\')
+                normalized_handover_sm = json.loads(normalized_json, cls=AASFromJsonDecoder)
                 self.accept()
-                self.handoverExtracted.emit(handover)
+                self.handoverExtracted.emit(normalized_handover_sm)
             except Exception:
                 err_msg = traceback.format_exc()
                 self.html_renderer.setHtml(f"<div style='color:red;'>{err_msg}</div>")

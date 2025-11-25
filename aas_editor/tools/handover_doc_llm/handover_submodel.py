@@ -2392,7 +2392,7 @@ class HandoverDocumentation(Submodel):
                                         Qualifier(
                                             type_="AllowedIdShort",
                                             value_type=str,
-                                            value="RefersTo[\d{2,3}]",
+                                            value=r"RefersTo[\d{2,3}]",
                                             value_id=None,
                                             kind=QualifierKind.CONCEPT_QUALIFIER,
                                             semantic_id=ExternalReference(
@@ -2657,7 +2657,7 @@ class HandoverDocumentation(Submodel):
                                         Qualifier(
                                             type_="AllowedIdShort",
                                             value_type=str,
-                                            value="BasedOn[\d{2,3}]",
+                                            value=r"BasedOn[\d{2,3}]",
                                             value_id=None,
                                             kind=QualifierKind.CONCEPT_QUALIFIER,
                                             semantic_id=ExternalReference(
@@ -2929,7 +2929,7 @@ class HandoverDocumentation(Submodel):
                                         Qualifier(
                                             type_="AllowedIdShort",
                                             value_type=str,
-                                            value="TranslationOf[\d{2,3}]",
+                                            value=r"TranslationOf[\d{2,3}]",
                                             value_id=None,
                                             kind=QualifierKind.CONCEPT_QUALIFIER,
                                             semantic_id=ExternalReference(
@@ -3219,7 +3219,7 @@ class HandoverDocumentation(Submodel):
                                         Qualifier(
                                             type_="AllowedIdShort",
                                             value_type=str,
-                                            value="DigitalFile[\d{2,3}]",
+                                            value=r"DigitalFile[\d{2,3}]",
                                             value_id=None,
                                             kind=QualifierKind.CONCEPT_QUALIFIER,
                                             semantic_id=ExternalReference(
@@ -3499,7 +3499,7 @@ class HandoverDocumentation(Submodel):
                                     Qualifier(
                                         type_="AllowedIdShort",
                                         value_type=str,
-                                        value="PreviewFile[\d{2,3}]",
+                                        value=r"PreviewFile[\d{2,3}]",
                                         value_id=None,
                                         kind=QualifierKind.CONCEPT_QUALIFIER,
                                         semantic_id=ExternalReference(

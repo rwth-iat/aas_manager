@@ -51,32 +51,42 @@ EMBEDDING_PROVIDERS = {
 
 PROMPT = """
 {context}
-You are given a single PDF document containing data relevant to Asset Administration Shell (AAS) Submodels, specifically following the VDI 2770 guideline for Handover Documentation.
+You are given a single PDF document from which you need to extract information according to the VDI 2770 guideline for Handover Documentation.
 
 Your task is to extract the following data from the PDF file:
-id,
-
+- id
 #DocumentId:
-documentDomainId: "Identification of the domain in which the given DocumentId is unique. The domain ID can e.g., be the name or acronym of the providing organisation.",
-documentIdentifier: "alphanumeric character sequence uniquely identifying a document"
-documentIsPrimary: "Flag indicating that a DocumentId within a collection of at least two DocumentId`s is the 'primary' identifier for the document. This is the preferred ID of the document (commonly from the point of view of the owner of the asset). Note: can be omitted, if the ID is not primary. Note: can be omitted, if only one ID is for a Document. Contraint: only one DocumentId in a collection may be marked as primary.",
-
+- documentDomainId: "Identification of the domain in which the given DocumentId is unique. The domain ID can e.g., be the name or acronym of the providing organisation."
+- documentIdentifier: "alphanumeric character sequence uniquely identifying a document"
 #DocumentClassification
-classId: "Unique ID of the document class within a ClassficationSystem. Constraint: If ClassificationSystem is set to "VDI2770:2018", the given IDs of VDI2770:2018 shall be used"
-className: "List of language-dependent names of the selected ClassID. Constraint: If ClassificationSystem is set to "VDI2770:2018" then the given names of VDI2770:2018 need be used. Constraint: languages shall match at least the language specifications of the included DocumentVersions (below).",
-classificationSystem: "Identification of the classification system. For classifications according VDI 2270 always set to "VDI2770:2018". Further classification systems are commonly used, such as "IEC61355-1:2008".",
+- classId: "This is very important field. ID of the document class according to VDI 2770 classification system. Possible values are:
+    ID - Document class name
+    "01-01" - Identification
+    "02-01" - Technical specification
+    "02-02" - Drawings, plans
+    "02-03" - Assemblies
+    "02-04" - Certificates, declarations
+    "03-01" - Commissioning, de-commissioning
+    "03-02" - Operation
+    "03-03" - General safety
+    "03-04" - Inspection, maintenance, testing
+    "03-05" - Repair
+    "03-06" - Spare parts
+    "04-01" - Contract documents
 
 #DocumentVersion
-title: "List of language-dependent titles of the Document. Constraint: For each language-depended Title a Summary and at least one KeyWord shall exist for the given language.",
-subTitle: "List of language-dependent subtitles of the Document.",
-description: "List of language-dependent descriptions of the Document. Constraint: For each language-depended Summary a Title and at least one KeyWord shall exist for the given language.",
-keyWords: "List of language-dependent keywords of the Document. Note: Mutiple keywords are given as comma separated list for each language. Constraint: For each language-depended KeyWord a Title and Summary shall exist for the given language. Note: This can be intentionally a blank.",
-version: "Unambigous identification number of a DocumentVersion.",
-language: "List of languages used within the DocumentVersion. Each property codes one language identification according to ISO 639-1 or ISO 639-2 used in the Document." It must be a list of two characters,
-statusSetDate: "Date when the document status was set. Format is YYYY-MM-dd.",
-statusValue: "InReview or Released",
-organizationShortName: "Short name of the author organization.",
-organizationOfficalName: "Official name of the organization of author of the Document.",
+- title: "Language-dependent titles of the Document as a dict. E.g. {{'en': 'Operating Manual', 'de': 'Betriebsanleitung'}}.
+- subTitle (optional): "Language-dependent subtitles of the Document. E.g. {{'en': 'For Model XYZ', 'de': 'Für Modell XYZ'}}."
+- description: "List of language-dependent descriptions of the Document. E.g. {{'en': 'This document describes...', 'de': 'Dieses Dokument beschreibt...'}}."
+- keyWords: "List of language-dependent keywords of the Document. E.g. {{'en': 'manual,operation', 'de': 'Handbuch,Bedienung'}}."
+    Constraint: For each language-depended Title a Description and at least one KeyWord shall exist for the given language!,
+
+- version: "Unambigous identification number of a DocumentVersion."
+- language: "List of languages used within the DocumentVersion. Each property codes one language identification according to ISO 639-1 or ISO 639-2 used in the Document. It must be a list of two characters"
+- statusSetDate: "Date when the document status was set. Format is YYYY-MM-dd."
+- statusValue: "InReview or Released"
+- organizationShortName: "Short name of the author organization."
+- organizationOfficalName: "Official name of the organization of author of the Document."
 
 Steps:
 1. Parse the given context and find for all attributes the best fitting value.
@@ -86,11 +96,8 @@ Output columns should be:
 id, 
 document.documentId.documentDomainId, 
 document.documentId.documentIdentifier, 
-document.documentId.documentIsPrimary, 
 
 document.documentClassification.classId, 
-document.documentClassification.className, 
-document.documentClassification.classificationSystem,
 
 document.documentVersion.title, 
 document.documentVersion.subTitle, 

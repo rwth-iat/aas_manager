@@ -29,7 +29,7 @@ from basyx.aas.model import SetObjectStore, Submodel, Referable, Identifiable
 from aas_editor.delegates import EditDelegate
 from aas_editor.package import Package, StoredFile
 from aas_editor.settings import FILTER_AAS_FILES, AAS_FILE_TYPE_FILTERS, NOT_GIVEN, REFERABLE_INHERITORS_ATTRS, \
-    AAS_FILE_TYPES, APPLICATION_NAME, IAT
+    AAS_FILE_TYPES, APPLICATION_NAME, IAT, SUBMODELS
 from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE, \
     MAX_RECENT_FILES, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, \
     CLEAR_ROW_ROLE, AppSettings, COLUMN_NAME_ROLE, OBJECT_COLUMN_NAME, \
@@ -295,9 +295,12 @@ class PackTreeView(TreeView):
         action = self.sender()
         if action:
             submodel = copy.deepcopy(action.data())
-            self.treeClipboard.clear()
-            self.treeClipboard.append(submodel)
-            self.onPaste()
+            self.pasteSubmodel(submodel)
+
+    def pasteSubmodel(self, submodel: Submodel):
+        self.treeClipboard.clear()
+        self.treeClipboard.append(submodel)
+        self.onPaste()
 
     def onEditCreate(self, objVal=None, index=QModelIndex()) -> bool:
         """
@@ -814,23 +817,21 @@ class PackTreeView(TreeView):
             if not package:
                 return
 
-            submodel = self._add_submodel(package, handover_submodel)
-            if not submodel:
-                return
+            packIndex = self.model().match(QModelIndex(), OBJECT_ROLE, package, hits=1)[0]
+            for row in range(self.model().rowCount(packIndex)):
+                childIndex = self.model().index(row, 0, packIndex)
+                if childIndex.data(NAME_ROLE) == SUBMODELS:
+                    self.setFocus()
+                    self.setCurrentIndex(childIndex)
+                    self.pasteSubmodel(handover_submodel)
+                    break
+            else:
+                QMessageBox.warning(self, "Update Warning", "Submodels node not found in package tree.")
 
-            self._refresh_submodels(package)
-
-            QMessageBox.information(
-                self,
-                "Success",
-                f"Handover submodel added to {package.file.name}"
-            )
-
+            QMessageBox.information(self, "Success", f"Handover submodel added to {package.file.name}")
         except Exception as e:
             logging.exception("Failed to add handover submodel")
-            dialogs.ErrorMessageBox.withTraceback(
-                self, f"Failed to add handover submodel: {e}"
-            ).exec()
+            dialogs.ErrorMessageBox.withTraceback(self, f"Failed to add handover submodel: {e}").exec()
 
     def _ensure_package(self):
         currentIndex = self.currentIndex()
@@ -853,32 +854,3 @@ class PackTreeView(TreeView):
             return currentIndex.data(PACKAGE_ROLE)
 
         return None
-
-    def _add_submodel(self, package, handover_submodel):
-        try:
-            submodel = copy.deepcopy(handover_submodel)
-            package.objStore.add(submodel)
-            self.setWindowModified(True)
-            return submodel
-        except Exception as e:
-            logging.exception("Failed to add submodel to package")
-            return None
-
-    def _refresh_submodels(self, package):
-        packItems = self.model().match(QModelIndex(), OBJECT_ROLE, package, hits=1)
-        if not packItems:
-            return
-
-        packIndex = packItems[0]
-
-        for row in range(self.model().rowCount(packIndex)):
-            childIndex = self.model().index(row, 0, packIndex)
-            if childIndex.data(NAME_ROLE) == "submodels":
-                self.model().setData(childIndex, NOT_GIVEN, UPDATE_ROLE)
-                break
-        else:
-            QMessageBox.warning(
-                self,
-                "Update Warning",
-                "Submodels node not found in package tree."
-            )

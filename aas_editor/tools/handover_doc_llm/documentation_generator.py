@@ -14,9 +14,97 @@ from basyx.aas.adapter.json import AASToJsonEncoder
 from basyx.aas.model import LangStringSet, ModellingKind
 from basyx.aas.model.datatypes import Date
 
-from aas_editor.tools.handover_doc_llm.handover_submodel import HandoverDocumentation
+MIME_TYPE = "application/pdf"
 
-def json2handover_documentation(json_str: str) -> HandoverDocumentation | None:
+DocumentClassificationVDI2770 = {
+    "01-01": {
+        "classId": "01-01",
+        "className": {
+            "en": "Identification",
+            "de": "Identifikation"},
+        "semanticId": "0173-1#07-ABU484#003",
+    },
+    "02-01": {
+        "classId": "02-01",
+        "className": {
+            "en": "Technical specification",
+            "de": "Technische Spezifikation"},
+        "semanticId": "0173-1#07-ABU485#003",
+    },
+    "02-02": {
+        "classId": "02-02",
+        "className": {
+            "en": "Drawings, plans",
+            "de": "Zeichnungen, Pläne"},
+        "semanticId": "0173-1#07-ABU486#003",
+    },
+    "02-03": {
+        "classId": "02-03",
+        "className": {
+            "en": "Assemblies",
+            "de": "Bauteile"},
+        "semanticId": "0173-1#07-ABU487#003",
+    },
+    "02-04": {
+        "classId": "02-04",
+        "className": {
+            "en": "Certificates, declarations",
+            "de": "Zeugnisse, Zertifikate, Bescheinigungen"},
+        "semanticId": "0173-1#07-ABU488#003",
+    },
+    "03-01": {
+        "classId": "03-01",
+        "className": {
+            "en": "Commissioning, de-commissioning",
+            "de": "Montage, Demontage"},
+        "semanticId": "0173-1#07-ABU489#003",
+    },
+    "03-02": {
+        "classId": "03-02",
+        "className": {
+            "en": "Operation",
+            "de": "Bedienung"},
+        "semanticId": "0173-1#07-ABU490#003",
+    },
+    "03-03": {
+        "classId": "03-03",
+        "className": {
+            "en": "General safety",
+            "de": "AllgemeineSicherheit"},
+        "semanticId": "0173-1#07-ABU491#003",
+    },
+    "03-04": {
+        "classId": "03-04",
+        "className": {
+            "en": "Inspection, maintenance, testing",
+            "de": "Inspektion, Wartung, Prüfung"},
+        "semanticId": "0173-1#07-ABU492#003",
+    },
+    "03-05": {
+        "classId": "03-05",
+        "className": {
+            "en": "Repair",
+            "de": "Instandsetzung"},
+        "semanticId": "0173-1#07-ABU493#003",
+    },
+    "03-06": {
+        "classId": "03-06",
+        "className": {
+            "en": "Spare parts",
+            "de": "Ersatzteile"},
+        "semanticId": "0173-1#07-ABU494#003",
+    },
+    "04-01": {
+        "classId": "04-01",
+        "className": {
+            "en": "Contract documents",
+            "de": "Vertragsunterlagen"},
+        "semanticId": "0173-1#07-ABU495#003",
+    }
+}
+
+
+def json2handover_documentation(json_str: str):
     """
     Convert a JSON string to a HandoverDocumentation object.
 
@@ -30,64 +118,43 @@ def json2handover_documentation(json_str: str) -> HandoverDocumentation | None:
         print(f"Error decoding JSON: {e}")
         return None
 
-    language = obj['document']['documentVersion'].get('language', [''])
-
-    date = obj['document']['documentVersion'].get('statusSetDate', '').split('-')
+    from aas_editor.tools.handover_doc_llm.handover_submodel import HandoverDocumentation
 
     documentID = HandoverDocumentation.Documents.Documents_item.DocumentIds.Documentids_item(
-        documentIsPrimary=obj['document']['documentId'].get('isPrimary', None),
+        documentIsPrimary=True, #TODO: Fix me
         documentDomainId=obj['document']['documentId'].get('documentDomainId', ''),
         documentIdentifier=obj['document']['documentId'].get('valueId', ''))
 
+    classId = obj['document']['documentClassification'].get('classId', '')
     documentClassification = HandoverDocumentation.Documents.Documents_item.DocumentClassifications.Documentclassifications_item(
-        classId=obj['document']['documentClassification'].get('classId', ''),
-        className=(
-            {} if not (result := {
-                lang: obj['document']['documentVersion'].get('className', [''])[i]
-                for i, lang in enumerate(language)
-                if i < len(obj['document']['documentVersion'].get('className', []))
-            }) else LangStringSet(result)
-        ),
-        classificationSystem=obj['document']['documentClassification'].get('classificationSystem', ''),
+        classId=classId,
+        className=LangStringSet(DocumentClassificationVDI2770[classId]['className']) if classId in DocumentClassificationVDI2770 else LangStringSet({}),
+        classificationSystem="VDI 2770 Blatt 1:2020",
     )
 
     digitalFile = HandoverDocumentation.Documents.Documents_item.DocumentVersions.Documentversions_item.DigitalFiles.Digitalfiles_item(
-        value="SOME_PATH")
+        value="SOME_PATH", #TODO: Fix me
+        content_type=MIME_TYPE)
 
+    statusSetDate = obj['document']['documentVersion'].get('statusSetDate', '').split('-')
+    if len(statusSetDate) == 3 and all(part.isdigit() for part in statusSetDate):
+        statusSetDate = Date(int(statusSetDate[0]), int(statusSetDate[1]), int(statusSetDate[2]))
+    else:
+        statusSetDate = None
+
+    if obj['document']['documentVersion'].get('subTitle'):
+        subtitle = LangStringSet(obj['document']['documentVersion'].get('subTitle'))
+    else:
+        subtitle = None
 
     documentVersion = HandoverDocumentation.Documents.Documents_item.DocumentVersions.Documentversions_item(
-        language=language,
+        language=obj['document']['documentVersion'].get('language', ['']),
         version=obj['document']['documentVersion'].get('documentVersionId', ''),
-        title=(
-            {} if not (result := {
-                lang: obj['document']['documentVersion'].get('title', [''])[i]
-                for i, lang in enumerate(language)
-                if i < len(obj['document']['documentVersion'].get('title', []))
-            }) else LangStringSet(result)
-        ),
-        subtitle=(
-            {} if not (result := {
-                lang: obj['document']['documentVersion'].get('subTitle', [''])[i]
-                for i, lang in enumerate(language)
-                if i < len(obj['document']['documentVersion'].get('subTitle', []))
-            }) else LangStringSet(result)
-        ),
-        description_=(
-            {} if not (result := {
-                lang: obj['document']['documentVersion'].get('summary', [''])[i]
-                for i, lang in enumerate(language)
-                if i < len(obj['document']['documentVersion'].get('summary', []))
-            }) else LangStringSet(result)
-        ),
-        keyWords=(
-            {} if not (result := {
-                lang: obj['document']['documentVersion'].get('keyWords', [''])[i]
-                for i, lang in enumerate(language)
-                if i < len(obj['document']['documentVersion'].get('keyWords', []))
-            }) else LangStringSet(result)
-        ),
-        statusSetDate=Date(int(date[0]), int(date[1]), int(date[2])) if len(date) == 3 and all(
-            part.isdigit() for part in date) else None,
+        title=LangStringSet(obj['document']['documentVersion'].get('title')),
+        subtitle=subtitle,
+        description_=LangStringSet(obj['document']['documentVersion'].get('description')),
+        keyWords=LangStringSet(obj['document']['documentVersion'].get('keyWords')),
+        statusSetDate=statusSetDate,
         statusValue=obj['document']['documentVersion'].get('statusValue', ''),
         organizationShortName=obj['document']['documentVersion'].get('organizationName', ''),
         organizationOfficialName=obj['document']['documentVersion'].get('organizationOfficialName', ''),
@@ -122,17 +189,15 @@ if __name__ == "__main__":
       "isPrimary": true
     },
     "documentClassification": {
-      "classId": "HandoverDocumentation",
-      "className": ["Handover Documentation"],
-      "classificationSystem": "VDI2770:2018"
+      "classId": "03-04",
     },
     "documentVersion": {
       "language": ["de"],
       "version": "1",
-      "title": ["Datensheet"],
-      "subTitle": [],
-      "description": ["Datensheet für 222-101"],
-      "keyWords": ["example_company", "222-101"],
+      "title": {"de":"Datensheet", "en":"Datasheet"},
+      "subTitle": {},
+      "description": {"de": "Datensheet für 222-101", "en":"Datasheet for 222-101"},
+      "keyWords": {"de": ["example_company", "222-101"], "en": ["example_company", "222-101"]},
       "statusSetDate": "2025-09-22",
       "statusValue": "Released",
       "organizationShortName": "example_company",
