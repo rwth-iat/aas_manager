@@ -28,7 +28,8 @@ class OptionGroupBox(QGroupBox):
 
 class RadioBtnsGroupBox(OptionGroupBox):
     """Groupbox to choose default type of new file"""
-    def __init__(self, parent, title, options: Dict[str, any], appSetting: Setting, **kwargs):
+
+    def __init__(self, parent, title, options: Dict[str, any], appSetting: Setting, description: str = None, **kwargs):
         super().__init__(parent, **kwargs)
         self.setTitle(title)
         self.setAlignment(Qt.AlignmentFlag.AlignLeft)
@@ -37,6 +38,12 @@ class RadioBtnsGroupBox(OptionGroupBox):
 
         self.appSetting = appSetting
         self.options = options
+
+        self.description = None
+        if description:
+            self.description = QLabel(description)
+            self.description.setWordWrap(True)
+            layout.addWidget(self.description)
 
         self.radiobtns = []
         for optionName in self.options:
@@ -75,20 +82,11 @@ class SettingsDialog(QDialog):
         self.buttonBox.rejected.connect(self.reject)
 
         self.optionGroupBoxes = [
-            RadioBtnsGroupBox(self, title="Standard initialisation file type",
-                              options=AAS_FILE_TYPES,
-                              appSetting=AppSettings.DEFAULT_NEW_FILETYPE),
-            RadioBtnsGroupBox(self, title="Filetype for saving in AASX",
-                              options={"JSON": True, "XML": False},
-                              appSetting=AppSettings.WRITE_JSON_IN_AASX),
-            RadioBtnsGroupBox(self, title="Save JSON in pretty style",
-                              options={"Yes": True, "No": False},
-                              appSetting=AppSettings.WRITE_PRETTY_JSON),
-            RadioBtnsGroupBox(self, title="Automatically add references of existing submodels to the first AAS when "
-                                          "saving file",
-                              options={"Yes": True, "No": False},
-                              appSetting=AppSettings.ALL_SUBMODEL_REFS_TO_AAS),
-            ]
+            RadioBtnsGroupBox(self,
+                              appSetting=setting,
+                              title=setting.display_name,
+                              options=setting.options,
+                              description=setting.description) for setting in AppSettings.SETTINGS_TO_CHOOSE_BY_USER]
 
         self.layout = QVBoxLayout()
         message = QLabel("App settings")

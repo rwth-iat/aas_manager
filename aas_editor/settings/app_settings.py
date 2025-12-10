@@ -111,6 +111,9 @@ class Setting:
     name: str
     default: typing.Any = NOT_GIVEN
     type: typing.Type = NOT_GIVEN
+    display_name: typing.Optional[str] = None
+    description: str = ""
+    options: dict[str: object] = NOT_GIVEN
 
     def setValue(self, value):
         return SETTINGS.setValue(self.name, value)
@@ -136,12 +139,51 @@ class AppSettings:
     PACKTREEVIEW_HEADER_STATE = Setting('packTreeViewHeaderState', None)
     PACKTREEVIEW_HEADER_CUSTOM_COLUMN_LISTS_FILE = CUSTOM_COLUMN_LISTS_FILE
     TABTREEVIEW_HEADER_STATE = Setting('tabTreeViewHeaderState', None)
-    DEFAULT_NEW_FILETYPE = Setting('defaultNewFileType', "json", str)
 
-    # If True, JSON parts are created for the AAS and each submodel
-    # in the AASX file instead of XML parts.
-    WRITE_JSON_IN_AASX = Setting('writeJsonInAasx', False, bool)
-    # If True, submodels are written to separate AASX parts
-    # instead of being included in the AAS part with in the AASX package.
-    ALL_SUBMODEL_REFS_TO_AAS = Setting('allSubmodelRefsToAas', True, bool)
-    WRITE_PRETTY_JSON = Setting('writePrettyJson', False, bool)
+    DEFAULT_NEW_FILETYPE = Setting(
+        name='defaultNewFileType',
+        display_name="Standard initialisation file type",
+        description="Choose the file type that is used per default when creating a new file.",
+        options={
+            "json": "json",
+            "xml": "xml",
+            "aasx": "aasx",
+        },
+        default="json",
+        type=str
+    )
+    WRITE_JSON_IN_AASX = Setting(
+        name='writeJsonInAasx',
+        display_name="Write JSON in AASX",
+        description="If enabled, JSON parts are created in the AASX file instead of XML parts.",
+        options={"JSON": True, "XML": False},
+        default=False,
+        type=bool
+    )
+    ALL_SUBMODEL_REFS_TO_AAS = Setting(
+        name='allSubmodelRefsToAas',
+        display_name="Automatically add refs of existing submodels to AAS when saving file",
+        description="If enabled, when saving an AASX file, all existing submodels are automatically added as references to the first AAS object.",
+        options={"Yes": True, "No": False},
+        default=True,
+        type=bool
+    )
+    WRITE_PRETTY_JSON = Setting(
+        name='writePrettyJson',
+        display_name="Write Pretty JSON",
+        description="If enabled, JSON files are saved in pretty format with indentation.",
+        options={"Yes": True, "No": False},
+        default=True,
+        type=bool
+    )
+    SORT_KEYS_IN_JSON = Setting(
+        name="sortKeysInJson",
+        display_name="Sort Keys in JSON",
+        description="If enabled, JSON files are saved with their keys ordered alphabetically.",
+        options={"Yes": True, "No": False},
+        default=True,
+        type=bool
+    )
+
+    SETTINGS_TO_CHOOSE_BY_USER = [DEFAULT_NEW_FILETYPE, WRITE_JSON_IN_AASX, ALL_SUBMODEL_REFS_TO_AAS, WRITE_PRETTY_JSON,
+                                  SORT_KEYS_IN_JSON]

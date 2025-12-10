@@ -14,7 +14,6 @@ from pathlib import Path
 from typing import Union, Iterable, Optional
 import mimetypes
 
-import pyecma376_2
 from basyx.aas.adapter.aasx import DictSupplementaryFileContainer, AASXReader, AASXWriter
 from basyx.aas.adapter.json import write_aas_json_file, read_aas_json_file_into
 from basyx.aas.adapter.xml import write_aas_xml_file, read_aas_xml_file_into
@@ -58,6 +57,10 @@ class Package:
         return AppSettings.WRITE_PRETTY_JSON.value()
 
     @property
+    def sortKeysInJson(self):
+        return AppSettings.SORT_KEYS_IN_JSON.value()
+
+    @property
     def allSubmodelRefsToAas(self):
         return AppSettings.ALL_SUBMODEL_REFS_TO_AAS.value()
 
@@ -94,7 +97,8 @@ class Package:
         elif fileType == ".json":
             with open(self.file.as_posix(), "w", encoding='utf-8') as fileIO:
                 indent = 2 if self.writePrettyJson else None
-                write_aas_json_file(fileIO, self.objStore, indent=indent)
+                sort_keys = True if self.sortKeysInJson else False
+                write_aas_json_file(fileIO, self.objStore, indent=indent, sort_keys=sort_keys)
 
         elif fileType == ".aasx":
             with AASXWriter(self.file.as_posix()) as writer:
