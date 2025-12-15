@@ -124,6 +124,7 @@ ADD_ICON = QIcon()
 DEL_ICON = QIcon()
 UPDATE_ICON = QIcon()
 EDIT_ICON = QIcon()
+EDIT_JSON_ICON = QIcon()
 UNDO_ICON = QIcon()
 REDO_ICON = QIcon()
 FORWARD_ICON = QIcon()
@@ -167,7 +168,8 @@ ICONS_SVG = {
     ADD_ICON: "plus-circle.svg",
     DEL_ICON: "delete.svg",
     UPDATE_ICON: "update.svg",
-    EDIT_ICON: "playlist-edit.svg",
+    EDIT_ICON: "table-edit.svg",
+    EDIT_JSON_ICON: "playlist-edit.svg",
     UNDO_ICON: "undo.svg",
     REDO_ICON: "redo.svg",
     FORWARD_ICON: "arrow-right-circle.svg",

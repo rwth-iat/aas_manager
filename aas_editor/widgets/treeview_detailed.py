@@ -122,7 +122,8 @@ class AttrsTreeView(TreeView):
                     attrTypeHint = type(objVal)
                 else:
                     raise KeyError("No typehint found for the given item", attribute)
-            self.replItemWithDialog(index, attrTypeHint, title=f"Edit/Create {attribute}", objVal=objVal)
+            self.replItemWithDialog(index=index, objTypeHint=attrTypeHint, title=f"Edit/Create {attribute}",
+                                    objVal=objVal)
 
     def currentIndex(self) -> QtCore.QModelIndex:
         return super(AttrsTreeView, self).currentIndex().siblingAtColumn(VALUE_COLUMN)

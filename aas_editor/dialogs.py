@@ -8,19 +8,22 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 import copy
+import json
 import traceback
 import webbrowser
 
-from PyQt6.QtGui import QGuiApplication
+from PyQt6.QtGui import QGuiApplication, QColor
+from basyx.aas.adapter.json import AASFromJsonDecoder
 from basyx.aas.model.base import *
 
 from enum import Enum, unique
 from inspect import isabstract
 from typing import Union, List, Dict, Optional
 
-from PyQt6.QtCore import Qt, QRect, QSize, QTimer, pyqtSignal
+from PyQt6.Qsci import QsciScintilla, QsciLexerJSON
+from PyQt6.QtCore import Qt, QSize, QTimer, pyqtSignal
 from PyQt6.QtWidgets import QPushButton, QDialog, QDialogButtonBox, \
-    QGroupBox, QWidget, QVBoxLayout, QMessageBox, QScrollArea, QFrame, QFormLayout
+    QGroupBox, QWidget, QVBoxLayout, QMessageBox, QScrollArea, QFrame, QFormLayout, QPlainTextEdit
 
 from aas_editor.editWidgets import StandardInputWidget
 from aas_editor.settings import DEFAULTS, DEFAULT_COMPLETIONS, ATTRIBUTE_COLUMN, OBJECT_ROLE, \
@@ -108,6 +111,7 @@ class AddDialog(QDialog):
     REC = QGuiApplication.primaryScreen().geometry()
     MAX_HEIGHT = int(REC.height() * 0.9)
     MIN_WIDTH = 450
+    SAVED_SIZE = None
     SAVED_POSITION = None
 
     def __init__(self, parent=None, title=""):
@@ -127,7 +131,6 @@ class AddDialog(QDialog):
         self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget(self.scrollArea)
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 300, 600))
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.setMinimumWidth(self.MIN_WIDTH)
         self.setMaximumHeight(self.MAX_HEIGHT)
@@ -141,12 +144,13 @@ class AddDialog(QDialog):
         self.verticalLayoutScroll.setContentsMargins(0, 0, 0, 0)
 
         self.restorePosition()
+        self.restoreSize()
 
     def adjustSize(self) -> None:
         layoutSize = self.layout().sizeHint()
         buttonsSize = self.buttonBox.sizeHint()
         result = QSize(max(layoutSize.width(), buttonsSize.width(), self.width()),
-                       layoutSize.height() + 7 + buttonsSize.height())
+                       max(layoutSize.height(), self.height()))
         self.resize(result)
 
     def layout(self) -> 'QLayout':
@@ -156,23 +160,30 @@ class AddDialog(QDialog):
         pass
 
     def closeEvent(self, event):
-        self.savePosition()
+        self.savePositionAndSize(self)
         super().closeEvent(event)
 
     def reject(self):
-        self.savePosition()
+        self.savePositionAndSize(self)
         super().reject()
         
     def accept(self):
-        self.savePosition()
+        self.savePositionAndSize(self)
         super().accept()
-        
-    def savePosition(self):
-        AddDialog.SAVED_POSITION = self.pos()
-        
+
+    @classmethod
+    def savePositionAndSize(cls, dialog: 'AddDialog' = None):
+        cls.SAVED_POSITION = dialog.pos()
+        cls.SAVED_SIZE = dialog.size()
+
     def restorePosition(self):
-        if AddDialog.SAVED_POSITION:
-            self.move(AddDialog.SAVED_POSITION)
+        if self.SAVED_POSITION:
+            self.move(self.SAVED_POSITION)
+
+    def restoreSize(self):
+        if self.SAVED_SIZE:
+            self.resize(self.SAVED_SIZE)
+
 
 def checkIfAccepted(func):
     """Decorator for checking if user clicked ok"""
@@ -280,6 +291,9 @@ class InputWidgetUtil:
 
 
 class AddObjDialog(AddDialog):
+    SAVED_SIZE = None
+    SAVED_POSITION = None
+
     def __init__(self, objTypeHint, parent: 'TreeView', title="", rmDefParams=True, objVal=None, **kwargs):
         title = title if title else f"Add {getTypeName(objTypeHint)}"
         AddDialog.__init__(self, parent, title=title)
@@ -312,6 +326,116 @@ class AddObjDialog(AddDialog):
     @checkIfAccepted
     def getPreObj(self):
         return self.inputWidget.getPreObj()
+
+class JSONEditor(QsciScintilla):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        # 1. Set the Lexer (Syntax Highlighting)
+        # QScintilla has a built-in JSON lexer
+        self.lexer = QsciLexerJSON()
+        #self.lexer.setDefaultFont(QFont("Consolas", 10))
+        self.setLexer(self.lexer)
+
+        # 2. Line Numbers (Margin 0)
+        # We tell it to display numbers in the first margin
+        self.setMarginType(0, QsciScintilla.MarginType.NumberMargin)
+        self.setMarginWidth(0, "0000") # Initial width for 4 digits
+        self.setMarginsForegroundColor(QColor("#888888"))
+
+        # 3. Indentation & Tabs
+        self.setTabWidth(2)
+        self.setIndentationsUseTabs(False)
+        self.setAutoIndent(True)
+
+        # 4. Brace Matching
+        self.setBraceMatching(QsciScintilla.BraceMatch.SloppyBraceMatch)
+
+        # 5. Folding (Optional - allows collapsing objects)
+        self.setFolding(QsciScintilla.FoldStyle.PlainFoldStyle)
+        #self.setMarginWidth(1, 0)  # Hide marker margin if you don't want it
+
+        # 6. Caret (Cursor) Color
+        self.setCaretForegroundColor(QColor("white"))
+
+        self.apply_dark_theme()
+
+
+    def apply_dark_theme(self):
+        # 1. Set Main Editor Colors
+        self.setColor(QColor("#abb2bf"))  # Default Text Color (Light Grey)
+        self.setPaper(QColor("#282c34"))  # Background Color (Dark Grey)
+        self.setCaretForegroundColor(QColor("white"))  # Cursor Color
+
+        # 2. Set Margin (Line Number) Colors
+        self.setMarginsBackgroundColor(QColor("#282c34"))
+        self.setMarginsForegroundColor(QColor("#5c6370"))  # Line Number Color
+
+        # 3. Configure Lexer Styles (JSON specific)
+        # Get the lexer (assuming self.lexer is already set)
+        lexer = self.lexer
+
+        # Set default background for all styles to match editor
+        lexer.setDefaultPaper(QColor("#282c34"))
+        lexer.setDefaultColor(QColor("#abb2bf"))
+
+        # Define a helper to keep code clean
+        def set_style(style_id, color_hex, bold=False):
+            color = QColor(color_hex)
+            lexer.setColor(color, style_id)
+            lexer.setPaper(QColor("#282c34"), style_id)  # Ensure background matches
+            if bold:
+                font = lexer.font(style_id)
+                font.setBold(True)
+                lexer.setFont(font, style_id)
+
+        # --- JSON Syntax Colors (VS Code / One Dark inspired) ---
+
+        # Numbers (e.g. 123, 4.56) -> Orange/Dark Yellow
+        set_style(QsciLexerJSON.Number, "#d19a66")
+
+        # Strings (e.g. "value") -> Green
+        set_style(QsciLexerJSON.String, "#98c379")
+
+        # Property Names (e.g. "key": ) -> Red/Pink
+        # Note: QScintilla's JSON lexer sometimes groups keys as 'String' or 'Property'.
+        # usually, 'Property' is the key.
+        set_style(QsciLexerJSON.Property, "#e06c75")
+
+        # Keywords (true, false, null) -> Blue/Cyan
+        set_style(QsciLexerJSON.Keyword, "#56b6c2", bold=True)
+
+        # Operators ({ } [ ] : ,) -> Light Grey/White
+        set_style(QsciLexerJSON.Operator, "#abb2bf")
+
+        # Comments (if you allow comments in JSON5) -> Grey Italics
+        set_style(QsciLexerJSON.CommentBlock, "#7f848e")
+        set_style(QsciLexerJSON.CommentLine, "#7f848e")
+
+        # 6. Set Folding Colors (optional, for dark mode visibility)
+        # Background color for the folding margin
+        self.setFoldMarginColors(QColor("#282c34"), QColor("#abb2bf"))
+
+class AddObjJsonDialog(AddDialog):
+    SAVED_SIZE = None
+    SAVED_POSITION = None
+
+    def __init__(self, parent: 'TreeView', title="", objVal=None, **kwargs):
+        title = title if title else f"Add object from JSON"
+        AddDialog.__init__(self, parent, title=title)
+        self.buttonOk.setEnabled(True)
+
+        self.inputWidget = JSONEditor(self)
+        self.inputWidget.setText(objVal)
+        self.layout().addWidget(self.inputWidget)
+        QTimer.singleShot(0, self.adjustSize)
+
+    def getInputWidget(self):
+        pass
+
+    @checkIfAccepted
+    def getObj2add(self):
+        obj = json.loads(self.inputWidget.text(), cls=AASFromJsonDecoder)
+        return obj
 
 
 @unique

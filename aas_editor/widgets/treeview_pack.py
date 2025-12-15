@@ -35,7 +35,8 @@ from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ROL
     CLEAR_ROW_ROLE, AppSettings, COLUMN_NAME_ROLE, OBJECT_COLUMN_NAME, \
     OBJECT_VALUE_COLUMN_NAME, DEFAULT_COLUMNS_IN_PACKS_TABLE_TO_SHOW, COPY_ROLE, SUBMODEL_TEMPLATES_FOLDER
 from aas_editor.settings.shortcuts import SC_OPEN, SC_SAVE_ALL
-from aas_editor.settings.icons import NEW_PACK_ICON, OPEN_ICON, OPEN_DRAG_ICON, SAVE_ICON, SAVE_ALL_ICON, ADD_ICON
+from aas_editor.settings.icons import NEW_PACK_ICON, OPEN_ICON, OPEN_DRAG_ICON, SAVE_ICON, SAVE_ALL_ICON, ADD_ICON, \
+    EDIT_JSON_ICON
 from aas_editor.utils import util_type
 from aas_editor.utils.util import getDefaultVal, getReqParams4init
 from aas_editor.utils.util_classes import ClassesInfo
@@ -191,6 +192,13 @@ class PackTreeView(TreeView):
         self.addAct.setText("Add package")
         self.addAct.setEnabled(True)
 
+        self.editJsonAct = QAction("Edit as JSON", self,
+                                   icon=EDIT_JSON_ICON,
+                                   statusTip="Edit the object in JSON",
+                                   triggered=lambda: self.onEditJson(),
+                                   enabled=True)
+        self.addEditingAction(self.editJsonAct)
+
         self.copyJsonAct = QAction("Copy as JSON", self,
                                    statusTip="Copy the object in JSON",
                                    triggered=lambda: self.onJsonCopy(),
@@ -307,11 +315,10 @@ class PackTreeView(TreeView):
         """
         if not index.isValid():
             index = self.currentIndex()
-        if index.isValid():
-            objVal = objVal if objVal else index.data(Qt.ItemDataRole.EditRole)
-            return self._onEditCreate(objVal, index)
+        if not index.isValid():
+            return False
 
-    def _onEditCreate(self, objVal, index) -> bool:
+        objVal = objVal if objVal else index.data(Qt.ItemDataRole.EditRole)
         attribute = index.data(COLUMN_NAME_ROLE)
         parentObj = index.data(OBJECT_ROLE)
         try:
@@ -324,7 +331,14 @@ class PackTreeView(TreeView):
                 attrTypeHint = type(objVal)
             else:
                 raise KeyError("No typehint found for the given item", attribute)
-        return self.replItemWithDialog(index, attrTypeHint, title=f"Edit/Create {attribute}", objVal=objVal)
+        return self.replItemWithDialog(index=index, objTypeHint=attrTypeHint, title=f"Edit/Create {attribute}",
+                                       objVal=objVal)
+
+    def onEditJson(self):
+        index = self.currentIndex()
+        if index.isValid() and index.data(COLUMN_NAME_ROLE) == OBJECT_COLUMN_NAME:
+            obj_json = self.copyJsonOfCurrentObject()
+            return self.replItemWithDialog(index=index, objVal=obj_json, editDialogType=dialogs.AddObjJsonDialog)
 
     def toggleDefNewFileType(self):
         # FIXME refactor
@@ -338,6 +352,8 @@ class PackTreeView(TreeView):
         super(PackTreeView, self).initMenu()
         self.attrsMenu.insertAction(self.pasteAct, self.copyJsonAct)
         self.attrsMenu.insertAction(self.pasteAct, self.copyIdShortPathAct)
+
+        self.attrsMenu.insertAction(self.editCreateInDialogAct, self.editJsonAct)
 
         self.attrsMenu.addSeparator()
         self.attrsMenu.addAction(self.openPackAct)
@@ -477,13 +493,17 @@ class PackTreeView(TreeView):
         super(PackTreeView, self).addItemWithDialog(parent, objTypeHint, objVal, title, rmDefParams, **kwargs)
 
     def onJsonCopy(self):
-        index = self.currentIndex()
-        data2copy = index.data(COPY_ROLE)
-        json2copy = json.dumps(data2copy, cls=AASToJsonEncoder, indent=2)
+        json2copy = self.copyJsonOfCurrentObject()
         self.treeClipboard.clear()
         self.treeClipboard.append(json2copy, objRepr=json2copy)
         clipboard = QApplication.clipboard()
         clipboard.setText(json2copy, QClipboard.Mode.Clipboard)
+
+    def copyJsonOfCurrentObject(self) -> str:
+        index = self.currentIndex()
+        data2copy = index.data(COPY_ROLE)
+        json2copy = json.dumps(data2copy, cls=AASToJsonEncoder, indent=2)
+        return json2copy
 
     def onIdShortPathCopy(self):
         index = self.currentIndex()

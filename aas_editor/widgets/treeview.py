@@ -680,8 +680,7 @@ class TreeView(BasicTreeView):
 
     def _onPasteReplace(self, index, obj2paste, withDialog):
         if withDialog:
-            self.replItemWithDialog(index, type(obj2paste), objVal=obj2paste,
-                                    title=f"Paste element")
+            self.replItemWithDialog(index=index, objTypeHint=type(obj2paste), objVal=obj2paste, title=f"Paste element")
         else:
             self._setItemData(index, obj2paste, Qt.ItemDataRole.EditRole)
 
@@ -712,11 +711,15 @@ class TreeView(BasicTreeView):
         self.setFocus()
         return result
 
-    def replItemWithDialog(self, index, objTypeHint, objVal=None, title="", rmDefParams=False, **kwargs):
-        title = title if title else f"Edit {index.data(NAME_ROLE)}"
+    def replItemWithDialog(self, *, index, objTypeHint=None, objVal=None, title="", rmDefParams=False,
+                           editDialogType=dialogs.AddObjDialog, **kwargs):
+        kwargs["title"] = title if title else f"Edit {index.data(NAME_ROLE)}"
+        kwargs["parent"] = self
+        kwargs["objTypeHint"] = objTypeHint
+        kwargs["objVal"] = objVal
+        kwargs["rmDefParams"] = rmDefParams
         try:
-            dialog = dialogs.AddObjDialog(objTypeHint, self, rmDefParams=rmDefParams,
-                                          objVal=objVal, title=title, **kwargs)
+            dialog = editDialogType(**kwargs)
         except Exception as e:
             dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
             return False
