@@ -444,6 +444,9 @@ class PackTreeView(TreeView):
             self.addAct.setEnabled(True)
             self.addAct.setText("Add package")
 
+    def updateEditActs(self, index: QModelIndex):
+        self.editJsonAct.setEnabled(bool(index.flags() & Qt.ItemFlag.ItemIsEditable))
+
     def isSaveOk(self) -> bool:
         pack = self.currentIndex().data(PACKAGE_ROLE)
         return True if pack else False
