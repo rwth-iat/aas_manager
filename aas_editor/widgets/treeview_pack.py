@@ -338,7 +338,7 @@ class PackTreeView(TreeView):
         index = self.currentIndex()
         if index.isValid() and index.data(COLUMN_NAME_ROLE) == OBJECT_COLUMN_NAME:
             obj_json = self.copyJsonOfCurrentObject()
-            return self.replItemWithDialog(index=index, objVal=obj_json, editDialogType=dialogs.AddObjJsonDialog)
+            return self.replItemWithDialog(index=index, objVal=obj_json, editDialogType=dialogs.EditObjJsonDialog)
 
     def toggleDefNewFileType(self):
         # FIXME refactor

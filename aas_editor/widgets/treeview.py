@@ -691,8 +691,8 @@ class TreeView(BasicTreeView):
     def addItemWithDialog(self, parent: QModelIndex, objTypeHint, objVal=None,
                           title="", rmDefParams=False, **kwargs):
         try:
-            dialog = dialogs.AddObjDialog(objTypeHint, self, rmDefParams=rmDefParams,
-                                          objVal=objVal, title=title, **kwargs)
+            dialog = dialogs.EditObjDialog(objTypeHint, self, rmDefParams=rmDefParams,
+                                           objVal=objVal, title=title, **kwargs)
         except Exception as e:
             dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
             return False
@@ -712,7 +712,7 @@ class TreeView(BasicTreeView):
         return result
 
     def replItemWithDialog(self, *, index, objTypeHint=None, objVal=None, title="", rmDefParams=False,
-                           editDialogType=dialogs.AddObjDialog, **kwargs):
+                           editDialogType=dialogs.EditObjDialog, **kwargs):
         kwargs["title"] = title if title else f"Edit {index.data(NAME_ROLE)}"
         kwargs["parent"] = self
         kwargs["objTypeHint"] = objTypeHint

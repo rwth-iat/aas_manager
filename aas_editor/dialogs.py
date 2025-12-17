@@ -106,8 +106,8 @@ class ErrorMessageBox(QMessageBox):
         return box
 
 
-class AddDialog(QDialog):
-    """Base abstract class for custom dialogs for adding data"""
+class EditDialog(QDialog):
+    """Base abstract class for custom dialogs for adding or editing data"""
     REC = QGuiApplication.primaryScreen().geometry()
     MAX_HEIGHT = int(REC.height() * 0.9)
     MIN_WIDTH = 450
@@ -172,7 +172,7 @@ class AddDialog(QDialog):
         super().accept()
 
     @classmethod
-    def savePositionAndSize(cls, dialog: 'AddDialog' = None):
+    def savePositionAndSize(cls, dialog: 'EditDialog' = None):
         cls.SAVED_POSITION = dialog.pos()
         cls.SAVED_SIZE = dialog.size()
 
@@ -290,13 +290,13 @@ class InputWidgetUtil:
         return widget
 
 
-class AddObjDialog(AddDialog):
+class EditObjDialog(EditDialog):
     SAVED_SIZE = None
     SAVED_POSITION = None
 
     def __init__(self, objTypeHint, parent: 'TreeView', title="", rmDefParams=True, objVal=None, **kwargs):
         title = title if title else f"Add {getTypeName(objTypeHint)}"
-        AddDialog.__init__(self, parent, title=title)
+        EditDialog.__init__(self, parent, title=title)
         self.buttonOk.setEnabled(True)
 
         if not isoftype(objVal, PreObject):
@@ -415,13 +415,13 @@ class JSONEditor(QsciScintilla):
         # Background color for the folding margin
         self.setFoldMarginColors(QColor("#282c34"), QColor("#abb2bf"))
 
-class AddObjJsonDialog(AddDialog):
+class EditObjJsonDialog(EditDialog):
     SAVED_SIZE = None
     SAVED_POSITION = None
 
     def __init__(self, parent: 'TreeView', title="", objVal=None, **kwargs):
         title = title if title else f"Add object from JSON"
-        AddDialog.__init__(self, parent, title=title)
+        EditDialog.__init__(self, parent, title=title)
         self.buttonOk.setEnabled(True)
 
         self.inputWidget = JSONEditor(self)
@@ -848,7 +848,7 @@ class TypeOptionObjGroupBox(GroupBox):
             self.typeComboBox.setCurrentIndex(self.typeComboBox.findData(type(self.objVal)))
 
 
-class ChooseItemDialog(AddDialog):
+class ChooseItemDialog(EditDialog):
     def __init__(self, view: 'TreeView', columnsToShow=(ATTRIBUTE_COLUMN,),
                  validator=lambda chosenIndex: chosenIndex.isValid(),
                  parent: Optional[QWidget] = None, title: str = ""):
