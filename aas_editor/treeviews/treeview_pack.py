@@ -200,6 +200,13 @@ class PackTreeView(TreeView):
         self.addAct.setText("Add package")
         self.addAct.setEnabled(True)
 
+
+        self.addAsJsonAct = QAction(ADD_ICON, "Add as JSON", self,
+                              statusTip="Add item to selected object from JSON",
+                              triggered=lambda: self.onAddJson(),
+                              enabled=True)
+        self.addEditingAction(self.addAsJsonAct)
+
         self.editJsonAct = QAction("Edit as JSON", self,
                                    icon=EDIT_JSON_ICON,
                                    statusTip="Edit the object in JSON",
@@ -361,6 +368,8 @@ class PackTreeView(TreeView):
         self.attrsMenu.insertAction(self.pasteAct, self.copyJsonAct)
         self.attrsMenu.insertAction(self.pasteAct, self.copyIdShortPathAct)
 
+        self.initMenuAddExistingSubmodels()
+        self.attrsMenu.insertAction(self.addAct, self.addAsJsonAct)
         self.attrsMenu.insertAction(self.editCreateInDialogAct, self.editJsonAct)
 
         self.attrsMenu.addSeparator()
@@ -372,7 +381,6 @@ class PackTreeView(TreeView):
         self.attrsMenu.addAction(self.saveAllAct)
         self.attrsMenu.addAction(self.closeAct)
         self.attrsMenu.addAction(self.closeAllAct)
-        self.initMenuAddExistingSubmodels()
         # self.attrsMenu.insertAction(self.addAct, self.addExistingSubmodelsAct)
 
         self.openInCurrTabAct.triggered.connect(
@@ -438,8 +446,8 @@ class PackTreeView(TreeView):
         self.closeAct.setEnabled(self.isCloseOk())
         self.closeAllAct.setEnabled(self.isCloseAllOk())
 
-    def updateAddAct(self, index: QModelIndex):
-        super().updateAddAct(index)
+    def updateAddActs(self, index: QModelIndex):
+        super().updateAddActs(index)
 
         attrName = index.data(NAME_ROLE)
         if attrName in Package.addableAttrs():
@@ -447,7 +455,13 @@ class PackTreeView(TreeView):
             self.addAct.setEnabled(True)
             self.addAct.setText(addActText)
 
-        # update add action
+        # Update add as JSON action based on add action
+        self.addAsJsonAct.setEnabled(self.addAct.isEnabled())
+        self.addAsJsonAct.setText(f"{self.addAct.text()} as JSON")
+        if type(index.data(OBJECT_ROLE)) is Package:
+            self.addAsJsonAct.setEnabled(False)
+
+        # If no index is selected, enable adding a new package
         if not index.isValid():
             self.addAct.setEnabled(True)
             self.addAct.setText("Add package")
@@ -470,39 +484,42 @@ class PackTreeView(TreeView):
     def isCloseAllOk(self) -> bool:
         return True if self.model().data(QModelIndex(), OPENED_PACKS_ROLE) else False
 
-    def onAddAct(self, objVal=None, parent: QModelIndex = None):
-        parent = parent if parent else self.currentIndex()
-        name = parent.data(NAME_ROLE)
-        parentObj = parent.data(OBJECT_ROLE)
-        parentParentObj = parent.parent().data(OBJECT_ROLE) if parent.parent().isValid() else None
+    def _get_add_type_for_parent(self, index: QModelIndex):
+        name = index.data(NAME_ROLE)
+        parentObj = index.data(OBJECT_ROLE)
+        parentParentObj = index.parent().data(OBJECT_ROLE) if index.parent().isValid() else None
 
-        if objVal:
-            kwargs = {"parent": parent,
-                      "objVal": objVal}
+        if parentParentObj is not None and ClassesInfo.packViewAttrs(type(parentParentObj)):
+            return ClassesInfo.addType(type(parentParentObj), name)
+        elif ClassesInfo.addType(type(parentObj)):
+            return ClassesInfo.addType(type(parentObj))
         else:
-            kwargs = {"parent": parent}
+            raise TypeError("Parent type is not extendable:", type(parentObj))
 
+    def onAddAct(self, parent: QModelIndex = None, **kwargs):
+        parent = parent if parent else self.currentIndex()
         try:
             if not parent.isValid():
-                self.newPackWithDialog()
-            elif parentParentObj is not None and ClassesInfo.packViewAttrs(type(parentParentObj)):
-                self.addItemWithDialog(objTypeHint=ClassesInfo.addType(type(parentParentObj), name), **kwargs)
-            elif ClassesInfo.addType(type(parentObj)):
-                self.addItemWithDialog(objTypeHint=ClassesInfo.addType(type(parentObj)), **kwargs)
-            else:
-                raise TypeError("Parent type is not extendable:", type(parent.data(OBJECT_ROLE)))
+                return self.newPackWithDialog()
+            objTypeHint = self._get_add_type_for_parent(parent)
+            self.addItemWithDialog(parent=parent, objTypeHint=objTypeHint, **kwargs)
         except Exception as e:
             widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, str(e)).exec()
+
+    def onAddJson(self, parent: QModelIndex = None, **kwargs):
+        kwargs["editDialogType"] = dialogs.EditObjJsonDialog
+        self.onAddAct(parent=parent, **kwargs)
 
     def addItemWithDialog(self, parent: QModelIndex, objTypeHint, objVal=None,
                           title="", rmDefParams=False, **kwargs):
         if objTypeHint is Package:
             self.newPackWithDialog()
-            return
         elif objTypeHint is StoredFile:
             self.addFileWithDialog(parent)
-            return
-        super(PackTreeView, self).addItemWithDialog(parent, objTypeHint, objVal, title, rmDefParams, **kwargs)
+        else:
+            super().addItemWithDialog(parent=parent, objTypeHint=objTypeHint, objVal=objVal,
+                                      title=title, rmDefParams=rmDefParams, **kwargs)
+
 
     def onJsonCopy(self):
         json2copy = self.copyJsonOfCurrentObject()

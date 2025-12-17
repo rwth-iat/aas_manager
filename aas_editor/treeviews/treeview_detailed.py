@@ -100,15 +100,12 @@ class AttrsTreeView(TreeView):
             self.setCurrentIndex(valColIndex)
             self.editAct.setEnabled(True)
 
-    def onAddAct(self, objVal=None):
+    def onAddAct(self, parent: QModelIndex = None):
         try:
-            index = self.currentIndex()
-            attribute = index.data(NAME_ROLE)
-            attrTypeHint = getAttrTypeHint(type(index.data(PARENT_OBJ_ROLE)), attribute) #FIXME
-            if objVal:
-                self.addItemWithDialog(index, attrTypeHint, objVal=objVal, title=f"Add {attribute} element")
-            else:
-                self.addItemWithDialog(index, attrTypeHint, title=f"Add {attribute} element")
+            parent = parent if parent else self.currentIndex()
+            attribute = parent.data(NAME_ROLE)
+            attrTypeHint = getAttrTypeHint(type(parent.data(PARENT_OBJ_ROLE)), attribute) #FIXME
+            self.addItemWithDialog(parent=parent, objTypeHint=attrTypeHint, title=f"Add {attribute} element")
         except Exception as e:
             widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, str(e)).exec()
 

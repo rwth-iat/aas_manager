@@ -551,7 +551,7 @@ class TreeView(BasicTreeView):
         if self.editEnabled:
             self.updateCopyCutPasteDelActs(index)
             self.updateEditActs(index)
-            self.updateAddAct(index)
+            self.updateAddActs(index)
         else:
             self.disableAllEditingActs()
 
@@ -570,7 +570,7 @@ class TreeView(BasicTreeView):
         self.editCreateInDialogAct.setEnabled(bool(index.flags() & Qt.ItemFlag.ItemIsEditable))
         self.editAct.setEnabled(self.isEditableInsideCell(index))
 
-    def updateAddAct(self, index: QModelIndex):
+    def updateAddActs(self, index: QModelIndex):
         obj = index.data(OBJECT_ROLE)
         attrName = index.data(NAME_ROLE)
 
@@ -761,7 +761,7 @@ class TreeView(BasicTreeView):
 
     def _onPasteAdd(self, index, obj2paste, withDialog):
         if withDialog:
-            self.addItemWithDialog(index, type(obj2paste), objVal=obj2paste,
+            self.addItemWithDialog(parent=index, objTypeHint=type(obj2paste), objVal=obj2paste,
                                    title=f"Paste element")
         else:
             self._setItemData(index, obj2paste, ADD_ITEM_ROLE)
@@ -777,10 +777,15 @@ class TreeView(BasicTreeView):
         self.onDelClear()
 
     def addItemWithDialog(self, parent: QModelIndex, objTypeHint, objVal=None,
-                          title="", rmDefParams=False, **kwargs):
+                          title="", rmDefParams=False, editDialogType=dialogs.EditObjDialog, **kwargs):
+        kwargs["title"] = title if title else f"Add item to {parent.data(NAME_ROLE)}"
+        kwargs["parent"] = self
+        kwargs["objTypeHint"] = objTypeHint
+        kwargs["objVal"] = objVal
+        kwargs["rmDefParams"] = rmDefParams
+
         try:
-            dialog = dialogs.EditObjDialog(objTypeHint, self, rmDefParams=rmDefParams,
-                                           objVal=objVal, title=title, **kwargs)
+            dialog = editDialogType(**kwargs)
         except Exception as e:
             widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, str(e)).exec()
             return False
