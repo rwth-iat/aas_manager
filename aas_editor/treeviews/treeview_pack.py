@@ -364,11 +364,11 @@ class PackTreeView(TreeView):
         self.attrsMenu.insertAction(self.editCreateInDialogAct, self.editJsonAct)
 
         self.attrsMenu.addSeparator()
-        self.attrsMenu.addAction(self.openPackAct)
         self.attrsMenu.addAction(self.saveAct)
         self.attrsMenu.addAction(self.saveAsAct)
+        saveInMenu = self.attrsMenu.addMenu("Save in JSON/XML/AASX")
         for act in self.saveInActs:
-            self.attrsMenu.addAction(act)
+            saveInMenu.addAction(act)
         self.attrsMenu.addAction(self.saveAllAct)
         self.attrsMenu.addAction(self.closeAct)
         self.attrsMenu.addAction(self.closeAllAct)
