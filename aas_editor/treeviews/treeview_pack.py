@@ -453,6 +453,7 @@ class PackTreeView(TreeView):
             self.addAct.setText("Add package")
 
     def updateEditActs(self, index: QModelIndex):
+        super().updateEditActs(index)
         self.editJsonAct.setEnabled(bool(index.flags() & Qt.ItemFlag.ItemIsEditable))
 
     def isSaveOk(self) -> bool:
