@@ -1,4 +1,12 @@
-#  Copyright (C) 2022  Igor Garmaev, garmaev@gmx.net
+#  Copyright (C) 2025  Igor Garmaev, garmaev@gmx.net
+#
+#  This program is made available under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+#  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+#  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 #
 #  This program is made available under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -13,6 +21,7 @@ from PyQt6.QtWidgets import QDialog, QPushButton, QVBoxLayout, QFileDialog
 from PyQt6.QtCore import pyqtSignal
 from PyQt6.QtGui import QDropEvent, QDragEnterEvent
 
+import widgets.messsageBoxes
 from aas_editor.settings import FILTER_AAS_FILES
 from aas_editor import dialogs
 
@@ -91,4 +100,4 @@ class AasTestEnginesToolDialog(QDialog):
                     raise TypeError("File of unknown type:", file)
             self.html_renderer.setHtml(result.to_html())
         except Exception as e:
-            dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
+            widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, str(e)).exec()

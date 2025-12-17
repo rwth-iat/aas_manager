@@ -16,13 +16,7 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
-from .toolBar import ToolBar
+from .editWidgets import LineEdit, ComboBox, CompleterComboBox, CompleterLineEdit, CompleterComboBox
+from .toolbar import ToolBar
 from .search import SearchBar
-from .combobox import CompleterComboBox
-from .treeview import TreeView
-from .treeview_pack import PackTreeView
-from .treeview_detailed import AttrsTreeView
-from .address_line import AddressLine
-from .lineEdit import LineEdit
-from .combobox import ComboBox, CompleterComboBox, CompleterLineEdit
-from .tab import TabWidget, TabBar, Tab
+from .tab import TabWidget, TabBar, TabWithTreeView, AddressLine

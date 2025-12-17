@@ -17,7 +17,7 @@ from PyQt6.QtWidgets import QApplication
 
 from aas_editor.editorApp import EditorApp
 from aas_editor.settings.app_settings import NAME_ROLE
-from aas_editor.widgets import Tab, PackTreeView
+from aas_editor.widgets import TabWithTreeView, PackTreeView
 
 
 class TestUi(TestCase):
@@ -30,7 +30,7 @@ class TestUi(TestCase):
 
         self.packTreeView: PackTreeView = self.window.mainTreeView
         self.packTreeView.expandAll()
-        self.tab1: Tab = self.window.mainTabWidget.widget(0)
+        self.tab1: TabWithTreeView = self.window.mainTabWidget.widget(0)
         self.attrsTreeView = self.tab1.attrsTreeView
 
         self.itemsGenerator = self.packTreeView.model().iterItems()

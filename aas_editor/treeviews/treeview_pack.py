@@ -1,4 +1,12 @@
-#  Copyright (C) 2021  Igor Garmaev, garmaev@gmx.net
+#  Copyright (C) 2025  Igor Garmaev, garmaev@gmx.net
+#
+#  This program is made available under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+#  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+#  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 #
 #  This program is made available under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -26,6 +34,7 @@ from basyx.aas.adapter.json import read_aas_json_file, AASToJsonEncoder
 from basyx.aas.adapter.xml import read_aas_xml_file
 from basyx.aas.model import SetObjectStore, Submodel, Referable, Identifiable
 
+import widgets.messsageBoxes
 from aas_editor.delegates import EditDelegate
 from aas_editor.package import Package, StoredFile
 from aas_editor.settings import FILTER_AAS_FILES, AAS_FILE_TYPE_FILTERS, NOT_GIVEN, REFERABLE_INHERITORS_ATTRS, \
@@ -40,8 +49,7 @@ from aas_editor.settings.icons import NEW_PACK_ICON, OPEN_ICON, OPEN_DRAG_ICON, 
 from aas_editor.utils import util_type
 from aas_editor.utils.util import getDefaultVal, getReqParams4init
 from aas_editor.utils.util_classes import ClassesInfo
-from aas_editor.widgets import TreeView
-from aas_editor.widgets.treeview import HeaderView
+from treeviews.base import HeaderView, TreeView
 from aas_editor import dialogs
 
 
@@ -483,7 +491,7 @@ class PackTreeView(TreeView):
             else:
                 raise TypeError("Parent type is not extendable:", type(parent.data(OBJECT_ROLE)))
         except Exception as e:
-            dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
+            widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, str(e)).exec()
 
     def addItemWithDialog(self, parent: QModelIndex, objTypeHint, objVal=None,
                           title="", rmDefParams=False, **kwargs):
@@ -584,7 +592,7 @@ class PackTreeView(TreeView):
             self.updateRecentFiles(absFile)
         except Exception as e:
             self.removeFromRecentFiles(file)
-            dialogs.ErrorMessageBox.withTraceback(self, f"Package {file} couldn't be opened: {e}").exec()
+            widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, f"Package {file} couldn't be opened: {e}").exec()
         else:
             openedPacks = self.model().data(QModelIndex(), OPENED_FILES_ROLE)
             if Path(file).absolute() in openedPacks:
@@ -606,9 +614,9 @@ class PackTreeView(TreeView):
                 self.setWindowModified(False)
             return True
         except (TypeError, ValueError, KeyError) as e:
-            dialogs.ErrorMessageBox.withTraceback(self, f"Package couldn't be saved: {file}: {e}").exec()
+            widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, f"Package couldn't be saved: {file}: {e}").exec()
         except AttributeError as e:
-            dialogs.ErrorMessageBox.withTraceback(self, f"No chosen package to save: {e}").exec()
+            widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, f"No chosen package to save: {e}").exec()
         return False
 
     def savePackInTypeWithDialog(self, filetype=None, pack: Package = None) -> bool:
@@ -625,7 +633,7 @@ class PackTreeView(TreeView):
                 file, _ = QFileDialog.getSaveFileName(self, 'Save AAS File', file,
                                                       filter=filter)
             except AttributeError as e:
-                dialogs.ErrorMessageBox.withTraceback(self, f"No chosen package to save: {e}").exec()
+                widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, f"No chosen package to save: {e}").exec()
             else:
                 if file:
                     saved = self.savePack(pack, file)

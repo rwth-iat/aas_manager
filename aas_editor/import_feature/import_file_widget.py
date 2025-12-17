@@ -15,6 +15,7 @@ from PyQt6.QtGui import QIntValidator
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QPushButton, QFileDialog, QMessageBox, QFormLayout, QDialog, \
     QDialogButtonBox, QLabel, QLineEdit
 
+import widgets.messsageBoxes
 from aas_editor.import_feature import import_util
 from aas_editor.import_feature.import_settings import MAPPING_ATTR
 from aas_editor.import_feature import import_util_classes
@@ -110,9 +111,9 @@ class ImportManageWidget(QWidget):
         try:
             import_util.saveMapping(pack=ImportManageWidget.IMPORT_SETTINGS.mappingPackage, file=file)
         except (TypeError, ValueError, KeyError) as e:
-            dialogs.ErrorMessageBox.withTraceback(self, f"Package couldn't be saved: {file}: {e}").exec()
+            widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, f"Package couldn't be saved: {file}: {e}").exec()
         except AttributeError as e:
-            dialogs.ErrorMessageBox.withTraceback(self, f"No chosen package to save: {e}").exec()
+            widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, f"No chosen package to save: {e}").exec()
 
     def execImportSettingsDialog(self) -> bool:
         dialog = ImportSettingsDialog(self)
@@ -125,7 +126,7 @@ class ImportManageWidget(QWidget):
                     ImportManageWidget.IMPORT_SETTINGS.mappingPackage = self.importApp.mainTreeView.openPack(aasFile)
                     self.importApp.packTreeModel.setData(QModelIndex(), [], settings.UNDO_ROLE)
                 except Exception as e:
-                    dialogs.ErrorMessageBox.withTraceback(self, f"Could not open AAS File: {e}").exec()
+                    widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, f"Could not open AAS File: {e}").exec()
                     continue
 
                 ImportManageWidget.IMPORT_SETTINGS.sourceFile = dialog.importExcelFileLine.text()
@@ -143,12 +144,12 @@ class ImportManageWidget(QWidget):
                                                        mappingFile=mappingFile)
                         ImportManageWidget.IMPORT_SETTINGS.mappingFile = mappingFile
                 except Exception as e:
-                    dialogs.ErrorMessageBox.withTraceback(self, f"Could not open Mapping File: {e}").exec()
+                    widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, f"Could not open Mapping File: {e}").exec()
                     continue
 
                 result = True
             except Exception as e:
-                dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
+                widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, str(e)).exec()
                 continue
         return result
 
@@ -166,12 +167,12 @@ class ImportManageWidget(QWidget):
                         import_util.setMappingFromFile(pack=ImportManageWidget.IMPORT_SETTINGS.mappingPackage,
                                                        mappingFile=mappingFile)
                 except Exception as e:
-                    dialogs.ErrorMessageBox.withTraceback(self, f"Could not open Mapping File: {e}").exec()
+                    widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, f"Could not open Mapping File: {e}").exec()
                     continue
 
                 result = 1
             except Exception as e:
-                dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
+                widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, str(e)).exec()
                 continue
 
     def importFromPack(self, templatePack: Package, sourcefile: str, minRow: int, maxRow: int,
@@ -235,7 +236,7 @@ class ImportManageWidget(QWidget):
                                     fileNameScheme=dialog.nameScheme.text()
                                     )
             except Exception as e:
-                dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
+                widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, str(e)).exec()
                 continue
 
 

@@ -16,24 +16,96 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 import logging
+from typing import List
 
 from PyQt6.QtWebEngineCore import QWebEngineSettings, QWebEngineProfile
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtCore import pyqtSignal, QModelIndex, QPersistentModelIndex, QPoint, QMimeData, QUrl, \
-    QStandardPaths, Qt
+    QStandardPaths, Qt, QObject, QAbstractProxyModel, qDebug, qCritical, QAbstractItemModel
 from PyQt6.QtGui import QPixmap, QRegion, QDrag, QCursor, QMouseEvent, \
     QDragEnterEvent, QDragLeaveEvent, QDropEvent, QCloseEvent, QAction, QShortcut
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QHBoxLayout, QFrame, \
-    QTabBar, QMenu, QSplitter, QPushButton, QMessageBox, QToolButton, QFileDialog
+    QTabBar, QMenu, QSplitter, QPushButton, QMessageBox, QToolButton, QFileDialog, QCompleter, QStyledItemDelegate
 
 from aas_editor.settings.app_settings import *
 from aas_editor.settings.icons import FORWARD_ICON, BACK_ICON, SPLIT_VERT_ICON, SPLIT_HORIZ_ICON, ZOOM_IN_ICON, \
     ZOOM_OUT_ICON, SETTINGS_ICON
 from aas_editor.settings.shortcuts import SC_BACK, SC_FORWARD, SC_SEARCH
 from aas_editor.utils.util_type import getTypeName
-from aas_editor.widgets import AddressLine, SearchBar, ToolBar, AttrsTreeView
+from aas_editor.widgets import SearchBar, ToolBar
 from aas_editor.utils.util import getTreeItemPath
-from aas_editor.widgets.lineEdit import LineEdit
+from models import StandardTable
+from widgets import LineEdit
+
+COMPLETION_ROLE = Qt.ItemDataRole.DisplayRole
+CASE_SENSITIVITY = Qt.CaseSensitivity.CaseInsensitive
+
+
+class Signal(QObject):
+    modelChanged = pyqtSignal(['QAbstractItemModel'])
+
+
+class AddressLine(LineEdit):
+    """Class for address line used in tabs"""
+    signal = Signal()
+    _model: StandardTable = None
+
+    def __init__(self, parent: 'Tab') -> None:
+        super().__init__(parent)
+        self.tab = parent
+
+        self.setCompleter(AddressLineCompleter(self))
+        self.completer().setCompletionRole(COMPLETION_ROLE)
+        self.completer().setCaseSensitivity(CASE_SENSITIVITY)
+        if AddressLine._model:
+            self.completer().setModel(AddressLine._model)
+            self.completer().activated[QModelIndex].connect(self.onReturnPressed)
+            self.returnPressed.connect(self.onReturnPressed)
+            self.clicked.connect(self.completer().complete)
+        AddressLine.signal.modelChanged.connect(self.onModelChanged)
+        self.setPlaceholderText("Address Line")
+
+    @classmethod
+    def setModel(cls, model: StandardTable):
+        cls._model = model
+        cls.signal.modelChanged.emit(model)
+        logging.debug("New model for address completer was set")
+
+    def onModelChanged(self):
+        self.completer().setModel(AddressLine._model)
+        self.returnPressed.connect(self.onReturnPressed)
+
+    def open(self, index: QModelIndex):
+        model: QAbstractProxyModel = index.model()
+        if model and index.isValid():
+            qDebug(f"Open address: {self.text()}")
+            index = model.mapToSource(index)
+            self.tab.openItem(index)
+        else:
+            qCritical(f"Index was not found for address {self.text()}")
+            QMessageBox.critical(self, "Error", f"Item not found: {self.text()}")
+
+    def onReturnPressed(self):
+        self.completer().setCompletionPrefix(self.text().rstrip("/"))
+        if self.completer().currentCompletion() == self.text():
+            index = self.completer().currentIndex()
+            self.open(index)
+        else:
+            QMessageBox.critical(self, "Error", f"Item not found: {self.text()}")
+
+
+class AddressLineCompleter(QCompleter):
+    mCompleterItemDelegate = QStyledItemDelegate()
+
+    def pathFromIndex(self, index: QModelIndex) -> str:
+        return getTreeItemPath(index, role=self.completionRole())
+
+    def splitPath(self, path: str) -> List[str]:
+        return path.split("/")
+
+    def setModel(self, c: QAbstractItemModel) -> None:
+        super(AddressLineCompleter, self).setModel(c)
+        self.popup().setItemDelegate(self.mCompleterItemDelegate)
 
 
 class TabBar(QTabBar):
@@ -187,7 +259,7 @@ class TabBar(QTabBar):
                             type(splitter))
         splitter.setOrientation(orientation)
 
-        tab: Tab = tabWidget.widget(self.menuIndexTab)
+        tab: TabWithTreeView = tabWidget.widget(self.menuIndexTab)
         packItem = QModelIndex(tab.packItem)
         newTabWidget = type(tabWidget)()
         newTabWidget.openItem(packItem)
@@ -219,12 +291,12 @@ class TabBar(QTabBar):
         self.menu.exec(self.mapToGlobal(point))
 
 
-class Tab(QWidget):
+class TabWithTreeView(QWidget):
     currItemChanged = pyqtSignal(['QModelIndex'])
 
     def __init__(self, packItem=QModelIndex(), parent: 'TabWidget' = None,
-                 treeViewCls = AttrsTreeView, treeViewClsKwargs = None):
-        super(Tab, self).__init__(parent)
+                 treeViewCls = None, treeViewClsKwargs = None):
+        super(TabWithTreeView, self).__init__(parent)
         self.tabWidget = parent
         self.icon = QIcon()
         self.initActions()
@@ -257,6 +329,9 @@ class Tab(QWidget):
         mediaViewWidgetLayout.addWidget(self.saveMediaAsBtn)
         self.mediaViewWidget.hide()
 
+        if treeViewCls is None:
+            from treeviews.treeview_detailed import AttrsTreeView
+            treeViewCls = AttrsTreeView
         self.attrsTreeView = treeViewCls(self) if not treeViewClsKwargs else treeViewCls(self, **treeViewClsKwargs)
         self.attrsTreeView.setFrameShape(QFrame.Shape.NoFrame)
 
@@ -345,7 +420,7 @@ class Tab(QWidget):
 
     def _openItem(self, packItem: QModelIndex):
         try:
-            currTab: Tab = self.tabWidget.currentWidget()
+            currTab: TabWithTreeView = self.tabWidget.currentWidget()
             state = currTab.attrsTreeView.header().saveState()
         except AttributeError:
             # if there is no curr widget, there is no current header state, it
@@ -458,7 +533,7 @@ class TabWidget(QTabWidget):
 
     def __init__(self, parent: QWidget = None, unclosable=False,
                  tabBarCls=TabBar, tabBarClsKwargs = None,
-                 tabCls=Tab, tabClsKwargs = None):
+                 tabCls=TabWithTreeView, tabClsKwargs = None):
         super(TabWidget, self).__init__(parent)
         self.unclosable = unclosable
 
@@ -489,11 +564,11 @@ class TabWidget(QTabWidget):
                                   triggered=lambda: self.zoomOut())
 
     def zoomIn(self):
-        if isinstance(self.currentWidget(), Tab):
+        if isinstance(self.currentWidget(), TabWithTreeView):
             self.currentWidget().attrsTreeView.zoomIn()
 
     def zoomOut(self):
-        if isinstance(self.currentWidget(), Tab):
+        if isinstance(self.currentWidget(), TabWithTreeView):
             self.currentWidget().attrsTreeView.zoomOut()
 
     def buildHandlers(self):
@@ -502,7 +577,7 @@ class TabWidget(QTabWidget):
 
     def tabInserted(self, index):
         super(TabWidget, self).tabInserted(index)
-        tab: Tab = self.widget(index)
+        tab: TabWithTreeView = self.widget(index)
         tab.windowTitleChanged.connect(lambda text: self.setTabText(self.indexOf(tab), text))
         tab.windowIconChanged.connect(lambda icon: self.setTabIcon(self.indexOf(tab), icon))
         tab.currItemChanged.connect(lambda packItem: self.onCurrTabItemChanged(tab, packItem))
@@ -511,7 +586,7 @@ class TabWidget(QTabWidget):
         tab.attrsTreeView.openInBgTabClicked.connect(self.openItemInBgTab)
         tab.attrsTreeView.openInNewWindowClicked.connect(TabWidget.openItemInNewWindow)
 
-    def onCurrTabItemChanged(self, tab: 'Tab', packItem: QModelIndex):
+    def onCurrTabItemChanged(self, tab: 'TabWithTreeView', packItem: QModelIndex):
         if tab == self.currentWidget():
             self.currItemChanged.emit(packItem)
 
@@ -581,6 +656,6 @@ class TabWidget(QTabWidget):
 
     def removePackTab(self, packItem: QModelIndex):
         for tabIndex in range(self.count()-1, -1, -1):
-            tab: Tab = self.widget(tabIndex)
+            tab: TabWithTreeView = self.widget(tabIndex)
             if QModelIndex(tab.packItem).siblingAtColumn(0) == packItem.siblingAtColumn(0):
                 self.removeTab(tabIndex)

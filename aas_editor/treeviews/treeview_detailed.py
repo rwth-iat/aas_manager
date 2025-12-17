@@ -1,4 +1,12 @@
-#  Copyright (C) 2021  Igor Garmaev, garmaev@gmx.net
+#  Copyright (C) 2025  Igor Garmaev, garmaev@gmx.net
+#
+#  This program is made available under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+#  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+#  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 #
 #  This program is made available under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -20,13 +28,14 @@ from PyQt6 import QtCore
 from PyQt6.QtCore import Qt, QModelIndex
 from PyQt6.QtWidgets import QAbstractScrollArea
 
+import widgets.messsageBoxes
 from aas_editor.models import DetailedInfoTable
 from aas_editor.delegates import EditDelegate
 from aas_editor.settings.app_settings import ATTR_COLUMN_WIDTH, NAME_ROLE, ATTRIBUTE_COLUMN, \
     VALUE_COLUMN, LINKED_ITEM_ROLE, IS_LINK_ROLE, PARENT_OBJ_ROLE
 from aas_editor.utils.util_type import getAttrTypeHint
-from aas_editor.widgets import TreeView
 from aas_editor import dialogs
+from treeviews.base import TreeView
 
 
 class AttrsTreeView(TreeView):
@@ -101,7 +110,7 @@ class AttrsTreeView(TreeView):
             else:
                 self.addItemWithDialog(index, attrTypeHint, title=f"Add {attribute} element")
         except Exception as e:
-            dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
+            widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, str(e)).exec()
 
     def onEditCreate(self, objVal, index=QModelIndex()):
         """

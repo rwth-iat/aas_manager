@@ -198,3 +198,5 @@ def initialize_all_icons():
     from aas_editor.settings.app_settings import ICONS_FOLDER
     for icon, svg_file in ICONS_SVG.items():
         transform_svg_to_icon(icon, str(ICONS_FOLDER / svg_file))
+
+initialize_all_icons()

@@ -7,30 +7,43 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
+#
+#  This program is made available under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+#  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+#  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 import logging
-from typing import Optional, Any, List
+from typing import Optional, List, Any
 
-from PyQt6.QtCore import Qt, pyqtSignal, QModelIndex, QTimer, QAbstractItemModel, QPoint
-from PyQt6.QtGui import QClipboard, QPalette, QColor, QMouseEvent, QKeyEvent, QAction
-from PyQt6.QtWidgets import QMenu, QApplication, QDialog, QHeaderView, QWidget, QAbstractItemView
+from PyQt6.QtCore import Qt, pyqtSignal, QRect, QPoint, QAbstractItemModel, QModelIndex, QTimer
+from PyQt6.QtGui import QMouseEvent, QPaintEvent, QPainter, QWheelEvent, QAction, QPalette, QColor, QClipboard, \
+    QKeyEvent
+from PyQt6.QtWidgets import QTreeView, QHeaderView, QWidget, QMenu, QAbstractItemView, QApplication, QDialog
 
-from aas_editor.delegates import EditDelegate
-from aas_editor.models import StandardTable
-from aas_editor import settings
+import dialogs
+import settings
+import widgets.messsageBoxes
+
+from aas_editor.models.search_proxy_model import SearchProxyModel
 from aas_editor.settings.app_settings import *
-from aas_editor.settings.icons import COPY_ICON, PASTE_ICON, CUT_ICON, ADD_ICON, DEL_ICON, UNDO_ICON, REDO_ICON, \
-    ZOOM_IN_ICON, ZOOM_OUT_ICON, EXPAND_ALL_ICON, COLLAPSE_ALL_ICON, UPDATE_ICON, EDIT_ICON
-from aas_editor.settings.shortcuts import SC_COPY, SC_CUT, SC_PASTE, SC_DELETE, SC_NEW, SC_REDO, SC_UNDO, SC_ZOOM_IN, \
-    SC_ZOOM_OUT, SC_EXPAND_RECURS, SC_EXPAND_ALL, SC_COLLAPSE_RECURS, SC_COLLAPSE_ALL, SC_EXPAND, SC_COLLAPSE, \
-    SC_EDIT_IN_DIALOG
-from aas_editor.utils.util import getDefaultVal, getReqParams4init
-from aas_editor.utils.util_type import checkType, isSimpleIterable, isIterable, getIterItemTypeHint, isoftype
+from additional.classes import DictItem
+from delegates import EditDelegate
+from models import StandardTable
+from settings import TOOLBARS_HEIGHT, COPY_ICON, SC_COPY, PASTE_ICON, SC_PASTE, CUT_ICON, SC_CUT, ADD_ICON, SC_NEW, \
+    EDIT_ICON, SC_EDIT_IN_DIALOG, DEL_ICON, SC_DELETE, UPDATE_ICON, UNDO_ICON, SC_UNDO, REDO_ICON, SC_REDO, SC_COLLAPSE, \
+    SC_COLLAPSE_RECURS, COLLAPSE_ALL_ICON, SC_COLLAPSE_ALL, SC_EXPAND, SC_EXPAND_RECURS, EXPAND_ALL_ICON, SC_EXPAND_ALL, \
+    ZOOM_IN_ICON, SC_ZOOM_IN, ZOOM_OUT_ICON, SC_ZOOM_OUT, OBJECT_ROLE, NAME_ROLE, UNDO_ROLE, REDO_ROLE, DEFAULT_FONT, \
+    MAX_FONT_SIZE, MIN_FONT_SIZE, NOT_GIVEN, UPDATE_ROLE, PARENT_OBJ_ROLE, CLEAR_ROW_ROLE, COPY_ROLE, TYPE_HINT_ROLE, \
+    ADD_ITEM_ROLE, DATA_CHANGE_FAILED_ROLE
+from utils.util import getDefaultVal, getReqParams4init
+from utils.util_classes import ClassesInfo
+from utils.util_type import isIterable, checkType, getIterItemTypeHint, isSimpleIterable, isoftype
 
-from aas_editor.utils.util_classes import ClassesInfo
-from aas_editor.additional.classes import DictItem
-from aas_editor.widgets.treeview_basic import BasicTreeView
-from aas_editor import dialogs
-
+EMPTY_VIEW_MSG = "There are no elements in this view"
+EMPTY_VIEW_ICON = None
 
 class HeaderView(QHeaderView):
     def __init__(self, orientation, parent: Optional[QWidget] = ...) -> None:
@@ -162,7 +175,6 @@ class HeaderView(QHeaderView):
             self.currSortSection = -1
 
 
-# @dataclass
 class TreeClipboard:
     def __init__(self):
         self.objects: List[Any] = []
@@ -200,6 +212,82 @@ class TreeClipboard:
             return None
         else:
             return self.objStrings[-1]
+
+
+class BasicTreeView(QTreeView):
+    wheelClicked = pyqtSignal(['QModelIndex'])
+    ctrlWheelScrolled = pyqtSignal(int)
+    modelChanged = pyqtSignal(['QAbstractItemModel'])
+
+    def __init__(self, parent=None, *, emptyViewMsg=EMPTY_VIEW_MSG, emptyViewIcon=EMPTY_VIEW_ICON):
+        super(BasicTreeView, self).__init__(parent)
+        self.emptyViewMsg = emptyViewMsg
+        self.emptyViewIcon = emptyViewIcon
+        self.setMouseTracking(True)
+
+    def setModel(self, model: QtCore.QAbstractItemModel) -> None:
+        super(BasicTreeView, self).setModel(model)
+        self.modelChanged.emit(model)
+
+    def setModelWithProxy(self, model: QtCore.QAbstractItemModel) -> None:
+        # proxy model will always be used by setting new models
+        proxyModel = SearchProxyModel()
+        proxyModel.setSourceModel(model)
+        self.setModel(proxyModel)
+
+    def sourceModel(self):
+        try:
+            return self.model().sourceModel()
+        except AttributeError:
+            return self.model()
+
+    def collapse(self, index: QtCore.QModelIndex) -> None:
+        newIndex = index.siblingAtColumn(0)
+        super(BasicTreeView, self).collapse(newIndex)
+
+    def expand(self, index: QtCore.QModelIndex) -> None:
+        newIndex = index.siblingAtColumn(0)
+        super(BasicTreeView, self).expand(newIndex)
+
+    def mouseReleaseEvent(self, event: QMouseEvent) -> None:
+        if event.button() == Qt.MouseButton.MiddleButton:
+            self.wheelClicked.emit(self.indexAt(event.pos()))
+        else:
+            super(BasicTreeView, self).mouseReleaseEvent(event)
+
+    def wheelEvent(self, a0: QWheelEvent) -> None:
+        if a0.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            # ctrl press + scroll
+            delta = a0.angleDelta().y()
+            self.ctrlWheelScrolled.emit(delta)
+        else:
+            super(BasicTreeView, self).wheelEvent(a0)
+
+    def paintEvent(self, e: QPaintEvent) -> None:
+        if (self.model() and self.model().rowCount()) \
+                or not (self.emptyViewMsg or self.emptyViewIcon):
+            super(BasicTreeView, self).paintEvent(e)
+        else:
+            # If no items draw a text in the center of the viewport.
+            position = self.viewport().rect().center()
+
+            if self.emptyViewMsg:
+                painter = QPainter(self.viewport())
+                textRect = painter.fontMetrics().boundingRect(self.emptyViewMsg)
+                textRect.moveCenter(position)
+                painter.drawText(textRect, Qt.AlignmentFlag.AlignCenter, self.emptyViewMsg)
+                # set position for icon
+                position.setY(position.y()+textRect.height()+25)
+
+            if self.emptyViewIcon:
+                iconRect = QRect(0, 0, 50, 50)
+                iconRect.moveCenter(position)
+                painter.drawPixmap(iconRect, self.emptyViewIcon.pixmap(QSize(50, 50)))
+
+    def setWindowModified(self, a0: bool) -> None:
+        window = self.window()
+        window.setWindowModified(a0)
+
 
 class TreeView(BasicTreeView):
     openInCurrTabClicked = pyqtSignal(QModelIndex)
@@ -694,7 +782,7 @@ class TreeView(BasicTreeView):
             dialog = dialogs.EditObjDialog(objTypeHint, self, rmDefParams=rmDefParams,
                                            objVal=objVal, title=title, **kwargs)
         except Exception as e:
-            dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
+            widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, str(e)).exec()
             return False
 
         result = False
@@ -702,7 +790,7 @@ class TreeView(BasicTreeView):
             try:
                 obj = self._getObjFromDialog(dialog)
             except Exception as e:
-                dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
+                widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, str(e)).exec()
                 continue
             result = self._setItemData(parent, obj, ADD_ITEM_ROLE)
         if dialog.result() == QDialog.DialogCode.Rejected:
@@ -721,14 +809,14 @@ class TreeView(BasicTreeView):
         try:
             dialog = editDialogType(**kwargs)
         except Exception as e:
-            dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
+            widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, str(e)).exec()
             return False
         result = False
         while not result and dialog.exec() == QDialog.DialogCode.Accepted:
             try:
                 obj = self._getObjFromDialog(dialog)
             except Exception as e:
-                dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
+                widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, str(e)).exec()
                 continue
             result = self._setItemData(index, obj, Qt.ItemDataRole.EditRole)
         if dialog.result() == QDialog.DialogCode.Rejected:
@@ -772,7 +860,7 @@ class TreeView(BasicTreeView):
     def itemDataChangeFailed(self, topLeft, bottomRight, roles):
         """Check dataChanged signal if data change failed and show Error dialog if failed"""
         if DATA_CHANGE_FAILED_ROLE in roles:
-            dialogs.ErrorMessageBox.withDetailedText(self, self.model().data(topLeft, DATA_CHANGE_FAILED_ROLE)).exec()
+            widgets.messsageBoxes.ErrorMessageBox.withDetailedText(self, self.model().data(topLeft, DATA_CHANGE_FAILED_ROLE)).exec()
 
     def keyPressEvent(self, event: QKeyEvent) -> None:
         if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
@@ -836,7 +924,7 @@ class TreeView(BasicTreeView):
         try:
             self.onEditCreate(objVal, index)
         except Exception as e:
-            dialogs.ErrorMessageBox.withTraceback(self, str(e)).exec()
+            widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, str(e)).exec()
 
     def toggleFold(self, index: QModelIndex):
         index = index.siblingAtColumn(0)

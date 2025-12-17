@@ -9,6 +9,7 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 from typing import Union
 
+import widgets.widget_util
 from aas_editor import dialogs
 from aas_editor.import_feature.import_util_classes import TYPS_TO_SPECIAL_IMPORT_OBJ_CLASSES
 from aas_editor.settings.app_settings import *
@@ -62,11 +63,11 @@ class ImportApp(EditorApp):
         if not self.importWidget.execImportSettingsDialog():
             self.close()
             return
-        setattr(dialogs.InputWidgetUtil, "handleTypeHint", handleTypeHint4import)
+        setattr(widgets.widget_util.InputWidgetUtil, "handleTypeHint", handleTypeHint4import)
         super().show()
 
     def __del__(self):
-        setattr(dialogs.InputWidgetUtil, "handleTypeHint", dialogs.InputWidgetUtil._handleTypeHint)
+        setattr(widgets.widget_util.InputWidgetUtil, "handleTypeHint", widgets.widget_util.InputWidgetUtil._handleTypeHint)
         del self
 
 

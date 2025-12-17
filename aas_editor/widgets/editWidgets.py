@@ -1,4 +1,4 @@
-#  Copyright (C) 2021  Igor Garmaev, garmaev@gmx.net
+#  Copyright (C) 2025  Igor Garmaev, garmaev@gmx.net
 #
 #  This program is made available under the terms of the GNU General Public License as published by
 #  the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -7,27 +7,131 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-
 import datetime
 import decimal
 from abc import abstractmethod
 from collections import namedtuple
 from enum import Enum
-from typing import Type, TypeVar
+from typing import Optional, Type, TypeVar
 
 import dateutil
 import pytz
-from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QIntValidator
-
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QDateTimeEdit, QCheckBox, QCompleter, \
-    QDateEdit, QHBoxLayout, QPlainTextEdit, QPushButton, QFileDialog, QLineEdit, QToolButton
+from PyQt6 import QtGui
+from PyQt6.QtCore import pyqtSignal, Qt, QTimer
+from PyQt6.QtGui import QMouseEvent, QIntValidator
+from PyQt6.QtWidgets import QLineEdit, QComboBox, QWidget, QCompleter, QHBoxLayout, QPlainTextEdit, QPushButton, \
+    QFileDialog, QVBoxLayout, QDateEdit, QDateTimeEdit, QCheckBox
 from basyx.aas.model.datatypes import Date
 
-from aas_editor.utils.util import inheritors
-from aas_editor.utils.util_classes import PreObject
-from aas_editor.utils.util_type import issubtype, getTypeName, isoftype
-from aas_editor import widgets
+from additional.classes import DictItem
+from utils.util import inheritors
+from utils.util_classes import PreObject
+from utils.util_type import isoftype, issubtype, getTypeName
+from widgets.buttons import CloseButton
+
+
+class LineEdit(QLineEdit):
+    clicked = pyqtSignal()
+
+    def __init__(self, parent=None, **kwargs):
+        super(LineEdit, self).__init__(parent, **kwargs)
+        self.setToolTip(self.text())
+        self.textChanged.connect(self.onTextChanged)
+
+    def onTextChanged(self, text):
+        self.setToolTip(text)
+
+    def mouseReleaseEvent(self, event: QMouseEvent) -> None:
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.clicked.emit()
+        else:
+            super(LineEdit, self).mouseReleaseEvent(event)
+
+
+class ComboBox(QComboBox):
+    def __init__(self, parent: Optional[QWidget] = ...):
+        super(ComboBox, self).__init__(parent)
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+
+    def wheelEvent(self, e: QtGui.QWheelEvent) -> None:
+        if not self.hasFocus():
+            e.ignore()
+        else:
+            super(ComboBox, self).wheelEvent(e)
+
+
+class CompleterComboBox(ComboBox):
+    def __init__(self, parent: Optional[QWidget] = ...):
+        super(CompleterComboBox, self).__init__(parent)
+        lineEdit = CompleterLineEdit()
+        lineEdit.setObjectName("comboLine")
+        lineEdit.setStyleSheet("#comboLine{border:0;}")
+        self.setLineEdit(lineEdit)
+        self.setEditable(True)
+        self.setInsertPolicy(QComboBox.InsertPolicy.NoInsert)
+        completer = self.completer()
+        completer.setFilterMode(Qt.MatchFlag.MatchContains)
+        completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
+
+
+class CompleterLineEdit(QLineEdit):
+    clicked = pyqtSignal()
+
+    def __init__(self, parent: Optional[QWidget] = ...) -> None:
+        if parent is ...:
+            super(CompleterLineEdit, self).__init__()
+        else:
+            super(CompleterLineEdit, self).__init__(parent)
+        self.textEdited.connect(self.onTextEdited)
+
+    def mouseReleaseEvent(self, a0: QMouseEvent) -> None:
+        if a0.button() == Qt.MouseButton.LeftButton:
+            self.clicked.emit()
+            self.completer().setCompletionMode(QCompleter.CompletionMode.UnfilteredPopupCompletion)
+            self.callPopup()
+            self.selectAll()
+        super(CompleterLineEdit, self).mouseReleaseEvent(a0)
+
+    def onTextEdited(self):
+        # force to show all items when text is empty
+        if not self.text():
+            self.completer().setCompletionMode(QCompleter.CompletionMode.UnfilteredPopupCompletion)
+            # completion list will be hidden now; we will show it again after a delay
+            QTimer.singleShot(100, self.callPopup)
+        else:
+            self.completer().setCompletionMode(QCompleter.CompletionMode.PopupCompletion)
+
+    def callPopup(self):
+        self.completer().setCompletionPrefix("")
+        self.completer().complete()
+
+
+class DictItemEdit(QWidget):
+    def __init__(self, parent=None):
+        super(DictItemEdit, self).__init__(parent)
+        self.layout = QHBoxLayout(self)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+
+        self.keyWidget = LineEdit()
+        self.valueWidget = LineEdit()
+        self.layout.addWidget(self.keyWidget)
+        self.layout.addWidget(self.valueWidget)
+        self.setLayout(self.layout)
+
+    def setKeyText(self, text: str):
+        self.keyWidget.setText(text)
+
+    def setValueText(self, text: str):
+        self.valueWidget.setText(text)
+
+    def setCurrentData(self, data: DictItem):
+        self.setKeyText(data.key)
+        self.setValueText(data.value)
+
+    def currentData(self) -> DictItem:
+        keyData = self.keyWidget.text()
+        valueData = self.valueWidget.text()
+        return DictItem(keyData, valueData)
 
 
 class BytesEdit(QWidget):
@@ -234,6 +338,7 @@ class TimeEdit(WidgetWithTZinfo):
         self.timeEdit.setTime(val)
         self.tzinfoEdit.setVal(val.tzinfo)
 
+
 class StandardInputWidget(QWidget):
     closeClicked = pyqtSignal()
 
@@ -265,17 +370,17 @@ class StandardInputWidget(QWidget):
         if issubtype(self.objType, bool):
             widget = QCheckBox(self)
         elif issubtype(self.objType, str):
-            widget = widgets.LineEdit(self)
+            widget = LineEdit(self)
             if kwargs.get("completions"):
                 completer = QCompleter(kwargs["completions"], self)
                 completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
                 widget.setCompleter(completer)
         elif issubtype(self.objType, int):
-            widget = widgets.LineEdit(self)
+            widget = LineEdit(self)
             if self.useValidators:
                 widget.setValidator(QIntValidator())
         elif issubtype(self.objType, (float, decimal.Decimal)):
-            widget = widgets.LineEdit(self)
+            widget = LineEdit(self)
         elif issubtype(self.objType, (Enum, Type)):
             if issubtype(self.objType, Enum):
                 # add enum types to types
@@ -290,7 +395,7 @@ class StandardInputWidget(QWidget):
                     # add Union Type attrs to types
                     types = union.__args__
 
-            widget = widgets.ComboBox(self) if len(types) <= 6 else widgets.CompleterComboBox(self)
+            widget = ComboBox(self) if len(types) <= 6 else CompleterComboBox(self)
 
             for typ in types:
                 widget.addItem(getTypeName(typ), typ)
@@ -343,7 +448,7 @@ class SpecialInputWidget(StandardInputWidget):
     def _initWidget(self, **kwargs):
         if issubtype(self.objType, datetime.tzinfo):
             timezones = pytz.all_timezones
-            widget = widgets.CompleterComboBox(self)
+            widget = CompleterComboBox(self)
             widget.addItem("None", None)
             for timezone in timezones:
                 widget.addItem(timezone, timezone)
@@ -419,16 +524,3 @@ class SpecialInputWidget(StandardInputWidget):
             elif issubtype(self.objType, bytes) and isoftype(val, bytes):
                 # text = val.decode("utf-8")
                 self.widget.setPlainText(str(val))
-
-
-class CreateOptionalParamBtn(QPushButton):
-    def __init__(self, title, paramName, objTypehint, **kwargs):
-        super(CreateOptionalParamBtn, self).__init__(title, **kwargs)
-        self.paramName = paramName
-        self.paramTypehint = objTypehint
-
-class CloseButton(QToolButton):
-    """Close button for optional params.
-    A separate class is needed for the stylesheet to work properly"""
-    def __init__(self, parent=None):
-        super(CloseButton, self).__init__(parent)
