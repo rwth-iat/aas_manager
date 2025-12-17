@@ -10,7 +10,7 @@
 from PyQt6.QtCore import QModelIndex
 
 from aas_editor.import_feature.import_util_classes import PreObjectImport
-from aas_editor.widgets import PackTreeView, AttrsTreeView
+from aas_editor.treeviews import PackTreeView, AttrsTreeView
 
 
 class ImportTreeView(PackTreeView):

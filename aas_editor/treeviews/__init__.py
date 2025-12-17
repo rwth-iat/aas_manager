@@ -8,3 +8,6 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
+from .base import *
+from .treeview_pack import *
+from .treeview_detailed import *
