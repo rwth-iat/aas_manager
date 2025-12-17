@@ -10,19 +10,18 @@
 from typing import Union
 
 import widgets.widget_util
-from aas_editor import dialogs
-from aas_editor.import_feature.import_util_classes import TYPS_TO_SPECIAL_IMPORT_OBJ_CLASSES
+from tools.import_feature.import_util_classes import TYPS_TO_SPECIAL_IMPORT_OBJ_CLASSES
 from aas_editor.settings.app_settings import *
 from aas_editor.settings import EXTENDED_COLUMNS_IN_PACK_TABLE
 from aas_editor.models import StandardTable
-from aas_editor.import_feature.table_import import ImportTable
-from aas_editor.import_feature.treeview_import import ImportTreeView, DetailImportTreeView
+from tools.import_feature.table_import import ImportTable
+from tools.import_feature.treeview_import import ImportTreeView, DetailImportTreeView
 from aas_editor.editorApp import EditorApp
-from aas_editor.import_feature.import_file_widget import ImportManageWidget
+from tools.import_feature.import_file_widget import ImportManageWidget
 from aas_editor.utils.util_type import issubtype, removeOptional, isUnion, getArgs
 from aas_editor.widgets import TabWidget
-from aas_editor.import_feature.table_import_detailed_info import DetailedInfoImportTable
-from import_feature.item_import_treeview import ImportTreeViewItem
+from tools.import_feature.table_import_detailed_info import DetailedInfoImportTable
+from tools.import_feature.item_import_treeview import ImportTreeViewItem
 
 
 def handleTypeHint4import(objTypeHint, parent):

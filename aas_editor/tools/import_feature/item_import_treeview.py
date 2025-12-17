@@ -21,7 +21,7 @@ from types import GeneratorType
 from basyx.aas.adapter.aasx import DictSupplementaryFileContainer
 from basyx.aas.model import ModelReference, Referable
 
-from aas_editor.import_feature.import_settings import MAPPING_ATTR
+from tools.import_feature.import_settings import MAPPING_ATTR
 from aas_editor.models import PackTreeViewItem, StandardItem
 from aas_editor.package import Package
 from aas_editor.settings import PACKAGE_ROLE

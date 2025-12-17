@@ -48,6 +48,10 @@ class PreObject:
     def __repr__(self):
         return self.__str__()
 
+    def __len__(self):
+        obj = self.init()
+        return len(obj)
+
     @classmethod
     def useExistingObject(cls, obj):
         """If object already exists and no PreObject needed"""

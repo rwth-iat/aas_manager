@@ -24,13 +24,14 @@ from basyx.aas.model.datatypes import Date
 from dateutil.relativedelta import relativedelta
 
 from aas_editor.additional.classes import DictItem
-from aas_editor.import_feature import import_util
+from aas_editor.tools.import_feature import import_util
 from aas_editor.utils import util, util_classes, util_type
+from utils.util_classes import PreObject
 
 IMPORT_FILE = "Motor Daten aus EMSRDB.xlsx"
 
 
-class PreObjectImport(util_classes.PreObject):
+class PreObjectImport(PreObject):
     EXAMPLE_ROW_VALUE = None
 
     def __init__(self, objType, args, kwargs: Dict[str, object]):
@@ -45,7 +46,7 @@ class PreObjectImport(util_classes.PreObject):
 
         if isinstance(obj, PreObjectImport):
             return obj
-        elif isinstance(obj, util_classes.PreObject):
+        elif isinstance(obj, PreObject):
             return PreObjectImport.fromPreObject(obj)
 
         if obj is None:
@@ -107,7 +108,7 @@ class PreObjectImport(util_classes.PreObject):
             return PreObjectImport(objType, [], kwargs)
 
     @staticmethod
-    def fromPreObject(preObj: util_classes.PreObject):
+    def fromPreObject(preObj: PreObject):
         if preObj.existingObjUsed:
             return PreObjectImport.useExistingObject(preObj.existingObj)
         else:
@@ -116,18 +117,18 @@ class PreObjectImport(util_classes.PreObject):
     def _fromPreObjs2KwargObjs(self):
         args = []
         for arg in self.args:
-            if isinstance(arg, util_classes.PreObject):
+            if isinstance(arg, PreObject):
                 arg = PreObjectImport.fromPreObject(arg)
-            elif arg and type(arg) in (list, tuple) and isinstance(arg[0], util_classes.PreObject):
+            elif arg and type(arg) in (list, tuple) and isinstance(arg[0], PreObject):
                 arg = [PreObjectImport.fromPreObject(i) for i in arg]
             args.append(arg)
 
         kwargs = {}
         for key in self.kwargs:
             value = self.kwargs[key]
-            if isinstance(value, util_classes.PreObject):
+            if isinstance(value, PreObject):
                 value = PreObjectImport.fromPreObject(value)
-            if isinstance(key, util_classes.PreObject):
+            if isinstance(key, PreObject):
                 key = PreObjectImport.fromPreObject(key)
             kwargs[key] = value
 
@@ -225,7 +226,7 @@ class PreObjectImport(util_classes.PreObject):
         if param in self.kwargs:
             return self.kwargs[param]
         else:
-            return object.__getattr__(util_classes.PreObject, item)
+            return object.__getattr__(PreObject, item)
 
     def __iter__(self):
         if util_type.isIterableType(self.objType) and self.args:

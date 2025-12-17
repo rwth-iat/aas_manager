@@ -16,15 +16,13 @@ from PyQt6.QtWidgets import QWidget, QHBoxLayout, QPushButton, QFileDialog, QMes
     QDialogButtonBox, QLabel, QLineEdit
 
 import widgets.messsageBoxes
-from aas_editor.import_feature import import_util
-from aas_editor.import_feature.import_settings import MAPPING_ATTR
-from aas_editor.import_feature import import_util_classes
-from aas_editor.import_feature.import_util import getMapping, usedColumnsInMapping, unusedColumnsInMapping
+from tools.import_feature.import_settings import MAPPING_ATTR
+from tools.import_feature import import_util_classes, import_util
+from tools.import_feature.import_util import getMapping, usedColumnsInMapping, unusedColumnsInMapping
 from aas_editor.package import Package
 from aas_editor import settings
 from aas_editor.utils.util_classes import ClassesInfo
 from aas_editor.utils.util_type import isIterable
-from aas_editor import dialogs
 
 CHOOSE = "Choose..."
 EXCEL_FILES = "Excel files (*.xlsx)"
