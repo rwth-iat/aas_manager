@@ -58,6 +58,8 @@ class EditDialog(QDialog):
         self.buttonOk = self.buttonBox.button(QDialogButtonBox.StandardButton.Ok)
         self.buttonOk.released.connect(self.accept)
         self.buttonOk.setDisabled(True)
+        self.buttonOk.setDefault(True)
+        self.buttonOk.setAutoDefault(True)
 
         self.scrollArea = QScrollArea(self)
         self.scrollArea.setFrameShape(QFrame.Shape.NoFrame)
