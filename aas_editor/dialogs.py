@@ -27,7 +27,7 @@ from aas_editor.utils.util_type import getTypeName, isoftype
 from aas_editor.utils.util_classes import PreObject
 from aas_editor import widgets
 from widgets.jsonEditor import JSONEditor
-from widgets.widget_util import InputWidgetUtil
+from widgets.widgetUtil import InputWidgetUtil
 
 def checkIfAccepted(func):
     """Decorator for checking if user clicked ok"""

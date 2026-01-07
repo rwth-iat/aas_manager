@@ -19,7 +19,7 @@ from settings import DEFAULT_INHERITOR
 from utils.util import getParamsAndTypehints4init, getReqParams4init, inheritors
 from utils.util_classes import ClassesInfo
 from utils.util_type import removeOptional, isOptional, isValOk4Typehint, isIterableType, issubtype, \
-    isSimpleIterableType
+    isSimpleIterableType, isUnion
 
 
 class InputWidgetUtil:

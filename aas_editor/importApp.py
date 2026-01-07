@@ -9,7 +9,7 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 from typing import Union
 
-import widgets.widget_util
+import widgets.widgetUtil
 from tools.import_feature.import_util_classes import TYPS_TO_SPECIAL_IMPORT_OBJ_CLASSES
 from aas_editor.settings.app_settings import *
 from aas_editor.settings import EXTENDED_COLUMNS_IN_PACK_TABLE

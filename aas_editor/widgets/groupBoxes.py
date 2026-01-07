@@ -19,7 +19,7 @@ from basyx.aas.model import LangStringSet, Referable, ModelReference
 import widgets
 import widgets.buttons
 from additional.classes import DictItem
-from widgets.widget_util import InputWidgetUtil
+from widgets.widgetUtil import InputWidgetUtil
 from settings import DEFAULT_COMPLETIONS, DEFAULTS, OBJECT_ROLE
 from utils.util import getReqParams4init, getParamsAndTypehints4init, getDefaultVal, delAASParent, inheritors
 
@@ -475,3 +475,14 @@ class ModelReferenceGroupBox(ObjGroupBox):
         else:
             print("Item adding cancelled")
         dialog.deleteLater()
+
+
+class OptionGroupBox(QGroupBox):
+    def currOption(self):
+        pass
+
+    def chosenOption(self):
+        pass
+
+    def applyChosenOption(self):
+        pass

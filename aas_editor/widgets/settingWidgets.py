@@ -9,21 +9,11 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 from typing import Dict
 
-from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout, QLabel, QGroupBox, QHBoxLayout, QRadioButton
+from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout, QLabel, QHBoxLayout, QRadioButton
 from PyQt6.QtCore import Qt
 
-from aas_editor.settings import AppSettings, Setting, AAS_FILE_TYPES
-
-
-class OptionGroupBox(QGroupBox):
-    def currOption(self):
-        pass
-
-    def chosenOption(self):
-        pass
-
-    def applyChosenOption(self):
-        pass
+from aas_editor.settings import AppSettings, Setting
+from widgets.groupBoxes import OptionGroupBox
 
 
 class RadioBtnsGroupBox(OptionGroupBox):

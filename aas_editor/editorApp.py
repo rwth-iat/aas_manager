@@ -19,13 +19,12 @@ import widgets.groupBoxes
 from aas_editor.settings.app_settings import *
 from aas_editor.settings.icons import EXIT_ICON, SETTINGS_ICON, NEW_PACK_ICON
 from aas_editor.settings import APPLICATION_NAME, REPORT_ERROR_LINK
-from aas_editor.settings_dialog import SettingsDialog
+from widgets.settingWidgets import SettingsDialog
 from tools.aas_test.aas_test_engines_tool import AasTestEnginesToolDialog
 from widgets import AddressLine
 from aas_editor import design
 from aas_editor.models import DetailedInfoTable, PacksTable
 from aas_editor.utils.util import toggleStylesheet
-from aas_editor import dialogs
 from treeviews.base import HeaderView
 
 

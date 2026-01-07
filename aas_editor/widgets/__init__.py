@@ -16,6 +16,7 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
+from .settingWidgets import SettingsDialog, RadioBtnsGroupBox
 from .editWidgets import LineEdit, ComboBox, CompleterComboBox, CompleterLineEdit, CompleterComboBox
 from .toolbar import ToolBar
 from .search import SearchBar
