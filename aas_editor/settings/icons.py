@@ -147,6 +147,7 @@ FILE_ICON = QIcon()
 MIME_PDF_ICON = QIcon()
 MIME_IMAGE_ICON = QIcon()
 MIME_TEXT_ICON = QIcon()
+INFO_ICON = QIcon()
 
 MIME_TYPE_ICON_DICT = {
     "application/pdf": MIME_PDF_ICON,
@@ -192,6 +193,7 @@ ICONS_SVG = {
     MIME_PDF_ICON: "file-pdf-box.svg",
     MIME_IMAGE_ICON: "file-image.svg",
     MIME_TEXT_ICON: "file-document.svg",
+    INFO_ICON: "info.svg",
 }
 
 def initialize_all_icons():

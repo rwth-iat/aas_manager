@@ -21,6 +21,7 @@ from aas_editor.settings.icons import EXIT_ICON, SETTINGS_ICON, NEW_PACK_ICON
 from aas_editor.settings import APPLICATION_NAME, REPORT_ERROR_LINK
 from widgets.settingWidgets import SettingsDialog
 from tools.aas_test.aas_test_engines_tool import AasTestEnginesToolDialog
+from aas_editor.tools.handover_doc_llm.handover_documentation_tool import HandoverDocumentationToolDialog
 from widgets import AddressLine
 from aas_editor import design
 from aas_editor.models import DetailedInfoTable, PacksTable
@@ -73,6 +74,10 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.testEnginesToolDialogAct = QAction("AAS Test tool", self,
                                           statusTip="Open AAS Test Engines tool",
                                           triggered=lambda: AasTestEnginesToolDialog(self).exec())
+
+        self.handoverDocumentationToolDialogAct = QAction("Handover Documentation tool", self,
+                                          statusTip="Open Handover Documentation tool",
+                                          triggered=self.openHandoverDocumentationTool)
 
         self.importToolAct = QAction("Excel AAS Generator tool", self,
                                      statusTip="Open Excel AAS Generator tool",
@@ -166,6 +171,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.menuTools = QMenu("&Tools", self.menubar)
         self.menuTools.addAction(self.testEnginesToolDialogAct)
+        self.menuTools.addAction(self.handoverDocumentationToolDialogAct)
         self.menuTools.addAction(self.importToolAct)
 
         self.menuHelp = QMenu("&Help", self.menubar)
@@ -349,4 +355,9 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         AppSettings.TABTREEVIEW_HEADER_STATE.setValue(
             self.mainTabWidget.currentWidget().attrsTreeView.header().saveState())
         # AppSettings.DEFAULT_NEW_FILETYPE_FILTER.setValue(self.packTreeView.defaultNewFileType)
+
+    def openHandoverDocumentationTool(self):
+        dialog = HandoverDocumentationToolDialog(self)
+        dialog.handoverExtracted.connect(self.mainTreeView.add_handover_to_file)
+        dialog.exec()
 

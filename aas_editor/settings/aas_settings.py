@@ -102,6 +102,11 @@ ATTR_ORDER = (
 )
 PREFERRED_LANGS_ORDER = ("en-us", "en", "de")
 
+SHELLS = "shells"
+SUBMODELS = "submodels"
+CONCEPT_DESCRIPTIONS = "concept_descriptions"
+FILESTORE = "fileStore"
+
 CLASSES_INFO = {
     object: {
         HIDDEN_ATTRS: ("namespace_element_sets", "parent", "security", "source"),
@@ -114,19 +119,19 @@ CLASSES_INFO = {
         ADD_ACT_AAS_TXT: "Add package",
         ADD_TYPE: aas_editor.package.Package,
         PACKVIEW_ATTRS_INFO: {
-            "shells": {
+            SHELLS: {
                 ADD_ACT_AAS_TXT: "Add shell",
                 ADD_TYPE: AssetAdministrationShell,
             },
-            "submodels": {
+            SUBMODELS: {
                 ADD_ACT_AAS_TXT: "Add submodel",
                 ADD_TYPE: Submodel,
             },
-            "concept_descriptions": {
+            CONCEPT_DESCRIPTIONS: {
                 ADD_ACT_AAS_TXT: "Add concept description",
                 ADD_TYPE: ConceptDescription,
             },
-            "fileStore": {
+            FILESTORE: {
                 ADD_ACT_AAS_TXT: "Add file",
                 ADD_TYPE: aas_editor.package.StoredFile,
             },
