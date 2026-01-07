@@ -96,7 +96,7 @@ class InputWidgetUtil:
             widget = widgets.groupBoxes.LangStringSetGroupBox(objTypeHint, **kwargs)
         elif isSimpleIterableType(objTypeHint):
             widget = widgets.groupBoxes.IterableGroupBox(objTypeHint, **kwargs)
-        elif issubtype(objTypeHint, Union):
+        elif isUnion(objTypeHint):
             objTypes = objTypeHint.__args__
             widget = widgets.groupBoxes.TypeOptionObjGroupBox(objTypes, **kwargs)
         elif issubtype(objTypeHint, ModelReference):
