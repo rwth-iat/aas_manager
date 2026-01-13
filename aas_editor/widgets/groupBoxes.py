@@ -25,7 +25,7 @@ from utils.util import getReqParams4init, getParamsAndTypehints4init, getDefault
 
 from utils.util_classes import ClassesInfo, PreObject
 from utils.util_type import isOptional, issubtype, getTypeName, typeHintToType, isoftype, isIterable, isIterableType, \
-    isValOk4Typehint
+    isValOk4Typehint, getArgs
 from widgets.editWidgets import StandardInputWidget
 from widgets.messsageBoxes import ErrorMessageBox
 
@@ -260,7 +260,7 @@ class SingleWidgetGroupBox(GroupBox):
 class IterableGroupBox(GroupBox):
     def __init__(self, objTypeHint, **kwargs):
         super().__init__(objTypeHint, **kwargs)
-        self.argTypes = list(self.objTypeHint.__args__)
+        self.argTypes = list(getArgs(self.objTypeHint))
         self.kwargs = kwargs.copy() if kwargs else {}
         plusButton = QPushButton(f"Add Item", self,
                                  toolTip="Add item",

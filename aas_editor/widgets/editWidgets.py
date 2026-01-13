@@ -26,7 +26,7 @@ from basyx.aas.model.datatypes import Date
 from aas_editor.additional.classes import DictItem
 from utils.util import inheritors
 from utils.util_classes import PreObject
-from utils.util_type import isoftype, issubtype, getTypeName
+from utils.util_type import isoftype, issubtype, getTypeName, getArgs
 from widgets.buttons import CloseButton
 
 
@@ -386,14 +386,14 @@ class StandardInputWidget(QWidget):
                 # add enum types to types
                 types = [member for member in self.objType]
             else:  # Type
-                union = self.objType.__args__[0]
+                union = getArgs(self.objType)[0]
                 if type(union) == TypeVar:
                     # add Type inheritors to types
                     baseType = union.__bound__
                     types = inheritors(baseType)
                 else:
                     # add Union Type attrs to types
-                    types = union.__args__
+                    types = getArgs(union)
 
             widget = ComboBox(self) if len(types) <= 6 else CompleterComboBox(self)
 

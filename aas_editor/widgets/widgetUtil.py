@@ -19,7 +19,7 @@ from settings import DEFAULT_INHERITOR
 from utils.util import getParamsAndTypehints4init, getReqParams4init, inheritors
 from utils.util_classes import ClassesInfo
 from utils.util_type import removeOptional, isOptional, isValOk4Typehint, isIterableType, issubtype, \
-    isSimpleIterableType, isUnion
+    isSimpleIterableType, isUnion, getArgs
 
 
 class InputWidgetUtil:
@@ -97,7 +97,7 @@ class InputWidgetUtil:
         elif isSimpleIterableType(objTypeHint):
             widget = widgets.groupBoxes.IterableGroupBox(objTypeHint, **kwargs)
         elif isUnion(objTypeHint):
-            objTypes = objTypeHint.__args__
+            objTypes = getArgs(objTypeHint)
             widget = widgets.groupBoxes.TypeOptionObjGroupBox(objTypes, **kwargs)
         elif issubtype(objTypeHint, ModelReference):
             widget = widgets.groupBoxes.ModelReferenceGroupBox(objTypeHint, **kwargs)
