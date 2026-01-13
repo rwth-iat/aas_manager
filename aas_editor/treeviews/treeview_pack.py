@@ -156,14 +156,14 @@ class PackTreeView(TreeView):
 
     # Scan the folder SUBMODEL_TEMPLATES_FOLDER and create a set filesObjStores of SetObjectStore elements and its names
     def scanFolderForExistFiles(self):
-        path = SUBMODEL_TEMPLATES_FOLDER
+        sm_templates_path = SUBMODEL_TEMPLATES_FOLDER
 
-        if not path.is_dir():
-            path.mkdir()
+        if not sm_templates_path.is_dir():
+            sm_templates_path.mkdir()
 
-        aasxFiles = [file for file in path.rglob('*.aasx')]
-        xmlFiles = [file for file in path.rglob('*.xml')]
-        jsonFiles = [file for file in path.rglob('*.json')]
+        aasxFiles = [file for file in sm_templates_path.rglob('*.aasx')]
+        xmlFiles = [file for file in sm_templates_path.rglob('*.xml')]
+        jsonFiles = [file for file in sm_templates_path.rglob('*.json')]
         smFiles = aasxFiles + xmlFiles + jsonFiles
 
         # Read the aas files and store it in SetObjectStore in dictionary fileObjDict.
@@ -181,7 +181,8 @@ class PackTreeView(TreeView):
                     reader.read_into(objStore, fileStore)
                 else:
                     raise TypeError("Wrong file type:", smFile.suffix)
-                self.copyBufferObjStores[smFile.name] = objStore
+                # Save path to the file relative to the submodel folder
+                self.copyBufferObjStores[smFile.relative_to(sm_templates_path)] = objStore
             except Exception as e:
                 # If a package is with an error, that file will be skipped.
                 logging.exception(f"Error while reading {smFile}: {e}. Submodels can not be read")
@@ -397,16 +398,37 @@ class PackTreeView(TreeView):
 
     # Create Menu for adding existing submodels.
     def initMenuAddExistingSubmodels(self):
+        # 1. Initialize the root submenu
         self.addExistSubmodelsMenu = QMenu("Add existing submodel", self.attrsMenu)
         self.addExistSubmodelsMenu.setIcon(ADD_ICON)
         self.addExistSubmodelsMenu.menuAction().setEnabled(False)
-        # Add menu with a name of model.
-        # dictCopyExistSubmodelActs contains the package names and the list of QActions of its submodels.
-        for filename, copyPasteSubmodelActs in self.existSubmodelCopyActsFromFiles.items():
-            nameMenu = self.addExistSubmodelsMenu.addMenu(filename)
-            # In copyPasteSubmodelActs are QActions with submodels
-            for copyPasteSubmodelAct in copyPasteSubmodelActs:
-                nameMenu.addAction(copyPasteSubmodelAct)
+
+        # 2. Iterate through your file paths
+        for filepath, copyPasteSubmodelActs in self.existSubmodelCopyActsFromFiles.items():
+            # current_level tracks where we are in the tree for this specific file
+            current_level = self.addExistSubmodelsMenu
+
+            # Filter out parts that are purely numeric (Submodel Versions)
+            clean_parts = [p for p in filepath.parts if not p.isdigit()]
+
+            # Use parts to build the nested structure
+            for part in clean_parts:
+                # Look for an existing submenu with this title
+                found_menu = None
+                for action in current_level.actions():
+                    menu = action.menu()
+                    if menu and menu.title() == part:
+                        found_menu = menu
+                        break
+
+                # If not found, create it and set its title
+                if found_menu:
+                    current_level = found_menu
+                else:
+                    current_level = current_level.addMenu(part)
+
+            # 3. Add the actual actions to the deepest nested menu found/created
+            current_level.addActions(copyPasteSubmodelActs)
         self.attrsMenu.insertMenu(self.addAct, self.addExistSubmodelsMenu)
 
     def updateActions(self, index: QModelIndex):
