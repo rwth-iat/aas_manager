@@ -21,3 +21,4 @@ from .editWidgets import LineEdit, ComboBox, CompleterComboBox, CompleterLineEdi
 from .toolbar import ToolBar
 from .search import SearchBar
 from .tab import TabWidget, TabBar, TabWithTreeView, AddressLine
+from .messsageBoxes import AboutMessageBox, ErrorMessageBox

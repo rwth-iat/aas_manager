@@ -23,7 +23,7 @@ from PyQt6.QtWidgets import QLineEdit, QComboBox, QWidget, QCompleter, QHBoxLayo
     QFileDialog, QVBoxLayout, QDateEdit, QDateTimeEdit, QCheckBox
 from basyx.aas.model.datatypes import Date
 
-from additional.classes import DictItem
+from aas_editor.additional.classes import DictItem
 from utils.util import inheritors
 from utils.util_classes import PreObject
 from utils.util_type import isoftype, issubtype, getTypeName

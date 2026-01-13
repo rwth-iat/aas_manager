@@ -29,7 +29,7 @@ import widgets.messsageBoxes
 
 from aas_editor.models.search_proxy_model import SearchProxyModel
 from aas_editor.settings.app_settings import *
-from additional.classes import DictItem
+from aas_editor.additional.classes import DictItem
 from delegates import EditDelegate
 from models import StandardTable
 from settings import TOOLBARS_HEIGHT, COPY_ICON, SC_COPY, PASTE_ICON, SC_PASTE, CUT_ICON, SC_CUT, ADD_ICON, SC_NEW, \

@@ -18,7 +18,7 @@ from basyx.aas.model import LangStringSet, Referable, ModelReference
 
 import widgets
 import widgets.buttons
-from additional.classes import DictItem
+from aas_editor.additional.classes import DictItem
 from widgets.widgetUtil import InputWidgetUtil
 from settings import DEFAULT_COMPLETIONS, DEFAULTS, OBJECT_ROLE
 from utils.util import getReqParams4init, getParamsAndTypehints4init, getDefaultVal, delAASParent, inheritors
