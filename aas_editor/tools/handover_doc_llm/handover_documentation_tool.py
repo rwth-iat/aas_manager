@@ -7,7 +7,7 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
-
+import logging
 import os
 import json
 import tempfile
@@ -15,8 +15,8 @@ import traceback
 
 from PyQt6.QtWidgets import QDialog, QPushButton, QVBoxLayout, QFileDialog, QLineEdit, QComboBox, \
     QHBoxLayout, QTextEdit, QLabel
-from PyQt6.QtCore import pyqtSignal, QThread
-from PyQt6.QtGui import QIntValidator
+from PyQt6.QtCore import pyqtSignal, QThread, QUrl
+from PyQt6.QtGui import QIntValidator, QDesktopServices
 from basyx.aas.adapter.json import AASToJsonEncoder, AASFromJsonDecoder
 
 from basyx.aas.model import Submodel
@@ -28,6 +28,7 @@ from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
 
+from widgets import messsageBoxes
 from tools.handover_doc_llm.documentation_generator import json2handover_documentation
 from aas_editor.settings.icons import INFO_ICON
 
@@ -189,6 +190,7 @@ class HandoverDocumentationToolDialog(QDialog):
             self.processPdf(file)
 
     def processPdf(self, file: str):
+        self.current_file = file
         self.html_renderer.setHtml("""
             <div style='text-align: center; padding: 50px; font-size: 18px;'>
                 <div style='margin-bottom: 20px;'>Processing PDF...</div>
@@ -249,15 +251,22 @@ class HandoverDocumentationToolDialog(QDialog):
     def show_answer_dialog(self, answer):
         self.cleanup_thread()
         dialog = AnswerDialog(answer, self)
-        if dialog.exec():
-            json_str = dialog.findChild(QTextEdit).toPlainText()
+        sm_generation_successful = False
+        while not sm_generation_successful and dialog.exec():
             try:
+                # 2. Open the file with the default OS handler
+                file_url = QUrl.fromLocalFile(os.path.abspath(self.current_file))
+                if not QDesktopServices.openUrl(file_url):
+                    logging.warning(f"Could not open file: {self.current_file}")
+                json_str = dialog.findChild(QTextEdit).toPlainText()
                 handover_sm = json2handover_documentation(json_str)
                 normalized_json = json.dumps(handover_sm, cls=AASToJsonEncoder)
                 normalized_json = normalized_json.replace('\\', '\\\\')
                 normalized_handover_sm = json.loads(normalized_json, cls=AASFromJsonDecoder)
                 self.accept()
                 self.handoverExtracted.emit(normalized_handover_sm)
-            except Exception:
-                err_msg = traceback.format_exc()
-                self.html_renderer.setHtml(f"<div style='color:red;'>{err_msg}</div>")
+                sm_generation_successful = True
+            except Exception as e:
+                messsageBoxes.ErrorMessageBox.withTraceback(self, str(e)).exec()
+                continue
+        dialog.deleteLater()
