@@ -14,7 +14,7 @@ import tempfile
 import traceback
 
 from PyQt6.QtWidgets import QDialog, QPushButton, QVBoxLayout, QFileDialog, QLineEdit, QComboBox, \
-    QHBoxLayout, QLabel, QMessageBox, QListWidgetItem, QListWidget
+    QHBoxLayout, QLabel, QMessageBox, QListWidgetItem, QListWidget, QGroupBox, QFormLayout, QWidget, QCheckBox
 from PyQt6.QtCore import pyqtSignal, QThread, QUrl
 from PyQt6.QtGui import QIntValidator, QDesktopServices
 from basyx.aas.adapter.json import AASToJsonEncoder, AASFromJsonDecoder
@@ -36,6 +36,7 @@ from tools.handover_doc_llm.config import PROMPT, LLM_PROVIDERS, EMBEDDING_PROVI
 from aas_editor.widgets.dropfilebox import DropFileQWebEngineView
 from widgets.jsonEditor import JSONEditor
 
+DOCUMENT_ROLE = 1000
 
 class PdfProcessingThread(QThread):
     processing_complete = pyqtSignal(str)
@@ -137,12 +138,10 @@ class HandoverDocumentationToolDialog(QDialog):
 
         self.documentListLabel = QLabel("Processed Documents:", self)
         self.documentListLabel.setFixedHeight(20)
-        self.documentListLabel.setVisible(False)
         self.documentList = QListWidget(self)
         self.documentList.setMaximumHeight(150)
         self.documentList.setMinimumHeight(50)
         self.documentList.setToolTip("List of processed documents")
-        self.documentList.setVisible(False)
 
 
         self.html_renderer = DropFileQWebEngineView(self, emptyViewMsg="Drop PDF file here",
@@ -164,8 +163,9 @@ class HandoverDocumentationToolDialog(QDialog):
         self.model_info_label.setToolTip(
             "A custom model can be used, else the default model is being used.\nFor more information about models see \"https://js.langchain.com/docs/integrations/chat/\"")
 
-        self.idLineEdit = QLineEdit(self, toolTip="ID of the generated Handover Documentation Submodel",
+        self.idLineEdit = QLineEdit(self, toolTip="ID of the generated Handover Documentation Submodel (mandatory)",
                                     placeholderText="Enter Submodel ID")
+        self.idLineEdit.textChanged.connect(lambda txt: self.finishButton.setEnabled(bool(txt.strip())))
 
         self.chooseButton = QPushButton("Choose && Process PDF", self,
                                         toolTip="The selected PDF file will be processed and the extracted Handover Documentation will be shown.",
@@ -173,11 +173,18 @@ class HandoverDocumentationToolDialog(QDialog):
 
         self.pagesFrontLineEdit = QLineEdit(self,
                                             toolTip="Number of pages to use from the front of the document",
-                                            placeholderText="Front X pages to analyze (default: all)")
+                                            placeholderText="default: 3; all pages = -1")
         self.pagesFrontLineEdit.setValidator(QIntValidator())
         self.pagesEndLineEdit = QLineEdit(self, toolTip="Number of pages to use from the end of the document",
-                                          placeholderText="End X pages to analyze (default: all)")
+                                          placeholderText="default: 3")
         self.pagesEndLineEdit.setValidator(QIntValidator())
+
+        # Add option box widget to choose if to open PDF automatically when processing is done
+        self.openPdfCheckbox = QCheckBox("Open Document when processing is done", self)
+        self.openPdfCheckbox.setChecked(True)
+        self.openPdfCheckbox.setToolTip("If checked, the document will be opened with the system default viewer "
+                                        "after processing.")
+
         self.processingThread = None
 
         self.finishButton = QPushButton("Finish handover documentation", self)
@@ -187,34 +194,53 @@ class HandoverDocumentationToolDialog(QDialog):
 
         self._initLayout()
 
-        self.documents = []
+    @property
+    def documents(self):
+        document_items = [self.documentList.item(i) for i in range(self.documentList.count())]
+        return [item.data(DOCUMENT_ROLE) for item in document_items]
 
     def _initLayout(self):
         layout = QVBoxLayout(self)
 
         layout.addWidget(QLabel(TOOL_DESCRIPTION, self))
 
-        layout.addWidget(self.idLineEdit)
+        # LLM settings group (provider, model, model-info, api key)
+        gb_llm = QGroupBox("LLM Settings")
+        llm_form = QFormLayout()
 
-        # Layout for LLM provider and model
-        layout_model = QHBoxLayout()
-        layout_model.addWidget(self.providerLineEdit)
-        layout_model.addWidget(self.modelLineEdit)
-        layout_model.addWidget(self.model_info_label)
-        layout.addLayout(layout_model)
-        layout.addWidget(self.apiKeyLineEdit)
+        llm_form.addRow(QLabel("AI Provider:"), self.providerLineEdit)
 
-        # Layout for pages selection
-        layout_pages = QHBoxLayout()
-        layout_pages.addWidget(self.pagesFrontLineEdit)
-        layout_pages.addWidget(self.pagesEndLineEdit)
-        layout.addLayout(layout_pages)
+        model_container = QWidget()
+        model_h = QHBoxLayout(model_container)
+        model_h.setContentsMargins(0, 0, 0, 0)
+        model_h.addWidget(self.modelLineEdit)
+        model_h.addWidget(self.model_info_label)
+        llm_form.addRow(QLabel("LLM Model:"), model_container)
 
-        layout.addWidget(self.documentListLabel)
-        layout.addWidget(self.documentList)
+        llm_form.addRow(QLabel("API Key:"), self.apiKeyLineEdit)
+        gb_llm.setLayout(llm_form)
+        layout.addWidget(gb_llm)
 
+        # Pages selection group
+        gb_pages = QGroupBox("Processing Settings")
+        pages_layout = QVBoxLayout()
+        pages_layout.addWidget(QLabel("Front X pages to analyze:", self))
+        pages_layout.addWidget(self.pagesFrontLineEdit)
+        pages_layout.addWidget(QLabel("End Y pages to analyze:", self))
+        pages_layout.addWidget(self.pagesEndLineEdit)
+        pages_layout.addWidget(self.openPdfCheckbox)
+        gb_pages.setLayout(pages_layout)
+        layout.addWidget(gb_pages)
+
+        # Submodel group
+        gb_id = QGroupBox("Handover Submodel")
+        sm_form = QFormLayout()
+        sm_form.addRow(QLabel("Submodel ID*:", self), self.idLineEdit)
+        sm_form.addRow(self.documentListLabel, self.documentList)
+        gb_id.setLayout(sm_form)
+
+        layout.addWidget(gb_id)
         layout.addWidget(self.html_renderer)
-
         layout.addWidget(self.chooseButton)
         layout.addWidget(self.finishButton)
         self.setLayout(layout)
@@ -290,27 +316,25 @@ class HandoverDocumentationToolDialog(QDialog):
         self.documentList.setFixedHeight(new_height)
 
     def show_answer_dialog(self, answer):
+        # Open the file with the default OS handler if user enabled it
+        if self.openPdfCheckbox.isChecked():
+            file_url = QUrl.fromLocalFile(os.path.abspath(self.current_file))
+            if not QDesktopServices.openUrl(file_url):
+                logging.warning(f"Could not open file: {self.current_file}")
+
         self.cleanup_thread()
         dialog = AnswerDialog(answer, self)
 
         while dialog.exec():
             try:
-                # 2. Open the file with the default OS handler
-                file_url = QUrl.fromLocalFile(os.path.abspath(self.current_file))
-                if not QDesktopServices.openUrl(file_url):
-                    logging.warning(f"Could not open file: {self.current_file}")
                 json_str = dialog.text.text()
                 document = json2document(json_str)
-                self.documents.append(document)
 
                 item = QListWidgetItem(os.path.basename(self.current_file))
+                item.setData(DOCUMENT_ROLE, document)
                 item.setToolTip(self.current_file)
                 self.documentList.addItem(item)
-                self.documentList.setVisible(True)
-                self.documentListLabel.setVisible(True)
                 self._update_document_list_height()
-
-                self.finishButton.setEnabled(True)
 
                 self.adjustSize()
                 self.resize(max(self.width(), 600), max(self.height(), 650))
