@@ -73,10 +73,14 @@ class PdfProcessingThread(QThread):
 
             loader = PyPDFLoader(tmp_path)
             docs = loader.load()
-            if self.pages_front.isdigit():
-                docs = docs[:int(self.pages_front)]
-            if self.pages_end.isdigit() and int(self.pages_end) + int(self.pages_front) < len(docs):
-                docs = docs[-int(self.pages_end):]
+
+            pages_front = int(self.pages_front) if self.pages_front.isdigit() else 3
+            pages_end = int(self.pages_end) if self.pages_end.isdigit() else 3
+
+            if pages_front == -1 or pages_end == -1 or (pages_front + pages_end) >= len(docs):
+                pass  # Use all pages
+            else:
+                docs = docs[:pages_front] + docs[-pages_end:]
 
             splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
             splits = splitter.split_documents(docs)
