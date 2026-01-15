@@ -115,13 +115,31 @@ class PdfProcessingThread(QThread):
 
 
 class AnswerDialog(QDialog):
+    VDI2770_CLASSIFICATION_SYSTEM = """// VDI2770 Classification System: 
+// ID - Document class name
+// "01-01" - Identification
+// "02-01" - Technical specification
+// "02-02" - Drawings, plans
+// "02-03" - Assemblies
+// "02-04" - Certificates, declarations
+// "03-01" - Commissioning, de-commissioning
+// "03-02" - Operation
+// "03-03" - General safety
+// "03-04" - Inspection, maintenance, testing
+// "03-05" - Repair
+// "03-06" - Spare parts
+// "04-01" - Contract documents
+
+"""
+
+
     def __init__(self, answer, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Edit LLM Extracted Answer")
         self.setMinimumSize(600, 400)
         layout = QVBoxLayout(self)
         self.text = JSONEditor(self)
-        self.text.setText(answer)
+        self.text.setText(self.VDI2770_CLASSIFICATION_SYSTEM + answer)
         layout.addWidget(self.text)
         ok_button = QPushButton("OK", self)
         ok_button.clicked.connect(self.accept)
