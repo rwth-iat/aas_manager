@@ -14,7 +14,7 @@ import tempfile
 import traceback
 
 from PyQt6.QtWidgets import QDialog, QPushButton, QVBoxLayout, QFileDialog, QLineEdit, QComboBox, \
-    QHBoxLayout, QTextEdit, QLabel
+    QHBoxLayout, QLabel, QMessageBox, QListWidgetItem, QListWidget
 from PyQt6.QtCore import pyqtSignal, QThread, QUrl
 from PyQt6.QtGui import QIntValidator, QDesktopServices
 from basyx.aas.adapter.json import AASToJsonEncoder, AASFromJsonDecoder
@@ -22,18 +22,19 @@ from basyx.aas.adapter.json import AASToJsonEncoder, AASFromJsonDecoder
 from basyx.aas.model import Submodel
 
 from langchain_community.document_loaders import PyPDFLoader
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from langchain.chains import create_retrieval_chain
-from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain_classic.chains import create_retrieval_chain
+from langchain_classic.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
 
 from widgets import messsageBoxes
-from tools.handover_doc_llm.documentation_generator import json2handover_documentation
+from tools.handover_doc_llm.documentation_generator import json2document, documents2handover_documentation
 from aas_editor.settings.icons import INFO_ICON
 
 from tools.handover_doc_llm.config import PROMPT, LLM_PROVIDERS, EMBEDDING_PROVIDERS, TOOL_DESCRIPTION
 from aas_editor.widgets.dropfilebox import DropFileQWebEngineView
+from widgets.jsonEditor import JSONEditor
 
 
 class PdfProcessingThread(QThread):
@@ -114,9 +115,9 @@ class AnswerDialog(QDialog):
         self.setWindowTitle("Edit LLM Extracted Answer")
         self.setMinimumSize(600, 400)
         layout = QVBoxLayout(self)
-        text = QTextEdit(self)
-        text.setText(answer)
-        layout.addWidget(text)
+        self.text = JSONEditor(self)
+        self.text.setText(answer)
+        layout.addWidget(self.text)
         ok_button = QPushButton("OK", self)
         ok_button.clicked.connect(self.accept)
         layout.addWidget(ok_button)
@@ -128,10 +129,22 @@ class HandoverDocumentationToolDialog(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Handover Documentation Extractor")
-        self.setMinimumSize(600, 600)
+        self.setMinimumSize(600, 700)
+
+        self.documentListLabel = QLabel("Processed Documents:", self)
+        self.documentListLabel.setFixedHeight(20)
+        self.documentListLabel.setVisible(False)
+        self.documentList = QListWidget(self)
+        self.documentList.setMaximumHeight(150)
+        self.documentList.setMinimumHeight(50)
+        self.documentList.setToolTip("List of processed documents")
+        self.documentList.setVisible(False)
+
+
         self.html_renderer = DropFileQWebEngineView(self, emptyViewMsg="Drop PDF file here",
                              description="Drop a PDF file to extract Handover Documentation (VDI 2770).")
         self.html_renderer.fileDropped.connect(self.processPdf)
+        self.html_renderer.setMinimumHeight(200)
 
         self.apiKeyLineEdit = QLineEdit(self, toolTip="API Key for LLM service",
                                         placeholderText="Enter API Key here",
@@ -147,6 +160,9 @@ class HandoverDocumentationToolDialog(QDialog):
         self.model_info_label.setToolTip(
             "A custom model can be used, else the default model is being used.\nFor more information about models see \"https://js.langchain.com/docs/integrations/chat/\"")
 
+        self.idLineEdit = QLineEdit(self, toolTip="ID of the generated Handover Documentation Submodel",
+                                    placeholderText="Enter Submodel ID")
+
         self.chooseButton = QPushButton("Choose && Process PDF", self,
                                         toolTip="The selected PDF file will be processed and the extracted Handover Documentation will be shown.",
                                         clicked=self.chooseAndProcessPdf)
@@ -159,12 +175,23 @@ class HandoverDocumentationToolDialog(QDialog):
                                           placeholderText="End X pages to analyze (default: all)")
         self.pagesEndLineEdit.setValidator(QIntValidator())
         self.processingThread = None
+
+        self.finishButton = QPushButton("Finish handover documentation", self)
+        self.finishButton.setToolTip("Generate the handover documentation from the extracted documents.")
+        self.finishButton.setEnabled(False)
+        self.finishButton.clicked.connect(self.finish_handover_documentation)
+
         self._initLayout()
+
+        self.documents = []
 
     def _initLayout(self):
         layout = QVBoxLayout(self)
 
         layout.addWidget(QLabel(TOOL_DESCRIPTION, self))
+
+        layout.addWidget(self.idLineEdit)
+
         # Layout for LLM provider and model
         layout_model = QHBoxLayout()
         layout_model.addWidget(self.providerLineEdit)
@@ -179,9 +206,13 @@ class HandoverDocumentationToolDialog(QDialog):
         layout_pages.addWidget(self.pagesEndLineEdit)
         layout.addLayout(layout_pages)
 
+        layout.addWidget(self.documentListLabel)
+        layout.addWidget(self.documentList)
+
         layout.addWidget(self.html_renderer)
 
         layout.addWidget(self.chooseButton)
+        layout.addWidget(self.finishButton)
         self.setLayout(layout)
 
     def chooseAndProcessPdf(self):
@@ -248,25 +279,62 @@ class HandoverDocumentationToolDialog(QDialog):
             self.processingThread.wait()
         super().closeEvent(event)
 
+    def _update_document_list_height(self):
+        count = self.documentList.count()
+        item_height = self.documentList.sizeHintForRow(0) if count > 0 else 20
+        new_height = min(150, item_height * count + 2 * self.documentList.frameWidth())
+        self.documentList.setFixedHeight(new_height)
+
     def show_answer_dialog(self, answer):
         self.cleanup_thread()
         dialog = AnswerDialog(answer, self)
-        sm_generation_successful = False
-        while not sm_generation_successful and dialog.exec():
+
+        while dialog.exec():
             try:
                 # 2. Open the file with the default OS handler
                 file_url = QUrl.fromLocalFile(os.path.abspath(self.current_file))
                 if not QDesktopServices.openUrl(file_url):
                     logging.warning(f"Could not open file: {self.current_file}")
-                json_str = dialog.findChild(QTextEdit).toPlainText()
-                handover_sm = json2handover_documentation(json_str)
-                normalized_json = json.dumps(handover_sm, cls=AASToJsonEncoder)
-                normalized_json = normalized_json.replace('\\', '\\\\')
-                normalized_handover_sm = json.loads(normalized_json, cls=AASFromJsonDecoder)
-                self.accept()
-                self.handoverExtracted.emit(normalized_handover_sm)
-                sm_generation_successful = True
+                json_str = dialog.text.text()
+                document = json2document(json_str)
+                self.documents.append(document)
+
+                item = QListWidgetItem(os.path.basename(self.current_file))
+                item.setToolTip(self.current_file)
+                self.documentList.addItem(item)
+                self.documentList.setVisible(True)
+                self.documentListLabel.setVisible(True)
+                self._update_document_list_height()
+
+                self.finishButton.setEnabled(True)
+
+                self.adjustSize()
+                self.resize(max(self.width(), 600), max(self.height(), 650))
+
+                self.html_renderer.setHtml("""
+                    <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;height:100%;">
+                        <div style="width:50px;height:50px;margin-bottom:20px;"><svg xmlns="http://www.w3.org/2000/svg" id="mdi-open-in-app" viewBox="0 0 24 24"><path d="M12,10L8,14H11V20H13V14H16M19,4H5C3.89,4 3,4.9 3,6V18A2,2 0 0,0 5,20H9V18H5V8H19V18H15V20H19A2,2 0 0,0 21,18V6A2,2 0 0,0 19,4Z" /></svg></div>
+                        <div style="text-align:center;">Drop another PDF file here</div>
+                        <div style="text-align:center;">Drop a PDF file to extract Handover Documentation (VDI 2770).</div>
+                    </div>
+                    """)
+
+                QMessageBox.information(self, "Extraction Successful", "Document extracted successfully!")
+                return
             except Exception as e:
                 messsageBoxes.ErrorMessageBox.withTraceback(self, str(e)).exec()
                 continue
         dialog.deleteLater()
+
+    def finish_handover_documentation(self):
+        if not self.documents:
+            messsageBoxes.ErrorMessageBox(self, "No documents extracted!").exec()
+            return
+        id_ = self.idLineEdit.text() if self.idLineEdit.text() else "None"
+        handover_sm = documents2handover_documentation(self.documents, id_=id_)
+        normalized_json = json.dumps(handover_sm, cls=AASToJsonEncoder)
+        normalized_json = normalized_json.replace('\\', '\\\\')
+        normalized_handover_sm = json.loads(normalized_json, cls=AASFromJsonDecoder)
+
+        self.handoverExtracted.emit(normalized_handover_sm)
+        self.accept()

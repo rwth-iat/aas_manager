@@ -14,6 +14,8 @@ from basyx.aas.adapter.json import AASToJsonEncoder
 from basyx.aas.model import LangStringSet, ModellingKind
 from basyx.aas.model.datatypes import Date
 
+from tools.handover_doc_llm.handover_submodel import HandoverDocumentation
+
 MIME_TYPE = "application/pdf"
 
 DocumentClassificationVDI2770 = {
@@ -103,13 +105,12 @@ DocumentClassificationVDI2770 = {
     }
 }
 
-
-def json2handover_documentation(json_str: str):
+def json2document(json_str: str):
     """
-    Convert a JSON string to a HandoverDocumentation object.
+    Convert a JSON string to documents and entities.
 
     :param json_str: JSON string.
-    :return: HandoverDocumentation object.
+    :return: Tuple of documents and entities.
     """
     json_str = json_str[json_str.find("{"):json_str.rfind("}") + 1]
     try:
@@ -168,9 +169,49 @@ def json2handover_documentation(json_str: str):
         documentedEntities=HandoverDocumentation.Documents.Documents_item.DocumentedEntities([])
     )
 
+    return document
+
+
+
+def json2handover_documentation(json_str: str):
+    """
+    Convert a JSON string to a HandoverDocumentation object.
+
+    :param json_str: JSON string.
+    :return: HandoverDocumentation object.
+    """
+    json_str = json_str[json_str.find("{"):json_str.rfind("}") + 1]
+    try:
+        obj = json.loads(json_str)
+    except json.JSONDecodeError as e:
+        print(f"Error decoding JSON: {e}")
+        return None
+
+    document = json2document(json_str)
+    if document is None:
+        return None
+
     handover_documentation = HandoverDocumentation(
         id_=obj.get('id', 0),
         documents=HandoverDocumentation.Documents([document]),
+        entities=HandoverDocumentation.Entities([]),
+        kind = ModellingKind.INSTANCE
+    )
+
+    return handover_documentation
+
+
+def documents2handover_documentation(documents, id_: str = "0"):
+    """
+    Convert documents to a HandoverDocumentation object.
+
+    :param documents: Documents object.
+    :param id_: ID of the HandoverDocumentation.
+    :return: HandoverDocumentation object.
+    """
+    handover_documentation = HandoverDocumentation(
+        id_=id_,
+        documents=HandoverDocumentation.Documents(documents),
         entities=HandoverDocumentation.Entities([]),
         kind = ModellingKind.INSTANCE
     )
@@ -189,7 +230,7 @@ if __name__ == "__main__":
       "isPrimary": true
     },
     "documentClassification": {
-      "classId": "03-04",
+      "classId": "03-04"
     },
     "documentVersion": {
       "language": ["de"],
@@ -206,4 +247,7 @@ if __name__ == "__main__":
   }
 }
 ```"""
-    print(json.dumps(json2handover_documentation(data), cls=AASToJsonEncoder, indent=2))
+    documents = [json2document(data)]
+    handover_doc = documents2handover_documentation(documents, "1")
+    print(json.dumps(handover_doc, cls=AASToJsonEncoder, indent=4))
+
