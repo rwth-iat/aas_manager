@@ -5,8 +5,8 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_mistralai import ChatMistralAI
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
-TOOL_DESCRIPTION = """
-The Tool allows users to generate a Handover Documentation Submodel from a given PDF file with the usage of LLMs.
+TOOL_DESCRIPTION = \
+"""The Tool allows users to generate a Handover Documentation Submodel from a given PDF file with the usage of LLMs.
 
 Usage:
 - Select the LLM provider and model you want to use.
@@ -54,7 +54,6 @@ PROMPT = """
 You are given a single PDF document from which you need to extract information according to the VDI 2770 guideline for Handover Documentation.
 
 Your task is to extract the following data from the PDF file:
-- id
 #DocumentId:
 - documentDomainId: "Identification of the domain in which the given DocumentId is unique. The domain ID can e.g., be the name or acronym of the providing organisation."
 - documentIdentifier: "alphanumeric character sequence uniquely identifying a document"
@@ -93,7 +92,6 @@ Steps:
 2. Output the result strictly as one single .json file. Do not include any explanation or additional text. Make sure that the file is properly escaped and quoted according to JSON standards.
 
 Output columns should be:
-id, 
 document.documentId.documentDomainId, 
 document.documentId.documentIdentifier, 
 

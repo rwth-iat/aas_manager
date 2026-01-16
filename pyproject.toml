@@ -17,16 +17,19 @@ dependencies = [
     "toml>=0.10.2",
 
     # Handover Documentation Tool
-    "langchain-huggingface",
-    "langchain-openai",
-    "langchain-anthropic",
-    "langchain-groq",
-    "langchain-google-vertexai",
-    "langchain-mistralai",
-    "langchain-community",
-    "pypdf",
-    "sentence-transformers",
-    "faiss-cpu",
+    "langchain==1.2.4",
+    "llangchain-classic==1.0.1",
+    "langchain-text-splitters==1.1.0",
+    "langchain-huggingface==1.2.0",
+    "langchain-openai==1.1.7",
+    "langchain-anthropic==1.3.1",
+    "langchain-groq==1.1.1",
+    "langchain-google-vertexai==3.2.1",
+    "langchain-mistralai==1.1.1",
+    "langchain-community==0.4.1",
+    "pypdf==6.6.0",
+    "sentence-transformers==5.2.0",
+    "faiss-cpu==1.13.2",
 ]
 
 requires-python = ">=3.10"
