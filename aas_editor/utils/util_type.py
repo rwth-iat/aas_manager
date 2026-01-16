@@ -410,3 +410,15 @@ def typecast(val, typ):
         return None
     else:
         return typ(val)
+
+
+def isValOk4Typehint(val, typehint):
+    if isoftype(val, typehint):
+        return True
+    elif isoftype(val, util_classes.PreObject):
+        if val.existingObjUsed:
+            return isoftype(val.existingObj, typehint)
+        else:
+            return issubtype(val.objType, typehint)
+    else:
+        return False

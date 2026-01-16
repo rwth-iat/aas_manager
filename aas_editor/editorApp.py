@@ -14,21 +14,22 @@ from PyQt6.QtCore import QModelIndex, pyqtSignal
 from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 
+import widgets.messsageBoxes
+import widgets.groupBoxes
 from aas_editor.settings.app_settings import *
-from aas_editor.settings.icons import EXIT_ICON, SETTINGS_ICON, NEW_PACK_ICON, initialize_all_icons
+from aas_editor.settings.icons import EXIT_ICON, SETTINGS_ICON, NEW_PACK_ICON
 from aas_editor.settings import APPLICATION_NAME, REPORT_ERROR_LINK
-from aas_editor.settings_dialog import SettingsDialog
-from aas_editor.widgets.aas_test_engines_tool import AasTestEnginesToolDialog
-from aas_editor.widgets import AddressLine
+from widgets.settingWidgets import SettingsDialog
+from tools.aas_test.aas_test_engines_tool import AasTestEnginesToolDialog
+from aas_editor.tools.handover_doc_llm.handover_documentation_tool import HandoverDocumentationToolDialog
+from widgets import AddressLine
 from aas_editor import design
 from aas_editor.models import DetailedInfoTable, PacksTable
 from aas_editor.utils.util import toggleStylesheet
-from aas_editor import dialogs
-from aas_editor.widgets.treeview import HeaderView
+from treeviews.base import HeaderView
 
 
 class EditorApp(QMainWindow, design.Ui_MainWindow):
-    initialize_all_icons()
     closed = pyqtSignal()
 
     def __init__(self, fileToOpen=None, parent=None):
@@ -36,7 +37,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.setupUi(self)
         self.loadThemes()
 
-        dialogs.ModelReferenceGroupBox.CHOOSE_FRM_VIEW = self.mainTreeView
+        widgets.groupBoxes.ModelReferenceGroupBox.CHOOSE_FRM_VIEW = self.mainTreeView
         AddressLine.setModel(self.mainTreeView.model())
         welcomeTabKwargs = self.mainTabWidget.tabClsKwargs if self.mainTabWidget.tabClsKwargs else {}
         welcomeTab = self.mainTabWidget.addTab(self.mainTabWidget.tabCls(parent=self.mainTabWidget, **welcomeTabKwargs),
@@ -68,11 +69,15 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.aboutDialogAct = QAction("About", self,
                                       statusTip=f"Show information about {APPLICATION_NAME}",
-                                      triggered=lambda: dialogs.AboutDialog(self).exec())
+                                      triggered=lambda: widgets.messsageBoxes.AboutMessageBox(self).exec())
 
         self.testEnginesToolDialogAct = QAction("AAS Test tool", self,
                                           statusTip="Open AAS Test Engines tool",
                                           triggered=lambda: AasTestEnginesToolDialog(self).exec())
+
+        self.handoverDocumentationToolDialogAct = QAction("Handover Documentation tool", self,
+                                          statusTip="Open Handover Documentation tool",
+                                          triggered=self.openHandoverDocumentationTool)
 
         self.importToolAct = QAction("Excel AAS Generator tool", self,
                                      statusTip="Open Excel AAS Generator tool",
@@ -166,6 +171,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
 
         self.menuTools = QMenu("&Tools", self.menubar)
         self.menuTools.addAction(self.testEnginesToolDialogAct)
+        self.menuTools.addAction(self.handoverDocumentationToolDialogAct)
         self.menuTools.addAction(self.importToolAct)
 
         self.menuHelp = QMenu("&Help", self.menubar)
@@ -349,4 +355,9 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         AppSettings.TABTREEVIEW_HEADER_STATE.setValue(
             self.mainTabWidget.currentWidget().attrsTreeView.header().saveState())
         # AppSettings.DEFAULT_NEW_FILETYPE_FILTER.setValue(self.packTreeView.defaultNewFileType)
+
+    def openHandoverDocumentationTool(self):
+        dialog = HandoverDocumentationToolDialog(self)
+        dialog.handoverExtracted.connect(self.mainTreeView.add_handover_to_file)
+        dialog.exec()
 

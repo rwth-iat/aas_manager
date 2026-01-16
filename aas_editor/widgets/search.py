@@ -28,8 +28,8 @@ from aas_editor.settings.app_settings import NAME_ROLE
 from aas_editor.settings.colors import HIGHLIGHT_YELLOW
 from aas_editor.settings.icons import NEXT_ICON, PREV_ICON, FILTER_ICON, REGEX_ICON, CASE_ICON, CLOSE_ICON
 from aas_editor.utils.util import absRow
-from aas_editor.widgets import ToolBar
-from aas_editor.widgets.lineEdit import LineEdit
+from aas_editor.widgets.toolbar import ToolBar
+from aas_editor.widgets.editWidgets import LineEdit
 
 
 class SearchBar(ToolBar):

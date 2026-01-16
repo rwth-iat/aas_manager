@@ -25,11 +25,10 @@ from basyx.aas.model import AssetAdministrationShell, ConceptDescription, Submod
 
 import aas_editor.additional.classes
 import aas_editor.package
-from aas_editor.import_feature import import_util_classes
+from tools.import_feature import import_util_classes
 from aas_editor.settings.util_constants import HIDDEN_ATTRS, CHANGED_PARENT_OBJ, ADD_ACT_AAS_TXT, \
     ADD_TYPE, PACKVIEW_ATTRS_INFO, PARAMS_TO_ATTRS, DEFAULT_PARAMS_TO_HIDE, ITERABLE_ATTRS, POSITIONAL_ARG_DEFAULTS, \
     CONTENT_TYPE_ATTR, CONTENT_VALUE_ATTR, IS_EDITABLE_IN_GUI
-from aas_editor.settings.icons import getCharsIcon
 from aas_editor.utils import util_type
 import aas_editor.utils.util as util
 
@@ -103,6 +102,11 @@ ATTR_ORDER = (
 )
 PREFERRED_LANGS_ORDER = ("en-us", "en", "de")
 
+SHELLS = "shells"
+SUBMODELS = "submodels"
+CONCEPT_DESCRIPTIONS = "concept_descriptions"
+FILESTORE = "fileStore"
+
 CLASSES_INFO = {
     object: {
         HIDDEN_ATTRS: ("namespace_element_sets", "parent", "security", "source"),
@@ -115,19 +119,19 @@ CLASSES_INFO = {
         ADD_ACT_AAS_TXT: "Add package",
         ADD_TYPE: aas_editor.package.Package,
         PACKVIEW_ATTRS_INFO: {
-            "shells": {
+            SHELLS: {
                 ADD_ACT_AAS_TXT: "Add shell",
                 ADD_TYPE: AssetAdministrationShell,
             },
-            "submodels": {
+            SUBMODELS: {
                 ADD_ACT_AAS_TXT: "Add submodel",
                 ADD_TYPE: Submodel,
             },
-            "concept_descriptions": {
+            CONCEPT_DESCRIPTIONS: {
                 ADD_ACT_AAS_TXT: "Add concept description",
                 ADD_TYPE: ConceptDescription,
             },
-            "fileStore": {
+            FILESTORE: {
                 ADD_ACT_AAS_TXT: "Add file",
                 ADD_TYPE: aas_editor.package.StoredFile,
             },

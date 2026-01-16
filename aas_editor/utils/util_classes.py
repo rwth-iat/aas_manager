@@ -48,6 +48,10 @@ class PreObject:
     def __repr__(self):
         return self.__str__()
 
+    def __len__(self):
+        obj = self.init()
+        return len(obj)
+
     @classmethod
     def useExistingObject(cls, obj):
         """If object already exists and no PreObject needed"""
@@ -66,11 +70,12 @@ class PreObject:
 
         try:
             return self.objType(*args, **kwargs)
-        except TypeError:
+        except TypeError as e:
             positional_arg_defaults = ClassesInfo.positionalArgDefaults(self.objType)
             for arg in positional_arg_defaults:
                 kwargs[arg] = positional_arg_defaults[arg]
-            for key in ClassesInfo.defaultParamsToHide(object):
+            # for key in ClassesInfo.defaultParamsToHide(object):
+            for key in ClassesInfo.defaultParamsToHide(self.objType):
                 try:
                     kwargs.pop(key)
                 except KeyError:

@@ -124,6 +124,7 @@ ADD_ICON = QIcon()
 DEL_ICON = QIcon()
 UPDATE_ICON = QIcon()
 EDIT_ICON = QIcon()
+EDIT_JSON_ICON = QIcon()
 UNDO_ICON = QIcon()
 REDO_ICON = QIcon()
 FORWARD_ICON = QIcon()
@@ -146,6 +147,7 @@ FILE_ICON = QIcon()
 MIME_PDF_ICON = QIcon()
 MIME_IMAGE_ICON = QIcon()
 MIME_TEXT_ICON = QIcon()
+INFO_ICON = QIcon()
 
 MIME_TYPE_ICON_DICT = {
     "application/pdf": MIME_PDF_ICON,
@@ -167,7 +169,8 @@ ICONS_SVG = {
     ADD_ICON: "plus-circle.svg",
     DEL_ICON: "delete.svg",
     UPDATE_ICON: "update.svg",
-    EDIT_ICON: "playlist-edit.svg",
+    EDIT_ICON: "table-edit.svg",
+    EDIT_JSON_ICON: "playlist-edit.svg",
     UNDO_ICON: "undo.svg",
     REDO_ICON: "redo.svg",
     FORWARD_ICON: "arrow-right-circle.svg",
@@ -190,9 +193,12 @@ ICONS_SVG = {
     MIME_PDF_ICON: "file-pdf-box.svg",
     MIME_IMAGE_ICON: "file-image.svg",
     MIME_TEXT_ICON: "file-document.svg",
+    INFO_ICON: "info.svg",
 }
 
 def initialize_all_icons():
     from aas_editor.settings.app_settings import ICONS_FOLDER
     for icon, svg_file in ICONS_SVG.items():
         transform_svg_to_icon(icon, str(ICONS_FOLDER / svg_file))
+
+initialize_all_icons()
