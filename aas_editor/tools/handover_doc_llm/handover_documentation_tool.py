@@ -10,8 +10,10 @@
 import logging
 import os
 import json
+import shutil
 import tempfile
 import traceback
+from typing import List
 
 from PyQt6.QtWidgets import QDialog, QPushButton, QVBoxLayout, QFileDialog, QLineEdit, QComboBox, \
     QHBoxLayout, QLabel, QMessageBox, QListWidgetItem, QListWidget, QGroupBox, QFormLayout, QWidget, QCheckBox
@@ -22,6 +24,8 @@ from basyx.aas.adapter.json import AASToJsonEncoder, AASFromJsonDecoder
 from basyx.aas.model import Submodel
 
 from langchain_community.document_loaders import PyPDFLoader
+from langchain_core.documents import Document
+from langchain_core.retrievers import BaseRetriever
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 from langchain_classic.chains import create_retrieval_chain
@@ -38,16 +42,26 @@ from widgets.jsonEditor import JSONEditor
 
 DOCUMENT_ROLE = 1000
 
+
+class SimpleRetriever(BaseRetriever):
+    """A simple retriever that returns all documents regardless of the query."""
+    docs: List[Document]
+
+    def _get_relevant_documents(self, query: str, **kwargs) -> List[Document]:
+        return self.docs
+
+
 class PdfProcessingThread(QThread):
     processing_complete = pyqtSignal(str)
     processing_error = pyqtSignal(str)
     show_answer_dialog = pyqtSignal(str)
 
-    def __init__(self, file_path, provider_text, model_text, api_key, pages_front, pages_end):
+    def __init__(self, file_path: str, llm_provider: str, llm_model: str, api_key: str,
+                 pages_front: str, pages_end: str):
         super().__init__()
         self.file_path = file_path
-        self.provider_text = provider_text
-        self.model_text = model_text
+        self.llm_provider = llm_provider
+        self.llm_model = llm_model
         self.api_key = api_key
         self.pages_front = pages_front
         self.pages_end = pages_end
@@ -65,50 +79,82 @@ class PdfProcessingThread(QThread):
             raise ValueError(f"Unsupported LLM provider: {provider}")
 
     def run(self):
-        try:
-            tmp_path = None
+        tmp_path = None
 
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_pdf:
-                tmp_pdf.write(open(self.file_path, "rb").read())
+        try:
+            # 1. Safer File Handling: Copy file instead of reading entire bytes into memory
+            suffix = ".pdf"
+            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp_pdf:
                 tmp_path = tmp_pdf.name
+            shutil.copy2(self.file_path, tmp_path)
 
             loader = PyPDFLoader(tmp_path)
             docs = loader.load()
 
-            pages_front = int(self.pages_front) if self.pages_front.isdigit() else 3
-            pages_end = int(self.pages_end) if self.pages_end.isdigit() else 3
-
-            if pages_front == -1 or pages_end == -1 or (pages_front + pages_end) >= len(docs):
-                pass  # Use all pages
+            # 2. Page Selection Logic
+            if self.pages_front.isdigit() or self.pages_front == "-1":
+                pages_front = int(self.pages_front)
             else:
+                pages_front = 3
+
+            if self.pages_end.isdigit():
+                pages_end = int(self.pages_end)
+            else:
+                pages_end = 3
+
+            if pages_front != -1 and pages_end != -1 and (pages_front + pages_end) < len(docs):
                 docs = docs[:pages_front] + docs[-pages_end:]
 
-            splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
-            splits = splitter.split_documents(docs)
+            # 3. Basic heuristics to decide whether to use RAG or to feed the whole document directly.
+            # thresholds: small documents -> no RAG, process whole PDF directly
+            SMALL_PAGES_THRESHOLD = 10
+            SMALL_CHARS_THRESHOLD = 8000
 
-            embeddings = self.init_embeddings(self.provider_text, self.api_key)
-            vector_store = FAISS.from_documents(splits, embeddings)
-            retriever = vector_store.as_retriever()
+            total_pages = len(docs)
+            total_chars = sum(len(getattr(d, "page_content", "")) for d in docs)
+            # Use RAG if the document is large in EITHER pages or characters
+            use_rag = total_pages > SMALL_PAGES_THRESHOLD or total_chars > SMALL_CHARS_THRESHOLD
 
-            llm = self.init_llm(self.provider_text, self.model_text, self.api_key)
+            if use_rag:
+                logging.info("Using RAG approach for document processing.")
+                print("Using RAG approach for document processing.")
+                embeddings = self.init_embeddings(self.llm_provider, self.api_key)
+                splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
+                splits = splitter.split_documents(docs)
+                vector_store = FAISS.from_documents(splits, embeddings)
+                retriever = vector_store.as_retriever()
+            else:
+                logging.info("Processing document directly without RAG.")
+                print("Processing document directly without RAG.")
+                # No need to split for very small docs; just pass them as one list
+                retriever = SimpleRetriever(docs=docs)
+
+            # 4. Chain Execution
+            llm = self.init_llm(self.llm_provider, self.llm_model, self.api_key)
             prompt = ChatPromptTemplate.from_template(PROMPT)
+            document_chain = create_stuff_documents_chain(llm, prompt)
+            rag_chain = create_retrieval_chain(retriever, document_chain)
 
-            rag_chain = create_retrieval_chain(retriever, create_stuff_documents_chain(llm, prompt))
+            # Using a generic input if specific query isn't provided
             llm_response = rag_chain.invoke({"input": ""})
+            answer = llm_response.get('answer', '')
 
-            llm_response = llm_response['answer']
-
+            # 5. JSON Validation
             try:
-                json_str = llm_response[llm_response.find("{"):llm_response.rfind("}") + 1]
-                json.loads(json_str, strict=True)
-            except json.JSONDecodeError as e:
-                return self.processing_error.emit(f"Error, LLM Response not well formatted! {e}")
+                start_idx = answer.find("{")
+                end_idx = answer.rfind("}") + 1
+                if start_idx == -1 or end_idx == 0:
+                    raise ValueError("No JSON found in response")
 
-            self.show_answer_dialog.emit(json_str)
+                json_str = answer[start_idx:end_idx]
+                json.loads(json_str)  # Validate
+                self.show_answer_dialog.emit(json_str)
+
+            except (json.JSONDecodeError, ValueError) as e:
+                return self.processing_error.emit(f"LLM Response was not valid JSON: {str(e)}")
 
         except Exception:
-            err_msg = traceback.format_exc()
-            self.processing_error.emit(f"Error: {err_msg}")
+            self.processing_error.emit(f"Error: {traceback.format_exc()}")
         finally:
             if tmp_path and os.path.exists(tmp_path):
                 os.remove(tmp_path)
