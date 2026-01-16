@@ -241,11 +241,9 @@ class HandoverDocumentationToolDialog(QDialog):
 
         # Pages selection group
         gb_pages = QGroupBox("Processing Settings")
-        pages_layout = QVBoxLayout()
-        pages_layout.addWidget(QLabel("Front X pages to analyze:", self))
-        pages_layout.addWidget(self.pagesFrontLineEdit)
-        pages_layout.addWidget(QLabel("End Y pages to analyze:", self))
-        pages_layout.addWidget(self.pagesEndLineEdit)
+        pages_layout = QFormLayout()
+        pages_layout.addRow(QLabel("Front X pages to analyze:", self), self.pagesFrontLineEdit)
+        pages_layout.addRow(QLabel("End Y pages to analyze:", self), self.pagesEndLineEdit)
         pages_layout.addWidget(self.openPdfCheckbox)
         gb_pages.setLayout(pages_layout)
         layout.addWidget(gb_pages)

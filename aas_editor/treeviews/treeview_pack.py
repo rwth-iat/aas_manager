@@ -882,7 +882,8 @@ class PackTreeView(TreeView):
             if util_type.checkType(obj2paste, targetTypeHint):
                 self._onPasteReplace(index, obj2paste, withDialog=bool(reqAttrsDict))
 
-    def add_handover_to_file(self, handover_submodel):
+    def add_handover_to_file(self, handover_submodel: Submodel):
+        """Add the given handover submodel to the currently open package file."""
         try:
             package = self._ensure_package()
             if not package:
@@ -890,11 +891,13 @@ class PackTreeView(TreeView):
 
             packIndex = self.model().match(QModelIndex(), OBJECT_ROLE, package, hits=1)[0]
             for row in range(self.model().rowCount(packIndex)):
-                childIndex = self.model().index(row, 0, packIndex)
-                if childIndex.data(NAME_ROLE) == SUBMODELS:
+                currIndex = self.model().index(row, 0, packIndex)
+                if currIndex.data(NAME_ROLE) == SUBMODELS:
                     self.setFocus()
-                    self.setCurrentIndex(childIndex)
-                    self.pasteSubmodel(handover_submodel)
+                    self.setCurrentIndex(currIndex)
+                    self.treeClipboard.clear()
+                    self.treeClipboard.append(handover_submodel)
+                    self._onPasteAdd(currIndex, handover_submodel, withDialog=False)
                     break
             else:
                 QMessageBox.warning(self, "Update Warning", "Submodels node not found in package tree.")

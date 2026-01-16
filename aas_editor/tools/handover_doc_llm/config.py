@@ -5,8 +5,8 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_mistralai import ChatMistralAI
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
-TOOL_DESCRIPTION = """
-The Tool allows users to generate a Handover Documentation Submodel from a given PDF file with the usage of LLMs.
+TOOL_DESCRIPTION = \
+"""The Tool allows users to generate a Handover Documentation Submodel from a given PDF file with the usage of LLMs.
 
 Usage:
 - Select the LLM provider and model you want to use.
