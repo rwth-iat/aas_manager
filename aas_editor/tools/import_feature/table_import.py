@@ -14,9 +14,9 @@ from typing import Any
 from PyQt6.QtCore import QModelIndex, Qt, QPersistentModelIndex
 from basyx.aas.model import Referable
 
-from tools.import_feature.import_settings import MAPPING_ATTR
-from tools.import_feature.item_import_treeview import ImportTreeViewItem
-from tools.import_feature.import_util_classes import PreObjectImport
+from aas_editor.tools.import_feature.import_settings import MAPPING_ATTR
+from aas_editor.tools.import_feature.item_import_treeview import ImportTreeViewItem
+from aas_editor.tools.import_feature.import_util_classes import PreObjectImport
 from aas_editor.models import PacksTable, SetDataItem
 from aas_editor.settings import ATTRIBUTE_COLUMN, OBJECT_ROLE, COLUMN_NAME_ROLE, EXTENDED_COLUMNS_IN_PACK_TABLE, \
     ADD_ITEM_ROLE, CLEAR_ROW_ROLE, DATA_CHANGE_FAILED_ROLE

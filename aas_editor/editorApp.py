@@ -14,19 +14,19 @@ from PyQt6.QtCore import QModelIndex, pyqtSignal
 from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 
-import widgets.messsageBoxes
-import widgets.groupBoxes
+import aas_editor.widgets as widgets
+import aas_editor.widgets.messsageBoxes
+import aas_editor.widgets.groupBoxes
 from aas_editor.settings.app_settings import *
 from aas_editor.settings.icons import EXIT_ICON, SETTINGS_ICON, NEW_PACK_ICON
 from aas_editor.settings import APPLICATION_NAME, REPORT_ERROR_LINK
-from widgets.settingWidgets import SettingsDialog
-from tools.aas_test.aas_test_engines_tool import AasTestEnginesToolDialog
-from aas_editor.tools.handover_doc_llm.handover_documentation_tool import HandoverDocumentationToolDialog
-from widgets import AddressLine
+from aas_editor.widgets.settingWidgets import SettingsDialog
+from aas_editor.tools.aas_test.aas_test_engines_tool import AasTestEnginesToolDialog
+from aas_editor.widgets import AddressLine
 from aas_editor import design
 from aas_editor.models import DetailedInfoTable, PacksTable
 from aas_editor.utils.util import toggleStylesheet
-from treeviews.base import HeaderView
+from aas_editor.treeviews.base import HeaderView
 
 
 class EditorApp(QMainWindow, design.Ui_MainWindow):

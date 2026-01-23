@@ -25,7 +25,7 @@ from basyx.aas.model import AssetAdministrationShell, ConceptDescription, Submod
 
 import aas_editor.additional.classes
 import aas_editor.package
-from tools.import_feature import import_util_classes
+from aas_editor.tools.import_feature import import_util_classes
 from aas_editor.settings.util_constants import HIDDEN_ATTRS, CHANGED_PARENT_OBJ, ADD_ACT_AAS_TXT, \
     ADD_TYPE, PACKVIEW_ATTRS_INFO, PARAMS_TO_ATTRS, DEFAULT_PARAMS_TO_HIDE, ITERABLE_ATTRS, POSITIONAL_ARG_DEFAULTS, \
     CONTENT_TYPE_ATTR, CONTENT_VALUE_ATTR, IS_EDITABLE_IN_GUI

@@ -32,13 +32,13 @@ from langchain_classic.chains import create_retrieval_chain
 from langchain_classic.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
 
-from widgets import messsageBoxes
-from tools.handover_doc_llm.documentation_generator import json2document, documents2handover_documentation
+from aas_editor.widgets import messsageBoxes
+from aas_editor.tools.handover_doc_llm.documentation_generator import json2document, documents2handover_documentation
 from aas_editor.settings.icons import INFO_ICON
 
-from tools.handover_doc_llm.config import PROMPT, LLM_PROVIDERS, EMBEDDING_PROVIDERS, TOOL_DESCRIPTION
+from aas_editor.tools.handover_doc_llm.config import PROMPT, LLM_PROVIDERS, EMBEDDING_PROVIDERS, TOOL_DESCRIPTION
 from aas_editor.widgets.dropfilebox import DropFileQWebEngineView
-from widgets.jsonEditor import JSONEditor
+from aas_editor.widgets.jsonEditor import JSONEditor
 
 DOCUMENT_ROLE = 1000
 

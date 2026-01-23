@@ -26,7 +26,7 @@ from dateutil.relativedelta import relativedelta
 from aas_editor.additional.classes import DictItem
 from aas_editor.tools.import_feature import import_util
 from aas_editor.utils import util, util_classes, util_type
-from utils.util_classes import PreObject
+from aas_editor.utils.util_classes import PreObject
 
 IMPORT_FILE = "Motor Daten aus EMSRDB.xlsx"
 
