@@ -357,6 +357,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         # AppSettings.DEFAULT_NEW_FILETYPE_FILTER.setValue(self.packTreeView.defaultNewFileType)
 
     def openHandoverDocumentationTool(self):
+        from aas_editor.tools.handover_doc_llm.handover_documentation_tool import HandoverDocumentationToolDialog
         dialog = HandoverDocumentationToolDialog(self)
         dialog.handoverExtracted.connect(self.mainTreeView.add_handover_to_file)
         dialog.exec()
