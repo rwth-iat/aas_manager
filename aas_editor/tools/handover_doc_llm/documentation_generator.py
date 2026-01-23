@@ -14,7 +14,7 @@ from basyx.aas.adapter.json import AASToJsonEncoder
 from basyx.aas.model import LangStringSet, ModellingKind
 from basyx.aas.model.datatypes import Date
 
-from tools.handover_doc_llm.handover_submodel import HandoverDocumentation
+from aas_editor.tools.handover_doc_llm.handover_submodel import HandoverDocumentation
 
 MIME_TYPE = "application/pdf"
 
