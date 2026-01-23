@@ -201,4 +201,4 @@ def initialize_all_icons():
     for icon, svg_file in ICONS_SVG.items():
         transform_svg_to_icon(icon, str(ICONS_FOLDER / svg_file))
 
-initialize_all_icons()
+#initialize_all_icons()

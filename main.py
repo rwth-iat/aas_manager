@@ -21,6 +21,10 @@ logging.basicConfig(level=logging.INFO, filename="log.log", filemode="w",
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
+
+    from aas_editor.settings.icons import initialize_all_icons
+    initialize_all_icons()
+
     from aas_editor.editorApp import EditorApp as CurrentApp
 
     # Check if a file path is provided as an argument
