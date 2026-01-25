@@ -198,6 +198,23 @@ class StoredFile:
         else:
             return f"/{self._filePath.name}"
 
+    @name.setter
+    def name(self, new_name: str):
+        if not isinstance(new_name, str) or new_name.strip() == "":
+            raise TypeError("new name must be a non-empty string")
+
+        if self.savedInStore():
+            new_stored_name = self._fileStore.rename_file(self.name, new_name)
+            self._name = new_stored_name
+        else:
+            if self._filePath is None:
+                raise ValueError("No local file path available to rename")
+            new_path = self._filePath.parent.joinpath(new_name)
+            if new_path.exists():
+                raise FileExistsError(f"Target file already exists: {new_path}")
+            self._filePath.rename(new_path)
+            self._filePath = new_path
+
     @property
     def mime_type(self) -> str:
         if self.savedInStore():
