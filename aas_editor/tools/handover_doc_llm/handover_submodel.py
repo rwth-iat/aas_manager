@@ -721,7 +721,7 @@ class HandoverDocumentation(Submodel):
                     class ClassName(MultiLanguageProperty):
                         def __init__(
                             self,
-                            value: LangStringSet,
+                            value: MultiLanguageTextType,
                             id_short: Optional[str] = "ClassName",
                             value_id: Optional[Reference] = None,
                             display_name: Optional[
@@ -912,7 +912,9 @@ class HandoverDocumentation(Submodel):
                     def __init__(
                         self,
                         classId: Union[str, ClassId],
-                        className: Union[LangStringSet, ClassName],
+                        className: Union[
+                            dict[str, str], MultiLanguageTextType, ClassName
+                        ],
                         classificationSystem: Union[str, ClassificationSystem],
                         id_short: Optional[str] = None,
                         display_name: Optional[
@@ -1586,7 +1588,7 @@ class HandoverDocumentation(Submodel):
                     class Title(MultiLanguageProperty):
                         def __init__(
                             self,
-                            value: LangStringSet,
+                            value: MultiLanguageTextType,
                             id_short: Optional[str] = "Title",
                             value_id: Optional[Reference] = None,
                             display_name: Optional[
@@ -1680,7 +1682,7 @@ class HandoverDocumentation(Submodel):
                     class Subtitle(MultiLanguageProperty):
                         def __init__(
                             self,
-                            value: LangStringSet,
+                            value: MultiLanguageTextType,
                             id_short: Optional[str] = "Subtitle",
                             value_id: Optional[Reference] = None,
                             display_name: Optional[
@@ -1774,7 +1776,7 @@ class HandoverDocumentation(Submodel):
                     class Description(MultiLanguageProperty):
                         def __init__(
                             self,
-                            value: LangStringSet,
+                            value: MultiLanguageTextType,
                             id_short: Optional[str] = "Description",
                             value_id: Optional[Reference] = None,
                             display_name: Optional[
@@ -1871,7 +1873,7 @@ class HandoverDocumentation(Submodel):
                     class KeyWords(MultiLanguageProperty):
                         def __init__(
                             self,
-                            value: LangStringSet,
+                            value: MultiLanguageTextType,
                             id_short: Optional[str] = "KeyWords",
                             value_id: Optional[Reference] = None,
                             display_name: Optional[
@@ -2392,7 +2394,7 @@ class HandoverDocumentation(Submodel):
                                         Qualifier(
                                             type_="AllowedIdShort",
                                             value_type=str,
-                                            value=r"RefersTo[\d{2,3}]",
+                                            value="RefersTo[\d{2,3}]",
                                             value_id=None,
                                             kind=QualifierKind.CONCEPT_QUALIFIER,
                                             semantic_id=ExternalReference(
@@ -2657,7 +2659,7 @@ class HandoverDocumentation(Submodel):
                                         Qualifier(
                                             type_="AllowedIdShort",
                                             value_type=str,
-                                            value=r"BasedOn[\d{2,3}]",
+                                            value="BasedOn[\d{2,3}]",
                                             value_id=None,
                                             kind=QualifierKind.CONCEPT_QUALIFIER,
                                             semantic_id=ExternalReference(
@@ -2929,7 +2931,7 @@ class HandoverDocumentation(Submodel):
                                         Qualifier(
                                             type_="AllowedIdShort",
                                             value_type=str,
-                                            value=r"TranslationOf[\d{2,3}]",
+                                            value="TranslationOf[\d{2,3}]",
                                             value_id=None,
                                             kind=QualifierKind.CONCEPT_QUALIFIER,
                                             semantic_id=ExternalReference(
@@ -3219,7 +3221,7 @@ class HandoverDocumentation(Submodel):
                                         Qualifier(
                                             type_="AllowedIdShort",
                                             value_type=str,
-                                            value=r"DigitalFile[\d{2,3}]",
+                                            value="DigitalFile[\d{2,3}]",
                                             value_id=None,
                                             kind=QualifierKind.CONCEPT_QUALIFIER,
                                             semantic_id=ExternalReference(
@@ -3499,7 +3501,7 @@ class HandoverDocumentation(Submodel):
                                     Qualifier(
                                         type_="AllowedIdShort",
                                         value_type=str,
-                                        value=r"PreviewFile[\d{2,3}]",
+                                        value="PreviewFile[\d{2,3}]",
                                         value_id=None,
                                         kind=QualifierKind.CONCEPT_QUALIFIER,
                                         semantic_id=ExternalReference(
@@ -3536,15 +3538,21 @@ class HandoverDocumentation(Submodel):
                         self,
                         language: Union[Iterable[str], Language],
                         version: Union[str, Version],
-                        title: Union[LangStringSet, Title],
-                        description_: Union[LangStringSet, Description],
+                        title: Union[dict[str, str], MultiLanguageTextType, Title],
+                        description_: Union[
+                            dict[str, str], MultiLanguageTextType, Description
+                        ],
                         statusSetDate: Union[Date, StatusSetDate],
                         statusValue: Union[str, StatusValue],
                         organizationShortName: Union[str, OrganizationShortName],
                         organizationOfficialName: Union[str, OrganizationOfficialName],
                         digitalFiles: DigitalFiles,
-                        subtitle: Optional[Union[LangStringSet, Subtitle]] = None,
-                        keyWords: Optional[Union[LangStringSet, KeyWords]] = None,
+                        subtitle: Optional[
+                            Union[dict[str, str], MultiLanguageTextType, Subtitle]
+                        ] = None,
+                        keyWords: Optional[
+                            Union[dict[str, str], MultiLanguageTextType, KeyWords]
+                        ] = None,
                         refersToEntities: Optional[RefersToEntities] = None,
                         basedOnReferences: Optional[BasedOnReferences] = None,
                         translationOfEntities: Optional[TranslationOfEntities] = None,
