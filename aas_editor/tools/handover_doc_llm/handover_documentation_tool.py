@@ -299,11 +299,11 @@ class HandoverDocumentationToolDialog(QDialog):
         sm_form = QFormLayout()
         sm_form.addRow(QLabel("Submodel ID*:", self), self.idLineEdit)
         sm_form.addRow(self.documentListLabel, self.documentList)
+        sm_form.addWidget(self.chooseButton)
+        sm_form.addWidget(self.html_renderer)
         gb_id.setLayout(sm_form)
 
         layout.addWidget(gb_id)
-        layout.addWidget(self.html_renderer)
-        layout.addWidget(self.chooseButton)
         layout.addWidget(self.finishButton)
         self.setLayout(layout)
 
@@ -417,14 +417,22 @@ class HandoverDocumentationToolDialog(QDialog):
         dialog.deleteLater()
 
     def finish_handover_documentation(self):
-        if not self.documents:
-            messsageBoxes.ErrorMessageBox(self, "No documents extracted!").exec()
+        try:
+            if not self.documents:
+                messsageBoxes.ErrorMessageBox(self, "No documents extracted!").exec()
+                return
+            id_ = self.idLineEdit.text() if self.idLineEdit.text() else "None"
+            handover_sm = documents2handover_documentation(self.documents, id_=id_)
+            normalized_json = json.dumps(handover_sm, cls=AASToJsonEncoder)
+            normalized_json = normalized_json.replace('\\', '\\\\')
+            # Save the json under temp file for debugging purposes
+            with open("handover_sm.json", "w", encoding="utf-8") as f:
+                f.write(normalized_json)
+            normalized_handover_sm = json.loads(normalized_json, cls=AASFromJsonDecoder)
+        except Exception as e:
+            messsageBoxes.ErrorMessageBox.withTraceback(self, str(e)).exec()
             return
-        id_ = self.idLineEdit.text() if self.idLineEdit.text() else "None"
-        handover_sm = documents2handover_documentation(self.documents, id_=id_)
-        normalized_json = json.dumps(handover_sm, cls=AASToJsonEncoder)
-        normalized_json = normalized_json.replace('\\', '\\\\')
-        normalized_handover_sm = json.loads(normalized_json, cls=AASFromJsonDecoder)
+
 
         self.handoverExtracted.emit(normalized_handover_sm)
         self.accept()
