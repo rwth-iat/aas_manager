@@ -74,14 +74,14 @@ Your task is to extract the following data from the PDF file:
     "04-01" - Contract documents
 
 #DocumentVersion
-- title: "Language-dependent titles of the Document as a dict. E.g. {{'en': 'Operating Manual', 'de': 'Betriebsanleitung'}}.
+- title: "Language-dependent titles of the Document. E.g. {{'en': 'Operating Manual', 'de': 'Betriebsanleitung'}}."
 - subTitle (optional): "Language-dependent subtitles of the Document. E.g. {{'en': 'For Model XYZ', 'de': 'Für Modell XYZ'}}."
-- description: "List of language-dependent descriptions of the Document. E.g. {{'en': 'This document describes...', 'de': 'Dieses Dokument beschreibt...'}}."
-- keyWords: "List of language-dependent keywords of the Document. E.g. {{'en': 'manual,operation', 'de': 'Handbuch,Bedienung'}}."
+- description: "Language-dependent descriptions of the Document. E.g. {{'en': 'This document describes...', 'de': 'Dieses Dokument beschreibt...'}}."
+- keyWords: "Language-dependent keywords of the Document with multiple keywords separated by commas. E.g. {{'en': 'manual,operation', 'de': 'Handbuch,Bedienung'}}."
     Constraint: For each language-depended Title a Description and at least one KeyWord shall exist for the given language!,
 
-- version: "Unambigous identification number of a DocumentVersion."
-- language: "List of languages used within the DocumentVersion. Each property codes one language identification according to ISO 639-1 or ISO 639-2 used in the Document. It must be a list of two characters"
+- version: "Unambiguous identification number of a DocumentVersion."
+- language: "List of languages (codes according to ISO 639-1) used in the Document. e.g., ['en', 'de', 'fr']"
 - statusSetDate: "Date when the document status was set. Format is YYYY-MM-dd."
 - statusValue: "InReview or Released"
 - organizationShortName: "Short name of the author organization."
@@ -92,21 +92,21 @@ Steps:
 2. Output the result strictly as one single .json file. Do not include any explanation or additional text. Make sure that the file is properly escaped and quoted according to JSON standards.
 
 Output columns should be:
-document.documentId.documentDomainId, 
-document.documentId.documentIdentifier, 
+document.documentId.documentDomainId: str,
+document.documentId.documentIdentifier: str,
 
-document.documentClassification.classId, 
+document.documentClassification.classId: str,
 
-document.documentVersion.title, 
-document.documentVersion.subTitle, 
-document.documentVersion.description, 
-document.documentVersion.keyWords, 
-document.documentVersion.version, 
-document.documentVersion.language, 
-document.documentVersion.statusSetDate, 
-document.documentVersion.statusValue, 
-document.documentVersion.organizationShortName, 
-document.documentVersion.organizationOfficialName, 
+document.documentVersion.title: Dict[str, str],
+document.documentVersion.subTitle: Dict[str, str],
+document.documentVersion.description: Dict[str, str],
+document.documentVersion.keyWords: Dict[str, str],
+document.documentVersion.version: str,
+document.documentVersion.language: List[str],
+document.documentVersion.statusSetDate: str,
+document.documentVersion.statusValue: str,
+document.documentVersion.organizationShortName: str,
+document.documentVersion.organizationOfficialName: str
 
 Make reasonable assumptions where exact fields are not available, but clearly align to the HandoverDocumentation structure and if nothing was found answer with an empty entry (no "").
 """

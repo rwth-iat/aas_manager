@@ -11,7 +11,7 @@
 import json
 
 from basyx.aas.adapter.json import AASToJsonEncoder
-from basyx.aas.model import LangStringSet, ModellingKind
+from basyx.aas.model import ModellingKind
 from basyx.aas.model.datatypes import Date
 
 from aas_editor.tools.handover_doc_llm.handover_submodel import HandoverDocumentation
@@ -129,7 +129,7 @@ def json2document(json_str: str):
     classId = obj['document']['documentClassification'].get('classId', '')
     documentClassification = HandoverDocumentation.Documents.Documents_item.DocumentClassifications.Documentclassifications_item(
         classId=classId,
-        className=LangStringSet(DocumentClassificationVDI2770[classId]['className']) if classId in DocumentClassificationVDI2770 else LangStringSet({}),
+        className=DocumentClassificationVDI2770[classId]['className'] if classId in DocumentClassificationVDI2770 else {},
         classificationSystem="VDI 2770 Blatt 1:2020",
     )
 
@@ -143,18 +143,14 @@ def json2document(json_str: str):
     else:
         statusSetDate = None
 
-    if obj['document']['documentVersion'].get('subTitle'):
-        subtitle = LangStringSet(obj['document']['documentVersion'].get('subTitle'))
-    else:
-        subtitle = None
 
     documentVersion = HandoverDocumentation.Documents.Documents_item.DocumentVersions.Documentversions_item(
         language=obj['document']['documentVersion'].get('language', ['']),
         version=obj['document']['documentVersion'].get('documentVersionId', ''),
-        title=LangStringSet(obj['document']['documentVersion'].get('title')),
-        subtitle=subtitle,
-        description_=LangStringSet(obj['document']['documentVersion'].get('description')),
-        keyWords=LangStringSet(obj['document']['documentVersion'].get('keyWords')),
+        title=obj['document']['documentVersion'].get('title'),
+        subtitle=obj['document']['documentVersion'].get('subTitle'),
+        description_=obj['document']['documentVersion'].get('description'),
+        keyWords=obj['document']['documentVersion'].get('keyWords'),
         statusSetDate=statusSetDate,
         statusValue=obj['document']['documentVersion'].get('statusValue', ''),
         organizationShortName=obj['document']['documentVersion'].get('organizationName', ''),
@@ -170,35 +166,6 @@ def json2document(json_str: str):
     )
 
     return document
-
-
-
-def json2handover_documentation(json_str: str):
-    """
-    Convert a JSON string to a HandoverDocumentation object.
-
-    :param json_str: JSON string.
-    :return: HandoverDocumentation object.
-    """
-    json_str = json_str[json_str.find("{"):json_str.rfind("}") + 1]
-    try:
-        obj = json.loads(json_str)
-    except json.JSONDecodeError as e:
-        print(f"Error decoding JSON: {e}")
-        return None
-
-    document = json2document(json_str)
-    if document is None:
-        return None
-
-    handover_documentation = HandoverDocumentation(
-        id_=obj.get('id', 0),
-        documents=HandoverDocumentation.Documents([document]),
-        entities=HandoverDocumentation.Entities([]),
-        kind = ModellingKind.INSTANCE
-    )
-
-    return handover_documentation
 
 
 def documents2handover_documentation(documents, id_: str = "0"):
