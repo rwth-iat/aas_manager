@@ -28,14 +28,15 @@ from PyQt6 import QtCore
 from PyQt6.QtCore import Qt, QModelIndex
 from PyQt6.QtWidgets import QAbstractScrollArea
 
-import widgets.messsageBoxes
+import aas_editor.widgets as widgets
+import aas_editor.widgets.messsageBoxes
 from aas_editor.models import DetailedInfoTable
 from aas_editor.delegates import EditDelegate
 from aas_editor.settings.app_settings import ATTR_COLUMN_WIDTH, NAME_ROLE, ATTRIBUTE_COLUMN, \
     VALUE_COLUMN, LINKED_ITEM_ROLE, IS_LINK_ROLE, PARENT_OBJ_ROLE
 from aas_editor.utils.util_type import getAttrTypeHint
 from aas_editor import dialogs
-from treeviews.base import TreeView
+from aas_editor.treeviews.base import TreeView
 
 
 class AttrsTreeView(TreeView):

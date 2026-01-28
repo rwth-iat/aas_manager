@@ -24,7 +24,7 @@ import openpyxl
 from basyx.aas.model import ModelReference, Key, KeyTypes
 from openpyxl.worksheet.worksheet import Worksheet
 
-from . import import_settings
+from aas_editor.tools.import_feature import import_settings
 from aas_editor.utils import util_type
 
 COLUMNS_PATTERN = re.compile(r"\$[A-Z][A-Z]?\$")

@@ -34,8 +34,8 @@ from aas_editor.settings.shortcuts import SC_BACK, SC_FORWARD, SC_SEARCH
 from aas_editor.utils.util_type import getTypeName
 from aas_editor.widgets import SearchBar, ToolBar
 from aas_editor.utils.util import getTreeItemPath
-from models import StandardTable
-from widgets import LineEdit
+from aas_editor.models import StandardTable
+from aas_editor.widgets import LineEdit
 
 COMPLETION_ROLE = Qt.ItemDataRole.DisplayRole
 CASE_SENSITIVITY = Qt.CaseSensitivity.CaseInsensitive

@@ -13,7 +13,7 @@ from PyQt6.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout, QLabel, QHBo
 from PyQt6.QtCore import Qt
 
 from aas_editor.settings import AppSettings, Setting
-from widgets.groupBoxes import OptionGroupBox
+from aas_editor.widgets.groupBoxes import OptionGroupBox
 
 
 class RadioBtnsGroupBox(OptionGroupBox):

@@ -15,10 +15,10 @@ from PyQt6.QtGui import QIntValidator
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QPushButton, QFileDialog, QMessageBox, QFormLayout, QDialog, \
     QDialogButtonBox, QLabel, QLineEdit
 
-import widgets.messsageBoxes
-from tools.import_feature.import_settings import MAPPING_ATTR
-from tools.import_feature import import_util_classes, import_util
-from tools.import_feature.import_util import getMapping, usedColumnsInMapping, unusedColumnsInMapping
+from aas_editor.widgets import messsageBoxes
+from aas_editor.tools.import_feature.import_settings import MAPPING_ATTR
+from aas_editor.tools.import_feature import import_util_classes, import_util
+from aas_editor.tools.import_feature.import_util import getMapping, usedColumnsInMapping, unusedColumnsInMapping
 from aas_editor.package import Package
 from aas_editor import settings
 from aas_editor.utils.util_classes import ClassesInfo
