@@ -23,24 +23,25 @@ from PyQt6.QtGui import QMouseEvent, QPaintEvent, QPainter, QWheelEvent, QAction
     QKeyEvent
 from PyQt6.QtWidgets import QTreeView, QHeaderView, QWidget, QMenu, QAbstractItemView, QApplication, QDialog
 
-import dialogs
-import settings
-import widgets.messsageBoxes
+import aas_editor.dialogs as dialogs
+import aas_editor.settings as settings
+import aas_editor.widgets as widgets
+import aas_editor.widgets.messsageBoxes
 
 from aas_editor.models.search_proxy_model import SearchProxyModel
 from aas_editor.settings.app_settings import *
 from aas_editor.additional.classes import DictItem
-from delegates import EditDelegate
-from models import StandardTable
-from settings import TOOLBARS_HEIGHT, COPY_ICON, SC_COPY, PASTE_ICON, SC_PASTE, CUT_ICON, SC_CUT, ADD_ICON, SC_NEW, \
+from aas_editor.delegates import EditDelegate
+from aas_editor.models import StandardTable
+from aas_editor.settings import TOOLBARS_HEIGHT, COPY_ICON, SC_COPY, PASTE_ICON, SC_PASTE, CUT_ICON, SC_CUT, ADD_ICON, SC_NEW, \
     EDIT_ICON, SC_EDIT_IN_DIALOG, DEL_ICON, SC_DELETE, UPDATE_ICON, UNDO_ICON, SC_UNDO, REDO_ICON, SC_REDO, SC_COLLAPSE, \
     SC_COLLAPSE_RECURS, COLLAPSE_ALL_ICON, SC_COLLAPSE_ALL, SC_EXPAND, SC_EXPAND_RECURS, EXPAND_ALL_ICON, SC_EXPAND_ALL, \
     ZOOM_IN_ICON, SC_ZOOM_IN, ZOOM_OUT_ICON, SC_ZOOM_OUT, OBJECT_ROLE, NAME_ROLE, UNDO_ROLE, REDO_ROLE, DEFAULT_FONT, \
     MAX_FONT_SIZE, MIN_FONT_SIZE, NOT_GIVEN, UPDATE_ROLE, PARENT_OBJ_ROLE, CLEAR_ROW_ROLE, COPY_ROLE, TYPE_HINT_ROLE, \
     ADD_ITEM_ROLE, DATA_CHANGE_FAILED_ROLE
-from utils.util import getDefaultVal, getReqParams4init
-from utils.util_classes import ClassesInfo
-from utils.util_type import isIterable, checkType, getIterItemTypeHint, isSimpleIterable, isoftype
+from aas_editor.utils.util import getDefaultVal, getReqParams4init
+from aas_editor.utils.util_classes import ClassesInfo
+from aas_editor.utils.util_type import isIterable, checkType, getIterItemTypeHint, isSimpleIterable, isoftype
 
 EMPTY_VIEW_MSG = "There are no elements in this view"
 EMPTY_VIEW_ICON = None

@@ -24,7 +24,7 @@ from PyQt6.QtCore import Qt, QModelIndex
 from aas_editor.settings import DEFAULT_COMPLETIONS
 from aas_editor.additional.classes import DictItem
 from aas_editor.utils.util_type import issubtype, isoftype
-from widgets.editWidgets import ComboBox, CompleterComboBox, DictItemEdit, LineEdit
+from aas_editor.widgets.editWidgets import ComboBox, CompleterComboBox, DictItemEdit, LineEdit
 
 
 class ColorDelegate(QStyledItemDelegate):

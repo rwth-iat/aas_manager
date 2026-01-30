@@ -13,12 +13,13 @@ from typing import Union
 from PyQt6.QtWidgets import QWidget
 from basyx.aas.model import LangStringSet, ModelReference
 
-import widgets.editWidgets
-import widgets.groupBoxes
-from settings import DEFAULT_INHERITOR
-from utils.util import getParamsAndTypehints4init, getReqParams4init, inheritors
-from utils.util_classes import ClassesInfo
-from utils.util_type import removeOptional, isOptional, isValOk4Typehint, isIterableType, issubtype, \
+import aas_editor.widgets as widgets
+import aas_editor.widgets.editWidgets
+import aas_editor.widgets.groupBoxes
+from aas_editor.settings import DEFAULT_INHERITOR
+from aas_editor.utils.util import getParamsAndTypehints4init, getReqParams4init, inheritors
+from aas_editor.utils.util_classes import ClassesInfo
+from aas_editor.utils.util_type import removeOptional, isOptional, isValOk4Typehint, isIterableType, issubtype, \
     isSimpleIterableType, isUnion, getArgs
 
 

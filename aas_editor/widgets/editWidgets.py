@@ -24,10 +24,10 @@ from PyQt6.QtWidgets import QLineEdit, QComboBox, QWidget, QCompleter, QHBoxLayo
 from basyx.aas.model.datatypes import Date
 
 from aas_editor.additional.classes import DictItem
-from utils.util import inheritors
-from utils.util_classes import PreObject
-from utils.util_type import isoftype, issubtype, getTypeName, getArgs
-from widgets.buttons import CloseButton
+from aas_editor.utils.util import inheritors
+from aas_editor.utils.util_classes import PreObject
+from aas_editor.utils.util_type import isoftype, issubtype, getTypeName, getArgs
+from aas_editor.widgets.buttons import CloseButton
 
 
 class LineEdit(QLineEdit):

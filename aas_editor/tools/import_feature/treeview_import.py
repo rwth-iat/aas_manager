@@ -9,7 +9,7 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 from PyQt6.QtCore import QModelIndex
 
-from tools.import_feature.import_util_classes import PreObjectImport
+from aas_editor.tools.import_feature.import_util_classes import PreObjectImport
 from aas_editor.treeviews import PackTreeView, AttrsTreeView
 
 

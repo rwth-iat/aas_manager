@@ -19,15 +19,15 @@ from PyQt6.QtCore import Qt, QSize, QTimer
 from PyQt6.QtWidgets import QDialog, QDialogButtonBox, \
     QWidget, QVBoxLayout, QScrollArea, QFrame
 
-import widgets.buttons
-import widgets.editWidgets
+import aas_editor.widgets.buttons
+import aas_editor.widgets.editWidgets
 from aas_editor.settings import ATTRIBUTE_COLUMN
 from aas_editor.utils.util import actualizeAASParents
 from aas_editor.utils.util_type import getTypeName, isoftype
 from aas_editor.utils.util_classes import PreObject
 from aas_editor import widgets
-from widgets.jsonEditor import JSONEditor
-from widgets.widgetUtil import InputWidgetUtil
+from aas_editor.widgets.jsonEditor import JSONEditor
+from aas_editor.widgets.widgetUtil import InputWidgetUtil
 
 def checkIfAccepted(func):
     """Decorator for checking if user clicked ok"""

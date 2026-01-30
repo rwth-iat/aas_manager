@@ -18,7 +18,7 @@ dependencies = [
 
     # Handover Documentation Tool
     "langchain==1.2.4",
-    "llangchain-classic==1.0.1",
+    "langchain-classic==1.0.1",
     "langchain-text-splitters==1.1.0",
     "langchain-huggingface==1.2.0",
     "langchain-openai==1.1.7",

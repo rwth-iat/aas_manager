@@ -34,7 +34,8 @@ from basyx.aas.adapter.json import read_aas_json_file, AASToJsonEncoder
 from basyx.aas.adapter.xml import read_aas_xml_file
 from basyx.aas.model import SetObjectStore, Submodel, Referable, Identifiable
 
-import widgets.messsageBoxes
+import aas_editor.widgets as widgets
+import aas_editor.widgets.messsageBoxes
 from aas_editor.delegates import EditDelegate
 from aas_editor.package import Package, StoredFile
 from aas_editor.settings import FILTER_AAS_FILES, AAS_FILE_TYPE_FILTERS, NOT_GIVEN, REFERABLE_INHERITORS_ATTRS, \
@@ -49,7 +50,7 @@ from aas_editor.settings.icons import NEW_PACK_ICON, OPEN_ICON, OPEN_DRAG_ICON, 
 from aas_editor.utils import util_type
 from aas_editor.utils.util import getDefaultVal, getReqParams4init
 from aas_editor.utils.util_classes import ClassesInfo
-from treeviews.base import HeaderView, TreeView
+from aas_editor.treeviews.base import HeaderView, TreeView
 from aas_editor import dialogs
 
 

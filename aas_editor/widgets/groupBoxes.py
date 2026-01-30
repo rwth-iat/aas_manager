@@ -16,18 +16,18 @@ from PyQt6.QtCore import pyqtSignal, Qt, QTimer
 from PyQt6.QtWidgets import QGroupBox, QFormLayout, QWidget, QPushButton, QDialog
 from basyx.aas.model import LangStringSet, Referable, ModelReference
 
-import widgets
-import widgets.buttons
+import aas_editor.widgets as widgets
+import aas_editor.widgets.buttons
 from aas_editor.additional.classes import DictItem
-from widgets.widgetUtil import InputWidgetUtil
-from settings import DEFAULT_COMPLETIONS, DEFAULTS, OBJECT_ROLE
-from utils.util import getReqParams4init, getParamsAndTypehints4init, getDefaultVal, delAASParent, inheritors
+from aas_editor.widgets.widgetUtil import InputWidgetUtil
+from aas_editor.settings import DEFAULT_COMPLETIONS, DEFAULTS, OBJECT_ROLE
+from aas_editor.utils.util import getReqParams4init, getParamsAndTypehints4init, getDefaultVal, delAASParent, inheritors
 
-from utils.util_classes import ClassesInfo, PreObject
-from utils.util_type import isOptional, issubtype, getTypeName, typeHintToType, isoftype, isIterable, isIterableType, \
+from aas_editor.utils.util_classes import ClassesInfo, PreObject
+from aas_editor.utils.util_type import isOptional, issubtype, getTypeName, typeHintToType, isoftype, isIterable, isIterableType, \
     isValOk4Typehint, getArgs
-from widgets.editWidgets import StandardInputWidget
-from widgets.messsageBoxes import ErrorMessageBox
+from aas_editor.widgets.editWidgets import StandardInputWidget
+from aas_editor.widgets.messsageBoxes import ErrorMessageBox
 
 
 @unique

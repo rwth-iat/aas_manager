@@ -28,17 +28,16 @@ from langchain_core.documents import Document
 from langchain_core.retrievers import BaseRetriever
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
-from langchain_classic.chains import create_retrieval_chain
 from langchain_classic.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
 
-from widgets import messsageBoxes
-from tools.handover_doc_llm.documentation_generator import json2document, documents2handover_documentation
+from aas_editor.widgets import messsageBoxes
+from aas_editor.tools.handover_doc_llm.documentation_generator import json2document, documents2handover_documentation
 from aas_editor.settings.icons import INFO_ICON
 
-from tools.handover_doc_llm.config import PROMPT, LLM_PROVIDERS, EMBEDDING_PROVIDERS, TOOL_DESCRIPTION
+from aas_editor.tools.handover_doc_llm.config import PROMPT, LLM_PROVIDERS, EMBEDDING_PROVIDERS, TOOL_DESCRIPTION
 from aas_editor.widgets.dropfilebox import DropFileQWebEngineView
-from widgets.jsonEditor import JSONEditor
+from aas_editor.widgets.jsonEditor import JSONEditor
 
 DOCUMENT_ROLE = 1000
 
@@ -133,11 +132,11 @@ class PdfProcessingThread(QThread):
             llm = self.init_llm(self.llm_provider, self.llm_model, self.api_key)
             prompt = ChatPromptTemplate.from_template(PROMPT)
             document_chain = create_stuff_documents_chain(llm, prompt)
-            rag_chain = create_retrieval_chain(retriever, document_chain)
+            docs_for_context = retriever.invoke("")
 
             # Using a generic input if specific query isn't provided
-            llm_response = rag_chain.invoke({"input": ""})
-            answer = llm_response.get('answer', '')
+            llm_response = document_chain.invoke({"input": "", "context": docs_for_context})
+            answer = llm_response if isinstance(llm_response, str) else llm_response.get('answer', '')
 
             # 5. JSON Validation
             try:
