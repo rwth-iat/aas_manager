@@ -23,6 +23,9 @@ def main():
     app = QtWidgets.QApplication(sys.argv)
 
     from aas_editor.settings.icons import initialize_all_icons
+    # Initialize icons after QApp initialization to fix PyInstaller build errors.
+    # QPixmap requires an active QApplication context; importing them earlier 
+    # causes the application to crash during initialization.
     initialize_all_icons()
 
     from aas_editor.editorApp import EditorApp as CurrentApp
