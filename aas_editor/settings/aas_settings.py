@@ -21,7 +21,7 @@ from basyx.aas.model import AssetAdministrationShell, ConceptDescription, Submod
     ReferenceElement, DataElement, AdministrativeInformation, AbstractObjectStore, \
     Namespace, SubmodelElementCollection, SubmodelElement, ModelReference, Referable, Identifiable, \
     Key, Qualifier, BasicEventElement, SubmodelElementList, datatypes, LangStringSet, \
-    AbstractObjectProvider
+    AbstractObjectProvider, NamespaceSet
 
 import aas_editor.additional.classes
 import aas_editor.package
@@ -142,6 +142,9 @@ CLASSES_INFO = {
         IS_EDITABLE_IN_GUI: False,
     },
     AbstractSupplementaryFileContainer: {
+        IS_EDITABLE_IN_GUI: False,
+    },
+    NamespaceSet: {
         IS_EDITABLE_IN_GUI: False,
     },
     Referable: {
