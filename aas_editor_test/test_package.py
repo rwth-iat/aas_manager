@@ -1,3 +1,4 @@
+import io
 from pathlib import Path
 
 import pytest
@@ -135,7 +136,6 @@ class TestStoredFile:
         assert sf.savedInStore() is False
 
     def test_saved_in_store_with_filestore(self) -> None:
-        import io
         store = DictSupplementaryFileContainer()
         store.add_file("/image.png", file=io.BytesIO(b"\x89PNG"), content_type="image/png")
         sf = StoredFile(name="/image.png", fileStore=store)

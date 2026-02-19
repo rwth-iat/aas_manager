@@ -9,8 +9,8 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 import aas_test_engines.file as test_engines_file_check
 from PyQt6.QtWidgets import QDialog, QPushButton, QVBoxLayout, QFileDialog
-import widgets.messsageBoxes
 from aas_editor.settings import FILTER_AAS_FILES
+from aas_editor.widgets.messsageBoxes import ErrorMessageBox
 from aas_editor.widgets.dropfilebox import DropFileQWebEngineView
 
 
@@ -59,4 +59,4 @@ class AasTestEnginesToolDialog(QDialog):
                     raise TypeError("File of unknown type:", file)
             self.html_renderer.setHtml(result.to_html())
         except Exception as e:
-            widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, str(e)).exec()
+            ErrorMessageBox.withTraceback(self, str(e)).exec()

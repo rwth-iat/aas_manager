@@ -67,7 +67,7 @@ class PacksTable(StandardTable):
         parentName = parent.data(NAME_ROLE)
         if isinstance(obj, Package):
             return
-        elif parentName in Package.addableAttrs():
+        elif parentName in ClassesInfo.packViewAttrs(Package):
             package: Package = parent.data(PACKAGE_ROLE)
             package.add(obj)
         elif ClassesInfo.changedParentObject(parentObjCls): #FIXME: Refactor

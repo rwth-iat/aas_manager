@@ -24,7 +24,6 @@ from basyx.aas.model import AssetAdministrationShell, ConceptDescription, Submod
     AbstractObjectProvider, NamespaceSet
 
 import aas_editor.additional.classes
-import aas_editor.package
 from aas_editor.tools.import_feature import import_util_classes
 from aas_editor.settings.util_constants import HIDDEN_ATTRS, CHANGED_PARENT_OBJ, ADD_ACT_AAS_TXT, \
     ADD_TYPE, PACKVIEW_ATTRS_INFO, PARAMS_TO_ATTRS, DEFAULT_PARAMS_TO_HIDE, ITERABLE_ATTRS, POSITIONAL_ARG_DEFAULTS, \
@@ -63,26 +62,9 @@ MEDIA_TYPES_INFOS = {
         CONTENT_TYPE_ATTR: "content_type",
         CONTENT_VALUE_ATTR: "value",
     },
-    aas_editor.package.StoredFile: {
-        CONTENT_TYPE_ATTR: "mime_type",
-        CONTENT_VALUE_ATTR: "value",
-    }
 }
 
 # AnyXSDType = Base64Binary, HexBinary
-
-from basyx.aas import model
-
-TYPE_NAMES_DICT = {
-    model.datatypes.String: "String",
-    model.datatypes.Boolean: "Boolean",
-    model.datatypes.Double: "Double",
-    model.datatypes.Decimal: "Decimal",
-    int: "Integer",
-    model.datatypes.Duration: "Duration",
-    model.datatypes.DateTime: "DateTime",
-    model.datatypes.Time: "Time",
-}
 
 ATTR_ORDER = (
     "id_short",
@@ -113,30 +95,6 @@ CLASSES_INFO = {
     },
     datetime.datetime: {
         HIDDEN_ATTRS: ("min", "max", "resolution"),
-    },
-    aas_editor.package.Package: {
-        HIDDEN_ATTRS: ("ATTRS_INFO", "shells", "assets", "submodels", "concept_descriptions", "others", "fileStore"),
-        ADD_ACT_AAS_TXT: "Add package",
-        ADD_TYPE: aas_editor.package.Package,
-        PACKVIEW_ATTRS_INFO: {
-            SHELLS: {
-                ADD_ACT_AAS_TXT: "Add shell",
-                ADD_TYPE: AssetAdministrationShell,
-            },
-            SUBMODELS: {
-                ADD_ACT_AAS_TXT: "Add submodel",
-                ADD_TYPE: Submodel,
-            },
-            CONCEPT_DESCRIPTIONS: {
-                ADD_ACT_AAS_TXT: "Add concept description",
-                ADD_TYPE: ConceptDescription,
-            },
-            FILESTORE: {
-                ADD_ACT_AAS_TXT: "Add file",
-                ADD_TYPE: aas_editor.package.StoredFile,
-            },
-        },
-        IS_EDITABLE_IN_GUI: False,
     },
     AbstractObjectProvider: {
         IS_EDITABLE_IN_GUI: False,

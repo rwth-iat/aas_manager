@@ -25,9 +25,8 @@ from PyQt6.QtCore import QObject, QVariant
 
 from aas_editor.package import StoredFile
 from aas_editor import settings
-from aas_editor.utils.util import getAttrDoc, simplifyInfo, getLimitStr
-from aas_editor.utils.util_type import checkType, getTypeName, getTypeHintName, isIterable, \
-    getAttrTypeHint, getIterItemTypeHint
+from aas_editor.utils.util import getAttrDoc, simplifyInfo, getLimitStr, getAttrTypeHint, getIterItemTypeHint
+from aas_editor.utils.util_type import checkType, getTypeName, getTypeHintName, isIterable
 from PyQt6.QtCore import Qt
 
 from aas_editor.utils.util_classes import ClassesInfo

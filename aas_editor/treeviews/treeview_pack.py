@@ -48,7 +48,7 @@ from aas_editor.settings.shortcuts import SC_OPEN, SC_SAVE_ALL
 from aas_editor.settings.icons import NEW_PACK_ICON, OPEN_ICON, OPEN_DRAG_ICON, SAVE_ICON, SAVE_ALL_ICON, ADD_ICON, \
     EDIT_JSON_ICON
 from aas_editor.utils import util_type
-from aas_editor.utils.util import getDefaultVal, getReqParams4init
+from aas_editor.utils.util import getDefaultVal, getReqParams4init, getAttrTypeHint
 from aas_editor.utils.util_classes import ClassesInfo
 from aas_editor.treeviews.base import HeaderView, TreeView
 from aas_editor import dialogs
@@ -345,7 +345,7 @@ class PackTreeView(TreeView):
             if attribute == OBJECT_COLUMN_NAME:
                 attrTypeHint = type(parentObj)
             else:
-                attrTypeHint = util_type.getAttrTypeHint(type(parentObj), attribute)
+                attrTypeHint = getAttrTypeHint(type(parentObj), attribute)
         except KeyError as e:
             if objVal:
                 attrTypeHint = type(objVal)
@@ -476,7 +476,7 @@ class PackTreeView(TreeView):
         super().updateAddActs(index)
 
         attrName = index.data(NAME_ROLE)
-        if attrName in Package.addableAttrs():
+        if attrName in ClassesInfo.packViewAttrs(Package):
             addActText = ClassesInfo.addActText(Package, attrName)
             self.addAct.setEnabled(True)
             self.addAct.setText(addActText)
@@ -854,7 +854,7 @@ class PackTreeView(TreeView):
         currObj = index.data(OBJECT_ROLE)
         currObjType = type(currObj)
         try:
-            attrTypehint = util_type.getAttrTypeHint(currObjType, attrName, delOptional=False)
+            attrTypehint = getAttrTypeHint(currObjType, attrName, delOptional=False)
         except KeyError as e:
             logging.exception(e)
             return False
@@ -875,7 +875,7 @@ class PackTreeView(TreeView):
             super(PackTreeView, self).onPaste()
         else:
             obj2paste = self.treeClipboard.objects[-1]
-            targetTypeHint = util_type.getAttrTypeHint(type(index.data(OBJECT_ROLE)), attrName, delOptional=False)
+            targetTypeHint = getAttrTypeHint(type(index.data(OBJECT_ROLE)), attrName, delOptional=False)
             reqAttrsDict = getReqParams4init(type(obj2paste), rmDefParams=True)
 
             # if no req. attrs, paste data without dialog

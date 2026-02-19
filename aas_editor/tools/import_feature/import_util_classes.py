@@ -80,7 +80,7 @@ class PreObjectImport(PreObject):
         elif util_type.issubtype(objType, LangStringSet):
             items = PreObjectImport.fromObject(obj._dict)
             return PreObjectImport(objType, (items,), {})
-        elif util_type.isSimpleIterableType(objType):
+        elif util.isSimpleIterableType(objType):
             objType = tuple if util_type.issubtype(objType, NamespaceSet) else objType
             items = []
             for item in obj:

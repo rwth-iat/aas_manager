@@ -14,9 +14,9 @@ from typing import Dict, Type, Union, List, Iterable
 from basyx.aas.model import AssetAdministrationShell, Submodel, ConceptDescription
 
 from aas_editor.package import Package, StoredFile
-from aas_editor.utils.util import getParamsAndTypehints4init
+from aas_editor.utils.util import getParamsAndTypehints4init, getAttrTypeHint
 from aas_editor.utils.util_classes import ClassesInfo, PreObject
-from aas_editor.utils.util_type import getAttrTypeHint, isIterableType, isIterable, checkType, isOptional, getTypeName
+from aas_editor.utils.util_type import isIterableType, isIterable, checkType, isOptional, getTypeName
 
 
 class KwargPackage(Package):
