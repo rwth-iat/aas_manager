@@ -52,6 +52,15 @@ classifiers = [
   "Programming Language :: Python"
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["aas_editor_test"]
+
 [tool.setuptools.packages.find]
 where = ["aas_editor"]
 include = ["."]
