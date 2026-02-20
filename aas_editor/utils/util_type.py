@@ -35,18 +35,18 @@ TYPING_TYPES = {typing.AbstractSet, typing.Callable, typing.Dict, typing.List, t
 
 
 def getOrigin(obj) -> typing.Type:
-    """Return obj.__origin__ if it has it else return obj"""
-    if hasattr(obj, "__origin__"):
-        obj = obj.__origin__
-    return obj
+    """Return the origin type if obj is a generic alias, else return obj.
+
+    Uses typing.get_origin() to correctly handle bare special forms like
+    typing.Union whose __origin__ is a descriptor in Python 3.14+.
+    """
+    origin = typing.get_origin(obj)
+    return origin if origin is not None else obj
 
 
 def getArgs(obj) -> typing.Tuple[typing.Type]:
-    try:
-        args = obj.__args__
-    except AttributeError:
-        args = tuple()
-    return args
+    """Return the type arguments of a generic alias, or an empty tuple."""
+    return typing.get_args(obj)
 
 
 def isTypehint(obj) -> bool:
@@ -230,9 +230,9 @@ def _issubtype(typ1, typ2: type) -> bool:
         else:
             return False
     if isUnion(typ2):
-        if hasattr(typ2, "__args__") and typ2.__args__:
-            typ2 = typ2.__args__
-            return issubtype(typ1, typ2)
+        args = getArgs(typ2)
+        if args:
+            return issubtype(typ1, args)
         else:
             return isUnion(typ1)
 
