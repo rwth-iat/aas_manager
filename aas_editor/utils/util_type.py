@@ -25,13 +25,23 @@ from enum import Enum
 from typing import Union, Tuple, Iterable
 
 from basyx.aas.model import ModelReference
+from basyx.aas import model
 
 import aas_editor.additional.classes
-from aas_editor.settings.type_display_names import TYPE_NAMES_DICT
-
 TYPING_TYPES = {typing.AbstractSet, typing.Callable, typing.Dict, typing.List, typing.NamedTuple,
                 typing.NoReturn, typing.Set, typing.Sequence, typing.Tuple, typing.Type,
                 typing.TypeVar, typing.Union}
+
+TYPE_NAMES_DICT = {
+    model.datatypes.String: "String",
+    model.datatypes.Boolean: "Boolean",
+    model.datatypes.Double: "Double",
+    model.datatypes.Decimal: "Decimal",
+    int: "Integer",
+    model.datatypes.Duration: "Duration",
+    model.datatypes.DateTime: "DateTime",
+    model.datatypes.Time: "Time",
+}
 
 
 def getOrigin(obj) -> typing.Type:
