@@ -354,3 +354,8 @@ TYPS_TO_SPECIAL_IMPORT_OBJ_CLASSES = {
     datetime.date: DateImport,
     bool: BooleanImport,
 }
+
+# Register PreObjectImport as a complex iterable type after the class is fully defined.
+# Kept here to avoid coupling aas_settings to import_feature tools.
+import aas_editor.settings as _settings  # noqa: E402
+_settings.COMPLEX_ITERABLE_TYPES += (PreObjectImport,)

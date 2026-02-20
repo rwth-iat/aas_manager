@@ -24,7 +24,6 @@ from basyx.aas.model import AssetAdministrationShell, ConceptDescription, Submod
     AbstractObjectProvider, NamespaceSet
 
 import aas_editor.additional.classes
-from aas_editor.tools.import_feature import import_util_classes
 from aas_editor.settings.util_constants import HIDDEN_ATTRS, CHANGED_PARENT_OBJ, ADD_ACT_AAS_TXT, \
     ADD_TYPE, PACKVIEW_ATTRS_INFO, PARAMS_TO_ATTRS, DEFAULT_PARAMS_TO_HIDE, ITERABLE_ATTRS, POSITIONAL_ARG_DEFAULTS, \
     CONTENT_TYPE_ATTR, CONTENT_VALUE_ATTR, IS_EDITABLE_IN_GUI
@@ -202,7 +201,7 @@ TYPES_NOT_TO_POPULATE = (type, ABCMeta)
 TYPES_WITH_INSTANCES_NOT_TO_POPULATE = (
     AbstractObjectStore, str, int, float, bool, Enum, Path, aas_editor.additional.classes.DictItem, datatypes.Decimal, type,
     datetime.date)  # '+ TYPES_IN_ONE_ROW
-COMPLEX_ITERABLE_TYPES = (Namespace, import_util_classes.PreObjectImport)
+COMPLEX_ITERABLE_TYPES = (Namespace,)
 
 TYPE_SHORTS_DICT = {
     AssetAdministrationShell: "AAS",
