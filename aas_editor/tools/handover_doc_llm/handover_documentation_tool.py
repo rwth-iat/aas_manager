@@ -23,13 +23,8 @@ from basyx.aas.adapter.json import AASToJsonEncoder, AASFromJsonDecoder
 
 from basyx.aas.model import Submodel
 
-from langchain_community.document_loaders import PyPDFLoader
 from langchain_core.documents import Document
 from langchain_core.retrievers import BaseRetriever
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import FAISS
-from langchain_classic.chains.combine_documents import create_stuff_documents_chain
-from langchain_core.prompts import ChatPromptTemplate
 
 from aas_editor.widgets import messsageBoxes
 from aas_editor.tools.handover_doc_llm.documentation_generator import json2document, documents2handover_documentation
@@ -81,6 +76,10 @@ class PdfProcessingThread(QThread):
         tmp_path = None
 
         try:
+            from langchain_community.document_loaders import PyPDFLoader
+            from langchain_classic.chains.combine_documents import create_stuff_documents_chain
+            from langchain_core.prompts import ChatPromptTemplate
+
             # 1. Safer File Handling: Copy file instead of reading entire bytes into memory
             suffix = ".pdf"
             with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp_pdf:
@@ -115,6 +114,9 @@ class PdfProcessingThread(QThread):
             use_rag = total_pages > SMALL_PAGES_THRESHOLD or total_chars > SMALL_CHARS_THRESHOLD
 
             if use_rag:
+                from langchain_text_splitters import RecursiveCharacterTextSplitter
+                from langchain_community.vectorstores import FAISS
+
                 logging.info("Using RAG approach for document processing.")
                 print("Using RAG approach for document processing.")
                 embeddings = self.init_embeddings(self.llm_provider, self.api_key)
