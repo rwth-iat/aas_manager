@@ -8,29 +8,32 @@ on:
 jobs:
   create_release:
     name: Create Release
-    runs-on: [ ubuntu-latest ]
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v1
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python 3.12
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.12
+          python-version: "3.12"
 
       - name: Install dependencies
-        run: |
-          pip install -e .
+        run: pip install -e .
 
       - name: Get version from pyproject.toml
         id: get_version
         run: |
           VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
-          echo "::set-output name=version::$VERSION"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Get previous tag
         id: get_prev_tag
-        run: echo ::set-output name=prev-tag::$(git describe --tags --abbrev=0 HEAD^)
+        run: echo "prev-tag=$(git describe --tags --abbrev=0 HEAD^)" >> $GITHUB_OUTPUT
 
       - name: Generate release notes
         id: generate_release_notes
@@ -39,7 +42,7 @@ jobs:
           CURRENT_TAG=v${{ steps.get_version.outputs.version }}
           RELEASE_NOTES=$(git log $PREV_TAG..HEAD --pretty=format:"%h - %s (%an)")
           echo "${RELEASE_NOTES}" > release_notes.txt
-          echo "::set-output name=notes::${RELEASE_NOTES}"
+          echo "notes=${RELEASE_NOTES}" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         id: create_release
@@ -53,14 +56,11 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Output Release URL File
-        run: echo "${{ steps.create_release.outputs.upload_url }}" > release_url.txt
-
       - name: Save Release URL File for publish
         uses: actions/upload-artifact@v4
         with:
           name: release_url
-          path: release_url.txt
+          path: release_notes.txt
 
   build:
     name: Build packages
@@ -86,33 +86,29 @@ jobs:
             OUT_FILE_NAME: AAS_Manager_Win.zip
             ASSET_MIME: application/vnd.microsoft.portable-executable
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
+
       - name: Set up Python 3.12
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.12
+          python-version: "3.12"
+
+      - name: Install system dependencies (Ubuntu only)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y libegl1 libopengl0
+
       - name: Install dependencies
-        run: |
-          pip install -e .
-      - name: Build with pyinstaller for ${{matrix.TARGET}}
-        run: ${{matrix.CMD_BUILD}}
-      - name: Load Release URL File from release job
-        uses: actions/download-artifact@v4
-        with:
-          name: release_url
-      - name: Get Release File Name & Upload URL
-        id: get_release_info
-        shell: bash
-        run: |
-          value=`cat release_url.txt`
-          echo ::set-output name=upload_url::$value
+        run: pip install -e .
+
+      - name: Build with pyinstaller for ${{ matrix.TARGET }}
+        run: ${{ matrix.CMD_BUILD }}
+
       - name: Upload Release Asset
-        id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.get_release_info.outputs.upload_url }}
-          asset_path: ./dist/${{ matrix.OUT_FILE_NAME}}
-          asset_name: ${{ matrix.OUT_FILE_NAME}}
-          asset_content_type: ${{ matrix.ASSET_MIME}}
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+          asset_path: ./dist/${{ matrix.OUT_FILE_NAME }}
+          asset_name: ${{ matrix.OUT_FILE_NAME }}
+          asset_content_type: ${{ matrix.ASSET_MIME }}
