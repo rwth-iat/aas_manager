@@ -110,3 +110,64 @@ document.documentVersion.organizationOfficialName: str
 
 Make reasonable assumptions where exact fields are not available, but clearly align to the HandoverDocumentation structure and if nothing was found answer with an empty entry (no "").
 """
+RESPONSE_SCHEMA = r"""
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DocumentResponse",
+  "type": "object",
+  "required": ["document"],
+  "additionalProperties": false,
+  "properties": {
+    "document": {
+      "type": "object",
+      "required": ["documentId", "documentClassification", "documentVersion"],
+      "additionalProperties": false,
+      "properties": {
+        "documentId": {
+          "type": "object",
+          "required": ["documentDomainId", "documentIdentifier"],
+          "additionalProperties": false,
+          "properties": {
+            "documentDomainId": { "type": "string", "minLength": 1 },
+            "documentIdentifier": { "type": "string", "minLength": 1 }
+          }
+        },
+        "documentClassification": {
+          "type": "object",
+          "required": ["classId"],
+          "additionalProperties": false,
+          "properties": {
+            "classId": { "type": "string", "minLength": 1 }
+          }
+        },
+        "documentVersion": {
+          "type": "object",
+          "required": [
+            "title", "subTitle", "description", "keyWords",
+            "version", "language", "statusSetDate", "statusValue",
+            "organizationShortName", "organizationOfficialName"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "title": { "type": "object", "additionalProperties": { "type": "string" } },
+            "subTitle": { "type": "object", "additionalProperties": { "type": "string" } },
+            "description": { "type": "object", "additionalProperties": { "type": "string" } },
+            "keyWords": { "type": "object", "additionalProperties": { "type": "string" } },
+            "version": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)*$" },
+            "language": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 2 },
+              "minItems": 1,
+              "uniqueItems": true
+            },
+            "statusSetDate": { "type": "string", "format": "date-time" },
+            "statusValue": { "type": "string", "minLength": 1 },
+            "organizationShortName": { "type": "string", "minLength": 1 },
+            "organizationOfficialName": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    }
+  }
+}
+"""
