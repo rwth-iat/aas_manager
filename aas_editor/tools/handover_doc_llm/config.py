@@ -85,7 +85,7 @@ Your task is to extract the following data from the PDF file:
 - statusSetDate: "Date when the document status was set. Format is YYYY-MM-dd."
 - statusValue: "InReview or Released"
 - organizationShortName: "Short name of the author organization."
-- organizationOfficalName: "Official name of the organization of author of the Document."
+- organizationOfficialName: "Official name of the organization of author of the Document."
 
 Steps:
 1. Parse the given context and find for all attributes the best fitting value.
