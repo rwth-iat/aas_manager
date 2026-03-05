@@ -78,12 +78,11 @@ class TestUtilFuncs(TestCase):
 
     def test_checkType(self):
         Nonetype = type(None)
-        test_set={
-            "dsgf":str,
-            None:Union[str, Nonetype],
-            {2:3}:Union[Dict[str, str], Nonetype]
-        }
-        for typ in test_set:
-            typeHint = test_set[typ]
-            print("Check", typeHint, type)
-            self.assertTrue(checkType(typ, typeHint))
+        test_cases = [
+            ("dsgf", str),
+            (None, Union[str, Nonetype]),
+            ({2: 3}, Union[Dict[str, str], Nonetype]),
+        ]
+        for obj, typeHint in test_cases:
+            print("Check", obj, typeHint)
+            self.assertTrue(checkType(obj, typeHint))

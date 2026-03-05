@@ -24,8 +24,8 @@ from aas_editor.settings import DEFAULT_COMPLETIONS, DEFAULTS, OBJECT_ROLE
 from aas_editor.utils.util import getReqParams4init, getParamsAndTypehints4init, getDefaultVal, delAASParent, inheritors
 
 from aas_editor.utils.util_classes import ClassesInfo, PreObject
-from aas_editor.utils.util_type import isOptional, issubtype, getTypeName, typeHintToType, isoftype, isIterable, isIterableType, \
-    isValOk4Typehint, getArgs
+from aas_editor.utils.util_type import isOptional, issubtype, getTypeName, typeHintToType, isoftype, isIterable, isIterableType, getArgs
+from aas_editor.utils.util import isValOk4Typehint
 from aas_editor.widgets.editWidgets import StandardInputWidget
 from aas_editor.widgets.messsageBoxes import ErrorMessageBox
 

@@ -330,7 +330,7 @@ class TabWithTreeView(QWidget):
         self.mediaViewWidget.hide()
 
         if treeViewCls is None:
-            from treeviews.treeview_detailed import AttrsTreeView
+            from aas_editor.treeviews.treeview_detailed import AttrsTreeView
             treeViewCls = AttrsTreeView
         self.attrsTreeView = treeViewCls(self) if not treeViewClsKwargs else treeViewCls(self, **treeViewClsKwargs)
         self.attrsTreeView.setFrameShape(QFrame.Shape.NoFrame)

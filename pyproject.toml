@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aas_editor"
-version = "0.4.10"
+version = "0.4.11"
 dependencies = [
     "PyQt6",
     "basyx-python-sdk@git+https://github.com/rwth-iat/basyx-python-sdk@aas_manager/v301#subdirectory=sdk",
@@ -30,6 +30,7 @@ dependencies = [
     "pypdf==6.6.0",
     "sentence-transformers==5.2.0",
     "faiss-cpu==1.13.2",
+    "jsonschema",
 ]
 
 requires-python = ">=3.10"
@@ -51,6 +52,15 @@ classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python"
 ]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["aas_editor_test"]
 
 [tool.setuptools.packages.find]
 where = ["aas_editor"]

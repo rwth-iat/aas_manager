@@ -24,32 +24,39 @@ from collections import abc
 from enum import Enum
 from typing import Union, Tuple, Iterable
 
-from basyx.aas.model import ModelReference, LangStringSet
+from basyx.aas.model import ModelReference
+from basyx.aas import model
 
 import aas_editor.additional.classes
-from aas_editor import settings
-import aas_editor.settings.aas_settings as aas_settings
-from aas_editor.utils import util
-from aas_editor.utils import util_classes
-
 TYPING_TYPES = {typing.AbstractSet, typing.Callable, typing.Dict, typing.List, typing.NamedTuple,
                 typing.NoReturn, typing.Set, typing.Sequence, typing.Tuple, typing.Type,
                 typing.TypeVar, typing.Union}
 
+TYPE_NAMES_DICT = {
+    model.datatypes.String: "String",
+    model.datatypes.Boolean: "Boolean",
+    model.datatypes.Double: "Double",
+    model.datatypes.Decimal: "Decimal",
+    int: "Integer",
+    model.datatypes.Duration: "Duration",
+    model.datatypes.DateTime: "DateTime",
+    model.datatypes.Time: "Time",
+}
+
 
 def getOrigin(obj) -> typing.Type:
-    """Return obj.__origin__ if it has it else return obj"""
-    if hasattr(obj, "__origin__"):
-        obj = obj.__origin__
-    return obj
+    """Return the origin type if obj is a generic alias, else return obj.
+
+    Uses typing.get_origin() to correctly handle bare special forms like
+    typing.Union whose __origin__ is a descriptor in Python 3.14+.
+    """
+    origin = typing.get_origin(obj)
+    return origin if origin is not None else obj
 
 
 def getArgs(obj) -> typing.Tuple[typing.Type]:
-    try:
-        args = obj.__args__
-    except AttributeError:
-        args = tuple()
-    return args
+    """Return the type arguments of a generic alias, or an empty tuple."""
+    return typing.get_args(obj)
 
 
 def isTypehint(obj) -> bool:
@@ -151,8 +158,8 @@ def getTypeName(objType) -> str:
     nameAttrs = ("__name__", "_name", "name")
     for nameAttr in nameAttrs:
         try:
-            if objType in aas_settings.TYPE_NAMES_DICT:
-                res = aas_settings.TYPE_NAMES_DICT[objType]
+            if objType in TYPE_NAMES_DICT:
+                res = TYPE_NAMES_DICT[objType]
                 if isinstance(res, dict):
                     res = res["class"]
             else:
@@ -233,9 +240,9 @@ def _issubtype(typ1, typ2: type) -> bool:
         else:
             return False
     if isUnion(typ2):
-        if hasattr(typ2, "__args__") and typ2.__args__:
-            typ2 = typ2.__args__
-            return issubtype(typ1, typ2)
+        args = getArgs(typ2)
+        if args:
+            return issubtype(typ1, args)
         else:
             return isUnion(typ1)
 
@@ -307,16 +314,6 @@ def _isoftype(obj, typ) -> bool:
     return isinstance(obj, typ)
 
 
-def isSimpleIterableType(objType):
-    if not isTypehint(objType):
-        raise TypeError("Arg 1 must be type or typehint:", objType)
-    return False if issubtype(objType, settings.COMPLEX_ITERABLE_TYPES) else isIterableType(objType)
-
-
-def isSimpleIterable(obj):
-    return isSimpleIterableType(type(obj))
-
-
 def isIterableType(objType):
     return issubtype(objType, Iterable) \
            and not issubtype(objType, (str, bytes, bytearray, aas_editor.additional.classes.DictItem))
@@ -324,66 +321,6 @@ def isIterableType(objType):
 
 def isIterable(obj):
     return isIterableType(type(obj))
-
-
-def getAttrTypeHint(objType, attr, delOptional=True):
-    params = util.getReqParams4init(objType, rmDefParams=False, delOptional=delOptional)
-
-    # Determine type hint from initialization parameters or property type hint
-    try:
-        typeHint = params.get(attr, params.get(f"{attr}_", None))
-        if typeHint is None:
-            func = getattr(objType, attr)
-            typehints = typing.get_type_hints(func.fget)
-            typeHint = typehints["return"]
-    except KeyError:
-        raise KeyError(f"Attribute {attr} not found in {objType}")
-    except Exception as e:
-        logging.exception(e)
-        raise KeyError(f"Failed to get type hint for attribute {attr} in {objType}")
-
-    # Process type hint arguments to remove Ellipsis if present
-    try:
-        args = list(getArgs(typeHint))
-        if Ellipsis in args:
-            args.remove(Ellipsis)
-            origin = typing.get_origin(typeHint)
-            if origin:
-                typeHint = origin[tuple(args)]
-    except AttributeError as e:
-        logging.exception(e)
-
-    return typeHint
-
-
-def getIterItemTypeHint(iterableTypehint):
-    """Return typehint for item which should be in iterable"""
-    if not isTypehint(iterableTypehint):
-        raise TypeError("Arg 1 must be type or typehint:", iterableTypehint)
-
-    iterableTypehint = removeOptional(iterableTypehint)
-    origin = getOrigin(iterableTypehint)
-    args = getArgs(iterableTypehint)
-
-    if issubtype(iterableTypehint, LangStringSet):
-        aas_editor.additional.classes.DictItem.__annotations__["key"] = str
-        aas_editor.additional.classes.DictItem.__annotations__["value"] = str
-        attrType = aas_editor.additional.classes.DictItem
-    elif issubtype(iterableTypehint, dict):
-        aas_editor.additional.classes.DictItem.__annotations__["key"] = iterableTypehint.__args__[0]
-        aas_editor.additional.classes.DictItem.__annotations__["value"] = iterableTypehint.__args__[1]
-        attrType = aas_editor.additional.classes.DictItem
-    elif args:
-        if len(args) > 1:
-            raise KeyError("Typehint of iterable has more then one attribute:", args)
-        attrType = args[0]
-    else:
-        attrType = util_classes.ClassesInfo.addType(origin)
-
-    if not isTypehint(attrType):
-        raise TypeError("Found value is not type or typehint:", attrType)
-
-    return attrType
 
 
 def typeHintToType(typeHint):
@@ -412,13 +349,3 @@ def typecast(val, typ):
         return typ(val)
 
 
-def isValOk4Typehint(val, typehint):
-    if isoftype(val, typehint):
-        return True
-    elif isoftype(val, util_classes.PreObject):
-        if val.existingObjUsed:
-            return isoftype(val.existingObj, typehint)
-        else:
-            return issubtype(val.objType, typehint)
-    else:
-        return False

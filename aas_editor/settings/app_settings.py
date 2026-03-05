@@ -10,19 +10,27 @@
 import datetime
 import typing
 from dataclasses import dataclass
+from pathlib import Path
 
 import toml
-from PyQt6.QtCore import QSize, QSettings
+from PyQt6.QtCore import QSize, QSettings, QDir
 from PyQt6.QtGui import QFont, QIcon
 from PyQt6 import QtCore
 
-from aas_editor.directories import get_settings_file, get_themes_folder, get_custom_column_lists_file, get_icons_folder, \
-    get_pyproject_toml_file, get_submodel_templates_folder
 from aas_editor.settings.util_constants import NOT_GIVEN
 
-SUBMODEL_TEMPLATES_FOLDER = get_submodel_templates_folder()
+# Anchor: aas_editor/ package directory (this file lives in aas_editor/settings/)
+_PACKAGE_DIR = Path(__file__).resolve().parent.parent
 
-PYPROJECT_TOML = toml.load(get_pyproject_toml_file())
+
+def _register_search_path(path: Path) -> Path:
+    QDir.addSearchPath('themes', str(path))
+    return path
+
+
+SUBMODEL_TEMPLATES_FOLDER = _PACKAGE_DIR / "submodel_templates"
+
+PYPROJECT_TOML = toml.load(_PACKAGE_DIR.parent / "pyproject.toml")
 
 VERSION = PYPROJECT_TOML["project"]["version"]
 APPLICATION_NAME = "AAS Manager"
@@ -94,10 +102,10 @@ TYPE_COLUMN = 2
 TYPE_HINT_COLUMN = 3
 
 # Files
-SETTINGS_FILE = get_settings_file()
-THEMES_FOLDER = get_themes_folder()
-ICONS_FOLDER = get_icons_folder()
-CUSTOM_COLUMN_LISTS_FILE = get_custom_column_lists_file()
+SETTINGS_FILE = Path(__file__).resolve().parent / "settings.ini"
+THEMES_FOLDER = _register_search_path(_PACKAGE_DIR / "themes")
+ICONS_FOLDER = _register_search_path(_PACKAGE_DIR / "icons")
+CUSTOM_COLUMN_LISTS_FILE = _PACKAGE_DIR / "custom_column_lists.json"
 
 # Themes
 APP_LOGO = QIcon(str(ICONS_FOLDER / 'logo.svg'))

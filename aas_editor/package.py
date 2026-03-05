@@ -20,8 +20,8 @@ from basyx.aas.adapter.xml import write_aas_xml_file, read_aas_xml_file_into
 from basyx.aas.model import AssetAdministrationShell, Submodel, ConceptDescription, \
     SetObjectStore, Key, ModelReference
 
-from aas_editor.settings import DEFAULT_COMPLETIONS, AppSettings
-from aas_editor.utils.util_classes import ClassesInfo
+from aas_editor.settings.defaults import DEFAULT_COMPLETIONS
+from aas_editor.settings.app_settings import AppSettings
 
 
 class Package:
@@ -35,10 +35,6 @@ class Package:
         for obj in self.objStore:
             DEFAULT_COMPLETIONS[Key]["value"].append(obj.id)
         self._changed = False
-
-    @classmethod
-    def addableAttrs(cls):
-        return ClassesInfo.packViewAttrs(cls)
 
     @property
     def file(self):
@@ -249,3 +245,8 @@ class StoredFile:
             self._fileStore = fileStore
         else:
             raise TypeError("arg 2 must be of type DictSupplementaryFileContainer or None")
+
+
+# Register Package and StoredFile into aas_settings after both classes are fully defined.
+# Imported here to break the circular dependency: package → settings → aas_settings → package.
+import aas_editor.settings.package_settings  # noqa: F401
