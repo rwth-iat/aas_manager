@@ -1,9 +1,36 @@
-from langchain_anthropic import ChatAnthropic
-from langchain_groq import ChatGroq
-from langchain_google_vertexai import ChatVertexAI
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_mistralai import ChatMistralAI
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+def _init_openai_chat(model, key):
+    from langchain_openai import ChatOpenAI
+    return ChatOpenAI(model=model, api_key=key)
+
+
+def _init_anthropic_chat(model, key):
+    from langchain_anthropic import ChatAnthropic
+    return ChatAnthropic(model=model, api_key=key)
+
+
+def _init_vertex_chat(model, key):
+    from langchain_google_vertexai import ChatVertexAI
+    return ChatVertexAI(model=model, api_key=key)
+
+
+def _init_groq_chat(model, key):
+    from langchain_groq import ChatGroq
+    return ChatGroq(model=model, api_key=key)
+
+
+def _init_mistral_chat(model, key):
+    from langchain_mistralai import ChatMistralAI
+    return ChatMistralAI(model=model, api_key=key)
+
+
+def _init_hf_embeddings(_key):
+    from langchain_huggingface import HuggingFaceEmbeddings
+    return HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
+
+
+def _init_openai_embeddings(key):
+    from langchain_openai import OpenAIEmbeddings
+    return OpenAIEmbeddings(api_key=key)
 
 TOOL_DESCRIPTION = \
 """The Tool allows users to generate a Handover Documentation Submodel from a given PDF file with the usage of LLMs.
@@ -23,30 +50,30 @@ Please consider that the following properties will be not be extracted and have 
 LLM_PROVIDERS = {
     "OpenAI": {
         "default_model": "gpt-40-mini",
-        "init": lambda model, key: ChatOpenAI(model=model, api_key=key),
+        "init": _init_openai_chat,
     },
     "Anthropic": {
         "default_model": "claude-3-5-sonnet-latest",
-        "init": lambda model, key: ChatAnthropic(model=model, api_key=key),
+        "init": _init_anthropic_chat,
     },
     "Google Vertex": {
         "default_model": "gemini-1.5-flash",
-        "init": lambda model, key: ChatVertexAI(model=model, api_key=key),
+        "init": _init_vertex_chat,
     },
     "Groq": {
         "default_model": "llama-3.3-70b-versatile",
-        "init": lambda model, key: ChatGroq(model=model, api_key=key),
+        "init": _init_groq_chat,
     },
     "Mistral AI": {
         "default_model": "mistral-large-latest",
-        "init": lambda model, key: ChatMistralAI(model=model, api_key=key),
+        "init": _init_mistral_chat,
     },
 }
 
 EMBEDDING_PROVIDERS = {
-    "default": lambda key: HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2"),
-    "huggingface": lambda key: HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2"),
-    "OpenAI": lambda key: OpenAIEmbeddings(api_key=key),
+    "default": _init_hf_embeddings,
+    "huggingface": _init_hf_embeddings,
+    "OpenAI": _init_openai_embeddings,
 }
 
 PROMPT = """
