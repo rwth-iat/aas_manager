@@ -49,7 +49,11 @@ jobs:
           CURRENT_TAG=v${{ steps.get_version.outputs.version }}
           RELEASE_NOTES=$(git log $PREV_TAG..HEAD --pretty=format:"%h - %s (%an)")
           echo "${RELEASE_NOTES}" > release_notes.txt
-          echo "notes=${RELEASE_NOTES}" >> $GITHUB_OUTPUT
+          {
+            echo "notes<<EOF"
+            echo "${RELEASE_NOTES}"
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         id: create_release
