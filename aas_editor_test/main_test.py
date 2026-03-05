@@ -9,23 +9,27 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
 import sys
-from time import sleep
+from pathlib import Path
 from unittest import TestCase
+
+import pytest
+pytest.importorskip('PyQt6.QtWebEngineCore', reason='PyQt6.QtWebEngineCore not available')
 
 from PyQt6.QtCore import QTimer
 from PyQt6.QtWidgets import QApplication
 
 from aas_editor.editorApp import EditorApp
 from aas_editor.settings.app_settings import NAME_ROLE
-from aas_editor.widgets import TabWithTreeView, PackTreeView
+from aas_editor.treeviews.treeview_pack import PackTreeView
+from aas_editor.widgets import TabWithTreeView
+
+AASX_FILE = Path(__file__).parent / "aas_files" / "TestPackage.aasx"
 
 
 class TestUi(TestCase):
     def setUp(self) -> None:
-        self.app = QApplication(sys.argv)
-
-        self.window = EditorApp()
-        self.window.mainTreeView.openPack("aas_files/TestPackage.aasx")
+        self.app = QApplication.instance() or QApplication(sys.argv)
+        self.window = EditorApp(fileToOpen=str(AASX_FILE))
         self.window.show()
 
         self.packTreeView: PackTreeView = self.window.mainTreeView
@@ -36,9 +40,11 @@ class TestUi(TestCase):
         self.itemsGenerator = self.packTreeView.model().iterItems()
         self.attrsGenerator = None
 
-        # QTimer.singleShot(1000, test1)
         self.timer = QTimer()
         self.timer.setInterval(0)
+
+    def tearDown(self) -> None:
+        self.window.close()
 
     def testViews(self):
         self._startTest(self._testViews)
@@ -51,7 +57,6 @@ class TestUi(TestCase):
                 self._nextItemInLeftTree()
         except StopIteration:
             self.app.exit(0)
-            sleep(1)
             print("Test is completed")
 
     def testLinks(self):
@@ -84,20 +89,19 @@ class TestUi(TestCase):
                 self._nextItemInLeftTree()
         except StopIteration:
             self.app.exit(0)
-            sleep(1)
             print("Test is completed")
 
-    # def testEditCreate(self):
-    #     self._startTest(self._testEditCreate)
+    def testEditCreate(self):
+        self._startTest(self._testEditCreate)
 
     def _testEditCreate(self):
         currIndex = self.attrsTreeView.currentIndex()
         print(currIndex.data(NAME_ROLE))
         try:
             try:
-                if self.attrsTreeView.editCreateAct.isEnabled():
+                if self.attrsTreeView.editCreateInDialogAct.isEnabled():
                     # Edit current item if possible
-                    self.attrsTreeView.editCreateAct.trigger()
+                    self.attrsTreeView.editCreateInDialogAct.trigger()
                     if self.app.activeWindow():
                         self.app.activeWindow().close()
                     self._nextItemInRightTree()
@@ -110,7 +114,6 @@ class TestUi(TestCase):
                 self._nextItemInLeftTree()
         except StopIteration:
             self.app.exit(0)
-            sleep(1)
             print("Test is completed")
 
     def _startTest(self, testFunc):

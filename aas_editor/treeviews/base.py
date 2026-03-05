@@ -39,9 +39,9 @@ from aas_editor.settings import TOOLBARS_HEIGHT, COPY_ICON, SC_COPY, PASTE_ICON,
     ZOOM_IN_ICON, SC_ZOOM_IN, ZOOM_OUT_ICON, SC_ZOOM_OUT, OBJECT_ROLE, NAME_ROLE, UNDO_ROLE, REDO_ROLE, DEFAULT_FONT, \
     MAX_FONT_SIZE, MIN_FONT_SIZE, NOT_GIVEN, UPDATE_ROLE, PARENT_OBJ_ROLE, CLEAR_ROW_ROLE, COPY_ROLE, TYPE_HINT_ROLE, \
     ADD_ITEM_ROLE, DATA_CHANGE_FAILED_ROLE
-from aas_editor.utils.util import getDefaultVal, getReqParams4init
+from aas_editor.utils.util import getDefaultVal, getReqParams4init, getIterItemTypeHint, isSimpleIterable
 from aas_editor.utils.util_classes import ClassesInfo
-from aas_editor.utils.util_type import isIterable, checkType, getIterItemTypeHint, isSimpleIterable, isoftype
+from aas_editor.utils.util_type import isIterable, checkType, isoftype
 
 EMPTY_VIEW_MSG = "There are no elements in this view"
 EMPTY_VIEW_ICON = None

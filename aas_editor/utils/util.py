@@ -25,7 +25,9 @@ from typing import List, Dict, Type, Set, Any, Tuple, Iterable
 
 from PyQt6.QtCore import Qt, QFile, QTextStream, QModelIndex, QIODevice
 from PyQt6.QtWidgets import QApplication
-from basyx.aas.model import NamespaceSet, Namespace, Reference
+from basyx.aas.model import NamespaceSet, Namespace, Reference, LangStringSet
+
+import aas_editor.additional.classes
 
 from aas_editor import settings
 import aas_editor.utils.util_classes as util_classes
@@ -390,3 +392,85 @@ def toggleStylesheet(path: str) -> None:
         app.setStyleSheet(stream.readAll())
     else:
         app.setStyleSheet("")
+
+
+def isSimpleIterableType(objType) -> bool:
+    if not util_type.isTypehint(objType):
+        raise TypeError("Arg 1 must be type or typehint:", objType)
+    return False if util_type.issubtype(objType, settings.COMPLEX_ITERABLE_TYPES) else util_type.isIterableType(objType)
+
+
+def isSimpleIterable(obj) -> bool:
+    return isSimpleIterableType(type(obj))
+
+
+def getAttrTypeHint(objType, attr: str, delOptional: bool = True):
+    params = getReqParams4init(objType, rmDefParams=False, delOptional=delOptional)
+
+    # Determine type hint from initialization parameters or property type hint
+    try:
+        typeHint = params.get(attr, params.get(f"{attr}_", None))
+        if typeHint is None:
+            func = getattr(objType, attr)
+            typehints = typing.get_type_hints(func.fget)
+            typeHint = typehints["return"]
+    except KeyError:
+        raise KeyError(f"Attribute {attr} not found in {objType}")
+    except Exception as e:
+        logging.exception(e)
+        raise KeyError(f"Failed to get type hint for attribute {attr} in {objType}")
+
+    # Process type hint arguments to remove Ellipsis if present
+    try:
+        args = list(util_type.getArgs(typeHint))
+        if Ellipsis in args:
+            args.remove(Ellipsis)
+            origin = typing.get_origin(typeHint)
+            if origin:
+                typeHint = origin[tuple(args)]
+    except AttributeError as e:
+        logging.exception(e)
+
+    return typeHint
+
+
+def getIterItemTypeHint(iterableTypehint):
+    """Return typehint for item which should be in iterable."""
+    if not util_type.isTypehint(iterableTypehint):
+        raise TypeError("Arg 1 must be type or typehint:", iterableTypehint)
+
+    iterableTypehint = util_type.removeOptional(iterableTypehint)
+    origin = util_type.getOrigin(iterableTypehint)
+    args = util_type.getArgs(iterableTypehint)
+
+    if util_type.issubtype(iterableTypehint, LangStringSet):
+        aas_editor.additional.classes.DictItem.__annotations__["key"] = str
+        aas_editor.additional.classes.DictItem.__annotations__["value"] = str
+        attrType = aas_editor.additional.classes.DictItem
+    elif util_type.issubtype(iterableTypehint, dict):
+        aas_editor.additional.classes.DictItem.__annotations__["key"] = iterableTypehint.__args__[0]
+        aas_editor.additional.classes.DictItem.__annotations__["value"] = iterableTypehint.__args__[1]
+        attrType = aas_editor.additional.classes.DictItem
+    elif args:
+        if len(args) > 1:
+            raise KeyError("Typehint of iterable has more then one attribute:", args)
+        attrType = args[0]
+    else:
+        attrType = util_classes.ClassesInfo.addType(origin)
+
+    if not util_type.isTypehint(attrType):
+        raise TypeError("Found value is not type or typehint:", attrType)
+
+    return attrType
+
+
+def isValOk4Typehint(val, typehint) -> bool:
+    if util_type.isoftype(val, typehint):
+        return True
+    elif util_type.isoftype(val, util_classes.PreObject):
+        if val.existingObjUsed:
+            return util_type.isoftype(val.existingObj, typehint)
+        else:
+            return util_type.issubtype(val.objType, typehint)
+    else:
+        return False

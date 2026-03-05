@@ -51,8 +51,7 @@ Deviations from guidelines are permitted in individual cases, if necessary after
 - We use the [PEP 8 Coding Style](https://www.python.org/dev/peps/pep-0008/) with the following adjustments:
     - Lines can be up to 88 characters long
     - Strings exclusively with double quotation marks (")
-    - We prefer "explicit relative imports" over "absolute imports" (the opposite of PEP).
-      (After [Modules and Packages: Live and Let Die](https://www.youtube.com/watch?v=0oTh1CXRaQ0&t=18m52s))
+    - We use absolute imports throughout (`from aas_editor.subpackage.module import Symbol`).
     - We follow naming conventions of Qt and use mixedCase naming style for variables and CamelCase for class names.
   
         Allowed:

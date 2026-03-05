@@ -19,8 +19,8 @@ import aas_editor.widgets.groupBoxes
 from aas_editor.settings import DEFAULT_INHERITOR
 from aas_editor.utils.util import getParamsAndTypehints4init, getReqParams4init, inheritors
 from aas_editor.utils.util_classes import ClassesInfo
-from aas_editor.utils.util_type import removeOptional, isOptional, isValOk4Typehint, isIterableType, issubtype, \
-    isSimpleIterableType, isUnion, getArgs
+from aas_editor.utils.util_type import removeOptional, isOptional, isIterableType, issubtype, isUnion, getArgs
+from aas_editor.utils.util import isSimpleIterableType, isValOk4Typehint
 
 
 class InputWidgetUtil:
