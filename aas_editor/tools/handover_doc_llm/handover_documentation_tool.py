@@ -15,6 +15,8 @@ import tempfile
 import traceback
 from typing import List
 
+from jsonschema import validate, ValidationError
+
 from PyQt6.QtWidgets import QDialog, QPushButton, QVBoxLayout, QFileDialog, QLineEdit, QComboBox, \
     QHBoxLayout, QLabel, QMessageBox, QListWidgetItem, QListWidget, QGroupBox, QFormLayout, QWidget, QCheckBox
 from PyQt6.QtCore import pyqtSignal, QThread, QUrl
@@ -35,7 +37,7 @@ from aas_editor.widgets import messsageBoxes
 from aas_editor.tools.handover_doc_llm.documentation_generator import json2document, documents2handover_documentation
 from aas_editor.settings.icons import INFO_ICON
 
-from aas_editor.tools.handover_doc_llm.config import PROMPT, LLM_PROVIDERS, EMBEDDING_PROVIDERS, TOOL_DESCRIPTION
+from aas_editor.tools.handover_doc_llm.config import PROMPT, LLM_PROVIDERS, EMBEDDING_PROVIDERS, TOOL_DESCRIPTION, RESPONSE_SCHEMA
 from aas_editor.widgets.dropfilebox import DropFileQWebEngineView
 from aas_editor.widgets.jsonEditor import JSONEditor
 
@@ -76,6 +78,26 @@ class PdfProcessingThread(QThread):
             return LLM_PROVIDERS[provider]["init"](chat_model, api_key)
         else:
             raise ValueError(f"Unsupported LLM provider: {provider}")
+
+    def _fix_json_with_llm(self, llm, raw_answer: str, schema: dict, error_msg: str) -> str:
+        fix_prompt = ChatPromptTemplate.from_messages([
+            ("system",
+             "You are a JSON correction assistant. "
+             "Return ONLY a valid JSON object. "
+             "Do not include markdown, code fences, comments, or any extra text. "
+             "The JSON MUST validate against the provided JSON Schema."),
+            ("human",
+             "JSON Schema:\n{schema}\n\n"
+             "Validation / parsing error:\n{error}\n\n"
+             "Original model output:\n{raw}\n\n"
+             "Task: Produce corrected JSON that matches the schema exactly.")
+        ])
+
+        fix_chain = fix_prompt | llm
+        fixed = fix_chain.invoke({"schema": json.dumps(schema), "error": error_msg, "raw": raw_answer})
+
+        fixed_text = fixed.content if hasattr(fixed, "content") else str(fixed)
+        return fixed_text.strip()
 
     def run(self):
         tmp_path = None
@@ -139,18 +161,38 @@ class PdfProcessingThread(QThread):
             answer = llm_response if isinstance(llm_response, str) else llm_response.get('answer', '')
 
             # 5. JSON Validation
-            try:
-                start_idx = answer.find("{")
-                end_idx = answer.rfind("}") + 1
-                if start_idx == -1 or end_idx == 0:
-                    raise ValueError("No JSON found in response")
+            schema = json.loads(RESPONSE_SCHEMA)
 
-                json_str = answer[start_idx:end_idx]
-                json.loads(json_str)  # Validate
-                self.show_answer_dialog.emit(json_str)
+            max_fix_attempts = 2
+            last_error = None
 
-            except (json.JSONDecodeError, ValueError) as e:
-                return self.processing_error.emit(f"LLM Response was not valid JSON: {str(e)}")
+            for attempt in range(max_fix_attempts + 1):
+                try:
+                    start_idx = answer.find("{")
+                    end_idx = answer.rfind("}") + 1
+                    if start_idx == -1 or end_idx == 0:
+                        raise ValueError("No JSON found in response")
+
+                    json_str = answer[start_idx:end_idx]
+                    data = json.loads(json_str)
+                    validate(instance=data, schema=schema)
+                    self.show_answer_dialog.emit(json_str)
+                    return
+
+                except (ValueError, json.JSONDecodeError, ValidationError) as e:
+                    last_error = str(e)
+
+                    if attempt >= max_fix_attempts:
+                        break
+
+                    answer = self._fix_json_with_llm(
+                        llm=llm,
+                        raw_answer=answer,
+                        schema=schema,
+                        error_msg=last_error
+                    )
+
+            self.processing_error.emit(f"LLM response is not valid. Last error: {last_error}")
 
         except Exception:
             self.processing_error.emit(f"Error: {traceback.format_exc()}")

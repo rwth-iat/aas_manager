@@ -30,6 +30,7 @@ dependencies = [
     "pypdf==6.6.0",
     "sentence-transformers==5.2.0",
     "faiss-cpu==1.13.2",
+    "jsonschema",
 ]
 
 requires-python = ">=3.10"
