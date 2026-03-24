@@ -23,12 +23,24 @@ def _init_mistral_chat(model, key):
     return ChatMistralAI(model=model, api_key=key)
 
 
-def _init_hf_embeddings(_key):
+def _init_ollama_chat(model, key):
+    from langchain_ollama import ChatOllama
+    base_url = key if key else "http://localhost:11434"
+    return ChatOllama(model=model, base_url=base_url)
+
+
+def _init_ollama_embeddings(key, model="nomic-embed-text"):
+    from langchain_ollama import OllamaEmbeddings
+    base_url = key if key else "http://localhost:11434"
+    return OllamaEmbeddings(model=model or "nomic-embed-text", base_url=base_url)
+
+
+def _init_hf_embeddings(_key, _model=None):
     from langchain_huggingface import HuggingFaceEmbeddings
     return HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
 
 
-def _init_openai_embeddings(key):
+def _init_openai_embeddings(key, _model=None):
     from langchain_openai import OpenAIEmbeddings
     return OpenAIEmbeddings(api_key=key)
 
@@ -68,12 +80,25 @@ LLM_PROVIDERS = {
         "default_model": "mistral-large-latest",
         "init": _init_mistral_chat,
     },
+    "Ollama": {
+        "default_model": "llama3.2",
+        "init": _init_ollama_chat,
+    },
 }
 
 EMBEDDING_PROVIDERS = {
-    "default": _init_hf_embeddings,
-    "huggingface": _init_hf_embeddings,
-    "OpenAI": _init_openai_embeddings,
+    "HuggingFace": {
+        "default_model": "",
+        "init": _init_hf_embeddings,
+    },
+    "OpenAI": {
+        "default_model": "",
+        "init": _init_openai_embeddings,
+    },
+    "Ollama": {
+        "default_model": "nomic-embed-text",
+        "init": _init_ollama_embeddings,
+    },
 }
 
 PROMPT = """

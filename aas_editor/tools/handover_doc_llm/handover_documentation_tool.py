@@ -53,7 +53,8 @@ class PdfProcessingThread(QThread):
     show_answer_dialog = pyqtSignal(str)
 
     def __init__(self, file_path: str, llm_provider: str, llm_model: str, api_key: str,
-                 pages_front: str, pages_end: str):
+                 pages_front: str, pages_end: str, embedding_provider: str = "HuggingFace",
+                 embedding_api_key: str = "", embedding_model: str = ""):
         super().__init__()
         self.file_path = file_path
         self.llm_provider = llm_provider
@@ -61,12 +62,14 @@ class PdfProcessingThread(QThread):
         self.api_key = api_key
         self.pages_front = pages_front
         self.pages_end = pages_end
+        self.embedding_provider = embedding_provider
+        self.embedding_api_key = embedding_api_key
+        self.embedding_model = embedding_model
 
-    def init_embeddings(self, provider: str = "default", api_key: str = None):
-        if provider in EMBEDDING_PROVIDERS:
-            return EMBEDDING_PROVIDERS[provider](api_key)
-        else:
-            return EMBEDDING_PROVIDERS["default"](api_key)
+    def init_embeddings(self, provider: str = "HuggingFace", api_key: str = None, model: str = ""):
+        if provider not in EMBEDDING_PROVIDERS:
+            provider = "HuggingFace"
+        return EMBEDDING_PROVIDERS[provider]["init"](api_key, model)
 
     def init_llm(self, provider: str, chat_model: str, api_key: str):
         if provider in LLM_PROVIDERS:
@@ -75,6 +78,7 @@ class PdfProcessingThread(QThread):
             raise ValueError(f"Unsupported LLM provider: {provider}")
 
     def _fix_json_with_llm(self, llm, raw_answer: str, schema: dict, error_msg: str) -> str:
+        from langchain_core.prompts import ChatPromptTemplate
         fix_prompt = ChatPromptTemplate.from_messages([
             ("system",
              "You are a JSON correction assistant. "
@@ -141,7 +145,7 @@ class PdfProcessingThread(QThread):
 
                 logging.info("Using RAG approach for document processing.")
                 print("Using RAG approach for document processing.")
-                embeddings = self.init_embeddings(self.llm_provider, self.api_key)
+                embeddings = self.init_embeddings(self.embedding_provider, self.embedding_api_key, self.embedding_model)
                 splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
                 splits = splitter.split_documents(docs)
                 vector_store = FAISS.from_documents(splits, embeddings)
@@ -259,7 +263,28 @@ class HandoverDocumentationToolDialog(QDialog):
         self.apiKeyLineEdit = QLineEdit(self, toolTip="API Key for LLM service",
                                         placeholderText="Enter API Key here",
                                         echoMode=QLineEdit.EchoMode.Password)
+        self.apiKeyLabel = QLabel("API Key:", self)
         self.modelLineEdit = QLineEdit(self, toolTip="Choose model to use")
+        self.embeddingApiKeyLabel = QLabel("Embedding API Key:", self)
+        self.embeddingApiKeyLineEdit = QLineEdit(self)
+        self.embeddingApiKeyLineEdit.setPlaceholderText("Enter API Key here")
+        self.embeddingApiKeyLineEdit.setEchoMode(QLineEdit.EchoMode.Password)
+        self.embeddingApiKeyLineEdit.setToolTip("API Key for the embedding provider")
+        self.embeddingApiKeyLabel.hide()
+        self.embeddingApiKeyLineEdit.hide()
+
+        self.embeddingModelLabel = QLabel("Embedding Model:", self)
+        self.embeddingModelLineEdit = QLineEdit(self)
+        self.embeddingModelLineEdit.setToolTip(
+            "Ollama embedding model to use for RAG. Leave empty for default (nomic-embed-text).\n"
+            "Pull the model first, e.g.: ollama pull nomic-embed-text")
+        self.embeddingModelLabel.hide()
+        self.embeddingModelLineEdit.hide()
+
+        self.embeddingProviderComboBox = QComboBox(self, toolTip="Embedding provider used for RAG on large documents")
+        self.embeddingProviderComboBox.addItems([k for k in EMBEDDING_PROVIDERS.keys()])
+        self.embeddingProviderComboBox.currentIndexChanged.connect(self.embedding_provider_changed)
+
         self.providerLineEdit = QComboBox(self, toolTip="LLM Provider",
                                           currentIndexChanged=self.provider_changed)
         self.providerLineEdit.addItems([k for k in LLM_PROVIDERS.keys()])
@@ -324,7 +349,10 @@ class HandoverDocumentationToolDialog(QDialog):
         model_h.addWidget(self.model_info_label)
         llm_form.addRow(QLabel("LLM Model:"), model_container)
 
-        llm_form.addRow(QLabel("API Key:"), self.apiKeyLineEdit)
+        llm_form.addRow(self.apiKeyLabel, self.apiKeyLineEdit)
+        llm_form.addRow(QLabel("Embeddings:"), self.embeddingProviderComboBox)
+        llm_form.addRow(self.embeddingModelLabel, self.embeddingModelLineEdit)
+        llm_form.addRow(self.embeddingApiKeyLabel, self.embeddingApiKeyLineEdit)
         gb_llm.setLayout(llm_form)
         layout.addWidget(gb_llm)
 
@@ -387,6 +415,9 @@ class HandoverDocumentationToolDialog(QDialog):
             self.apiKeyLineEdit.text(),
             pages_front=self.pagesFrontLineEdit.text(),
             pages_end=self.pagesEndLineEdit.text(),
+            embedding_provider=self.embeddingProviderComboBox.currentText(),
+            embedding_api_key=self.embeddingApiKeyLineEdit.text(),
+            embedding_model=self.embeddingModelLineEdit.text(),
         )
 
         self.processingThread.processing_error.connect(self.on_processing_error)
@@ -406,7 +437,51 @@ class HandoverDocumentationToolDialog(QDialog):
         self.cleanup_thread()
 
     def provider_changed(self):
-        self.modelLineEdit.setPlaceholderText(LLM_PROVIDERS[self.providerLineEdit.currentText()]["default_model"])
+        provider = self.providerLineEdit.currentText()
+        self.modelLineEdit.setPlaceholderText(LLM_PROVIDERS[provider]["default_model"])
+        if provider == "Ollama":
+            self.apiKeyLabel.setText("Base URL:")
+            self.apiKeyLineEdit.setPlaceholderText("http://localhost:11434 (leave empty for default)")
+            self.apiKeyLineEdit.setEchoMode(QLineEdit.EchoMode.Normal)
+            self.apiKeyLineEdit.setToolTip("Base URL of the Ollama server (leave empty for default)")
+            self.embeddingProviderComboBox.setCurrentText("Ollama")
+        else:
+            self.apiKeyLabel.setText("API Key:")
+            self.apiKeyLineEdit.setPlaceholderText("Enter API Key here")
+            self.apiKeyLineEdit.setEchoMode(QLineEdit.EchoMode.Password)
+            self.apiKeyLineEdit.setToolTip("API Key for LLM service")
+            if provider == "OpenAI":
+                self.embeddingProviderComboBox.setCurrentText("OpenAI")
+            else:
+                self.embeddingProviderComboBox.setCurrentText("HuggingFace")
+
+    def embedding_provider_changed(self):
+        provider = self.embeddingProviderComboBox.currentText()
+        if provider == "OpenAI":
+            self.embeddingApiKeyLabel.setText("Embedding API Key:")
+            self.embeddingApiKeyLineEdit.setPlaceholderText("Enter OpenAI API Key")
+            self.embeddingApiKeyLineEdit.setEchoMode(QLineEdit.EchoMode.Password)
+            self.embeddingApiKeyLineEdit.setToolTip("OpenAI API Key for embeddings")
+            self.embeddingApiKeyLabel.show()
+            self.embeddingApiKeyLineEdit.show()
+            self.embeddingModelLabel.hide()
+            self.embeddingModelLineEdit.hide()
+        elif provider == "Ollama":
+            self.embeddingApiKeyLabel.setText("Embedding Base URL:")
+            self.embeddingApiKeyLineEdit.setPlaceholderText("http://localhost:11434 (leave empty for default)")
+            self.embeddingApiKeyLineEdit.setEchoMode(QLineEdit.EchoMode.Normal)
+            self.embeddingApiKeyLineEdit.setToolTip("Base URL of the Ollama server for embeddings")
+            self.embeddingApiKeyLabel.show()
+            self.embeddingApiKeyLineEdit.show()
+            self.embeddingModelLabel.show()
+            self.embeddingModelLineEdit.show()
+            self.embeddingModelLineEdit.setPlaceholderText(
+                EMBEDDING_PROVIDERS["Ollama"]["default_model"])
+        else:
+            self.embeddingApiKeyLabel.hide()
+            self.embeddingApiKeyLineEdit.hide()
+            self.embeddingModelLabel.hide()
+            self.embeddingModelLineEdit.hide()
 
     def closeEvent(self, event):
         if self.processingThread and self.processingThread.isRunning():
