@@ -26,6 +26,7 @@ dependencies = [
     "langchain-groq==1.1.1",
     "langchain-google-vertexai==3.2.1",
     "langchain-mistralai==1.1.1",
+    "langchain-ollama==1.0.0",
     "langchain-community==0.4.1",
     "pypdf==6.6.0",
     "sentence-transformers==5.2.0",
