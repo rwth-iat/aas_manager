@@ -108,6 +108,10 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get update && sudo apt-get install -y libegl1 libopengl0
 
+      - name: Install CPU-only torch (Ubuntu only)
+        if: matrix.os == 'ubuntu-latest'
+        run: pip install torch --index-url https://download.pytorch.org/whl/cpu
+
       - name: Install dependencies
         run: pip install -e .
 
