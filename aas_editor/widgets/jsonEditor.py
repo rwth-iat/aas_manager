@@ -62,6 +62,11 @@ class JSONEditor(QsciScintilla):
         lexer.setDefaultPaper(QColor("#282c34"))
         lexer.setDefaultColor(QColor("#abb2bf"))
 
+        # Force dark background on every style slot (whitespace/Default/unclosed etc.)
+        for _sid in range(20):
+            lexer.setPaper(QColor("#282c34"), _sid)
+            lexer.setColor(QColor("#abb2bf"), _sid)
+
         # Define a helper to keep code clean
         def set_style(style_id, color_hex, bold=False):
             color = QColor(color_hex)

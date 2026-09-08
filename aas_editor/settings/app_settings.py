@@ -103,6 +103,10 @@ TYPE_HINT_COLUMN = 3
 
 # Files
 SETTINGS_FILE = Path(__file__).resolve().parent / "settings.ini"
+RECOVERY_DIR = Path(__file__).resolve().parent / "recovery"
+# Interval between periodic recovery writes, so a native crash loses at most this
+# window of edits.
+RECOVERY_INTERVAL_MS = 300_000
 THEMES_FOLDER = _register_search_path(_PACKAGE_DIR / "themes")
 ICONS_FOLDER = _register_search_path(_PACKAGE_DIR / "icons")
 CUSTOM_COLUMN_LISTS_FILE = _PACKAGE_DIR / "custom_column_lists.json"

@@ -174,7 +174,7 @@ class TabBar(QTabBar):
         a0.setDropAction(Qt.DropAction.MoveAction)
         a0.accept()
 
-        insertAfter = self.tabAt(a0.pos())
+        insertAfter = self.tabAt(a0.position().toPoint())
         try:
             tab = a0.source().parentWidget().widget(self.indexTabToDrag)
             packItem = QModelIndex(tab.packItem)

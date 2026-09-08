@@ -23,12 +23,27 @@ def _init_mistral_chat(model, key):
     return ChatMistralAI(model=model, api_key=key)
 
 
-def _init_hf_embeddings(_key):
+def _init_ollama_chat(model, key, schema=None):
+    from langchain_ollama import ChatOllama
+    base_url = key if key else "http://localhost:11434"
+    kwargs = {"model": model, "base_url": base_url}
+    if schema is not None:
+        kwargs["format"] = schema
+    return ChatOllama(**kwargs)
+
+
+def _init_ollama_embeddings(key, model="nomic-embed-text"):
+    from langchain_ollama import OllamaEmbeddings
+    base_url = key if key else "http://localhost:11434"
+    return OllamaEmbeddings(model=model or "nomic-embed-text", base_url=base_url)
+
+
+def _init_hf_embeddings(_key, _model=None):
     from langchain_huggingface import HuggingFaceEmbeddings
     return HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
 
 
-def _init_openai_embeddings(key):
+def _init_openai_embeddings(key, _model=None):
     from langchain_openai import OpenAIEmbeddings
     return OpenAIEmbeddings(api_key=key)
 
@@ -49,7 +64,7 @@ Please consider that the following properties will be not be extracted and have 
 
 LLM_PROVIDERS = {
     "OpenAI": {
-        "default_model": "gpt-40-mini",
+        "default_model": "gpt-4o-mini",
         "init": _init_openai_chat,
     },
     "Anthropic": {
@@ -68,12 +83,25 @@ LLM_PROVIDERS = {
         "default_model": "mistral-large-latest",
         "init": _init_mistral_chat,
     },
+    "Ollama": {
+        "default_model": "llama3.2",
+        "init": _init_ollama_chat,
+    },
 }
 
 EMBEDDING_PROVIDERS = {
-    "default": _init_hf_embeddings,
-    "huggingface": _init_hf_embeddings,
-    "OpenAI": _init_openai_embeddings,
+    "HuggingFace": {
+        "default_model": "",
+        "init": _init_hf_embeddings,
+    },
+    "OpenAI": {
+        "default_model": "",
+        "init": _init_openai_embeddings,
+    },
+    "Ollama": {
+        "default_model": "nomic-embed-text",
+        "init": _init_ollama_embeddings,
+    },
 }
 
 PROMPT = """
@@ -164,7 +192,10 @@ RESPONSE_SCHEMA = r"""
           "required": ["classId"],
           "additionalProperties": false,
           "properties": {
-            "classId": { "type": "string", "minLength": 1 }
+            "classId": {
+              "type": "string",
+              "enum": ["01-01", "02-01", "02-02", "02-03", "02-04", "03-01", "03-02", "03-03", "03-04", "03-05", "03-06", "04-01"]
+            }
           }
         },
         "documentVersion": {
@@ -176,19 +207,20 @@ RESPONSE_SCHEMA = r"""
           ],
           "additionalProperties": false,
           "properties": {
-            "title": { "type": "object", "additionalProperties": { "type": "string" } },
-            "subTitle": { "type": "object", "additionalProperties": { "type": "string" } },
-            "description": { "type": "object", "additionalProperties": { "type": "string" } },
-            "keyWords": { "type": "object", "additionalProperties": { "type": "string" } },
-            "version": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]+)*$" },
+            "title": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "string", "minLength": 1 } },
+            "subTitle": { "type": "object", "additionalProperties": { "type": "string", "minLength": 1 } },
+            "description": { "type": "object", "minProperties": 1, "additionalProperties": { "type": "string", "minLength": 1 } },
+            "keyWords": { "type": "object", "additionalProperties": { "type": "string", "minLength": 1 } },
+            "version": { "type": "string", "minLength": 1 },
             "language": {
               "type": "array",
-              "items": { "type": "string", "minLength": 2 },
+              "items": { "type": "string", "minLength": 2, "maxLength": 3, "pattern": "^[a-z]{2,3}$" },
               "minItems": 1,
+              "maxItems": 10,
               "uniqueItems": true
             },
-            "statusSetDate": { "type": "string", "format": "date-time" },
-            "statusValue": { "type": "string", "minLength": 1 },
+            "statusSetDate": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+            "statusValue": { "type": "string", "enum": ["InReview", "Released"] },
             "organizationShortName": { "type": "string", "minLength": 1 },
             "organizationOfficialName": { "type": "string", "minLength": 1 }
           }

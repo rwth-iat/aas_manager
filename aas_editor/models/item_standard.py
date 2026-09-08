@@ -253,7 +253,7 @@ class StandardItem(QObject):
             try:
                 data.resolve(self.package.objStore)
                 return True
-            except (AttributeError, KeyError, NotImplementedError, TypeError, IndexError) as e:
+            except (AttributeError, KeyError, NotImplementedError, TypeError, IndexError, ValueError) as e:
                 logging.exception(e)
                 return False
         return False

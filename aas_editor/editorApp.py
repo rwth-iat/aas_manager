@@ -8,9 +8,11 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 import json
+import logging
 import webbrowser
+from pathlib import Path
 
-from PyQt6.QtCore import QModelIndex, pyqtSignal
+from PyQt6.QtCore import QModelIndex, QTimer, pyqtSignal
 from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 
@@ -18,6 +20,9 @@ import aas_editor.widgets as widgets
 import aas_editor.widgets.messsageBoxes
 import aas_editor.widgets.groupBoxes
 from aas_editor.settings.app_settings import *
+from aas_editor.utils.recovery import find_recovery_files, delete_recovery_file, cleanup_recovery_dir
+from aas_editor.package import Package
+from aas_editor.utils.exceptionhook import set_crash_callback
 from aas_editor.settings.icons import EXIT_ICON, SETTINGS_ICON, NEW_PACK_ICON
 from aas_editor.settings import APPLICATION_NAME, REPORT_ERROR_LINK
 from aas_editor.widgets.settingWidgets import SettingsDialog
@@ -48,7 +53,24 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.initToolbars()
         self.buildHandlers()
         self.restoreSettingsFromLastSession()
+        set_crash_callback(self._save_recovery_files)
 
+        # sys.excepthook misses native crashes (segfaults, OOM kills), which run no
+        # Python and never reach _save_recovery_files. Persist periodically instead.
+        self._recoveryTimer = QTimer(self)
+        self._recoveryTimer.setInterval(RECOVERY_INTERVAL_MS)
+        self._recoveryTimer.timeout.connect(self._save_recovery_files)
+        self._recoveryTimer.start()
+        # Shown once on failure and cleared once writing recovers.
+        self._recoveryWriteFailed = False
+        # Synced to settings only when it changes (open/close), not on every tick.
+        self._lastPersistedOpenFiles = None
+        # Permanent widget, not showMessage(): transient status tips (menu hover)
+        # do not overwrite it, so the warning stays until writing recovers.
+        self._recoveryStatusLabel = QLabel()
+        self._recoveryStatusLabel.setStyleSheet("color: #c0392b;")
+        self._recoveryStatusLabel.hide()
+        self.statusBar().addPermanentWidget(self._recoveryStatusLabel)
         if fileToOpen:
             self.openAASFile(fileToOpen)
         else:
@@ -266,6 +288,9 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             self.currTheme = theme
 
     def closeEvent(self, a0: QCloseEvent) -> None:
+        # Edits made in a detached tab window set the flag on that window, not on this one,
+        # so rebuild it from the packages before deciding whether to ask for saving
+        self.mainTreeView.updateWindowModified()
         if not self.packTreeModel.openedFiles():
             a0.accept()
         elif self.isWindowModified():
@@ -278,6 +303,12 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                 self.mainTreeView.saveAll()
                 a0.accept()
             elif reply == QMessageBox.StandardButton.No:
+                # Discarding: stop recovery writes and drop the recovery files so the
+                # next launch does not offer to restore discarded changes.
+                self._recoveryTimer.stop()
+                for pkg in self.packTreeModel.openedPacks():
+                    if pkg.changed:
+                        pkg.delete_recovery(RECOVERY_DIR)
                 a0.accept()
             else:
                 return a0.ignore()
@@ -293,16 +324,106 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.applyLastSessionTreeStates()
 
     def openLastSessionFiles(self):
+        recovery_map = find_recovery_files(RECOVERY_DIR)
         openedAasFiles = AppSettings.AAS_FILES_TO_OPEN_ON_START.value()
+        # Recovery files restored this launch: kept through the sweep below until their
+        # first save, so a native crash before that save still has the restored data.
+        keptRecoveries = []
         for file in openedAasFiles:
-            self.openAASFile(file)
+            # resolve() to match find_recovery_files()'s resolved keys, so a
+            # symlinked or '..'-containing path still lines up with its recovery.
+            file_path = Path(file).resolve()
+            if file_path in recovery_map:
+                reply = QMessageBox.question(
+                    self, "Restore unsaved changes",
+                    f"A recovery file was found for:\n{file_path.name}\n\n"
+                    "The app may have crashed with unsaved changes.\n"
+                    "Do you want to restore the last auto-saved version?",
+                    QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                    QMessageBox.StandardButton.Yes,
+                )
+                if reply == QMessageBox.StandardButton.Yes:
+                    rec = recovery_map[file_path]
+                    # Kept whether or not the restore succeeds: a failed restore still
+                    # keeps the recovery data as it may be salvageable by hand.
+                    keptRecoveries.append(rec)
+                    try:
+                        pack = Package.restore_from_recovery(rec, file_path)
+                    except Exception:
+                        logging.exception("Failed to restore recovery file %s", rec)
+                        QMessageBox.warning(
+                            self, "Restore failed",
+                            f"The recovery file for {file_path.name} could not be opened.\n\n"
+                            f"It was kept at:\n{rec}\n\n"
+                            "Opening the last saved version instead.")
+                        self.openAASFile(file)
+                    else:
+                        self.mainTreeView.add_pack_to_tree(pack)
+                        self.packTreeModel.setData(QModelIndex(), [], UNDO_ROLE)
+                        # Restored content is unsaved until the user writes it back
+                        pack.changed = True
+                        self.setWindowModified(True)
+                else:
+                    delete_recovery_file(recovery_map[file_path])
+                    self.openAASFile(file)
+            else:
+                self.openAASFile(file)
+
+        # Drop everything left in the recovery dir except the entries just restored:
+        # declined files, orphans (recovery for files no longer opened on start),
+        # stale .meta.json and leftover .tmp writes. Keeps the dir from growing forever.
+        cleanup_recovery_dir(RECOVERY_DIR, keptRecoveries)
+
+    def _save_recovery_files(self):
+        # Persist open-file list before crash exits — closeEvent won't run. Restore
+        # matches recovery files against this list, so it must stay current for a native
+        # crash to offer them. Sync only when it changed to keep it off the disk on
+        # every tick.
+        openFiles = self.packTreeModel.openedFiles()
+        if openFiles != self._lastPersistedOpenFiles:
+            AppSettings.AAS_FILES_TO_OPEN_ON_START.setValue(openFiles)
+            SETTINGS.sync()
+            self._lastPersistedOpenFiles = openFiles
+        writeFailed = False
+        for pkg in self.packTreeModel.openedPacks():
+            # Per-package flag: the window modified flag is shared and gets reset
+            # whenever any package is saved or closed
+            if pkg.changed and pkg.file and pkg.file.exists():
+                try:
+                    pkg.write_recovery(RECOVERY_DIR)
+                except Exception:
+                    # Never let a failed recovery write abort the crash handler or the
+                    # timer, but log it: a silent failure means the user believes they
+                    # are protected while no recovery is being written (disk full, etc.).
+                    writeFailed = True
+                    logging.exception("Failed to write recovery file for %s", pkg.file)
+        self._reportRecoveryWriteStatus(writeFailed)
+
+    def _reportRecoveryWriteStatus(self, writeFailed: bool):
+        """Show a non-blocking status-bar warning while recovery writes are failing.
+
+        Informant only: no dialog, no interruption. Shown once on the transition to
+        failure and cleared once writes recover, so a persistently failing write does
+        not spam a message on every tick.
+        """
+        if writeFailed and not self._recoveryWriteFailed:
+            self._recoveryStatusLabel.setText(
+                "⚠ Auto-recovery could not be saved — unsaved changes are not backed up. "
+                "See log for details.")
+            self._recoveryStatusLabel.show()
+        elif not writeFailed and self._recoveryWriteFailed:
+            self._recoveryStatusLabel.hide()
+        self._recoveryWriteFailed = writeFailed
 
     def openAASFile(self, filePath: str):
+        """Return the opened Package, or None if it could not be opened."""
+        pack = None
         try:
-            self.mainTreeView.openPack(filePath)
+            pack = self.mainTreeView.openPack(filePath)
         except OSError:
             pass
         self.packTreeModel.setData(QModelIndex(), [], UNDO_ROLE)
+        return pack  # None if the file could not be opened
 
     def applyLastSessionTreeStates(self):
         packTreeViewHeader: HeaderView = self.mainTreeView.header()

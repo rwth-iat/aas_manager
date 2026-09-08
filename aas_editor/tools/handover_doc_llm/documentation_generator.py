@@ -105,7 +105,7 @@ DocumentClassificationVDI2770 = {
     }
 }
 
-def json2document(json_str: str):
+def json2document(json_str: str, filename: str = None):
     """
     Convert a JSON string to documents and entities.
 
@@ -122,9 +122,9 @@ def json2document(json_str: str):
     from aas_editor.tools.handover_doc_llm.handover_submodel import HandoverDocumentation
 
     documentID = HandoverDocumentation.Documents.Documents_item.DocumentIds.Documentids_item(
-        documentIsPrimary=True, #TODO: Fix me
+        documentIsPrimary=True,
         documentDomainId=obj['document']['documentId'].get('documentDomainId', ''),
-        documentIdentifier=obj['document']['documentId'].get('valueId', ''))
+        documentIdentifier=obj['document']['documentId'].get('documentIdentifier', ''))
 
     classId = obj['document']['documentClassification'].get('classId', '')
     documentClassification = HandoverDocumentation.Documents.Documents_item.DocumentClassifications.Documentclassifications_item(
@@ -134,7 +134,7 @@ def json2document(json_str: str):
     )
 
     digitalFile = HandoverDocumentation.Documents.Documents_item.DocumentVersions.Documentversions_item.DigitalFiles.Digitalfiles_item(
-        value="SOME_PATH", #TODO: Fix me
+        value=filename, 
         content_type=MIME_TYPE)
 
     statusSetDate = obj['document']['documentVersion'].get('statusSetDate', '').split('-')
@@ -146,14 +146,14 @@ def json2document(json_str: str):
 
     documentVersion = HandoverDocumentation.Documents.Documents_item.DocumentVersions.Documentversions_item(
         language=obj['document']['documentVersion'].get('language', ['']),
-        version=obj['document']['documentVersion'].get('documentVersionId', ''),
+        version=obj['document']['documentVersion'].get('version', ''),
         title=obj['document']['documentVersion'].get('title'),
         subtitle=obj['document']['documentVersion'].get('subTitle'),
         description_=obj['document']['documentVersion'].get('description'),
         keyWords=obj['document']['documentVersion'].get('keyWords'),
         statusSetDate=statusSetDate,
         statusValue=obj['document']['documentVersion'].get('statusValue', ''),
-        organizationShortName=obj['document']['documentVersion'].get('organizationName', ''),
+        organizationShortName=obj['document']['documentVersion'].get('organizationShortName', ''),
         organizationOfficialName=obj['document']['documentVersion'].get('organizationOfficialName', ''),
         digitalFiles=HandoverDocumentation.Documents.Documents_item.DocumentVersions.Documentversions_item.DigitalFiles([digitalFile])
     )
@@ -205,7 +205,7 @@ if __name__ == "__main__":
       "title": {"de":"Datensheet", "en":"Datasheet"},
       "subTitle": {},
       "description": {"de": "Datensheet für 222-101", "en":"Datasheet for 222-101"},
-      "keyWords": {"de": ["example_company", "222-101"], "en": ["example_company", "222-101"]},
+      "keyWords": {"de": "222-101", "en": "222-101"},
       "statusSetDate": "2025-09-22",
       "statusValue": "Released",
       "organizationShortName": "example_company",

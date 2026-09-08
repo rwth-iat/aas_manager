@@ -289,6 +289,18 @@ class BasicTreeView(QTreeView):
         window = self.window()
         window.setWindowModified(a0)
 
+    def markPackChanged(self, index: QModelIndex = None) -> None:
+        """Mark the package behind the given index as modified.
+
+        The window modified flag is shared by all packages and gets reset on any save/close,
+        so crash recovery relies on this per-package flag instead.
+        """
+        if index is None or not index.isValid():
+            index = self.currentIndex()
+        pack = index.data(PACKAGE_ROLE)
+        if pack is not None:
+            pack.changed = True
+
 
 class TreeView(BasicTreeView):
     openInCurrTabClicked = pyqtSignal(QModelIndex)
@@ -858,11 +870,13 @@ class TreeView(BasicTreeView):
             raise ValueError("Role can be only of Item Edit type: "
                              "EditRole, AddItemRole, CLEAR_ROLE, UNDO_ROLE, REDO_ROLE")
         self.setWindowModified(True)
+        self.markPackChanged(index)
         return result
 
     def commitData(self, editor: QWidget) -> None:
         super(TreeView, self).commitData(editor)
         self.setWindowModified(True)
+        self.markPackChanged()
 
     def itemDataChangeFailed(self, topLeft, bottomRight, roles):
         """Check dataChanged signal if data change failed and show Error dialog if failed"""

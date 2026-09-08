@@ -12,7 +12,7 @@ import sys
 import logging
 
 from PyQt6 import QtWidgets
-# from aas_editor.utils import exceptionhook
+from aas_editor.utils import exceptionhook  # noqa: F401
 from PyQt6 import QtWebEngineWidgets
 
 logging.basicConfig(level=logging.INFO, filename="log.log", filemode="w",

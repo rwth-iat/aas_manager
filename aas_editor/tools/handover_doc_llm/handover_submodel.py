@@ -49,43 +49,9 @@ class HandoverDocumentation(Submodel):
                                 EmbeddedDataSpecification
                             ] = None,
                         ):
+
                             if qualifier is None:
-                                qualifier = (
-                                    Qualifier(
-                                        type_="SMT/Cardinality",
-                                        value_type=str,
-                                        value="One",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                    Qualifier(
-                                        type_="ExampleValue",
-                                        value_type=str,
-                                        value="https://domain.com/...",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                )
+                                qualifier = ()
 
                             if embedded_data_specifications is None:
                                 embedded_data_specifications = []
@@ -148,43 +114,9 @@ class HandoverDocumentation(Submodel):
                                 EmbeddedDataSpecification
                             ] = None,
                         ):
+
                             if qualifier is None:
-                                qualifier = (
-                                    Qualifier(
-                                        type_="SMT/Cardinality",
-                                        value_type=str,
-                                        value="One",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                    Qualifier(
-                                        type_="ExampleValue",
-                                        value_type=str,
-                                        value="XF90-884",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                )
+                                qualifier = ()
 
                             if embedded_data_specifications is None:
                                 embedded_data_specifications = []
@@ -247,43 +179,9 @@ class HandoverDocumentation(Submodel):
                                 EmbeddedDataSpecification
                             ] = None,
                         ):
+
                             if qualifier is None:
-                                qualifier = (
-                                    Qualifier(
-                                        type_="SMT/Cardinality",
-                                        value_type=str,
-                                        value="ZeroToOne",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                    Qualifier(
-                                        type_="ExampleValue",
-                                        value_type=str,
-                                        value="true",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                )
+                                qualifier = ()
 
                             if embedded_data_specifications is None:
                                 embedded_data_specifications = []
@@ -357,26 +255,9 @@ class HandoverDocumentation(Submodel):
                             EmbeddedDataSpecification
                         ] = None,
                     ):
+
                         if qualifier is None:
-                            qualifier = (
-                                Qualifier(
-                                    type_="SMT/Cardinality",
-                                    value_type=str,
-                                    value="OneToMany",
-                                    value_id=None,
-                                    kind=QualifierKind.CONCEPT_QUALIFIER,
-                                    semantic_id=ExternalReference(
-                                        key=(
-                                            Key(
-                                                type_=KeyTypes.GLOBAL_REFERENCE,
-                                                value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                            ),
-                                        ),
-                                        referred_semantic_id=None,
-                                    ),
-                                    supplemental_semantic_id=(),
-                                ),
-                            )
+                            qualifier = ()
 
                         if embedded_data_specifications is None:
                             embedded_data_specifications = []
@@ -488,26 +369,9 @@ class HandoverDocumentation(Submodel):
                         EmbeddedDataSpecification
                     ] = None,
                 ):
+
                     if qualifier is None:
-                        qualifier = (
-                            Qualifier(
-                                type_="SMT/Cardinality",
-                                value_type=str,
-                                value="One",
-                                value_id=None,
-                                kind=QualifierKind.CONCEPT_QUALIFIER,
-                                semantic_id=ExternalReference(
-                                    key=(
-                                        Key(
-                                            type_=KeyTypes.GLOBAL_REFERENCE,
-                                            value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                        ),
-                                    ),
-                                    referred_semantic_id=None,
-                                ),
-                                supplemental_semantic_id=(),
-                            ),
-                        )
+                        qualifier = ()
 
                     if embedded_data_specifications is None:
                         embedded_data_specifications = []
@@ -659,43 +523,9 @@ class HandoverDocumentation(Submodel):
                                 EmbeddedDataSpecification
                             ] = None,
                         ):
+
                             if qualifier is None:
-                                qualifier = (
-                                    Qualifier(
-                                        type_="SMT/Cardinality",
-                                        value_type=str,
-                                        value="One",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                    Qualifier(
-                                        type_="ExampleValue",
-                                        value_type=str,
-                                        value="03-02",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                )
+                                qualifier = ()
 
                             if embedded_data_specifications is None:
                                 embedded_data_specifications = []
@@ -752,43 +582,9 @@ class HandoverDocumentation(Submodel):
                                 EmbeddedDataSpecification
                             ] = None,
                         ):
+
                             if qualifier is None:
-                                qualifier = (
-                                    Qualifier(
-                                        type_="SMT/Cardinality",
-                                        value_type=str,
-                                        value="One",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                    Qualifier(
-                                        type_="ExampleValue",
-                                        value_type=str,
-                                        value="Operation@en",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                )
+                                qualifier = ()
 
                             if embedded_data_specifications is None:
                                 embedded_data_specifications = []
@@ -850,43 +646,9 @@ class HandoverDocumentation(Submodel):
                                 EmbeddedDataSpecification
                             ] = None,
                         ):
+
                             if qualifier is None:
-                                qualifier = (
-                                    Qualifier(
-                                        type_="SMT/Cardinality",
-                                        value_type=str,
-                                        value="One",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                    Qualifier(
-                                        type_="ExampleValue",
-                                        value_type=str,
-                                        value="VDI2770:2020",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                )
+                                qualifier = ()
 
                             if embedded_data_specifications is None:
                                 embedded_data_specifications = []
@@ -960,26 +722,9 @@ class HandoverDocumentation(Submodel):
                             EmbeddedDataSpecification
                         ] = None,
                     ):
+
                         if qualifier is None:
-                            qualifier = (
-                                Qualifier(
-                                    type_="SMT/Cardinality",
-                                    value_type=str,
-                                    value="OneToMany",
-                                    value_id=None,
-                                    kind=QualifierKind.CONCEPT_QUALIFIER,
-                                    semantic_id=ExternalReference(
-                                        key=(
-                                            Key(
-                                                type_=KeyTypes.GLOBAL_REFERENCE,
-                                                value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                            ),
-                                        ),
-                                        referred_semantic_id=None,
-                                    ),
-                                    supplemental_semantic_id=(),
-                                ),
-                            )
+                            qualifier = ()
 
                         if embedded_data_specifications is None:
                             embedded_data_specifications = []
@@ -1083,26 +828,9 @@ class HandoverDocumentation(Submodel):
                         EmbeddedDataSpecification
                     ] = None,
                 ):
+
                     if qualifier is None:
-                        qualifier = (
-                            Qualifier(
-                                type_="SMT/Cardinality",
-                                value_type=str,
-                                value="One",
-                                value_id=None,
-                                kind=QualifierKind.CONCEPT_QUALIFIER,
-                                semantic_id=ExternalReference(
-                                    key=(
-                                        Key(
-                                            type_=KeyTypes.GLOBAL_REFERENCE,
-                                            value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                        ),
-                                    ),
-                                    referred_semantic_id=None,
-                                ),
-                                supplemental_semantic_id=(),
-                            ),
-                        )
+                        qualifier = ()
 
                     if embedded_data_specifications is None:
                         embedded_data_specifications = []
@@ -1250,43 +978,9 @@ class HandoverDocumentation(Submodel):
                                     EmbeddedDataSpecification
                                 ] = None,
                             ):
+
                                 if qualifier is None:
-                                    qualifier = (
-                                        Qualifier(
-                                            type_="SMT/Cardinality",
-                                            value_type=str,
-                                            value="OneToMany",
-                                            value_id=None,
-                                            kind=QualifierKind.CONCEPT_QUALIFIER,
-                                            semantic_id=ExternalReference(
-                                                key=(
-                                                    Key(
-                                                        type_=KeyTypes.GLOBAL_REFERENCE,
-                                                        value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                                    ),
-                                                ),
-                                                referred_semantic_id=None,
-                                            ),
-                                            supplemental_semantic_id=(),
-                                        ),
-                                        Qualifier(
-                                            type_="ExampleValue",
-                                            value_type=str,
-                                            value="en",
-                                            value_id=None,
-                                            kind=QualifierKind.CONCEPT_QUALIFIER,
-                                            semantic_id=ExternalReference(
-                                                key=(
-                                                    Key(
-                                                        type_=KeyTypes.GLOBAL_REFERENCE,
-                                                        value="https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0",
-                                                    ),
-                                                ),
-                                                referred_semantic_id=None,
-                                            ),
-                                            supplemental_semantic_id=(),
-                                        ),
-                                    )
+                                    qualifier = ()
 
                                 if embedded_data_specifications is None:
                                     embedded_data_specifications = []
@@ -1347,26 +1041,9 @@ class HandoverDocumentation(Submodel):
                                 EmbeddedDataSpecification
                             ] = None,
                         ):
+
                             if qualifier is None:
-                                qualifier = (
-                                    Qualifier(
-                                        type_="SMT/Cardinality",
-                                        value_type=str,
-                                        value="One",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                )
+                                qualifier = ()
 
                             if embedded_data_specifications is None:
                                 embedded_data_specifications = []
@@ -1526,43 +1203,9 @@ class HandoverDocumentation(Submodel):
                                 EmbeddedDataSpecification
                             ] = None,
                         ):
+
                             if qualifier is None:
-                                qualifier = (
-                                    Qualifier(
-                                        type_="SMT/Cardinality",
-                                        value_type=str,
-                                        value="One",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                    Qualifier(
-                                        type_="ExampleValue",
-                                        value_type=str,
-                                        value="V1.2",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                )
+                                qualifier = ()
 
                             if embedded_data_specifications is None:
                                 embedded_data_specifications = []
@@ -1621,43 +1264,9 @@ class HandoverDocumentation(Submodel):
                                 EmbeddedDataSpecification
                             ] = None,
                         ):
+
                             if qualifier is None:
-                                qualifier = (
-                                    Qualifier(
-                                        type_="SMT/Cardinality",
-                                        value_type=str,
-                                        value="One",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                    Qualifier(
-                                        type_="ExampleValue",
-                                        value_type=str,
-                                        value="Examplary title@en",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                )
+                                qualifier = ()
 
                             if embedded_data_specifications is None:
                                 embedded_data_specifications = []
@@ -1715,43 +1324,9 @@ class HandoverDocumentation(Submodel):
                                 EmbeddedDataSpecification
                             ] = None,
                         ):
+
                             if qualifier is None:
-                                qualifier = (
-                                    Qualifier(
-                                        type_="SMT/Cardinality",
-                                        value_type=str,
-                                        value="ZeroToOne",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                    Qualifier(
-                                        type_="ExampleValue",
-                                        value_type=str,
-                                        value="Examplary subtitle@en",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                )
+                                qualifier = ()
 
                             if embedded_data_specifications is None:
                                 embedded_data_specifications = []
@@ -1812,43 +1387,9 @@ class HandoverDocumentation(Submodel):
                                 EmbeddedDataSpecification
                             ] = None,
                         ):
+
                             if qualifier is None:
-                                qualifier = (
-                                    Qualifier(
-                                        type_="SMT/Cardinality",
-                                        value_type=str,
-                                        value="One",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                    Qualifier(
-                                        type_="ExampleValue",
-                                        value_type=str,
-                                        value="Abstract@en",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                )
+                                qualifier = ()
 
                             if embedded_data_specifications is None:
                                 embedded_data_specifications = []
@@ -1906,43 +1447,9 @@ class HandoverDocumentation(Submodel):
                                 EmbeddedDataSpecification
                             ] = None,
                         ):
+
                             if qualifier is None:
-                                qualifier = (
-                                    Qualifier(
-                                        type_="SMT/Cardinality",
-                                        value_type=str,
-                                        value="ZeroToOne",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                    Qualifier(
-                                        type_="ExampleValue",
-                                        value_type=str,
-                                        value="Examplary keywords@en",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                )
+                                qualifier = ()
 
                             if embedded_data_specifications is None:
                                 embedded_data_specifications = []
@@ -2004,43 +1511,9 @@ class HandoverDocumentation(Submodel):
                                 EmbeddedDataSpecification
                             ] = None,
                         ):
+
                             if qualifier is None:
-                                qualifier = (
-                                    Qualifier(
-                                        type_="SMT/Cardinality",
-                                        value_type=str,
-                                        value="One",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                    Qualifier(
-                                        type_="ExampleValue",
-                                        value_type=str,
-                                        value="2020-02-06",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                )
+                                qualifier = ()
 
                             if embedded_data_specifications is None:
                                 embedded_data_specifications = []
@@ -2100,43 +1573,9 @@ class HandoverDocumentation(Submodel):
                                 EmbeddedDataSpecification
                             ] = None,
                         ):
+
                             if qualifier is None:
-                                qualifier = (
-                                    Qualifier(
-                                        type_="SMT/Cardinality",
-                                        value_type=str,
-                                        value="One",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                    Qualifier(
-                                        type_="ExampleValue",
-                                        value_type=str,
-                                        value="Released",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                )
+                                qualifier = ()
 
                             if embedded_data_specifications is None:
                                 embedded_data_specifications = []
@@ -2189,43 +1628,9 @@ class HandoverDocumentation(Submodel):
                                 EmbeddedDataSpecification
                             ] = None,
                         ):
+
                             if qualifier is None:
-                                qualifier = (
-                                    Qualifier(
-                                        type_="SMT/Cardinality",
-                                        value_type=str,
-                                        value="One",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                    Qualifier(
-                                        type_="ExampleValue",
-                                        value_type=str,
-                                        value="Example company",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                )
+                                qualifier = ()
 
                             if embedded_data_specifications is None:
                                 embedded_data_specifications = []
@@ -2288,43 +1693,9 @@ class HandoverDocumentation(Submodel):
                                 EmbeddedDataSpecification
                             ] = None,
                         ):
+
                             if qualifier is None:
-                                qualifier = (
-                                    Qualifier(
-                                        type_="SMT/Cardinality",
-                                        value_type=str,
-                                        value="One",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                    Qualifier(
-                                        type_="ExampleValue",
-                                        value_type=str,
-                                        value="Example company Ltd.",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                )
+                                qualifier = ()
 
                             if embedded_data_specifications is None:
                                 embedded_data_specifications = []
@@ -2369,43 +1740,9 @@ class HandoverDocumentation(Submodel):
                                     EmbeddedDataSpecification
                                 ] = None,
                             ):
+
                                 if qualifier is None:
-                                    qualifier = (
-                                        Qualifier(
-                                            type_="SMT/Cardinality",
-                                            value_type=str,
-                                            value="OneToMany",
-                                            value_id=None,
-                                            kind=QualifierKind.CONCEPT_QUALIFIER,
-                                            semantic_id=ExternalReference(
-                                                key=(
-                                                    Key(
-                                                        type_=KeyTypes.GLOBAL_REFERENCE,
-                                                        value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                                    ),
-                                                ),
-                                                referred_semantic_id=None,
-                                            ),
-                                            supplemental_semantic_id=(),
-                                        ),
-                                        Qualifier(
-                                            type_="AllowedIdShort",
-                                            value_type=str,
-                                            value=r"RefersTo[\d{2,3}]",
-                                            value_id=None,
-                                            kind=QualifierKind.CONCEPT_QUALIFIER,
-                                            semantic_id=ExternalReference(
-                                                key=(
-                                                    Key(
-                                                        type_=KeyTypes.GLOBAL_REFERENCE,
-                                                        value="https://admin-shell.io/SubmodelTemplates/AllowedIdShort/1/0",
-                                                    ),
-                                                ),
-                                                referred_semantic_id=None,
-                                            ),
-                                            supplemental_semantic_id=(),
-                                        ),
-                                    )
+                                    qualifier = ()
 
                                 if embedded_data_specifications is None:
                                     embedded_data_specifications = []
@@ -2469,26 +1806,9 @@ class HandoverDocumentation(Submodel):
                                 EmbeddedDataSpecification
                             ] = None,
                         ):
+
                             if qualifier is None:
-                                qualifier = (
-                                    Qualifier(
-                                        type_="SMT/Cardinality",
-                                        value_type=str,
-                                        value="ZeroToOne",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                )
+                                qualifier = ()
 
                             if embedded_data_specifications is None:
                                 embedded_data_specifications = []
@@ -2634,43 +1954,9 @@ class HandoverDocumentation(Submodel):
                                     EmbeddedDataSpecification
                                 ] = None,
                             ):
+
                                 if qualifier is None:
-                                    qualifier = (
-                                        Qualifier(
-                                            type_="SMT/Cardinality",
-                                            value_type=str,
-                                            value="OneToMany",
-                                            value_id=None,
-                                            kind=QualifierKind.CONCEPT_QUALIFIER,
-                                            semantic_id=ExternalReference(
-                                                key=(
-                                                    Key(
-                                                        type_=KeyTypes.GLOBAL_REFERENCE,
-                                                        value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                                    ),
-                                                ),
-                                                referred_semantic_id=None,
-                                            ),
-                                            supplemental_semantic_id=(),
-                                        ),
-                                        Qualifier(
-                                            type_="AllowedIdShort",
-                                            value_type=str,
-                                            value=r"BasedOn[\d{2,3}]",
-                                            value_id=None,
-                                            kind=QualifierKind.CONCEPT_QUALIFIER,
-                                            semantic_id=ExternalReference(
-                                                key=(
-                                                    Key(
-                                                        type_=KeyTypes.GLOBAL_REFERENCE,
-                                                        value="https://admin-shell.io/SubmodelTemplates/AllowedIdShort/1/0",
-                                                    ),
-                                                ),
-                                                referred_semantic_id=None,
-                                            ),
-                                            supplemental_semantic_id=(),
-                                        ),
-                                    )
+                                    qualifier = ()
 
                                 if embedded_data_specifications is None:
                                     embedded_data_specifications = []
@@ -2734,26 +2020,9 @@ class HandoverDocumentation(Submodel):
                                 EmbeddedDataSpecification
                             ] = None,
                         ):
+
                             if qualifier is None:
-                                qualifier = (
-                                    Qualifier(
-                                        type_="SMT/Cardinality",
-                                        value_type=str,
-                                        value="ZeroToOne",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                )
+                                qualifier = ()
 
                             if embedded_data_specifications is None:
                                 embedded_data_specifications = []
@@ -2906,43 +2175,9 @@ class HandoverDocumentation(Submodel):
                                     EmbeddedDataSpecification
                                 ] = None,
                             ):
+
                                 if qualifier is None:
-                                    qualifier = (
-                                        Qualifier(
-                                            type_="SMT/Cardinality",
-                                            value_type=str,
-                                            value="OneToMany",
-                                            value_id=None,
-                                            kind=QualifierKind.CONCEPT_QUALIFIER,
-                                            semantic_id=ExternalReference(
-                                                key=(
-                                                    Key(
-                                                        type_=KeyTypes.GLOBAL_REFERENCE,
-                                                        value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                                    ),
-                                                ),
-                                                referred_semantic_id=None,
-                                            ),
-                                            supplemental_semantic_id=(),
-                                        ),
-                                        Qualifier(
-                                            type_="AllowedIdShort",
-                                            value_type=str,
-                                            value=r"TranslationOf[\d{2,3}]",
-                                            value_id=None,
-                                            kind=QualifierKind.CONCEPT_QUALIFIER,
-                                            semantic_id=ExternalReference(
-                                                key=(
-                                                    Key(
-                                                        type_=KeyTypes.GLOBAL_REFERENCE,
-                                                        value="https://admin-shell.io/SubmodelTemplates/AllowedIdShort/1/0",
-                                                    ),
-                                                ),
-                                                referred_semantic_id=None,
-                                            ),
-                                            supplemental_semantic_id=(),
-                                        ),
-                                    )
+                                    qualifier = ()
 
                                 if embedded_data_specifications is None:
                                     embedded_data_specifications = []
@@ -3006,26 +2241,9 @@ class HandoverDocumentation(Submodel):
                                 EmbeddedDataSpecification
                             ] = None,
                         ):
+
                             if qualifier is None:
-                                qualifier = (
-                                    Qualifier(
-                                        type_="SMT/Cardinality",
-                                        value_type=str,
-                                        value="ZeroToOne",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                )
+                                qualifier = ()
 
                             if embedded_data_specifications is None:
                                 embedded_data_specifications = []
@@ -3179,60 +2397,9 @@ class HandoverDocumentation(Submodel):
                                     EmbeddedDataSpecification
                                 ] = None,
                             ):
+
                                 if qualifier is None:
-                                    qualifier = (
-                                        Qualifier(
-                                            type_="SMT/Cardinality",
-                                            value_type=str,
-                                            value="OneToMany",
-                                            value_id=None,
-                                            kind=QualifierKind.CONCEPT_QUALIFIER,
-                                            semantic_id=ExternalReference(
-                                                key=(
-                                                    Key(
-                                                        type_=KeyTypes.GLOBAL_REFERENCE,
-                                                        value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                                    ),
-                                                ),
-                                                referred_semantic_id=None,
-                                            ),
-                                            supplemental_semantic_id=(),
-                                        ),
-                                        Qualifier(
-                                            type_="ExampleValue",
-                                            value_type=str,
-                                            value="docu_cecc_fullmanual_DE.PDF",
-                                            value_id=None,
-                                            kind=QualifierKind.CONCEPT_QUALIFIER,
-                                            semantic_id=ExternalReference(
-                                                key=(
-                                                    Key(
-                                                        type_=KeyTypes.GLOBAL_REFERENCE,
-                                                        value="https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0",
-                                                    ),
-                                                ),
-                                                referred_semantic_id=None,
-                                            ),
-                                            supplemental_semantic_id=(),
-                                        ),
-                                        Qualifier(
-                                            type_="AllowedIdShort",
-                                            value_type=str,
-                                            value=r"DigitalFile[\d{2,3}]",
-                                            value_id=None,
-                                            kind=QualifierKind.CONCEPT_QUALIFIER,
-                                            semantic_id=ExternalReference(
-                                                key=(
-                                                    Key(
-                                                        type_=KeyTypes.GLOBAL_REFERENCE,
-                                                        value="https://admin-shell.io/SubmodelTemplates/AllowedIdShort/1/0",
-                                                    ),
-                                                ),
-                                                referred_semantic_id=None,
-                                            ),
-                                            supplemental_semantic_id=(),
-                                        ),
-                                    )
+                                    qualifier = ()
 
                                 if embedded_data_specifications is None:
                                     embedded_data_specifications = []
@@ -3292,26 +2459,9 @@ class HandoverDocumentation(Submodel):
                                 EmbeddedDataSpecification
                             ] = None,
                         ):
+
                             if qualifier is None:
-                                qualifier = (
-                                    Qualifier(
-                                        type_="SMT/Cardinality",
-                                        value_type=str,
-                                        value="One",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                )
+                                qualifier = ()
 
                             if embedded_data_specifications is None:
                                 embedded_data_specifications = []
@@ -3459,60 +2609,9 @@ class HandoverDocumentation(Submodel):
                                 EmbeddedDataSpecification
                             ] = None,
                         ):
+
                             if qualifier is None:
-                                qualifier = (
-                                    Qualifier(
-                                        type_="SMT/Cardinality",
-                                        value_type=str,
-                                        value="ZeroToOne",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                    Qualifier(
-                                        type_="ExampleValue",
-                                        value_type=str,
-                                        value="docu_cecc_fullmanual_DE.jpg",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/ExampleValue/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                    Qualifier(
-                                        type_="AllowedIdShort",
-                                        value_type=str,
-                                        value=r"PreviewFile[\d{2,3}]",
-                                        value_id=None,
-                                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                                        semantic_id=ExternalReference(
-                                            key=(
-                                                Key(
-                                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                                    value="https://admin-shell.io/SubmodelTemplates/AllowedIdShort/1/0",
-                                                ),
-                                            ),
-                                            referred_semantic_id=None,
-                                        ),
-                                        supplemental_semantic_id=(),
-                                    ),
-                                )
+                                qualifier = ()
 
                             if embedded_data_specifications is None:
                                 embedded_data_specifications = []
@@ -3592,26 +2691,9 @@ class HandoverDocumentation(Submodel):
                             EmbeddedDataSpecification
                         ] = None,
                     ):
+
                         if qualifier is None:
-                            qualifier = (
-                                Qualifier(
-                                    type_="SMT/Cardinality",
-                                    value_type=str,
-                                    value="OneToMany",
-                                    value_id=None,
-                                    kind=QualifierKind.CONCEPT_QUALIFIER,
-                                    semantic_id=ExternalReference(
-                                        key=(
-                                            Key(
-                                                type_=KeyTypes.GLOBAL_REFERENCE,
-                                                value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                            ),
-                                        ),
-                                        referred_semantic_id=None,
-                                    ),
-                                    supplemental_semantic_id=(),
-                                ),
-                            )
+                            qualifier = ()
 
                         if embedded_data_specifications is None:
                             embedded_data_specifications = []
@@ -3762,26 +2844,9 @@ class HandoverDocumentation(Submodel):
                         EmbeddedDataSpecification
                     ] = None,
                 ):
+
                     if qualifier is None:
-                        qualifier = (
-                            Qualifier(
-                                type_="SMT/Cardinality",
-                                value_type=str,
-                                value="One",
-                                value_id=None,
-                                kind=QualifierKind.CONCEPT_QUALIFIER,
-                                semantic_id=ExternalReference(
-                                    key=(
-                                        Key(
-                                            type_=KeyTypes.GLOBAL_REFERENCE,
-                                            value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                        ),
-                                    ),
-                                    referred_semantic_id=None,
-                                ),
-                                supplemental_semantic_id=(),
-                            ),
-                        )
+                        qualifier = ()
 
                     if embedded_data_specifications is None:
                         embedded_data_specifications = []
@@ -3913,26 +2978,9 @@ class HandoverDocumentation(Submodel):
                             EmbeddedDataSpecification
                         ] = None,
                     ):
+
                         if qualifier is None:
-                            qualifier = (
-                                Qualifier(
-                                    type_="SMT/Cardinality",
-                                    value_type=str,
-                                    value="OneToMany",
-                                    value_id=None,
-                                    kind=QualifierKind.CONCEPT_QUALIFIER,
-                                    semantic_id=ExternalReference(
-                                        key=(
-                                            Key(
-                                                type_=KeyTypes.GLOBAL_REFERENCE,
-                                                value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                            ),
-                                        ),
-                                        referred_semantic_id=None,
-                                    ),
-                                    supplemental_semantic_id=(),
-                                ),
-                            )
+                            qualifier = ()
 
                         if embedded_data_specifications is None:
                             embedded_data_specifications = []
@@ -3979,26 +3027,9 @@ class HandoverDocumentation(Submodel):
                         EmbeddedDataSpecification
                     ] = None,
                 ):
+
                     if qualifier is None:
-                        qualifier = (
-                            Qualifier(
-                                type_="SMT/Cardinality",
-                                value_type=str,
-                                value="ZeroToOne",
-                                value_id=None,
-                                kind=QualifierKind.CONCEPT_QUALIFIER,
-                                semantic_id=ExternalReference(
-                                    key=(
-                                        Key(
-                                            type_=KeyTypes.GLOBAL_REFERENCE,
-                                            value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                        ),
-                                    ),
-                                    referred_semantic_id=None,
-                                ),
-                                supplemental_semantic_id=(),
-                            ),
-                        )
+                        qualifier = ()
 
                     if embedded_data_specifications is None:
                         embedded_data_specifications = []
@@ -4158,26 +3189,9 @@ class HandoverDocumentation(Submodel):
                     EmbeddedDataSpecification
                 ] = None,
             ):
+
                 if qualifier is None:
-                    qualifier = (
-                        Qualifier(
-                            type_="SMT/Cardinality",
-                            value_type=str,
-                            value="OneToMany",
-                            value_id=None,
-                            kind=QualifierKind.CONCEPT_QUALIFIER,
-                            semantic_id=ExternalReference(
-                                key=(
-                                    Key(
-                                        type_=KeyTypes.GLOBAL_REFERENCE,
-                                        value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                    ),
-                                ),
-                                referred_semantic_id=None,
-                            ),
-                            supplemental_semantic_id=(),
-                        ),
-                    )
+                    qualifier = ()
 
                 if embedded_data_specifications is None:
                     embedded_data_specifications = []
@@ -4261,26 +3275,9 @@ class HandoverDocumentation(Submodel):
             ),
             embedded_data_specifications: Iterable[EmbeddedDataSpecification] = None,
         ):
+
             if qualifier is None:
-                qualifier = (
-                    Qualifier(
-                        type_="SMT/Cardinality",
-                        value_type=str,
-                        value="One",
-                        value_id=None,
-                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                        semantic_id=ExternalReference(
-                            key=(
-                                Key(
-                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                    value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                ),
-                            ),
-                            referred_semantic_id=None,
-                        ),
-                        supplemental_semantic_id=(),
-                    ),
-                )
+                qualifier = ()
 
             if embedded_data_specifications is None:
                 embedded_data_specifications = []
@@ -4412,26 +3409,9 @@ class HandoverDocumentation(Submodel):
                     EmbeddedDataSpecification
                 ] = None,
             ):
+
                 if qualifier is None:
-                    qualifier = (
-                        Qualifier(
-                            type_="SMT/Cardinality",
-                            value_type=str,
-                            value="OneToMany",
-                            value_id=None,
-                            kind=QualifierKind.CONCEPT_QUALIFIER,
-                            semantic_id=ExternalReference(
-                                key=(
-                                    Key(
-                                        type_=KeyTypes.GLOBAL_REFERENCE,
-                                        value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                    ),
-                                ),
-                                referred_semantic_id=None,
-                            ),
-                            supplemental_semantic_id=(),
-                        ),
-                    )
+                    qualifier = ()
 
                 if embedded_data_specifications is None:
                     embedded_data_specifications = []
@@ -4477,26 +3457,9 @@ class HandoverDocumentation(Submodel):
             supplemental_semantic_id: Iterable[Reference] = (),
             embedded_data_specifications: Iterable[EmbeddedDataSpecification] = None,
         ):
+
             if qualifier is None:
-                qualifier = (
-                    Qualifier(
-                        type_="SMT/Cardinality",
-                        value_type=str,
-                        value="ZeroToOne",
-                        value_id=None,
-                        kind=QualifierKind.CONCEPT_QUALIFIER,
-                        semantic_id=ExternalReference(
-                            key=(
-                                Key(
-                                    type_=KeyTypes.GLOBAL_REFERENCE,
-                                    value="https://admin-shell.io/SubmodelTemplates/Cardinality/1/0",
-                                ),
-                            ),
-                            referred_semantic_id=None,
-                        ),
-                        supplemental_semantic_id=(),
-                    ),
-                )
+                qualifier = ()
 
             if embedded_data_specifications is None:
                 embedded_data_specifications = []
@@ -4626,7 +3589,7 @@ class HandoverDocumentation(Submodel):
             referred_semantic_id=None,
         ),
         qualifier: Iterable[Qualifier] = None,
-        kind: ModellingKind = ModellingKind.TEMPLATE,
+        kind: ModellingKind = ModellingKind.INSTANCE,
         extension: Iterable[Extension] = (),
         supplemental_semantic_id: Iterable[Reference] = (
             ExternalReference(
@@ -4641,6 +3604,7 @@ class HandoverDocumentation(Submodel):
         ),
         embedded_data_specifications: Iterable[EmbeddedDataSpecification] = None,
     ):
+
         if qualifier is None:
             qualifier = ()
 
