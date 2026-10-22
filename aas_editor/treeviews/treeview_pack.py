@@ -941,7 +941,7 @@ class PackTreeView(TreeView):
             QMessageBox.information(self, "Success", f"Handover submodel added to {package.file.name}")
         except Exception as e:
             logging.exception("Failed to add handover submodel")
-            dialogs.ErrorMessageBox.withTraceback(self, f"Failed to add handover submodel: {e}").exec()
+            widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, f"Failed to add handover submodel: {e}").exec()
 
     def _ensure_package(self):
         currentIndex = self.currentIndex()
