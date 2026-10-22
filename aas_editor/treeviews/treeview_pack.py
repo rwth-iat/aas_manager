@@ -32,7 +32,7 @@ from PyQt6.QtWidgets import QMessageBox, QFileDialog, QMenu, QWidget, QApplicati
 from basyx.aas.adapter.aasx import AASXReader, DictSupplementaryFileContainer
 from basyx.aas.adapter.json import read_aas_json_file, AASToJsonEncoder
 from basyx.aas.adapter.xml import read_aas_xml_file
-from basyx.aas.model import SetObjectStore, Submodel, Referable, Identifiable
+from basyx.aas.model import SetIdentifiableStore, Submodel, Referable, Identifiable
 
 import aas_editor.widgets as widgets
 import aas_editor.widgets.messsageBoxes
@@ -156,7 +156,7 @@ class PackTreeView(TreeView):
         self.setSelectionBehavior(self.SelectionBehavior.SelectItems)
         self.setHeader(PackHeaderView(Qt.Orientation.Horizontal, self))
 
-    # Scan the folder SUBMODEL_TEMPLATES_FOLDER and create a set filesObjStores of SetObjectStore elements and its names
+    # Scan the folder SUBMODEL_TEMPLATES_FOLDER and create a set filesObjStores of SetIdentifiableStore elements and its names
     def scanFolderForExistFiles(self):
         sm_templates_path = SUBMODEL_TEMPLATES_FOLDER
 
@@ -170,7 +170,7 @@ class PackTreeView(TreeView):
         smFiles = jsonFiles + xmlFiles + aasxFiles
         loadedTemplates = set()
 
-        # Read the aas files and store it in SetObjectStore in dictionary fileObjDict.
+        # Read the aas files and store it in SetIdentifiableStore in dictionary fileObjDict.
         for smFile in smFiles:
             if smFile.with_suffix("") in loadedTemplates:
                 continue
@@ -181,7 +181,7 @@ class PackTreeView(TreeView):
                 elif fileType == ".json":
                     objStore = read_aas_json_file(smFile.as_posix())
                 elif fileType == ".aasx":
-                    objStore = SetObjectStore()
+                    objStore = SetIdentifiableStore()
                     fileStore = DictSupplementaryFileContainer()  # prosto tak
                     reader = AASXReader(smFile.as_posix())
                     reader.read_into(objStore, fileStore)

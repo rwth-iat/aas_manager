@@ -22,7 +22,7 @@ from basyx.aas.adapter.aasx import DictSupplementaryFileContainer, AASXReader, A
 from basyx.aas.adapter.json import write_aas_json_file, read_aas_json_file_into
 from basyx.aas.adapter.xml import write_aas_xml_file, read_aas_xml_file_into
 from basyx.aas.model import AssetAdministrationShell, Submodel, ConceptDescription, \
-    SetObjectStore, Key, ModelReference
+    SetIdentifiableStore, Key, ModelReference
 
 from aas_editor.settings.defaults import DEFAULT_COMPLETIONS
 from aas_editor.settings.app_settings import AppSettings
@@ -31,7 +31,7 @@ from aas_editor.settings.app_settings import AppSettings
 class Package:
     def __init__(self, file: Union[str, Path] = "", failsafe=False):
         """:raise TypeError if file has wrong file type"""
-        self.objStore = SetObjectStore()
+        self.objStore = SetIdentifiableStore()
         self.fileStore = DictSupplementaryFileContainer()
         self.file = file
         if file:
@@ -188,7 +188,7 @@ class Package:
         if pack.file.suffix.lower() == ".aasx":
             if pack.file.exists():
                 reader = AASXReader(pack.file.as_posix())
-                reader.read_into(SetObjectStore(), pack.fileStore)
+                reader.read_into(SetIdentifiableStore(), pack.fileStore)
             else:
                 logging.warning("Original AASX missing, supplementary files not recovered: %s", pack.file)
         return pack
