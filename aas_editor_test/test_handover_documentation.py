@@ -47,3 +47,15 @@ class TestFinishHandoverDocumentation:
         assert TITLE in texts
         assert DESCRIPTION in texts
         assert not (tmp_path / "handover_sm.json").exists()
+
+
+class TestLimitContext:
+    def test_pages_cut_at_cap_in_order(self, qapp: object) -> None:
+        from langchain_core.documents import Document
+        from aas_editor.tools.handover_doc_llm.handover_documentation_tool import limit_context
+
+        pages = [Document(page_content=text) for text in ("aaaa", "bbbb", "cccc")]
+
+        assert limit_context(pages, 100) == pages
+        limited = limit_context(pages, 6)
+        assert [page.page_content for page in limited] == ["aaaa", "bb"]
