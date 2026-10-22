@@ -300,7 +300,8 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                                          QMessageBox.StandardButton.No)
 
             if reply == QMessageBox.StandardButton.Yes:
-                self.mainTreeView.saveAll()
+                if not self.mainTreeView.saveAll():
+                    return a0.ignore()
                 a0.accept()
             elif reply == QMessageBox.StandardButton.No:
                 # Discarding: stop recovery writes and drop the recovery files so the

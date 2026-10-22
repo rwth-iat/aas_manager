@@ -669,7 +669,7 @@ class PackTreeView(TreeView):
             self.updateRecentFiles(pack.file.absolute().as_posix())
             self.updateWindowModified()
             return True
-        except (TypeError, ValueError, KeyError) as e:
+        except (TypeError, ValueError, KeyError, OSError) as e:
             widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, f"Package couldn't be saved: {file}: {e}").exec()
         except AttributeError as e:
             widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, f"No chosen package to save: {e}").exec()
@@ -697,10 +697,10 @@ class PackTreeView(TreeView):
                     # cancel pressed
                     return
 
-    def saveAll(self):
-        for pack in self.model().data(QModelIndex(), OPENED_PACKS_ROLE):
-            self.savePack(pack)
+    def saveAll(self) -> bool:
+        saved = [self.savePack(pack) for pack in self.model().data(QModelIndex(), OPENED_PACKS_ROLE)]
         self.updateWindowModified()
+        return all(saved)
 
     def closeFileWithDialog(self):
         pack = self.currentIndex().data(PACKAGE_ROLE)
@@ -719,11 +719,12 @@ class PackTreeView(TreeView):
                                          standardButtons=QMessageBox.StandardButton.Save |
                                                          QMessageBox.StandardButton.Cancel |
                                                          QMessageBox.StandardButton.Discard)
-                    dialog.setDefaultButton = QMessageBox.StandardButton.Save
+                    dialog.setDefaultButton(QMessageBox.StandardButton.Save)
                     dialog.button(QMessageBox.StandardButton.Save).setText("&Save&Close")
                     res = dialog.exec()
                     if res == QMessageBox.StandardButton.Save:
-                        self.savePack()
+                        if not self.savePack():
+                            return
                     elif res == QMessageBox.StandardButton.Cancel:
                         return
                     elif res == QMessageBox.StandardButton.Discard:
@@ -742,12 +743,12 @@ class PackTreeView(TreeView):
                                  standardButtons=QMessageBox.StandardButton.Save |
                                                  QMessageBox.StandardButton.Cancel |
                                                  QMessageBox.StandardButton.Discard)
-            dialog.setDefaultButton = QMessageBox.StandardButton.Save
+            dialog.setDefaultButton(QMessageBox.StandardButton.Save)
             dialog.button(QMessageBox.StandardButton.Save).setText("&Save and Close All")
             res = dialog.exec()
             if res == QMessageBox.StandardButton.Save:
-                for pack in self.model().data(QModelIndex(), OPENED_PACKS_ROLE):
-                    self.savePack(pack)
+                if not self.saveAll():
+                    return
             elif res == QMessageBox.StandardButton.Cancel:
                 return
             elif res == QMessageBox.StandardButton.Discard:
