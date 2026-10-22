@@ -223,13 +223,6 @@ class Package:
     def concept_descriptions(self) -> Iterable[ConceptDescription]:
         return self._iter_objects(ConceptDescription)
 
-    # @property
-    # def others(self):
-    #     for obj in self.objStore:
-    #         if not isinstance(obj,
-    #                           (AssetAdministrationShell, Asset, Submodel, ConceptDescription)):
-    #             yield obj
-
     def _iter_objects(self, objtype):
         for obj in self.objStore:
             if isinstance(obj, objtype):

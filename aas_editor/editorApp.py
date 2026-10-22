@@ -218,19 +218,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.toolBar.addAction(self.mainTreeView.editCreateInDialogAct)
         self.toolBar.addAction(self.mainTreeView.addAct)
 
-    @staticmethod
-    def iterItems(root):
-        def recurse(parent):
-            for row in range(parent.rowCount()):
-                for column in range(parent.columnCount()):
-                    child = parent.child(row, column)
-                    yield child
-                    if child.hasChildren():
-                        yield from recurse(child)
-
-        if root is not None:
-            yield from recurse(root)
-
     def buildHandlers(self):
         self.mainTabWidget.currItemChanged.connect(self.onCurrTabItemChanged)
         self.mainTreeView.selectionModel().currentChanged.connect(self.onSelectedPackItemChanged)
@@ -256,11 +243,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
     def onDoubleClicked(self, item: QModelIndex):
         if not self.mainTreeView.autoScrollToSrcAct.isChecked():
             self.mainTabWidget.openItemInNewTab(item)
-
-    def removeTabsOfClosedRows(self, parent: QModelIndex, first: int, last: int):
-        for row in range(first, last):
-            packItem = self.packTreeModel.index(row, 0, parent)
-            self.mainTabWidget.removePackTab(packItem)
 
     def toggleThemeSlot(self):
         action = self.sender()
