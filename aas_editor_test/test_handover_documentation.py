@@ -69,3 +69,29 @@ class TestJson2Document:
 
         with pytest.raises(json.JSONDecodeError):
             json2document('{"document": {,}}', "x.pdf")
+
+
+class TestEncryptedPdf:
+    def test_encrypted_pdf_text_is_read(self, qapp: object, tmp_path: Path) -> None:
+        from langchain_community.document_loaders import PyPDFLoader
+        from pypdf import PdfWriter
+        from pypdf.generic import DecodedStreamObject, DictionaryObject, NameObject
+
+        writer = PdfWriter()
+        page = writer.add_blank_page(width=612, height=792)
+        font = DictionaryObject({NameObject("/Type"): NameObject("/Font"),
+                                 NameObject("/Subtype"): NameObject("/Type1"),
+                                 NameObject("/BaseFont"): NameObject("/Helvetica")})
+        page[NameObject("/Resources")] = DictionaryObject(
+            {NameObject("/Font"): DictionaryObject({NameObject("/F1"): font})})
+        content = DecodedStreamObject()
+        content.set_data(b"BT /F1 12 Tf 72 712 Td (Encrypted hello) Tj ET")
+        page[NameObject("/Contents")] = writer._add_object(content)
+        # Owner password only, like manufacturer datasheets: opens without a password
+        writer.encrypt(user_password="", owner_password="owner", algorithm="AES-128")
+        pdf = tmp_path / "encrypted.pdf"
+        writer.write(pdf)
+
+        docs = PyPDFLoader(str(pdf)).load()
+
+        assert "Encrypted hello" in docs[0].page_content
