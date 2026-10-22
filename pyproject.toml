@@ -13,7 +13,6 @@ dependencies = [
     "pytz>=2023.3",
     "PyQt6-WebEngine",
     "PyQt6-QScintilla",
-    "pyinstaller==6.15.0",
     "toml>=0.10.2",
 
     # Handover Documentation Tool
@@ -53,6 +52,9 @@ classifiers = [
 [project.optional-dependencies]
 dev = [
     "pytest>=8.0",
+]
+build = [
+    "pyinstaller==6.15.0",
 ]
 
 [tool.pytest.ini_options]
