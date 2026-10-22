@@ -585,6 +585,7 @@ class PackTreeView(TreeView):
                 saved = self.savePack(pack, file)
                 if saved:
                     self.add_pack_to_tree(pack)
+                    return pack
             else:
                 # cancel pressed
                 return
@@ -934,11 +935,10 @@ class PackTreeView(TreeView):
                     self.treeClipboard.clear()
                     self.treeClipboard.append(handover_submodel)
                     self._onPasteAdd(currIndex, handover_submodel, withDialog=False)
+                    QMessageBox.information(self, "Success", f"Handover submodel added to {package.file.name}")
                     break
             else:
                 QMessageBox.warning(self, "Update Warning", "Submodels node not found in package tree.")
-
-            QMessageBox.information(self, "Success", f"Handover submodel added to {package.file.name}")
         except Exception as e:
             logging.exception("Failed to add handover submodel")
             widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, f"Failed to add handover submodel: {e}").exec()
@@ -953,14 +953,12 @@ class PackTreeView(TreeView):
         reply = QMessageBox.question(
             self,
             "No Package Open",
-            "No AAS file is currently open. Would you like to create a new file for the handover submodel?",
+            "No AAS file is selected. Would you like to create a new file for the handover submodel?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel,
             QMessageBox.StandardButton.Yes,
         )
 
         if reply == QMessageBox.StandardButton.Yes:
-            self.newPackWithDialog()
-            currentIndex = self.currentIndex()
-            return currentIndex.data(PACKAGE_ROLE)
+            return self.newPackWithDialog()
 
         return None
