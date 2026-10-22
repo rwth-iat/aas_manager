@@ -51,15 +51,26 @@ class TestFinishHandoverDocumentation:
         assert not (tmp_path / "handover_sm.json").exists()
 
 
+@pytest.fixture
+def handover_dialog(qapp: object):
+    from PyQt6 import sip
+    from aas_editor.tools.handover_doc_llm.handover_documentation_tool import HandoverDocumentationToolDialog
+
+    dialog = HandoverDocumentationToolDialog()
+    yield dialog
+    # A QWebEngineView left for interpreter shutdown can segfault Chromium's teardown
+    sip.delete(dialog)
+
+
 class TestProcessPdf:
-    def test_second_pdf_is_refused_while_processing(self, qapp: object, monkeypatch) -> None:
+    def test_second_pdf_is_refused_while_processing(self, handover_dialog, monkeypatch) -> None:
         from PyQt6.QtWidgets import QMessageBox
         from aas_editor.tools.handover_doc_llm import handover_documentation_tool as tool
 
         monkeypatch.setattr(tool.PdfProcessingThread, "start", lambda self: None)
         boxes = []
         monkeypatch.setattr(QMessageBox, "information", lambda parent, title, text: boxes.append(title))
-        dialog = tool.HandoverDocumentationToolDialog()
+        dialog = handover_dialog
 
         dialog.processPdf("a.pdf")
         dialog.processPdf("b.pdf")
@@ -70,10 +81,8 @@ class TestProcessPdf:
         dialog.cleanup_thread()
         assert dialog.chooseButton.isEnabled()
 
-    def test_error_text_is_escaped(self, qapp: object, monkeypatch) -> None:
-        from aas_editor.tools.handover_doc_llm import handover_documentation_tool as tool
-
-        dialog = tool.HandoverDocumentationToolDialog()
+    def test_error_text_is_escaped(self, handover_dialog, monkeypatch) -> None:
+        dialog = handover_dialog
         pages = []
         monkeypatch.setattr(dialog.html_renderer, "setHtml", pages.append)
 
