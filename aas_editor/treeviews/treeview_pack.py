@@ -166,10 +166,14 @@ class PackTreeView(TreeView):
         aasxFiles = [file for file in sm_templates_path.rglob('*.aasx')]
         xmlFiles = [file for file in sm_templates_path.rglob('*.xml')]
         jsonFiles = [file for file in sm_templates_path.rglob('*.json')]
-        smFiles = aasxFiles + xmlFiles + jsonFiles
+        # JSON parses fastest; a template shipped in several formats is loaded only once
+        smFiles = jsonFiles + xmlFiles + aasxFiles
+        loadedTemplates = set()
 
         # Read the aas files and store it in SetObjectStore in dictionary fileObjDict.
         for smFile in smFiles:
+            if smFile.with_suffix("") in loadedTemplates:
+                continue
             try:
                 fileType = smFile.suffix.lower().strip()
                 if fileType == ".xml":
@@ -185,6 +189,7 @@ class PackTreeView(TreeView):
                     raise TypeError("Wrong file type:", smFile.suffix)
                 # Save path to the file relative to the submodel folder
                 self.copyBufferObjStores[smFile.relative_to(sm_templates_path)] = objStore
+                loadedTemplates.add(smFile.with_suffix(""))
             except Exception as e:
                 # If a package is with an error, that file will be skipped.
                 logging.exception(f"Error while reading {smFile}: {e}. Submodels can not be read")
