@@ -175,7 +175,7 @@ class AppSettings:
     ALL_SUBMODEL_REFS_TO_AAS = Setting(
         name='allSubmodelRefsToAas',
         display_name="Automatically add refs of existing submodels to AAS when saving file",
-        description="If enabled, when saving an AASX file, all existing submodels are automatically added as references to the first AAS object.",
+        description="If enabled, when saving a file that contains exactly one AAS, all existing submodels are automatically added as references to that AAS.",
         options={"Yes": True, "No": False},
         default=True,
         type=bool

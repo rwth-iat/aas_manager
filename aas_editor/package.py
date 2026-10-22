@@ -92,7 +92,8 @@ class Package:
             raise TypeError("Wrong file type:", self.file.suffix)
 
     def write(self, file: str = None):
-        if self.allSubmodelRefsToAas:
+        # With several shells it is unknown which submodel belongs to which shell
+        if self.allSubmodelRefsToAas and self.numOfShells == 1:
             self.all_submodels_to_aas()
         if file:
             self.file: Path = file
