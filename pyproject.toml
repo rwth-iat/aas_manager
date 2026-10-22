@@ -14,7 +14,6 @@ dependencies = [
     "PyQt6-WebEngine",
     "PyQt6-QScintilla",
     "pyinstaller==6.15.0",
-    "openpyxl>=3.1.2",
     "toml>=0.10.2",
 
     # Handover Documentation Tool
