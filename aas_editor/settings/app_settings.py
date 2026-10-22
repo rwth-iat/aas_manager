@@ -102,8 +102,10 @@ TYPE_COLUMN = 2
 TYPE_HINT_COLUMN = 3
 
 # Files
-SETTINGS_FILE = Path(__file__).resolve().parent / "settings.ini"
-RECOVERY_DIR = Path(__file__).resolve().parent / "recovery"
+# Per-user location: app updates and read-only install folders must not lose settings or recovery data
+SETTINGS = QSettings(QSettings.Format.IniFormat, QSettings.Scope.UserScope, IAT, APPLICATION_NAME)
+SETTINGS_FILE = Path(SETTINGS.fileName())
+RECOVERY_DIR = SETTINGS_FILE.with_suffix("") / "recovery"
 # Interval between periodic recovery writes, so a native crash loses at most this
 # window of edits.
 RECOVERY_INTERVAL_MS = 300_000
@@ -114,8 +116,6 @@ CUSTOM_COLUMN_LISTS_FILE = _PACKAGE_DIR / "custom_column_lists.json"
 # Themes
 APP_LOGO = QIcon(str(ICONS_FOLDER / 'logo.svg'))
 DEFAULT_THEME = "grey"
-
-SETTINGS = QSettings(str(SETTINGS_FILE), QSettings.Format.IniFormat)
 
 
 @dataclass(order=True)

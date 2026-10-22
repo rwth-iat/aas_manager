@@ -26,7 +26,7 @@ from pathlib import Path
 from typing import Optional
 
 from PyQt6 import QtCore
-from PyQt6.QtCore import Qt, QModelIndex, QSettings, QPoint
+from PyQt6.QtCore import Qt, QModelIndex, QPoint
 from PyQt6.QtGui import QDropEvent, QDragEnterEvent, QKeyEvent, QClipboard, QAction
 from PyQt6.QtWidgets import QMessageBox, QFileDialog, QMenu, QWidget, QApplication
 from basyx.aas.adapter.aasx import AASXReader, DictSupplementaryFileContainer
@@ -39,12 +39,12 @@ import aas_editor.widgets.messsageBoxes
 from aas_editor.delegates import EditDelegate
 from aas_editor.package import Package, StoredFile
 from aas_editor.settings import FILTER_AAS_FILES, AAS_FILE_TYPE_FILTERS, NOT_GIVEN, REFERABLE_INHERITORS_ATTRS, \
-    AAS_FILE_TYPES, APPLICATION_NAME, IAT, SUBMODELS
+    AAS_FILE_TYPES, SUBMODELS
 from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE, \
     MAX_RECENT_FILES, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, \
     CLEAR_ROW_ROLE, AppSettings, COLUMN_NAME_ROLE, OBJECT_COLUMN_NAME, \
     OBJECT_VALUE_COLUMN_NAME, DEFAULT_COLUMNS_IN_PACKS_TABLE_TO_SHOW, COPY_ROLE, SUBMODEL_TEMPLATES_FOLDER, UPDATE_ROLE, \
-    RECOVERY_DIR
+    RECOVERY_DIR, SETTINGS
 from aas_editor.settings.shortcuts import SC_OPEN, SC_SAVE_ALL
 from aas_editor.settings.icons import NEW_PACK_ICON, OPEN_ICON, OPEN_DRAG_ICON, SAVE_ICON, SAVE_ALL_ICON, ADD_ICON, \
     EDIT_JSON_ICON
@@ -788,26 +788,23 @@ class PackTreeView(TreeView):
         if self.isRecoveryFile(file):
             return
         self.removeFromRecentFiles(file)
-        settings = QSettings(IAT, APPLICATION_NAME)
-        files = settings.value('recentFiles', [])
+        files = SETTINGS.value('recentFiles', [])
         files.insert(0, file)
         del files[MAX_RECENT_FILES:]
-        settings.setValue('recentFiles', files)
+        SETTINGS.setValue('recentFiles', files)
 
     def removeFromRecentFiles(self, file: str):
-        settings = QSettings(IAT, APPLICATION_NAME)
-        files = settings.value('recentFiles', [])
+        files = SETTINGS.value('recentFiles', [])
         try:
             files.remove(file)
         except ValueError:
             pass
         except AttributeError:
             files = []
-        settings.setValue('recentFiles', files)
+        SETTINGS.setValue('recentFiles', files)
 
     def updateRecentFileActs(self):
-        settings = QSettings(IAT, APPLICATION_NAME)
-        files = settings.value('recentFiles', [])
+        files = SETTINGS.value('recentFiles', [])
         try:
             files = files[:MAX_RECENT_FILES]
         except TypeError:
