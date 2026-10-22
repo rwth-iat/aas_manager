@@ -62,7 +62,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: v${{ steps.get_version.outputs.version }}
-          release_name: Release V${{ steps.get_version.outputs.version }} (Support of AAS Metamodel V3.0)
+          release_name: Release V${{ steps.get_version.outputs.version }} (Support of AAS Metamodel V3.1)
           body: ${{ steps.generate_release_notes.outputs.notes }}
           draft: false
           prerelease: false
