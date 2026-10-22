@@ -354,7 +354,7 @@ class StandardTable(QAbstractItemModel):
                     self.redo.append(self.undo.pop())
                     return True
             elif isIterable(value):
-                self.undo = deque(value)
+                self.undo = deque(value, maxlen=MAX_UNDOS)
                 return True
         elif role == REDO_ROLE:
             if value == NOT_GIVEN and self.redo:
