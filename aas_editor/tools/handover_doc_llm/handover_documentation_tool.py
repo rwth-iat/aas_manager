@@ -11,12 +11,11 @@ import html
 import logging
 import os
 import json
-import shutil
-import tempfile
 import traceback
 from typing import List
 
 from jsonschema import validate, ValidationError
+from pypdf import PdfReader
 
 from PyQt6.QtWidgets import QDialog, QPushButton, QVBoxLayout, QFileDialog, QLineEdit, QComboBox, \
     QHBoxLayout, QLabel, QMessageBox, QListWidgetItem, QListWidget, QGroupBox, QFormLayout, QWidget, QCheckBox
@@ -36,13 +35,18 @@ from aas_editor.tools.handover_doc_llm.config import PROMPT, LLM_PROVIDERS, TOOL
 from aas_editor.widgets.dropfilebox import DropFileQWebEngineView
 from aas_editor.widgets.jsonEditor import JSONEditor
 
-from langchain_community.document_loaders import PyPDFLoader
-from langchain_classic.chains.combine_documents import create_stuff_documents_chain
+from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
 DOCUMENT_ROLE = 1000
 # Keeps "all pages" of a long manual within context windows and provider rate limits
 MAX_CONTEXT_CHARS = 60_000
+
+
+def load_pages(path: str) -> List[Document]:
+    """One Document per PDF page, like langchain's PyPDFLoader."""
+    return [Document(page_content=page.extract_text().strip(), metadata={"source": path, "page": i})
+            for i, page in enumerate(PdfReader(path).pages)]
 
 
 def limit_context(docs: List[Document], max_chars: int) -> List[Document]:
@@ -92,7 +96,6 @@ class PdfProcessingThread(QThread):
             raise ValueError(f"Unsupported LLM provider: {provider}")
 
     def _fix_json_with_llm(self, llm, raw_answer: str, schema: dict, error_msg: str) -> str:
-        from langchain_core.prompts import ChatPromptTemplate
         fix_prompt = ChatPromptTemplate.from_messages([
             ("system",
              "You are a JSON correction assistant. "
@@ -113,16 +116,9 @@ class PdfProcessingThread(QThread):
         return fixed_text.strip()
 
     def run(self):
-        tmp_path = None
         try:
-            # 1. Load the PDF pages from a temp copy of the file
-            suffix = ".pdf"
-            with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp_pdf:
-                tmp_path = tmp_pdf.name
-            shutil.copy2(self.file_path, tmp_path)
-
-            loader = PyPDFLoader(tmp_path)
-            docs = loader.load()
+            # 1. Load the PDF pages
+            docs = load_pages(self.file_path)
 
             # 2. Page Selection Logic
             docs = select_pages(docs, self.pages_front, self.pages_end)
@@ -133,11 +129,8 @@ class PdfProcessingThread(QThread):
             # 4. Chain Execution
             schema = json.loads(RESPONSE_SCHEMA)
             llm = self.init_llm(self.llm_provider, self.llm_model, self.api_key, schema=schema)
-            prompt = ChatPromptTemplate.from_template(PROMPT)
-            document_chain = create_stuff_documents_chain(llm, prompt)
-
-            llm_response = document_chain.invoke({"input": "", "context": docs})
-            answer = llm_response if isinstance(llm_response, str) else llm_response.get('answer', '')
+            chain = ChatPromptTemplate.from_template(PROMPT) | llm | StrOutputParser()
+            answer = chain.invoke({"context": "\n\n".join(doc.page_content for doc in docs)})
 
             # 5. JSON Validation
             max_fix_attempts = 2
@@ -173,9 +166,6 @@ class PdfProcessingThread(QThread):
 
         except Exception:
             self.processing_error.emit(f"Error: {traceback.format_exc()}")
-        finally:
-            if tmp_path and os.path.exists(tmp_path):
-                os.remove(tmp_path)
 
 
 class AnswerDialog(QDialog):
