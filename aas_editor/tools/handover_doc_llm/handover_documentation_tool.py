@@ -244,7 +244,7 @@ class HandoverDocumentationToolDialog(QDialog):
         self.model_info_label.setPixmap(INFO_ICON.pixmap(24, 24))
         self.model_info_label.setFixedSize(24, 24)
         self.model_info_label.setToolTip(
-            "A custom model can be used, else the default model is being used.\nFor more information about models see \"https://js.langchain.com/docs/integrations/chat/\"")
+            "A custom model can be used, else the default model is being used.\nFor more information about models see \"https://docs.langchain.com/oss/python/integrations/chat\"")
 
         self.idLineEdit = QLineEdit(self, toolTip="ID of the generated Handover Documentation Submodel (mandatory)",
                                     placeholderText="Enter Submodel ID")
