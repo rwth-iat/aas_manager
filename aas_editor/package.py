@@ -37,7 +37,8 @@ class Package:
         if file:
             self._read(failsafe)
         for obj in self.objStore:
-            DEFAULT_COMPLETIONS[Key]["value"].append(obj.id)
+            if obj.id not in DEFAULT_COMPLETIONS[Key]["value"]:
+                DEFAULT_COMPLETIONS[Key]["value"].append(obj.id)
         self._changed = False
 
     @property
