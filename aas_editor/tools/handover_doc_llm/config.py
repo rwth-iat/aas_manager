@@ -26,26 +26,12 @@ def _init_mistral_chat(model, key):
 def _init_ollama_chat(model, key, schema=None):
     from langchain_ollama import ChatOllama
     base_url = key if key else "http://localhost:11434"
-    kwargs = {"model": model, "base_url": base_url}
+    # Ollama's default context (2-4k tokens) silently cuts the prompt; 6 PDF pages need ~5k
+    kwargs = {"model": model, "base_url": base_url, "num_ctx": 16384}
     if schema is not None:
         kwargs["format"] = schema
     return ChatOllama(**kwargs)
 
-
-def _init_ollama_embeddings(key, model="nomic-embed-text"):
-    from langchain_ollama import OllamaEmbeddings
-    base_url = key if key else "http://localhost:11434"
-    return OllamaEmbeddings(model=model or "nomic-embed-text", base_url=base_url)
-
-
-def _init_hf_embeddings(_key, _model=None):
-    from langchain_huggingface import HuggingFaceEmbeddings
-    return HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
-
-
-def _init_openai_embeddings(key, _model=None):
-    from langchain_openai import OpenAIEmbeddings
-    return OpenAIEmbeddings(api_key=key)
 
 TOOL_DESCRIPTION = \
 """The Tool allows users to generate a Handover Documentation Submodel from a given PDF file with the usage of LLMs.
@@ -64,19 +50,19 @@ Please consider that the following properties will be not be extracted and have 
 
 LLM_PROVIDERS = {
     "OpenAI": {
-        "default_model": "gpt-4o-mini",
+        "default_model": "gpt-6-luna",
         "init": _init_openai_chat,
     },
     "Anthropic": {
-        "default_model": "claude-3-5-sonnet-latest",
+        "default_model": "claude-haiku-5-5",
         "init": _init_anthropic_chat,
     },
     "Google Vertex": {
-        "default_model": "gemini-1.5-flash",
+        "default_model": "gemini-3.5-flash-lite",
         "init": _init_vertex_chat,
     },
     "Groq": {
-        "default_model": "llama-3.3-70b-versatile",
+        "default_model": "openai/gpt-oss-120b",
         "init": _init_groq_chat,
     },
     "Mistral AI": {
@@ -86,21 +72,6 @@ LLM_PROVIDERS = {
     "Ollama": {
         "default_model": "llama3.2",
         "init": _init_ollama_chat,
-    },
-}
-
-EMBEDDING_PROVIDERS = {
-    "HuggingFace": {
-        "default_model": "",
-        "init": _init_hf_embeddings,
-    },
-    "OpenAI": {
-        "default_model": "",
-        "init": _init_openai_embeddings,
-    },
-    "Ollama": {
-        "default_model": "nomic-embed-text",
-        "init": _init_ollama_embeddings,
     },
 }
 

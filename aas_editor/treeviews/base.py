@@ -53,7 +53,6 @@ class HeaderView(QHeaderView):
         self.setStretchLastSection(True)
         self.setFixedHeight(TOOLBARS_HEIGHT)
 
-        self.sortIndicatorChanged.connect(lambda a, b: print(a, b))
         self.currSortSection = self.sortIndicatorSection()
         self.currOrder = self.sortIndicatorOrder()
 

@@ -113,11 +113,7 @@ def json2document(json_str: str, filename: str = None):
     :return: Tuple of documents and entities.
     """
     json_str = json_str[json_str.find("{"):json_str.rfind("}") + 1]
-    try:
-        obj = json.loads(json_str)
-    except json.JSONDecodeError as e:
-        print(f"Error decoding JSON: {e}")
-        return None
+    obj = json.loads(json_str)
 
     from aas_editor.tools.handover_doc_llm.handover_submodel import HandoverDocumentation
 

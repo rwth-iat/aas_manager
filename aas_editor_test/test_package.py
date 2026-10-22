@@ -3,7 +3,8 @@ from pathlib import Path
 
 import pytest
 from basyx.aas.adapter.aasx import DictSupplementaryFileContainer
-from basyx.aas.model import AssetAdministrationShell, ConceptDescription, Submodel
+from basyx.aas.model import AssetAdministrationShell, AssetInformation, AssetKind, ConceptDescription, \
+    ModelReference, Submodel
 
 from aas_editor.package import Package, StoredFile
 
@@ -122,6 +123,53 @@ class TestPackageWrite:
         pkg = Package(aasx_file)
         with pytest.raises(TypeError):
             pkg.write(tmp_path / "out.txt")
+
+    def test_failed_write_keeps_old_file(self, qapp: object, tmp_path: Path, monkeypatch) -> None:
+        out_file = tmp_path / "out.xml"
+        pkg = Package()
+        pkg.add(Submodel("urn:sm1"))
+        pkg.write(out_file)
+        before = out_file.read_bytes()
+
+        def failingWriter(*args, **kwargs):
+            raise ValueError("serializer failed")
+        monkeypatch.setattr("aas_editor.package.write_aas_xml_file", failingWriter)
+
+        with pytest.raises(ValueError):
+            Package(out_file).write()
+        assert out_file.read_bytes() == before
+        assert not out_file.with_name("out.xml.tmp").exists()
+
+    @staticmethod
+    def _shell(id_: str) -> AssetAdministrationShell:
+        return AssetAdministrationShell(AssetInformation(AssetKind.INSTANCE, global_asset_id=f"{id_}:asset"),
+                                        id_=id_)
+
+    def test_submodel_refs_unchanged_with_two_shells(self, qapp: object, tmp_path: Path, monkeypatch) -> None:
+        monkeypatch.setattr(Package, "allSubmodelRefsToAas", property(lambda self: True))
+        shell1, shell2 = self._shell("urn:aas1"), self._shell("urn:aas2")
+        sm1, sm2 = Submodel("urn:sm1"), Submodel("urn:sm2")
+        shell1.submodel = {ModelReference.from_referable(sm1)}
+        shell2.submodel = {ModelReference.from_referable(sm2)}
+        pkg = Package()
+        for obj in (shell1, shell2, sm1, sm2):
+            pkg.add(obj)
+
+        pkg.write(tmp_path / "out.json")
+
+        assert {ref.key[0].value for ref in shell1.submodel} == {"urn:sm1"}
+        assert {ref.key[0].value for ref in shell2.submodel} == {"urn:sm2"}
+
+    def test_submodel_refs_added_with_one_shell(self, qapp: object, tmp_path: Path, monkeypatch) -> None:
+        monkeypatch.setattr(Package, "allSubmodelRefsToAas", property(lambda self: True))
+        shell = self._shell("urn:aas1")
+        pkg = Package()
+        pkg.add(shell)
+        pkg.add(Submodel("urn:sm1"))
+
+        pkg.write(tmp_path / "out.json")
+
+        assert {ref.key[0].value for ref in shell.submodel} == {"urn:sm1"}
 
 
 # ---------------------------------------------------------------------------

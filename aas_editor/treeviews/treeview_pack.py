@@ -26,25 +26,25 @@ from pathlib import Path
 from typing import Optional
 
 from PyQt6 import QtCore
-from PyQt6.QtCore import Qt, QModelIndex, QSettings, QPoint
+from PyQt6.QtCore import Qt, QModelIndex, QPoint
 from PyQt6.QtGui import QDropEvent, QDragEnterEvent, QKeyEvent, QClipboard, QAction
 from PyQt6.QtWidgets import QMessageBox, QFileDialog, QMenu, QWidget, QApplication
 from basyx.aas.adapter.aasx import AASXReader, DictSupplementaryFileContainer
 from basyx.aas.adapter.json import read_aas_json_file, AASToJsonEncoder
 from basyx.aas.adapter.xml import read_aas_xml_file
-from basyx.aas.model import SetObjectStore, Submodel, Referable, Identifiable
+from basyx.aas.model import SetIdentifiableStore, Submodel, Referable, Identifiable
 
 import aas_editor.widgets as widgets
 import aas_editor.widgets.messsageBoxes
 from aas_editor.delegates import EditDelegate
 from aas_editor.package import Package, StoredFile
 from aas_editor.settings import FILTER_AAS_FILES, AAS_FILE_TYPE_FILTERS, NOT_GIVEN, REFERABLE_INHERITORS_ATTRS, \
-    AAS_FILE_TYPES, APPLICATION_NAME, IAT, SUBMODELS
+    AAS_FILE_TYPES, SUBMODELS
 from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE, PACKAGE_ROLE, \
     MAX_RECENT_FILES, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, ADD_ITEM_ROLE, \
     CLEAR_ROW_ROLE, AppSettings, COLUMN_NAME_ROLE, OBJECT_COLUMN_NAME, \
     OBJECT_VALUE_COLUMN_NAME, DEFAULT_COLUMNS_IN_PACKS_TABLE_TO_SHOW, COPY_ROLE, SUBMODEL_TEMPLATES_FOLDER, UPDATE_ROLE, \
-    RECOVERY_DIR
+    RECOVERY_DIR, SETTINGS
 from aas_editor.settings.shortcuts import SC_OPEN, SC_SAVE_ALL
 from aas_editor.settings.icons import NEW_PACK_ICON, OPEN_ICON, OPEN_DRAG_ICON, SAVE_ICON, SAVE_ALL_ICON, ADD_ICON, \
     EDIT_JSON_ICON
@@ -156,7 +156,7 @@ class PackTreeView(TreeView):
         self.setSelectionBehavior(self.SelectionBehavior.SelectItems)
         self.setHeader(PackHeaderView(Qt.Orientation.Horizontal, self))
 
-    # Scan the folder SUBMODEL_TEMPLATES_FOLDER and create a set filesObjStores of SetObjectStore elements and its names
+    # Scan the folder SUBMODEL_TEMPLATES_FOLDER and create a set filesObjStores of SetIdentifiableStore elements and its names
     def scanFolderForExistFiles(self):
         sm_templates_path = SUBMODEL_TEMPLATES_FOLDER
 
@@ -166,10 +166,14 @@ class PackTreeView(TreeView):
         aasxFiles = [file for file in sm_templates_path.rglob('*.aasx')]
         xmlFiles = [file for file in sm_templates_path.rglob('*.xml')]
         jsonFiles = [file for file in sm_templates_path.rglob('*.json')]
-        smFiles = aasxFiles + xmlFiles + jsonFiles
+        # JSON parses fastest; a template shipped in several formats is loaded only once
+        smFiles = jsonFiles + xmlFiles + aasxFiles
+        loadedTemplates = set()
 
-        # Read the aas files and store it in SetObjectStore in dictionary fileObjDict.
+        # Read the aas files and store it in SetIdentifiableStore in dictionary fileObjDict.
         for smFile in smFiles:
+            if smFile.with_suffix("") in loadedTemplates:
+                continue
             try:
                 fileType = smFile.suffix.lower().strip()
                 if fileType == ".xml":
@@ -177,7 +181,7 @@ class PackTreeView(TreeView):
                 elif fileType == ".json":
                     objStore = read_aas_json_file(smFile.as_posix())
                 elif fileType == ".aasx":
-                    objStore = SetObjectStore()
+                    objStore = SetIdentifiableStore()
                     fileStore = DictSupplementaryFileContainer()  # prosto tak
                     reader = AASXReader(smFile.as_posix())
                     reader.read_into(objStore, fileStore)
@@ -185,6 +189,7 @@ class PackTreeView(TreeView):
                     raise TypeError("Wrong file type:", smFile.suffix)
                 # Save path to the file relative to the submodel folder
                 self.copyBufferObjStores[smFile.relative_to(sm_templates_path)] = objStore
+                loadedTemplates.add(smFile.with_suffix(""))
             except Exception as e:
                 # If a package is with an error, that file will be skipped.
                 logging.exception(f"Error while reading {smFile}: {e}. Submodels can not be read")
@@ -585,6 +590,7 @@ class PackTreeView(TreeView):
                 saved = self.savePack(pack, file)
                 if saved:
                     self.add_pack_to_tree(pack)
+                    return pack
             else:
                 # cancel pressed
                 return
@@ -669,7 +675,7 @@ class PackTreeView(TreeView):
             self.updateRecentFiles(pack.file.absolute().as_posix())
             self.updateWindowModified()
             return True
-        except (TypeError, ValueError, KeyError) as e:
+        except (TypeError, ValueError, KeyError, OSError) as e:
             widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, f"Package couldn't be saved: {file}: {e}").exec()
         except AttributeError as e:
             widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, f"No chosen package to save: {e}").exec()
@@ -697,10 +703,10 @@ class PackTreeView(TreeView):
                     # cancel pressed
                     return
 
-    def saveAll(self):
-        for pack in self.model().data(QModelIndex(), OPENED_PACKS_ROLE):
-            self.savePack(pack)
+    def saveAll(self) -> bool:
+        saved = [self.savePack(pack) for pack in self.model().data(QModelIndex(), OPENED_PACKS_ROLE)]
         self.updateWindowModified()
+        return all(saved)
 
     def closeFileWithDialog(self):
         pack = self.currentIndex().data(PACKAGE_ROLE)
@@ -719,11 +725,12 @@ class PackTreeView(TreeView):
                                          standardButtons=QMessageBox.StandardButton.Save |
                                                          QMessageBox.StandardButton.Cancel |
                                                          QMessageBox.StandardButton.Discard)
-                    dialog.setDefaultButton = QMessageBox.StandardButton.Save
+                    dialog.setDefaultButton(QMessageBox.StandardButton.Save)
                     dialog.button(QMessageBox.StandardButton.Save).setText("&Save&Close")
                     res = dialog.exec()
                     if res == QMessageBox.StandardButton.Save:
-                        self.savePack()
+                        if not self.savePack():
+                            return
                     elif res == QMessageBox.StandardButton.Cancel:
                         return
                     elif res == QMessageBox.StandardButton.Discard:
@@ -742,12 +749,12 @@ class PackTreeView(TreeView):
                                  standardButtons=QMessageBox.StandardButton.Save |
                                                  QMessageBox.StandardButton.Cancel |
                                                  QMessageBox.StandardButton.Discard)
-            dialog.setDefaultButton = QMessageBox.StandardButton.Save
+            dialog.setDefaultButton(QMessageBox.StandardButton.Save)
             dialog.button(QMessageBox.StandardButton.Save).setText("&Save and Close All")
             res = dialog.exec()
             if res == QMessageBox.StandardButton.Save:
-                for pack in self.model().data(QModelIndex(), OPENED_PACKS_ROLE):
-                    self.savePack(pack)
+                if not self.saveAll():
+                    return
             elif res == QMessageBox.StandardButton.Cancel:
                 return
             elif res == QMessageBox.StandardButton.Discard:
@@ -781,26 +788,23 @@ class PackTreeView(TreeView):
         if self.isRecoveryFile(file):
             return
         self.removeFromRecentFiles(file)
-        settings = QSettings(IAT, APPLICATION_NAME)
-        files = settings.value('recentFiles', [])
+        files = SETTINGS.value('recentFiles', [])
         files.insert(0, file)
         del files[MAX_RECENT_FILES:]
-        settings.setValue('recentFiles', files)
+        SETTINGS.setValue('recentFiles', files)
 
     def removeFromRecentFiles(self, file: str):
-        settings = QSettings(IAT, APPLICATION_NAME)
-        files = settings.value('recentFiles', [])
+        files = SETTINGS.value('recentFiles', [])
         try:
             files.remove(file)
         except ValueError:
             pass
         except AttributeError:
             files = []
-        settings.setValue('recentFiles', files)
+        SETTINGS.setValue('recentFiles', files)
 
     def updateRecentFileActs(self):
-        settings = QSettings(IAT, APPLICATION_NAME)
-        files = settings.value('recentFiles', [])
+        files = SETTINGS.value('recentFiles', [])
         try:
             files = files[:MAX_RECENT_FILES]
         except TypeError:
@@ -933,14 +937,13 @@ class PackTreeView(TreeView):
                     self.treeClipboard.clear()
                     self.treeClipboard.append(handover_submodel)
                     self._onPasteAdd(currIndex, handover_submodel, withDialog=False)
+                    QMessageBox.information(self, "Success", f"Handover submodel added to {package.file.name}")
                     break
             else:
                 QMessageBox.warning(self, "Update Warning", "Submodels node not found in package tree.")
-
-            QMessageBox.information(self, "Success", f"Handover submodel added to {package.file.name}")
         except Exception as e:
             logging.exception("Failed to add handover submodel")
-            dialogs.ErrorMessageBox.withTraceback(self, f"Failed to add handover submodel: {e}").exec()
+            widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, f"Failed to add handover submodel: {e}").exec()
 
     def _ensure_package(self):
         currentIndex = self.currentIndex()
@@ -952,14 +955,12 @@ class PackTreeView(TreeView):
         reply = QMessageBox.question(
             self,
             "No Package Open",
-            "No AAS file is currently open. Would you like to create a new file for the handover submodel?",
+            "No AAS file is selected. Would you like to create a new file for the handover submodel?",
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Cancel,
             QMessageBox.StandardButton.Yes,
         )
 
         if reply == QMessageBox.StandardButton.Yes:
-            self.newPackWithDialog()
-            currentIndex = self.currentIndex()
-            return currentIndex.data(PACKAGE_ROLE)
+            return self.newPackWithDialog()
 
         return None

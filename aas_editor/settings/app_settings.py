@@ -43,7 +43,7 @@ REPORT_ERROR_LINK = PYPROJECT_TOML["project"]["urls"]["Issues"]
 APPLICATION_LINK = PYPROJECT_TOML["project"]["urls"]["Homepage"]
 IAT = "IAT"
 LICENSE = PYPROJECT_TOML["project"]["license"]["text"]
-AAS_METAMODEL_VERSION = "3.0"
+AAS_METAMODEL_VERSION = "3.1"
 
 WINDOW_TITLE = f"{APPLICATION_NAME} {VERSION} (Metamodel V{AAS_METAMODEL_VERSION})"
 
@@ -102,8 +102,10 @@ TYPE_COLUMN = 2
 TYPE_HINT_COLUMN = 3
 
 # Files
-SETTINGS_FILE = Path(__file__).resolve().parent / "settings.ini"
-RECOVERY_DIR = Path(__file__).resolve().parent / "recovery"
+# Per-user location: app updates and read-only install folders must not lose settings or recovery data
+SETTINGS = QSettings(QSettings.Format.IniFormat, QSettings.Scope.UserScope, IAT, APPLICATION_NAME)
+SETTINGS_FILE = Path(SETTINGS.fileName())
+RECOVERY_DIR = SETTINGS_FILE.with_suffix("") / "recovery"
 # Interval between periodic recovery writes, so a native crash loses at most this
 # window of edits.
 RECOVERY_INTERVAL_MS = 300_000
@@ -114,8 +116,6 @@ CUSTOM_COLUMN_LISTS_FILE = _PACKAGE_DIR / "custom_column_lists.json"
 # Themes
 APP_LOGO = QIcon(str(ICONS_FOLDER / 'logo.svg'))
 DEFAULT_THEME = "grey"
-
-SETTINGS = QSettings(str(SETTINGS_FILE), QSettings.Format.IniFormat)
 
 
 @dataclass(order=True)
@@ -175,7 +175,7 @@ class AppSettings:
     ALL_SUBMODEL_REFS_TO_AAS = Setting(
         name='allSubmodelRefsToAas',
         display_name="Automatically add refs of existing submodels to AAS when saving file",
-        description="If enabled, when saving an AASX file, all existing submodels are automatically added as references to the first AAS object.",
+        description="If enabled, when saving a file that contains exactly one AAS, all existing submodels are automatically added as references to that AAS.",
         options={"Yes": True, "No": False},
         default=True,
         type=bool

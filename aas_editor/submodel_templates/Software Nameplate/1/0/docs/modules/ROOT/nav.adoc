@@ -1,1 +1,0 @@
-* xref:nametemplate:ROOT:index.adoc[Nametemplate for Software in Manufacturing]

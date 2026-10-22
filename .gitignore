@@ -7,3 +7,4 @@ dist
 build
 .idea/
 /aas_editor/settings/recovery/
+/aas_editor/settings/settings.ini

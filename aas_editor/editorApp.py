@@ -12,7 +12,7 @@ import logging
 import webbrowser
 from pathlib import Path
 
-from PyQt6.QtCore import QModelIndex, QTimer, pyqtSignal
+from PyQt6.QtCore import QModelIndex, QTimer
 from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 
@@ -35,8 +35,6 @@ from aas_editor.treeviews.base import HeaderView
 
 
 class EditorApp(QMainWindow, design.Ui_MainWindow):
-    closed = pyqtSignal()
-
     def __init__(self, fileToOpen=None, parent=None):
         super().__init__(parent=parent)
         self.setupUi(self)
@@ -101,10 +99,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                                           statusTip="Open Handover Documentation tool",
                                           triggered=self.openHandoverDocumentationTool)
 
-        self.importToolAct = QAction("Excel AAS Generator tool", self,
-                                     statusTip="Open Excel AAS Generator tool",
-                                     triggered=lambda: self.showImportApp())
-
         self.settingsDialogAct = QAction(SETTINGS_ICON, "Settings", self,
                                          statusTip=f"Edit application settings",
                                          triggered=lambda: SettingsDialog(self).exec())
@@ -126,14 +120,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.setVOrientationAct = QAction("Vertical", self,
                                           statusTip=f"Set vertical orientation",
                                           triggered=lambda: self.setOrientation(QtCore.Qt.Orientation.Vertical))
-
-    def showImportApp(self):
-        self.writeSettings()
-        from aas_editor.tools.import_feature.import_app import ImportApp
-        self.hide()
-        importApp = ImportApp()
-        importApp.closed.connect(self.show)
-        importApp.show()
 
     def initMenu(self):
         self.menubar = QMenuBar(self)
@@ -194,7 +180,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menuTools = QMenu("&Tools", self.menubar)
         self.menuTools.addAction(self.testEnginesToolDialogAct)
         self.menuTools.addAction(self.handoverDocumentationToolDialogAct)
-        self.menuTools.addAction(self.importToolAct)
 
         self.menuHelp = QMenu("&Help", self.menubar)
         self.menuHelp.addAction(self.aboutDialogAct)
@@ -233,19 +218,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.toolBar.addAction(self.mainTreeView.editCreateInDialogAct)
         self.toolBar.addAction(self.mainTreeView.addAct)
 
-    @staticmethod
-    def iterItems(root):
-        def recurse(parent):
-            for row in range(parent.rowCount()):
-                for column in range(parent.columnCount()):
-                    child = parent.child(row, column)
-                    yield child
-                    if child.hasChildren():
-                        yield from recurse(child)
-
-        if root is not None:
-            yield from recurse(root)
-
     def buildHandlers(self):
         self.mainTabWidget.currItemChanged.connect(self.onCurrTabItemChanged)
         self.mainTreeView.selectionModel().currentChanged.connect(self.onSelectedPackItemChanged)
@@ -272,11 +244,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         if not self.mainTreeView.autoScrollToSrcAct.isChecked():
             self.mainTabWidget.openItemInNewTab(item)
 
-    def removeTabsOfClosedRows(self, parent: QModelIndex, first: int, last: int):
-        for row in range(first, last):
-            packItem = self.packTreeModel.index(row, 0, parent)
-            self.mainTabWidget.removePackTab(packItem)
-
     def toggleThemeSlot(self):
         action = self.sender()
         if action:
@@ -300,7 +267,8 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
                                          QMessageBox.StandardButton.No)
 
             if reply == QMessageBox.StandardButton.Yes:
-                self.mainTreeView.saveAll()
+                if not self.mainTreeView.saveAll():
+                    return a0.ignore()
                 a0.accept()
             elif reply == QMessageBox.StandardButton.No:
                 # Discarding: stop recovery writes and drop the recovery files so the
@@ -313,7 +281,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             else:
                 return a0.ignore()
         self.writeSettings()
-        self.closed.emit()
 
     def restoreSettingsFromLastSession(self):
         self.applyLastSessionTheme()

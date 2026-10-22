@@ -1,11 +1,16 @@
 import sys
+import tempfile
 from pathlib import Path
 
 import pytest
+from PyQt6.QtCore import QSettings
 from PyQt6.QtWidgets import QApplication
 
 # Absolute path to test data — works regardless of where pytest is invoked from
 TEST_FILES_DIR = Path(__file__).parent / "aas_files"
+
+# Runs before any test module imports aas_editor: keeps tests out of the developer's real settings
+QSettings.setPath(QSettings.Format.IniFormat, QSettings.Scope.UserScope, tempfile.mkdtemp(prefix="aas_editor_test_"))
 
 
 @pytest.fixture(scope="session")
