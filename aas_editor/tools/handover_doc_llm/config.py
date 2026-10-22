@@ -50,19 +50,19 @@ Please consider that the following properties will be not be extracted and have 
 
 LLM_PROVIDERS = {
     "OpenAI": {
-        "default_model": "gpt-4o-mini",
+        "default_model": "gpt-6-luna",
         "init": _init_openai_chat,
     },
     "Anthropic": {
-        "default_model": "claude-3-5-sonnet-latest",
+        "default_model": "claude-haiku-5-5",
         "init": _init_anthropic_chat,
     },
     "Google Vertex": {
-        "default_model": "gemini-1.5-flash",
+        "default_model": "gemini-3.5-flash-lite",
         "init": _init_vertex_chat,
     },
     "Groq": {
-        "default_model": "llama-3.3-70b-versatile",
+        "default_model": "openai/gpt-oss-120b",
         "init": _init_groq_chat,
     },
     "Mistral AI": {
