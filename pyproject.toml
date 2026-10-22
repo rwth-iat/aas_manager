@@ -8,7 +8,7 @@ version = "0.4.13"
 
 dependencies = [
     "PyQt6",
-    "basyx-python-sdk@git+https://github.com/rwth-iat/basyx-python-sdk@aas_manager/v301#subdirectory=sdk",
+    "basyx-python-sdk@git+https://github.com/rwth-iat/basyx-python-sdk@aas_manager/develop#subdirectory=sdk",
     "aas-test-engines==1.0.3",
     "pytz>=2023.3",
     "PyQt6-WebEngine",
