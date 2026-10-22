@@ -70,6 +70,20 @@ class TestProcessPdf:
         dialog.cleanup_thread()
         assert dialog.chooseButton.isEnabled()
 
+    def test_error_text_is_escaped(self, qapp: object, monkeypatch) -> None:
+        from aas_editor.tools.handover_doc_llm import handover_documentation_tool as tool
+
+        dialog = tool.HandoverDocumentationToolDialog()
+        pages = []
+        monkeypatch.setattr(dialog.html_renderer, "setHtml", pages.append)
+
+        dialog.on_processing_error('File "x.py", line 1, in <module>\n<script>alert(1)</script>')
+
+        assert "&lt;module&gt;" in pages[0]
+        assert "&lt;script&gt;" in pages[0]
+        assert "<script>" not in pages[0]
+        assert "\n" in pages[0]
+
 
 class TestLimitContext:
     def test_pages_cut_at_cap_in_order(self, qapp: object) -> None:

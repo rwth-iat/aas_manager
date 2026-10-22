@@ -7,6 +7,7 @@
 #  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
+import html
 import logging
 import os
 import json
@@ -383,7 +384,7 @@ class HandoverDocumentationToolDialog(QDialog):
             self.chooseButton.setEnabled(True)
 
     def on_processing_error(self, error_message):
-        self.html_renderer.setHtml(f"<div style='color:red;'>{error_message}</div>")
+        self.html_renderer.setHtml(f"<pre style='color:red; white-space:pre-wrap;'>{html.escape(error_message)}</pre>")
         self.cleanup_thread()
 
     def provider_changed(self):
