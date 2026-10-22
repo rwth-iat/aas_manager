@@ -83,6 +83,22 @@ class TestLimitContext:
         assert [page.page_content for page in limited] == ["aaaa", "bb"]
 
 
+class TestSelectPages:
+    @pytest.mark.parametrize("count, front, end, expected", [
+        (20, "5", "0", [0, 1, 2, 3, 4]),
+        (20, "", "", [0, 1, 2, 17, 18, 19]),
+        (20, "-1", "", list(range(20))),
+        (4, "", "", [0, 1, 2, 3]),
+    ])
+    def test_selected_pages(self, qapp: object, count: int, front: str, end: str, expected: list) -> None:
+        from langchain_core.documents import Document
+        from aas_editor.tools.handover_doc_llm.handover_documentation_tool import select_pages
+
+        pages = [Document(page_content=str(i)) for i in range(count)]
+
+        assert [int(page.page_content) for page in select_pages(pages, front, end)] == expected
+
+
 class TestJson2Document:
     def test_invalid_json_raises(self, qapp: object) -> None:
         from aas_editor.tools.handover_doc_llm.documentation_generator import json2document

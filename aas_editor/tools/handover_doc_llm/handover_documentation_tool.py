@@ -57,6 +57,16 @@ def limit_context(docs: List[Document], max_chars: int) -> List[Document]:
     return limited
 
 
+def select_pages(docs: List[Document], pages_front: str, pages_end: str) -> List[Document]:
+    """Keep the first pages_front and last pages_end pages (default 3 each, front -1 = all)."""
+    front = int(pages_front) if pages_front.isdigit() or pages_front == "-1" else 3
+    end = int(pages_end) if pages_end.isdigit() else 3
+    if front != -1 and front + end < len(docs):
+        # not docs[-end:]: for end == 0 that is the whole document
+        return docs[:front] + docs[len(docs) - end:]
+    return docs
+
+
 class PdfProcessingThread(QThread):
     processing_complete = pyqtSignal(str)
     processing_error = pyqtSignal(str)
@@ -114,18 +124,7 @@ class PdfProcessingThread(QThread):
             docs = loader.load()
 
             # 2. Page Selection Logic
-            if self.pages_front.isdigit() or self.pages_front == "-1":
-                pages_front = int(self.pages_front)
-            else:
-                pages_front = 3
-
-            if self.pages_end.isdigit():
-                pages_end = int(self.pages_end)
-            else:
-                pages_end = 3
-
-            if pages_front != -1 and pages_end != -1 and (pages_front + pages_end) < len(docs):
-                docs = docs[:pages_front] + docs[-pages_end:]
+            docs = select_pages(docs, self.pages_front, self.pages_end)
 
             # 3. Cap the text
             docs = limit_context(docs, MAX_CONTEXT_CHARS)
