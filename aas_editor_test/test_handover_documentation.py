@@ -2,6 +2,8 @@ import json
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 # QtWebEngineWidgets must be imported before the QApplication exists (qapp fixture)
 from PyQt6 import QtWebEngineWidgets  # noqa: F401
 from basyx.aas.adapter.json import AASToJsonEncoder
@@ -59,3 +61,11 @@ class TestLimitContext:
         assert limit_context(pages, 100) == pages
         limited = limit_context(pages, 6)
         assert [page.page_content for page in limited] == ["aaaa", "bb"]
+
+
+class TestJson2Document:
+    def test_invalid_json_raises(self, qapp: object) -> None:
+        from aas_editor.tools.handover_doc_llm.documentation_generator import json2document
+
+        with pytest.raises(json.JSONDecodeError):
+            json2document('{"document": {,}}', "x.pdf")
