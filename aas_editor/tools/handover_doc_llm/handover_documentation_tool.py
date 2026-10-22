@@ -332,10 +332,10 @@ class HandoverDocumentationToolDialog(QDialog):
             self.processPdf(file)
 
     def processPdf(self, file: str):
-        self.current_file = file
         if self.processingThread:
             QMessageBox.information(self, "Processing", "A PDF is still being processed. Please wait until it is done.")
             return
+        self.current_file = file
         self.current_filename = os.path.basename(self.current_file)
         self.html_renderer.setHtml("""
             <div style='text-align: center; padding: 50px; font-size: 18px;'>
@@ -372,8 +372,8 @@ class HandoverDocumentationToolDialog(QDialog):
         self.processingThread.processing_error.connect(self.on_processing_error)
         self.processingThread.show_answer_dialog.connect(self.show_answer_dialog)
 
-        self.processingThread.start()
         self.chooseButton.setEnabled(False)
+        self.processingThread.start()
 
     def cleanup_thread(self):
         if self.processingThread:
@@ -381,8 +381,8 @@ class HandoverDocumentationToolDialog(QDialog):
             self.processingThread.wait()
             self.processingThread.deleteLater()
             self.processingThread = None
-
             self.chooseButton.setEnabled(True)
+
     def on_processing_error(self, error_message):
         self.html_renderer.setHtml(f"<div style='color:red;'>{error_message}</div>")
         self.cleanup_thread()

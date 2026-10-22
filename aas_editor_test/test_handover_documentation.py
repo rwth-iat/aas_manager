@@ -51,6 +51,26 @@ class TestFinishHandoverDocumentation:
         assert not (tmp_path / "handover_sm.json").exists()
 
 
+class TestProcessPdf:
+    def test_second_pdf_is_refused_while_processing(self, qapp: object, monkeypatch) -> None:
+        from PyQt6.QtWidgets import QMessageBox
+        from aas_editor.tools.handover_doc_llm import handover_documentation_tool as tool
+
+        monkeypatch.setattr(tool.PdfProcessingThread, "start", lambda self: None)
+        boxes = []
+        monkeypatch.setattr(QMessageBox, "information", lambda parent, title, text: boxes.append(title))
+        dialog = tool.HandoverDocumentationToolDialog()
+
+        dialog.processPdf("a.pdf")
+        dialog.processPdf("b.pdf")
+
+        assert dialog.current_file == "a.pdf"
+        assert boxes == ["Processing"]
+        assert not dialog.chooseButton.isEnabled()
+        dialog.cleanup_thread()
+        assert dialog.chooseButton.isEnabled()
+
+
 class TestLimitContext:
     def test_pages_cut_at_cap_in_order(self, qapp: object) -> None:
         from langchain_core.documents import Document
