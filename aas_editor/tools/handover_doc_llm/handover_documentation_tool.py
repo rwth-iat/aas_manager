@@ -543,10 +543,6 @@ class HandoverDocumentationToolDialog(QDialog):
             id_ = self.idLineEdit.text() if self.idLineEdit.text() else "None"
             handover_sm = documents2handover_documentation(self.documents, id_=id_)
             normalized_json = json.dumps(handover_sm, cls=AASToJsonEncoder)
-            normalized_json = normalized_json.replace('\\', '\\\\')
-            # Save the json under temp file for debugging purposes
-            with open("handover_sm.json", "w", encoding="utf-8") as f:
-                f.write(normalized_json)
             normalized_handover_sm = json.loads(normalized_json, cls=AASFromJsonDecoder)
         except Exception as e:
             messsageBoxes.ErrorMessageBox.withTraceback(self, str(e)).exec()
