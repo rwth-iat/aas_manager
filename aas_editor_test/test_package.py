@@ -123,6 +123,22 @@ class TestPackageWrite:
         with pytest.raises(TypeError):
             pkg.write(tmp_path / "out.txt")
 
+    def test_failed_write_keeps_old_file(self, qapp: object, tmp_path: Path, monkeypatch) -> None:
+        out_file = tmp_path / "out.xml"
+        pkg = Package()
+        pkg.add(Submodel("urn:sm1"))
+        pkg.write(out_file)
+        before = out_file.read_bytes()
+
+        def failingWriter(*args, **kwargs):
+            raise ValueError("serializer failed")
+        monkeypatch.setattr("aas_editor.package.write_aas_xml_file", failingWriter)
+
+        with pytest.raises(ValueError):
+            Package(out_file).write()
+        assert out_file.read_bytes() == before
+        assert not out_file.with_name("out.xml.tmp").exists()
+
 
 # ---------------------------------------------------------------------------
 # StoredFile

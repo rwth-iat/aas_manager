@@ -98,23 +98,30 @@ class Package:
             self.file: Path = file
 
         fileType = self.file.suffix.lower().strip()
-        if fileType == ".xml":
-            # The file must be opened in binary mode! The XML writer will handle
-            # character encoding internally.
-            with open(self.file.as_posix(), 'wb') as xml_file:
-                write_aas_xml_file(xml_file, self.objStore)
-        elif fileType == ".json":
-            with open(self.file.as_posix(), "w", encoding='utf-8') as fileIO:
-                indent = 2 if self.writePrettyJson else None
-                sort_keys = True if self.sortKeysInJson else False
-                write_aas_json_file(fileIO, self.objStore, indent=indent, sort_keys=sort_keys)
+        # Temp file first: a write that fails halfway must not destroy the existing file.
+        tmp_path = self.file.with_name(f"{self.file.name}.tmp")
+        try:
+            if fileType == ".xml":
+                # The file must be opened in binary mode! The XML writer will handle
+                # character encoding internally.
+                with open(tmp_path, 'wb') as xml_file:
+                    write_aas_xml_file(xml_file, self.objStore)
+            elif fileType == ".json":
+                with open(tmp_path, "w", encoding='utf-8') as fileIO:
+                    indent = 2 if self.writePrettyJson else None
+                    sort_keys = True if self.sortKeysInJson else False
+                    write_aas_json_file(fileIO, self.objStore, indent=indent, sort_keys=sort_keys)
 
-        elif fileType == ".aasx":
-            with AASXWriter(self.file.as_posix()) as writer:
-                writer.write_all_aas_objects("/aasx/data.{}".format("json" if self.writeJsonInAasx else "xml"),
-                                             self.objStore, self.fileStore, self.writeJsonInAasx)
-        else:
-            raise TypeError("Wrong file type:", self.file.suffix)
+            elif fileType == ".aasx":
+                with AASXWriter(tmp_path.as_posix()) as writer:
+                    writer.write_all_aas_objects("/aasx/data.{}".format("json" if self.writeJsonInAasx else "xml"),
+                                                 self.objStore, self.fileStore, self.writeJsonInAasx)
+            else:
+                raise TypeError("Wrong file type:", self.file.suffix)
+            os.replace(tmp_path, self.file)
+        except Exception:
+            tmp_path.unlink(missing_ok=True)
+            raise
 
     def _recovery_stem(self, for_file: Path = None) -> str:
         file = self.file if for_file is None else Path(for_file)
