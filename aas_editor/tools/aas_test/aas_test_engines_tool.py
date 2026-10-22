@@ -9,7 +9,7 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 import aas_test_engines.file as test_engines_file_check
 from PyQt6.QtWidgets import QDialog, QPushButton, QVBoxLayout, QFileDialog
-from aas_editor.settings import FILTER_AAS_FILES
+from aas_editor.settings import FILTER_AAS_FILES, AAS_METAMODEL_VERSION
 from aas_editor.widgets.messsageBoxes import ErrorMessageBox
 from aas_editor.widgets.dropfilebox import DropFileQWebEngineView
 
@@ -18,10 +18,13 @@ class AasTestEnginesToolDialog(QDialog):
     def __init__(self, parent=None):  # <1>
         super().__init__(parent)
         self._initLayout()
-        self.setWindowTitle("AAS-Test-Engines Tool")
+        self.setWindowTitle(f"AAS-Test-Engines Tool (metamodel {test_engines_file_check.latest_version()})")
         self.setMinimumSize(500, 300)
 
         description = 'Official test tooling for the Asset Administration Shell: https://github.com/admin-shell-io/aas-test-engines'
+        # aas-test-engines may lag behind the metamodel version AAS Manager writes
+        description += (f'<br>Checks against AAS metamodel {test_engines_file_check.latest_version()}: '
+                        f'files in metamodel {AAS_METAMODEL_VERSION} may show findings for newer features.')
         self.html_renderer = DropFileQWebEngineView(self, emptyViewMsg="Drop AAS file to test here", description=description)
         self.html_renderer.setMinimumSize(300, 300)
         self.html_renderer.fileDropped.connect(self.checkFile)
