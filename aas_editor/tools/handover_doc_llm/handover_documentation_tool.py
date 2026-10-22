@@ -41,6 +41,8 @@ from langchain_classic.chains.combine_documents import create_stuff_documents_ch
 from langchain_core.prompts import ChatPromptTemplate
 
 DOCUMENT_ROLE = 1000
+# RAG search query: the fields the prompt asks for, so the matching chunks reach the LLM
+RETRIEVAL_QUERY = "document title, document number, version, release date, manufacturer, language, document type"
 
 
 class SimpleRetriever(BaseRetriever):
@@ -151,7 +153,7 @@ class PdfProcessingThread(QThread):
                 splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
                 splits = splitter.split_documents(docs)
                 vector_store = FAISS.from_documents(splits, embeddings)
-                retriever = vector_store.as_retriever()
+                retriever = vector_store.as_retriever(search_kwargs={"k": 12})
             else:
                 logging.info("Processing document directly without RAG.")
                 print("Processing document directly without RAG.")
@@ -163,7 +165,7 @@ class PdfProcessingThread(QThread):
             llm = self.init_llm(self.llm_provider, self.llm_model, self.api_key, schema=schema)
             prompt = ChatPromptTemplate.from_template(PROMPT)
             document_chain = create_stuff_documents_chain(llm, prompt)
-            docs_for_context = retriever.invoke("")
+            docs_for_context = retriever.invoke(RETRIEVAL_QUERY)
 
             llm_response = document_chain.invoke({"input": "", "context": docs_for_context})
             answer = llm_response if isinstance(llm_response, str) else llm_response.get('answer', '')
