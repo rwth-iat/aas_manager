@@ -16,6 +16,7 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
+import functools
 import inspect
 import re
 import typing
@@ -182,20 +183,22 @@ def getParams4init(objType: Type) -> List[str]:
 def getParamsAndTypehints4init(objType: Type, withDefaults=True) -> tuple[dict[str, Any], dict[str, Any]] | dict[
     str, Any]:
     """Return params for init with their type and default values"""
-    objType = resolveBaseType(objType)
+    paramsAndTypehints, paramsDefaults = _paramsAndTypehints4init(resolveBaseType(objType))
+    # Copies: callers mutate the result, the cached originals must stay intact
+    if withDefaults:
+        return dict(paramsAndTypehints), dict(paramsDefaults)
+    return dict(paramsAndTypehints)
 
+
+@functools.lru_cache(maxsize=None)  # class signatures don't change at runtime; hot in item init
+def _paramsAndTypehints4init(objType: Type) -> tuple[dict[str, Any], dict[str, Any]]:
     g = getfullargspecoftypeinit(objType)
     paramsAndTypehints = g.annotations.copy()
     if 'return' in paramsAndTypehints:
         paramsAndTypehints.pop('return')
     paramsAndTypehints = replaceForwardRefsWithTypes(paramsAndTypehints)
-
-    if withDefaults:
-        defaults = g.defaults
-        paramsDefaults = _getDefaultValuesOfParams(paramsAndTypehints.keys(), defaults)
-        return paramsAndTypehints, paramsDefaults
-
-    return paramsAndTypehints
+    paramsDefaults = _getDefaultValuesOfParams(paramsAndTypehints.keys(), g.defaults)
+    return paramsAndTypehints, paramsDefaults
 
 
 def resolveBaseType(objType: Type) -> Type:
@@ -404,6 +407,7 @@ def isSimpleIterable(obj) -> bool:
     return isSimpleIterableType(type(obj))
 
 
+@functools.lru_cache(maxsize=None)  # pure function of class signatures; hot in item init
 def getAttrTypeHint(objType, attr: str, delOptional: bool = True):
     params = getReqParams4init(objType, rmDefParams=False, delOptional=delOptional)
 
@@ -417,8 +421,7 @@ def getAttrTypeHint(objType, attr: str, delOptional: bool = True):
     except KeyError:
         raise KeyError(f"Attribute {attr} not found in {objType}")
     except Exception as e:
-        logging.exception(e)
-        raise KeyError(f"Failed to get type hint for attribute {attr} in {objType}")
+        raise KeyError(f"Failed to get type hint for attribute {attr} in {objType}") from e
 
     # Process type hint arguments to remove Ellipsis if present
     try:

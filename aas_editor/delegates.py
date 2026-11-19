@@ -42,8 +42,6 @@ class ColorDelegate(QStyledItemDelegate):
             hoverIndex: QModelIndex = view.currentIndex()
             if not opt.state & QStyle.StateFlag.State_MouseOver and index.siblingAtColumn(0) == hoverIndex.siblingAtColumn(0):
                 opt.state |= QStyle.StateFlag.State_MouseOver
-                model = view.model()
-                model.dataChanged.emit(index, index)
 
         if index.isValid() and index in self.indexColors:
             self.initStyleOption(opt, index)
