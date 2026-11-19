@@ -16,7 +16,6 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
-import copy
 import json
 import logging
 import traceback
@@ -29,7 +28,7 @@ from PyQt6 import QtCore
 from PyQt6.QtCore import Qt, QModelIndex, QPoint, QThreadPool, pyqtSignal
 from PyQt6.QtGui import QDropEvent, QDragEnterEvent, QKeyEvent, QClipboard, QAction
 from PyQt6.QtWidgets import QMessageBox, QFileDialog, QMenu, QWidget, QApplication, \
-    QProgressDialog
+    QInputDialog, QProgressDialog
 from basyx.aas.adapter.aasx import AASXReader, DictSupplementaryFileContainer
 from basyx.aas.adapter.json import read_aas_json_file, AASToJsonEncoder
 from basyx.aas.adapter.xml import read_aas_xml_file
@@ -146,6 +145,23 @@ class PackHeaderView(HeaderView):
         self.menu.removeAction(hideChosenSection)
 
 
+def readTemplateSubmodels(smFile: Path) -> typing.List[Submodel]:
+    try:
+        fileType = smFile.suffix.lower()
+        if fileType == ".xml":
+            objStore = read_aas_xml_file(smFile.as_posix())
+        elif fileType == ".json":
+            objStore = read_aas_json_file(smFile.as_posix())
+        else:
+            objStore = SetIdentifiableStore()
+            AASXReader(smFile.as_posix()).read_into(objStore, DictSupplementaryFileContainer())
+    except Exception as e:
+        # A broken template file gives an empty menu instead of crashing the app
+        logging.exception(f"Error while reading {smFile}: {e}. Submodels can not be read")
+        return []
+    return [obj for obj in objStore if isinstance(obj, Submodel)]
+
+
 class PackTreeView(TreeView):
     EMPTY_VIEW_MSG = "Drop AAS files here"
     EMPTY_VIEW_ICON = OPEN_DRAG_ICON
@@ -154,7 +170,6 @@ class PackTreeView(TreeView):
     packReadFailed = pyqtSignal(str, bool, str)
 
     def __init__(self, parent=None, **kwargs):
-        self.copyBufferObjStores = dict()
         self.scanFolderForExistFiles()
         super(PackTreeView, self).__init__(parent,
                                            emptyViewMsg=self.EMPTY_VIEW_MSG,
@@ -171,43 +186,24 @@ class PackTreeView(TreeView):
         self.packRead.connect(self._onPackRead)
         self.packReadFailed.connect(self._onPackReadFailed)
 
-    # Scan the folder SUBMODEL_TEMPLATES_FOLDER and create a set filesObjStores of SetIdentifiableStore elements and its names
+    # List template files in SUBMODEL_TEMPLATES_FOLDER (relative paths); parsing is
+    # deferred to readTemplateSubmodels when the menu is opened, to keep startup fast
     def scanFolderForExistFiles(self):
         sm_templates_path = SUBMODEL_TEMPLATES_FOLDER
 
         if not sm_templates_path.is_dir():
             sm_templates_path.mkdir()
 
-        aasxFiles = [file for file in sm_templates_path.rglob('*.aasx')]
-        xmlFiles = [file for file in sm_templates_path.rglob('*.xml')]
-        jsonFiles = [file for file in sm_templates_path.rglob('*.json')]
-        # JSON parses fastest; a template shipped in several formats is loaded only once
-        smFiles = jsonFiles + xmlFiles + aasxFiles
-        loadedTemplates = set()
-
-        # Read the aas files and store it in SetIdentifiableStore in dictionary fileObjDict.
+        # JSON parses fastest; a template shipped in several formats is listed only once
+        smFiles = [file for suffix in ("json", "xml", "aasx")
+                   for file in sm_templates_path.rglob(f"*.{suffix}")]
+        listedTemplates = set()
+        self.templateFiles = []
         for smFile in smFiles:
-            if smFile.with_suffix("") in loadedTemplates:
+            if smFile.with_suffix("") in listedTemplates:
                 continue
-            try:
-                fileType = smFile.suffix.lower().strip()
-                if fileType == ".xml":
-                    objStore = read_aas_xml_file(smFile.as_posix())
-                elif fileType == ".json":
-                    objStore = read_aas_json_file(smFile.as_posix())
-                elif fileType == ".aasx":
-                    objStore = SetIdentifiableStore()
-                    fileStore = DictSupplementaryFileContainer()  # prosto tak
-                    reader = AASXReader(smFile.as_posix())
-                    reader.read_into(objStore, fileStore)
-                else:
-                    raise TypeError("Wrong file type:", smFile.suffix)
-                # Save path to the file relative to the submodel folder
-                self.copyBufferObjStores[smFile.relative_to(sm_templates_path)] = objStore
-                loadedTemplates.add(smFile.with_suffix(""))
-            except Exception as e:
-                # If a package is with an error, that file will be skipped.
-                logging.exception(f"Error while reading {smFile}: {e}. Submodels can not be read")
+            listedTemplates.add(smFile.with_suffix(""))
+            self.templateFiles.append(smFile.relative_to(sm_templates_path))
 
     @property
     def defaultNewFileType(self):
@@ -316,32 +312,20 @@ class PackTreeView(TreeView):
                                             statusTip="Autoscroll from source",
                                             checkable=True)
 
-        self.existSubmodelCopyActsFromFiles: typing.Dict[str, typing.List[QAction]] = self.initExistSubmodelCopyActsFromFiles()
-
         self.autoScrollFromSrcAct.toggle()
         self.setItemDelegate(EditDelegate(self))
 
-    def initExistSubmodelCopyActsFromFiles(self):
-        existSubmodelCopyActsFromFiles = {}  # {"file1": list(QAction_copySubmodel1, QAction_copySubmodel2, ...)}
-        # filesObjStores contains packages and its instances
-        for file, objStore in self.copyBufferObjStores.items():
-            copyExistSubmodelActs = []
-            for obj in objStore:
-                if isinstance(obj, Submodel):
-                    name = obj.id_short if not obj.id_short == "" else obj.id
-                    existSubmodelAct = QAction(name, self,
-                                               statusTip=f"Copy existing submodel in current package",
-                                               triggered=lambda: self.onAddExistingSubmodelPushed())
-                    existSubmodelAct.setData(obj)
-                    copyExistSubmodelActs.append(existSubmodelAct)
-            existSubmodelCopyActsFromFiles[file] = copyExistSubmodelActs
-        return existSubmodelCopyActsFromFiles
-
-    def onAddExistingSubmodelPushed(self):
-        action = self.sender()
-        if action:
-            submodel = copy.deepcopy(action.data())
-            self.pasteSubmodel(submodel)
+    def onTemplateFileChosen(self, filepath: Path) -> None:
+        # File is re-read on each click, so pasted submodels are fresh objects
+        submodels = readTemplateSubmodels(SUBMODEL_TEMPLATES_FOLDER / filepath)
+        if not submodels:
+            QMessageBox.warning(self, "Add existing submodel", f"No submodels found in: {filepath}")
+            return
+        byLabel = {f"{sm.id_short} ({sm.id})" if sm.id_short else sm.id: sm for sm in submodels}
+        label, ok = QInputDialog.getItem(self, "Add existing submodel",
+                                         f"Submodels in {filepath.name}:", list(byLabel), 0, False)
+        if ok:
+            self.pasteSubmodel(byLabel[label])
 
     def pasteSubmodel(self, submodel: Submodel):
         self.treeClipboard.clear()
@@ -426,15 +410,15 @@ class PackTreeView(TreeView):
         self.addExistSubmodelsMenu.menuAction().setEnabled(False)
 
         # 2. Iterate through your file paths
-        for filepath, copyPasteSubmodelActs in self.existSubmodelCopyActsFromFiles.items():
+        for filepath in self.templateFiles:
             # current_level tracks where we are in the tree for this specific file
             current_level = self.addExistSubmodelsMenu
 
             # Filter out parts that are purely numeric (Submodel Versions)
             clean_parts = [p for p in filepath.parts if not p.isdigit()]
 
-            # Use parts to build the nested structure
-            for part in clean_parts:
+            # Use parts to build the nested structure; last part is the file itself
+            for part in clean_parts[:-1]:
                 # Look for an existing submenu with this title
                 found_menu = None
                 for action in current_level.actions():
@@ -449,8 +433,10 @@ class PackTreeView(TreeView):
                 else:
                     current_level = current_level.addMenu(part)
 
-            # 3. Add the actual actions to the deepest nested menu found/created
-            current_level.addActions(copyPasteSubmodelActs)
+            # 3. File entry: clicking it reads the file and lets the user pick a submodel
+            fileAct = current_level.addAction(clean_parts[-1])
+            fileAct.setStatusTip("Choose a submodel from this file to copy into current package")
+            fileAct.triggered.connect(partial(self.onTemplateFileChosen, filepath))
         self.attrsMenu.insertMenu(self.addAct, self.addExistSubmodelsMenu)
 
     def updateActions(self, index: QModelIndex):
