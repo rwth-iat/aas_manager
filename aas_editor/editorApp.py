@@ -346,7 +346,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         # matches recovery files against this list, so it must stay current for a native
         # crash to offer them. Sync only when it changed to keep it off the disk on
         # every tick.
-        openFiles = self.packTreeModel.openedFiles()
+        openFiles = self.filesToOpenOnStart()
         if openFiles != self._lastPersistedOpenFiles:
             AppSettings.AAS_FILES_TO_OPEN_ON_START.setValue(openFiles)
             SETTINGS.sync()
@@ -382,15 +382,15 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
             self._recoveryStatusLabel.hide()
         self._recoveryWriteFailed = writeFailed
 
-    def openAASFile(self, filePath: str):
-        """Return the opened Package, or None if it could not be opened."""
-        pack = None
-        try:
-            pack = self.mainTreeView.openPack(filePath)
-        except OSError:
-            pass
-        self.packTreeModel.setData(QModelIndex(), [], UNDO_ROLE)
-        return pack  # None if the file could not be opened
+    def openAASFile(self, filePath: str) -> None:
+        """Open the file in the background; its opening is not undoable."""
+        self.mainTreeView.openPack(
+            filePath,
+            onOpened=lambda _: self.packTreeModel.setData(QModelIndex(), [], UNDO_ROLE))
+
+    def filesToOpenOnStart(self) -> set[Path]:
+        # Files still being read on quit belong to the session too
+        return self.packTreeModel.openedFiles() | self.mainTreeView.loadingFiles()
 
     def applyLastSessionTreeStates(self):
         packTreeViewHeader: HeaderView = self.mainTreeView.header()
@@ -436,7 +436,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         AppSettings.SIZE.setValue(self.size())
         AppSettings.LEFT_ZONE_SIZE.setValue(self.mainLayoutWidget.size())
         AppSettings.RIGHT_ZONE_SIZE.setValue(self.subLayoutWidget.size())
-        AppSettings.AAS_FILES_TO_OPEN_ON_START.setValue(self.packTreeModel.openedFiles())
+        AppSettings.AAS_FILES_TO_OPEN_ON_START.setValue(self.filesToOpenOnStart())
         AppSettings.FONTSIZE_FILES_VIEW.setValue(PacksTable.currFont.pointSize())
         AppSettings.FONTSIZE_DETAILED_VIEW.setValue(DetailedInfoTable.currFont.pointSize())
         AppSettings.PACKTREEVIEW_HEADER_STATE.setValue(self.mainTreeView.header().saveState())

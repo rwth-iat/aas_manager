@@ -11,7 +11,7 @@
 import sys
 import logging
 
-from PyQt6 import QtWidgets
+from PyQt6 import QtCore, QtWidgets
 from aas_editor.utils import exceptionhook  # noqa: F401
 from PyQt6 import QtWebEngineWidgets
 
@@ -43,6 +43,8 @@ def main():
 
     # splash.setFocus()
     app.exec()
+    # A file still being read on quit: let its thread end before Python shuts down
+    QtCore.QThreadPool.globalInstance().waitForDone()
 
 
 if __name__ == "__main__":
