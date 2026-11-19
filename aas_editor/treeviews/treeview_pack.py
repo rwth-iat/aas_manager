@@ -626,7 +626,8 @@ class PackTreeView(TreeView):
             QMessageBox.critical(self, "Error", f"Package {file} is already opened")
             return
         self._loading[absFile] = onOpened
-        self._readPackInBackground(file, failsafe=False)
+        # str: session restore passes Path objects, the read signals carry str
+        self._readPackInBackground(str(file), failsafe=False)
         self._updateLoadProgress()
 
     def loadingFiles(self) -> set[Path]:
