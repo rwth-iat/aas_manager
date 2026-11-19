@@ -27,6 +27,9 @@ from aas_editor.package import Package, StoredFile
 
 
 class PackTreeViewItem(StandardItem):
+    """Children are built on first children() call, so opening a pack is cheap"""
+    populated = False
+
     def __init__(self, obj, parent, **kwargs):
         super().__init__(obj, parent=parent, **kwargs)
         if obj is None and parent is None:
@@ -36,9 +39,23 @@ class PackTreeViewItem(StandardItem):
             self.package = obj
         else:
             self.package = parent.data(PACKAGE_ROLE)
-        self.populate()
+        if isinstance(obj, GeneratorType):
+            # A generator can be iterated once only; parent then replaces obj
+            self.populate()
+
+    def children(self) -> list:
+        if not self.populated:
+            self.populate()
+        return super().children()
+
+    def hasChildObjs(self) -> bool:
+        """Whether populate() would create children, without creating them"""
+        if ClassesInfo.hasPackViewAttrs(type(self.obj)):
+            return bool(ClassesInfo.packViewAttrs(type(self.obj)))
+        return isIterable(self.obj) and any(True for _ in self.obj)
 
     def populate(self):
+        self.populated = True
         kwargs = {
             "parent": self,
             "new": self.new,

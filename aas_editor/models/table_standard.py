@@ -167,6 +167,8 @@ class StandardTable(QAbstractItemModel):
     def addItem(self, obj: Union[Package, 'SubmodelElement', Iterable],
                 parent: QModelIndex = QModelIndex()):
         parent = parent.siblingAtColumn(0)
+        # Build lazy children first, else populate() would add obj a second time
+        self.rowCount(parent)
         self._addItemObjToParentObj(obj, parent)
         itemInitKwargs = self._getKwargsForItemInit(obj, parent)
         return self._addItem(parent, itemInitKwargs)

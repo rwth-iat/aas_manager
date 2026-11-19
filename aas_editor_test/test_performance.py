@@ -204,3 +204,174 @@ class TestPaintCost:
 
         assert flags == [legacyFlags(i) for i in indexes]
         assert Flag.NoItemFlags in flags and editable in flags
+
+
+TEST_FILES = [
+    "IDTA 02002-1-0_Template_ContactInformation.json",
+    "IDTA 02002-1-0_Template_ContactInformation.aasx",
+    "IDTA 02023 _Template_CarbonFootprint.json",
+    "IDTA 02058-1-0_Template_AIDataset.json",
+]
+
+
+def createdItemCount(item) -> int:
+    # QObject.children() of the base class: counts without triggering population
+    from PyQt6.QtCore import QObject
+
+    return sum(1 + createdItemCount(child) for child in QObject.children(item))
+
+
+def childByName(model, parent: QModelIndex, name: str) -> QModelIndex:
+    from aas_editor.settings.app_settings import NAME_ROLE
+
+    for row in range(model.rowCount(parent)):
+        index = model.index(row, 0, parent)
+        if index.data(NAME_ROLE) == name:
+            return index
+    raise KeyError(name)
+
+
+def contactInformationIndex(model) -> QModelIndex:
+    submodels = childByName(model, model.index(0, 0), "submodels")
+    submodel = childByName(model, submodels, "ContactInformations")
+    return childByName(model, submodel, "ContactInformation")
+
+
+def treeDump(model, parent: QModelIndex = QModelIndex(), depth: int = 0) -> list:
+    from PyQt6.QtCore import Qt
+
+    dump = []
+    for row in range(model.rowCount(parent)):
+        index = model.index(row, 0, parent)
+        cells = tuple(index.siblingAtColumn(c).data(Qt.ItemDataRole.DisplayRole)
+                      for c in range(model.columnCount()))
+        dump.append((depth, cells, model.rowCount(index)))
+        dump += treeDump(model, index, depth + 1)
+    return dump
+
+
+class TestLazyPackTree:
+    def test_opening_pack_builds_only_top_level(self, qapp, json_file: Path) -> None:
+        from aas_editor.package import Package
+
+        view = newPackTreeView()
+        view.add_pack_to_tree(Package(json_file))
+        view.show()
+        qapp.processEvents()
+
+        assert createdItemCount(view.sourceModel()._rootItem) == 1
+
+    def test_lazy_tree_matches_eager_tree(self, qapp, monkeypatch) -> None:
+        from conftest import TEST_FILES_DIR
+        from aas_editor.models import PackTreeViewItem
+        from aas_editor.package import Package
+
+        for name in TEST_FILES:
+            # One package for both trees: set iteration order differs between loads
+            pack = Package(TEST_FILES_DIR / name)
+            lazyView = newPackTreeView()
+            lazyView.add_pack_to_tree(pack)
+            lazyDump = treeDump(lazyView.sourceModel())
+
+            realInit = PackTreeViewItem.__init__
+
+            def eagerInit(self, *args, **kwargs):
+                realInit(self, *args, **kwargs)
+                self.children()
+
+            with monkeypatch.context() as m:
+                m.setattr(PackTreeViewItem, "__init__", eagerInit)
+                eagerView = newPackTreeView()
+                eagerView.add_pack_to_tree(pack)
+                eagerDump = treeDump(eagerView.sourceModel())
+
+            assert len(lazyDump) > 50
+            assert lazyDump == eagerDump
+
+    def test_has_children_without_building_them(self, qapp) -> None:
+        from conftest import TEST_FILES_DIR
+        from PyQt6.QtCore import QObject
+        from aas_editor.package import Package
+
+        for name in TEST_FILES:
+            view = newPackTreeView()
+            view.add_pack_to_tree(Package(TEST_FILES_DIR / name))
+            model = view.sourceModel()
+
+            def check(parent: QModelIndex) -> None:
+                for row in range(model.rowCount(parent)):
+                    index = model.index(row, 0, parent)
+                    item = index.internalPointer()
+                    built = len(QObject.children(item))
+                    hasChildren = model.hasChildren(index)
+                    assert len(QObject.children(item)) == built
+                    assert hasChildren == (model.rowCount(index) > 0)
+                    check(index)
+
+            check(QModelIndex())
+
+    def test_search_finds_item_in_unexpanded_branch(
+            self, qapp, json_file: Path) -> None:
+        from PyQt6.QtWidgets import QWidget
+        from aas_editor.package import Package
+        from aas_editor.settings.app_settings import ATTRIBUTE_COLUMN, NAME_ROLE
+        from aas_editor.widgets import SearchBar
+
+        view = newPackTreeView()
+        view.add_pack_to_tree(Package(json_file))
+        window = QWidget()
+        searchBar = SearchBar(view, filterColumns=[ATTRIBUTE_COLUMN], parent=window)
+
+        searchBar.searchLine.setText("TypeOfFaxNumber")
+
+        # Found items include the ancestors kept visible by recursive filtering
+        assert "TypeOfFaxNumber" in [QModelIndex(i).data(NAME_ROLE)
+                                     for i in searchBar.foundItems]
+
+    def test_add_to_unexpanded_parent_adds_once(self, qapp, json_file: Path) -> None:
+        from basyx.aas.model import Property, datatypes
+        from aas_editor.package import Package
+        from aas_editor.settings import NOT_GIVEN
+        from aas_editor.settings.app_settings import (
+            ADD_ITEM_ROLE, NAME_ROLE, REDO_ROLE, UNDO_ROLE)
+
+        view = newPackTreeView()
+        view.add_pack_to_tree(Package(json_file))
+        model = view.sourceModel()
+        fax = childByName(model, contactInformationIndex(model), "Fax")
+
+        model.setData(fax, Property("NewProp", datatypes.String), ADD_ITEM_ROLE)
+
+        def names() -> list:
+            rows = range(model.rowCount(fax))
+            return [model.index(r, 0, fax).data(NAME_ROLE) for r in rows]
+
+        view.expandAll()
+        assert names() == ["FaxNumber", "TypeOfFaxNumber", "NewProp"]
+        model.setData(QModelIndex(), NOT_GIVEN, UNDO_ROLE)
+        assert names() == ["FaxNumber", "TypeOfFaxNumber"]
+        model.setData(QModelIndex(), NOT_GIVEN, REDO_ROLE)
+        assert names() == ["FaxNumber", "TypeOfFaxNumber", "NewProp"]
+
+    def test_edit_unexpanded_item_rebuilds_children_once(
+            self, qapp, json_file: Path) -> None:
+        import copy
+        from PyQt6.QtCore import Qt
+        from aas_editor.package import Package
+        from aas_editor.settings.app_settings import NAME_ROLE, OBJECT_ROLE
+
+        view = newPackTreeView()
+        view.add_pack_to_tree(Package(json_file))
+        model = view.sourceModel()
+        fax = childByName(model, contactInformationIndex(model), "Fax")
+        newFax = copy.deepcopy(fax.data(OBJECT_ROLE))
+        newFax.parent = None
+
+        assert model.setData(fax, newFax, Qt.ItemDataRole.EditRole)
+
+        view.expandAll()
+        fax = childByName(model, contactInformationIndex(model), "Fax")
+        assert fax.data(OBJECT_ROLE) is newFax
+        rows = range(model.rowCount(fax))
+        assert [model.index(r, 0, fax).data(NAME_ROLE) for r in rows] == [
+            "FaxNumber", "TypeOfFaxNumber"]
