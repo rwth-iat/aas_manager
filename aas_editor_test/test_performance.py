@@ -72,7 +72,6 @@ class TestInitParamsCache:
 class TestAttrDocCache:
     def test_docstring_parsed_once_per_class_and_attr(self, qapp, monkeypatch) -> None:
         import re
-        import aas_editor.settings  # noqa: F401  util<->settings circular import
         from basyx.aas.model import Property
         from aas_editor.utils.util import getAttrDoc
 
@@ -91,7 +90,6 @@ class TestAttrDocCache:
         assert len(calls) <= 1
 
     def test_results_unchanged(self, qapp) -> None:
-        import aas_editor.settings  # noqa: F401  util<->settings circular import
         from basyx.aas.model import Property, Submodel
         from aas_editor.utils.util import getAttrDoc
 

@@ -22,6 +22,7 @@ def qapp():
     module load time, which require an active QApplication context.
     """
     app = QApplication.instance() or QApplication(sys.argv)
+    import aas_editor.settings  # noqa: F401  load settings before util (import cycle)
     yield app
 
 
