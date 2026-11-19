@@ -69,6 +69,47 @@ class TestInitParamsCache:
         assert getReqParams4init(Range, rmDefParams=True)
 
 
+class TestAttrDocCache:
+    def test_docstring_parsed_once_per_class_and_attr(self, qapp, monkeypatch) -> None:
+        import re
+        import aas_editor.settings  # noqa: F401  util<->settings circular import
+        from basyx.aas.model import Property
+        from aas_editor.utils.util import getAttrDoc
+
+        calls = []
+        realSearch = re.search
+        def countingSearch(*args, **kwargs):
+            calls.append(args)
+            return realSearch(*args, **kwargs)
+
+        monkeypatch.setattr(re, "search", countingSearch)
+
+        first = Property("p1", "xs:string")
+        second = Property("p2", "xs:string")
+        assert getAttrDoc("value", first) == getAttrDoc("value", second)
+
+        assert len(calls) <= 1
+
+    def test_results_unchanged(self, qapp) -> None:
+        import aas_editor.settings  # noqa: F401  util<->settings circular import
+        from basyx.aas.model import Property, Submodel
+        from aas_editor.utils.util import getAttrDoc
+
+        prop = Property("p1", "xs:string")
+        assert getAttrDoc("value", prop) == (
+            "value:  The value of the property instance. ")
+        assert getAttrDoc("id_short", prop) == (
+            "id_short:  Identifying string of the element within its name space.  ")
+        assert getAttrDoc("semantic_id", Property).startswith(
+            "semantic_id:  Identifier of the semantic definition of the element.")
+        assert getAttrDoc("submodel_element", Submodel) == (
+            "submodel_element:  Unordered list of SubmodelElements  ")
+        assert getAttrDoc("value", None, Property.__doc__) == getAttrDoc("value", prop)
+        assert getAttrDoc("nonexistent", prop) == ""
+        assert getAttrDoc("value", None) == ""
+        assert getAttrDoc("value", None, "") == ""
+
+
 class TestExpectedMissesNotLogged:
     def test_opening_pack_logs_no_tracebacks(self, qapp, json_file: Path, caplog) -> None:
         view = newPackTreeView()

@@ -310,7 +310,11 @@ def getAttrDoc(attr: str, parentObj: type = None, doc: str = None) -> str:
     """
     if not doc and parentObj:
         doc = getDoc(parentObj)
+    return _parseAttrDoc(attr, doc)
 
+
+@functools.lru_cache(maxsize=None)  # pure fn of (attr, docstring); hot in item init
+def _parseAttrDoc(attr: str, doc: str) -> str:
     if doc:
         doc = " ".join(doc.split())
         pattern = fr":ivar [~]?[.]?{attr}_?:(.*?)(:ivar|:raises|TODO|$)"
