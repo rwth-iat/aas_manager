@@ -22,7 +22,7 @@ import re
 import typing
 from abc import ABCMeta
 from enum import Enum
-from typing import List, Dict, Type, Set, Any, Tuple, Iterable
+from typing import List, Dict, Type, Set, Any
 
 from PyQt6.QtCore import Qt, QFile, QTextStream, QModelIndex, QIODevice
 from PyQt6.QtWidgets import QApplication
@@ -197,7 +197,10 @@ def _paramsAndTypehints4init(objType: Type) -> tuple[dict[str, Any], dict[str, A
     if 'return' in paramsAndTypehints:
         paramsAndTypehints.pop('return')
     paramsAndTypehints = replaceForwardRefsWithTypes(paramsAndTypehints)
-    paramsDefaults = _getDefaultValuesOfParams(paramsAndTypehints.keys(), g.defaults)
+    defaults = g.defaults or ()
+    allDefaults = dict(zip(g.args[len(g.args) - len(defaults):], defaults))
+    allDefaults.update(g.kwonlydefaults or {})
+    paramsDefaults = {p: allDefaults[p] for p in paramsAndTypehints if p in allDefaults}
     return paramsAndTypehints, paramsDefaults
 
 
@@ -216,9 +219,6 @@ def getfullargspecoftypeinit(objType: Type) -> inspect.FullArgSpec:
             g = inspect.getfullargspec(objType.__new__)
     else:
         raise TypeError(f"no init or new func in objectType: {objType}")
-
-    if g.kwonlydefaults:
-        g.defaults = g.defaults + tuple(g.kwonlydefaults.values())
     return g
 
 
@@ -251,23 +251,14 @@ def resolveForwardRef(typeHint: Any) -> Any:
         raise TypeError(f"no origin in typeHint, only args: {typeHint}")
 
 
-def _getDefaultValuesOfParams(params: Iterable[str], defaults: Tuple[Any]) -> Dict[str, Any]:
-    params = list(params)
-    paramsDefaults = {}
-    if params and defaults:
-        paramsWithDefaults = params[len(params) - len(defaults):]
-        paramsDefaults = dict(zip(paramsWithDefaults, defaults))
-    return paramsDefaults
-
-
 def getReqParams4init(objType: Type, rmDefParams=True,
                       attrsToHide=None, delOptional=True) -> Dict[str, Type]:
     """Return required params for init with their type"""
     paramsTypehints, paramsDefaults = getParamsAndTypehints4init(objType)
 
-    if rmDefParams and paramsDefaults:
-        for i in range(len(paramsDefaults)):
-            paramsTypehints.popitem()
+    if rmDefParams:
+        for param in paramsDefaults:
+            paramsTypehints.pop(param)
 
     if delOptional:
         for param in paramsTypehints:
