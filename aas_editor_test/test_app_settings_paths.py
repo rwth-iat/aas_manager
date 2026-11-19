@@ -30,4 +30,5 @@ class TestAppSettingsPaths:
         assert "project" in app_settings.PYPROJECT_TOML
 
     def test_log_file_next_to_settings(self, app_settings):
-        assert app_settings.LOG_FILE.parent == app_settings.SETTINGS_FILE.with_suffix("")
+        settingsDir = app_settings.SETTINGS_FILE.with_suffix("")
+        assert app_settings.LOG_FILE.parent == settingsDir
