@@ -55,6 +55,12 @@ from aas_editor.utils.util_classes import ClassesInfo
 from aas_editor.treeviews.base import HeaderView, TreeView
 from aas_editor import dialogs
 
+# Own pool: one reader keeps open order and avoids GIL contention; macOS pool
+# threads get 512 KB stacks, too small for deeply nested files (SIGBUS)
+READ_POOL = QThreadPool()
+READ_POOL.setMaxThreadCount(1)
+READ_POOL.setStackSize(16 * 1024 * 1024)
+
 
 class PackHeaderView(HeaderView):
     def __init__(self, orientation, parent: Optional[QWidget] = ...) -> None:
@@ -630,6 +636,9 @@ class PackTreeView(TreeView):
         absFile = Path(file).absolute()
         if absFile in self._loading:
             return
+        if absFile in self.model().data(QModelIndex(), OPENED_FILES_ROLE):
+            QMessageBox.critical(self, "Error", f"Package {file} is already opened")
+            return
         self._loading[absFile] = onOpened
         self._readPackInBackground(file, failsafe=False)
         self._updateLoadProgress()
@@ -642,12 +651,12 @@ class PackTreeView(TreeView):
             # Plain Python only here: no Qt widget or model access off the GUI thread
             try:
                 pack = Package(file, failsafe=failsafe)
-            except Exception:
+            except BaseException:  # anything else would leave the file loading forever
                 self.packReadFailed.emit(file, failsafe, traceback.format_exc())
             else:
                 self.packRead.emit(file, pack)
 
-        QThreadPool.globalInstance().start(read)
+        READ_POOL.start(read)
 
     def _finishLoad(self, file: str) -> Optional[Callable[[Package], None]]:
         onOpened = self._loading.pop(Path(file).absolute(), None)
@@ -675,10 +684,6 @@ class PackTreeView(TreeView):
     def _onPackRead(self, file: str, pack: Package) -> None:
         onOpened = self._finishLoad(file)
         self.updateRecentFiles(pack.file.absolute().as_posix())
-        openedPacks = self.model().data(QModelIndex(), OPENED_FILES_ROLE)
-        if Path(file).absolute() in openedPacks:
-            QMessageBox.critical(self, "Error", f"Package {file} is already opened")
-            return
         self.add_pack_to_tree(pack)
         if onOpened is not None:
             onOpened(pack)

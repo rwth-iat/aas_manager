@@ -11,7 +11,7 @@
 import sys
 import logging
 
-from PyQt6 import QtCore, QtWidgets
+from PyQt6 import QtWidgets
 from aas_editor.utils import exceptionhook  # noqa: F401
 from PyQt6 import QtWebEngineWidgets
 
@@ -33,6 +33,7 @@ def main():
     initialize_all_icons()
 
     from aas_editor.editorApp import EditorApp as CurrentApp
+    from aas_editor.treeviews.treeview_pack import READ_POOL
 
     # Check if a file path is provided as an argument
     fileToOpen = sys.argv[1] if len(sys.argv) > 1 else None
@@ -44,7 +45,7 @@ def main():
     # splash.setFocus()
     app.exec()
     # A file still being read on quit: let its thread end before Python shuts down
-    QtCore.QThreadPool.globalInstance().waitForDone()
+    READ_POOL.waitForDone()
 
 
 if __name__ == "__main__":
