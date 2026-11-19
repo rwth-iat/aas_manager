@@ -117,3 +117,90 @@ class TestExpectedMissesNotLogged:
             qapp.processEvents()
 
         assert [r.getMessage() for r in caplog.records if r.exc_info] == []
+
+
+class TestPaintCost:
+    def test_index_lookup_does_not_count_rows(
+            self, qapp, json_file: Path, monkeypatch) -> None:
+        # The proxy maps every role requested at paint to a source index() call
+        from aas_editor.models.table_standard import StandardTable
+
+        view, model = openedTreeView(json_file)
+        qapp.processEvents()
+        realRowCount = StandardTable.rowCount
+        realIndex = StandardTable.index
+        rowCountCalls = []
+        indexCalls = []
+        monkeypatch.setattr(StandardTable, "rowCount",
+                            lambda *a: rowCountCalls.append(a) or realRowCount(*a))
+        monkeypatch.setattr(StandardTable, "index",
+                            lambda *a: indexCalls.append(a) or realIndex(*a))
+
+        view.viewport().repaint()
+
+        assert indexCalls
+        assert rowCountCalls == []
+
+    def test_index_bounds_unchanged(self, qapp, json_file: Path) -> None:
+        view, proxy = openedTreeView(json_file)
+        model = proxy.sourceModel()
+        rows = model.rowCount()
+        columns = model.columnCount()
+
+        assert model.index(0, 0).isValid()
+        assert model.index(rows - 1, columns - 1).isValid()
+        assert not model.index(rows, 0).isValid()
+        assert not model.index(-1, 0).isValid()
+        assert not model.index(0, columns).isValid()
+        assert not model.index(0, -1).isValid()
+        item = model.index(0, 0).internalPointer()
+        assert model.index(0, 1).internalPointer() is item
+
+    def test_flags_of_fixed_columns_do_not_render_display_text(
+            self, qapp, json_file: Path, monkeypatch) -> None:
+        from PyQt6.QtCore import Qt
+        from aas_editor.models.item_standard import StandardItem
+
+        view, proxy = openedTreeView(json_file)
+        model = proxy.sourceModel()
+        index = model.index(0, 0, model.index(0, 0))
+        realData = StandardItem.data
+        displayCalls = []
+
+        def countingData(self, role, *args, **kwargs):
+            if role == Qt.ItemDataRole.DisplayRole:
+                displayCalls.append(args)
+            return realData(self, role, *args, **kwargs)
+
+        monkeypatch.setattr(StandardItem, "data", countingData)
+
+        for column in range(model.columnCount()):
+            model.flags(index.siblingAtColumn(column))
+
+        assert displayCalls == []
+
+    def test_flags_unchanged(self, qapp, json_file: Path) -> None:
+        from PyQt6.QtCore import Qt
+        from aas_editor.models.table_standard import StandardTable
+
+        view, proxy = openedTreeView(json_file)
+        model = proxy.sourceModel()
+        # Extra attribute columns: one present on items, one missing everywhere
+        model._columns = (*model._columns, "id_short", "no_such_attr")
+        Flag = Qt.ItemFlag
+        editable = Flag.ItemIsEditable | Flag.ItemIsEnabled | Flag.ItemIsSelectable
+
+        def legacyFlags(index: QModelIndex) -> Qt.ItemFlag:
+            if not index.isValid() or index.data(Qt.ItemDataRole.DisplayRole) is None:
+                return Flag.NoItemFlags
+            if index.column() in (2, 3):
+                return Flag.ItemIsEnabled | Flag.ItemIsSelectable
+            return editable
+
+        indexes = [QModelIndex()]
+        for rowIndex in model.iterItems():
+            indexes += [rowIndex.siblingAtColumn(c) for c in range(model.columnCount())]
+        flags = [StandardTable.flags(model, i) for i in indexes]
+
+        assert flags == [legacyFlags(i) for i in indexes]
+        assert Flag.NoItemFlags in flags and editable in flags
