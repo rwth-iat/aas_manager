@@ -42,8 +42,6 @@ def checkIfAccepted(func):
 
 class EditDialog(QDialog):
     """Base abstract class for custom dialogs for adding or editing data"""
-    REC = QGuiApplication.primaryScreen().geometry()
-    MAX_HEIGHT = int(REC.height() * 0.9)
     MIN_WIDTH = 450
     SAVED_SIZE = None
     SAVED_POSITION = None
@@ -69,7 +67,8 @@ class EditDialog(QDialog):
         self.scrollAreaWidgetContents = QWidget(self.scrollArea)
         self.scrollArea.setWidget(self.scrollAreaWidgetContents)
         self.setMinimumWidth(self.MIN_WIDTH)
-        self.setMaximumHeight(self.MAX_HEIGHT)
+        screenHeight = QGuiApplication.primaryScreen().geometry().height()
+        self.setMaximumHeight(int(screenHeight * 0.9))
 
         self.verticalLayout = QVBoxLayout(self)
         self.buttonBox.setContentsMargins(*self.verticalLayout.getContentsMargins())
