@@ -14,8 +14,11 @@ import logging
 from PyQt6 import QtWidgets
 from aas_editor.utils import exceptionhook  # noqa: F401
 from PyQt6 import QtWebEngineWidgets
+from aas_editor.settings.app_settings import LOG_FILE
 
-logging.basicConfig(level=logging.INFO, filename="log.log", filemode="w",
+LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
+# force: importing aas_editor.settings already logs, which installs a stderr handler
+logging.basicConfig(level=logging.INFO, filename=LOG_FILE, filemode="w", force=True,
                     format="%(asctime)s | %(levelname)s | %(message)s")
 
 

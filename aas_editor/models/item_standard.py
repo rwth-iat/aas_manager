@@ -126,7 +126,7 @@ class StandardItem(QObject):
         if isinstance(self.obj, StoredFile):
             self.obj: StoredFile
             content_type: str = settings.MEDIA_TYPES_INFOS.get(
-                type(self.obj),{settings.CONTENT_TYPE_ATTR: "N\A"})[settings.CONTENT_TYPE_ATTR]
+                type(self.obj),{settings.CONTENT_TYPE_ATTR: "N/A"})[settings.CONTENT_TYPE_ATTR]
             self.icon = QIcon(settings.MIME_TYPE_ICON_DICT.get(content_type, settings.FILE_ICON))
         else:
             try:
