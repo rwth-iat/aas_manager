@@ -138,6 +138,19 @@ class TestOpenPackInBackground:
         assert waitUntil(qapp, lambda: openedFiles(view) == {json_file.absolute()})
         assert SETTINGS.value("recentFiles", [])[0] == json_file.absolute().as_posix()
 
+    def test_path_object_is_opened(self, json_file: Path) -> None:
+        # Session restore passes Path objects from the settings; subprocess
+        # because a str-only signal emit fails in the reader thread and aborts
+        result = runInSubprocess(
+            "from pathlib import Path\n"
+            "view = newPackTreeView()\n"
+            f"file = Path({str(json_file)!r})\n"
+            "view.openPack(file)\n"
+            "assert waitUntil(app, lambda: openedFiles(view) == {file.absolute()})\n"
+            "assert not view.loadingFiles()\n"
+            "print('OK')\n")
+        assert "OK" in result.stdout, result.stderr[-2000:]
+
     def test_already_opened_file_is_not_read_again(
         self, qapp, json_file: Path, monkeypatch
     ) -> None:
