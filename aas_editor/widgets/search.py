@@ -17,17 +17,14 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
 from typing import List
-import logging
 
-from PyQt6.QtCore import QModelIndex, QPersistentModelIndex
+from PyQt6.QtCore import QModelIndex, QPersistentModelIndex, QTimer
 from PyQt6.QtGui import QBrush, QAction
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QToolButton, QTreeView
 
-from aas_editor.models.search_proxy_model import SearchProxyModel
-from aas_editor.settings.app_settings import NAME_ROLE
+from aas_editor.models.search_proxy_model import SearchProxyModel, treePath
 from aas_editor.settings.colors import HIGHLIGHT_YELLOW
 from aas_editor.settings.icons import NEXT_ICON, PREV_ICON, FILTER_ICON, REGEX_ICON, CASE_ICON, CLOSE_ICON
-from aas_editor.utils.util import absRow
 from aas_editor.widgets.toolbar import ToolBar
 from aas_editor.widgets.editWidgets import LineEdit
 
@@ -64,6 +61,8 @@ class SearchBar(ToolBar):
         self.closeBtn.setAutoRaise(True)
 
         self.foundItems: List[QPersistentModelIndex] = []
+        # Typing restarts the timer: one search after a pause, not one per key
+        self.searchTimer = QTimer(self, singleShot=True, interval=200, timeout=self.search)
 
         self.buildHandlers()
         self.initLayout()
@@ -77,7 +76,7 @@ class SearchBar(ToolBar):
         self.caseBtn.toggled.connect(self.search)
         self.filterBtn.toggled.connect(self.search)
         self.regexBtn.toggled.connect(self.search)
-        self.searchLine.textChanged.connect(self.search)
+        self.searchLine.textChanged.connect(self.searchTimer.start)
 
     def closeBar(self):
         self.searchLine.setText("")
@@ -88,10 +87,12 @@ class SearchBar(ToolBar):
             self.model = model
         else:
             self.model = SearchProxyModel()
-        self.model.setRecursiveFilteringEnabled(True)
 
     def search(self):
+        self.searchTimer.stop()
         self.view.itemDelegate().clearBgColors()
+        # Drop old hits first: Qt updates every live persistent index on refilter
+        self.foundItems = []
         self.foundItems = self.model.search(self.searchLine.text(),
                                             filterColumns=self.filterColumns,
                                             regExp=self.regexBtn.isChecked(),
@@ -101,28 +102,20 @@ class SearchBar(ToolBar):
             self.view.setCurrentIndex(QModelIndex(self.foundItems[0]))
             for item in self.foundItems:
                 self.view.itemDelegate().setBgColor(QModelIndex(item), QBrush(HIGHLIGHT_YELLOW))
-        self.model.dataChanged.emit(QModelIndex(), QModelIndex())
+        self.view.viewport().update()
 
     def next(self):
-        items = [QModelIndex(i) for i in self.foundItems]
-        items.sort(key=absRow)
-        for item in items:
-            logging.info(item.data(NAME_ROLE))
-        logging.info(self.view.currentIndex().data(NAME_ROLE))
-        for item in items:
-            if absRow(item) > absRow(self.view.currentIndex()):
-                self.view.setCurrentIndex(item)
-                return
+        current = treePath(self.view.currentIndex())
+        # min/max, not list order: the user may re-sort the view after a search
+        after = [QModelIndex(i) for i in self.foundItems if treePath(QModelIndex(i)) > current]
+        if after:
+            self.view.setCurrentIndex(min(after, key=treePath))
 
     def previous(self):
-        items = [QModelIndex(i) for i in self.foundItems]
-        items.sort(key=absRow, reverse=True)
-        for item in items:
-            logging.info(item.data(NAME_ROLE))
-        for item in items:
-            if absRow(item) < absRow(self.view.currentIndex()):
-                self.view.setCurrentIndex(item)
-                return
+        current = treePath(self.view.currentIndex())
+        before = [QModelIndex(i) for i in self.foundItems if treePath(QModelIndex(i)) < current]
+        if before:
+            self.view.setCurrentIndex(max(before, key=treePath))
 
     def toggleViewAction(self):
         return QAction("SearchBar", self,
