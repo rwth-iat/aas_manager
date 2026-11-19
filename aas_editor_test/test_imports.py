@@ -1,6 +1,7 @@
 import os
 import subprocess
 import sys
+from pathlib import Path
 
 
 def testImportWithoutQApplication() -> None:
@@ -11,5 +12,7 @@ def testImportWithoutQApplication() -> None:
         capture_output=True,
         text=True,
         env=env,
+        cwd=Path(__file__).parents[1],  # repo root, so aas_editor is importable
+        timeout=60,
     )
     assert result.returncode == 0, result.stderr
