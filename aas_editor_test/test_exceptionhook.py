@@ -28,11 +28,15 @@ def raiseBoom() -> None:
     raise ValueError("boom")
 
 
-def test_crash_dialog_shows_formatted_traceback(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_crash_dialog_shows_formatted_traceback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     # importing the module installs its excepthook; restore it after the test
     monkeypatch.setattr(sys, "excepthook", sys.excepthook)
     from aas_editor.utils import exceptionhook
 
+    # an EditorApp from an earlier test may have registered its recovery save
+    monkeypatch.setattr(exceptionhook, "_on_crash_callback", None)
     monkeypatch.setattr(exceptionhook.QtWidgets, "QMessageBox", FakeMessageBox)
     FakeMessageBox.instances.clear()
     try:
