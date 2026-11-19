@@ -13,11 +13,14 @@ Deviations from guidelines are permitted in individual cases, if necessary after
 
 - We use Git for version control.
 - We use the [Git Feature Branch Workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/feature-branch-workflow), which means one new branch per feature.
-    - Feature and fix branches start from `develop`, and their pull requests target `develop`.
-    - Code is merged only after successful review.
-    - `master` holds released versions only.
-      Pushes and pull requests to `master` run the release workflow, so `develop` is merged into `master` only to release.
-    - Code in `develop` and `master` should be functional and rollable at all times.
+    - Feature and fix branches start from `master`, and their pull requests target `master`.
+    - Code is merged into `master` only after successful review.
+    - Code in `master` should be functional and rollable at all times.
+- We release by tag, not by merge:
+    1. Bump `version` in `pyproject.toml` on `master`.
+    2. Push a tag `vX.Y.Z` with the same version, e.g. `git tag v0.5.1 && git push origin v0.5.1`.
+    3. The release workflow builds the packages and creates the GitHub release.
+    - A fix for an older release goes on a branch `release/X.Y.x` created from its tag, only when needed.
 - Commits reference their GitHub issue in the body, e.g. `Fixes #87` or `Refs #87`.
 - We follow [The seven rules of a great Git commit message](https://chris.beams.io/posts/git-commit/#seven-rules), but use bodies only when necessary:
   ```
