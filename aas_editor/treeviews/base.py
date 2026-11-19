@@ -554,17 +554,20 @@ class TreeView(BasicTreeView):
         # self.setCurrentIndex(bottomRight)
 
     def onRowsInserted(self, parent: QModelIndex, first: int, last: int):
-        index = self.sourceModel().index(last, 0, parent)
-        self.setCurrentIndex(self.fromSource(index))
+        self.setCurrentFromSource(self.sourceModel().index(last, 0, parent))
         QTimer.singleShot(100, self.updateUndoRedoActs)
 
     def onRowsRemoved(self, parent: QModelIndex, first: int, last: int):
-        self.setCurrentIndex(self.fromSource(parent))
+        self.setCurrentFromSource(parent)
         QTimer.singleShot(100, self.updateUndoRedoActs)
 
-    def fromSource(self, index: QModelIndex) -> QModelIndex:
+    def setCurrentFromSource(self, index: QModelIndex) -> None:
         model = self.model()
-        return index if model is self.sourceModel() else model.mapFromSource(index)
+        if model is not self.sourceModel():
+            index = model.mapFromSource(index)
+            if not index.isValid():
+                return  # hidden by the search filter: keep the current item
+        self.setCurrentIndex(index)
 
     def updateActions(self, index: QModelIndex):
         if self.editEnabled:

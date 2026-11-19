@@ -126,6 +126,19 @@ class TestSearchBar:
         assert visibleNames(view) == ["stones", "rock"]
         assert view.currentIndex().data() == "rock"
 
+    def test_adding_a_filtered_out_row_keeps_current_item(self, bar, view) -> None:
+        bar.filterBtn.setChecked(True)
+        bar.searchLine.setText("rock")
+        bar.search()
+        source = view.sourceModel()
+        source.itemFromIndex(source.index(1, 0)).appendRow(row("sand"))
+        assert view.currentIndex().data() == "rock"
+
+    def test_search_without_source_model_finds_nothing(self, qapp) -> None:
+        from aas_editor.models.search_proxy_model import SearchProxyModel
+
+        assert SearchProxyModel().search("x", filterColumns=[0]) == []
+
     def test_removing_a_row_still_selects_its_parent(self, view) -> None:
         source = view.sourceModel()
         stones = source.index(1, 0)

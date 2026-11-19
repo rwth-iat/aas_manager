@@ -44,7 +44,7 @@ class SearchProxyModel(QSortFilterProxyModel):
         """Return the matching cells in view order; hide the rest if filter is set."""
         regex = self._regex(pattern, regExp, matchCase)
         self._setFilter(regex if filter else None, filterColumns)
-        if regex is None:
+        if regex is None or self.sourceModel() is None:
             return []
 
         foundItems = []
@@ -93,6 +93,13 @@ class SearchProxyModel(QSortFilterProxyModel):
         model = self.sourceModel()
         return any(self._matches(self._filterRegex, model.index(sourceRow, column, sourceParent))
                    for column in self._filterColumns)
+
+    def iterItems(self, parent: QModelIndex = QModelIndex()) -> Iterator[QModelIndex]:
+        """Visible rows in view order (used by main_test.py)."""
+        for row in range(self.rowCount(parent)):
+            index = self.index(row, 0, parent)
+            yield index
+            yield from self.iterItems(index)
 
     def _iterSourceRows(self, parent: QModelIndex = QModelIndex()) -> Iterator[QModelIndex]:
         """Source rows in tree order (pre-order), hidden rows included."""
