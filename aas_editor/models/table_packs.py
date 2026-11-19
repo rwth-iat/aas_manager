@@ -50,6 +50,20 @@ class PacksTable(StandardTable):
         else:
             return super(PacksTable, self).data(index, role)
 
+    def hasChildren(self, parent: QModelIndex = QModelIndex()) -> bool:
+        item = self.objByIndex(parent)
+        if not item.populated:
+            return item.hasChildObjs()
+        return super().hasChildren(parent)
+
+    def canFetchMore(self, parent: QModelIndex) -> bool:
+        # Lets the proxy answer hasChildren() without mapping (building) children
+        return not self.objByIndex(parent).populated
+
+    def fetchMore(self, parent: QModelIndex) -> None:
+        # No row count was observed before: populating silently is consistent
+        self.objByIndex(parent).children()
+
     def editItem(self, index: QModelIndex, value):
         value = None if str(value) == "None" else value
         if index.data(COLUMN_NAME_ROLE) not in DEFAULT_COLUMNS_IN_PACKS_TABLE:

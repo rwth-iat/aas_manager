@@ -16,12 +16,13 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
+import functools
 import inspect
 import re
 import typing
 from abc import ABCMeta
 from enum import Enum
-from typing import List, Dict, Type, Set, Any, Tuple, Iterable
+from typing import List, Dict, Type, Set, Any
 
 from PyQt6.QtCore import Qt, QFile, QTextStream, QModelIndex, QIODevice
 from PyQt6.QtWidgets import QApplication
@@ -114,7 +115,7 @@ def simplifyInfo(obj, attrName: str = "") -> str:
     res = str(obj)
     try:
         if isinstance(obj, settings.ATTR_INFOS_TO_SIMPLIFY):
-            res = re.sub("^[A-Z]\w*[(]", "", res)
+            res = re.sub(r"^[A-Z]\w*[(]", "", res)
             res = res.rstrip(")")
         elif issubclass(type(obj), Reference):
             lastKey = obj.key[-1]
@@ -182,20 +183,25 @@ def getParams4init(objType: Type) -> List[str]:
 def getParamsAndTypehints4init(objType: Type, withDefaults=True) -> tuple[dict[str, Any], dict[str, Any]] | dict[
     str, Any]:
     """Return params for init with their type and default values"""
-    objType = resolveBaseType(objType)
+    paramsAndTypehints, paramsDefaults = _paramsAndTypehints4init(resolveBaseType(objType))
+    # Copies: callers mutate the result, the cached originals must stay intact
+    if withDefaults:
+        return dict(paramsAndTypehints), dict(paramsDefaults)
+    return dict(paramsAndTypehints)
 
+
+@functools.lru_cache(maxsize=None)  # class signatures don't change at runtime; hot in item init
+def _paramsAndTypehints4init(objType: Type) -> tuple[dict[str, Any], dict[str, Any]]:
     g = getfullargspecoftypeinit(objType)
     paramsAndTypehints = g.annotations.copy()
     if 'return' in paramsAndTypehints:
         paramsAndTypehints.pop('return')
     paramsAndTypehints = replaceForwardRefsWithTypes(paramsAndTypehints)
-
-    if withDefaults:
-        defaults = g.defaults
-        paramsDefaults = _getDefaultValuesOfParams(paramsAndTypehints.keys(), defaults)
-        return paramsAndTypehints, paramsDefaults
-
-    return paramsAndTypehints
+    defaults = g.defaults or ()
+    allDefaults = dict(zip(g.args[len(g.args) - len(defaults):], defaults))
+    allDefaults.update(g.kwonlydefaults or {})
+    paramsDefaults = {p: allDefaults[p] for p in paramsAndTypehints if p in allDefaults}
+    return paramsAndTypehints, paramsDefaults
 
 
 def resolveBaseType(objType: Type) -> Type:
@@ -213,9 +219,6 @@ def getfullargspecoftypeinit(objType: Type) -> inspect.FullArgSpec:
             g = inspect.getfullargspec(objType.__new__)
     else:
         raise TypeError(f"no init or new func in objectType: {objType}")
-
-    if g.kwonlydefaults:
-        g.defaults = g.defaults + tuple(g.kwonlydefaults.values())
     return g
 
 
@@ -248,23 +251,14 @@ def resolveForwardRef(typeHint: Any) -> Any:
         raise TypeError(f"no origin in typeHint, only args: {typeHint}")
 
 
-def _getDefaultValuesOfParams(params: Iterable[str], defaults: Tuple[Any]) -> Dict[str, Any]:
-    params = list(params)
-    paramsDefaults = {}
-    if params and defaults:
-        paramsWithDefaults = params[len(params) - len(defaults):]
-        paramsDefaults = dict(zip(paramsWithDefaults, defaults))
-    return paramsDefaults
-
-
 def getReqParams4init(objType: Type, rmDefParams=True,
                       attrsToHide=None, delOptional=True) -> Dict[str, Type]:
     """Return required params for init with their type"""
     paramsTypehints, paramsDefaults = getParamsAndTypehints4init(objType)
 
-    if rmDefParams and paramsDefaults:
-        for i in range(len(paramsDefaults)):
-            paramsTypehints.popitem()
+    if rmDefParams:
+        for param in paramsDefaults:
+            paramsTypehints.pop(param)
 
     if delOptional:
         for param in paramsTypehints:
@@ -316,7 +310,11 @@ def getAttrDoc(attr: str, parentObj: type = None, doc: str = None) -> str:
     """
     if not doc and parentObj:
         doc = getDoc(parentObj)
+    return _parseAttrDoc(attr, doc)
 
+
+@functools.lru_cache(maxsize=None)  # pure fn of (attr, docstring); hot in item init
+def _parseAttrDoc(attr: str, doc: str) -> str:
     if doc:
         doc = " ".join(doc.split())
         pattern = fr":ivar [~]?[.]?{attr}_?:(.*?)(:ivar|:raises|TODO|$)"
@@ -325,11 +323,11 @@ def getAttrDoc(attr: str, parentObj: type = None, doc: str = None) -> str:
             reg = res.regs[1]
             doc = doc[reg[0]: reg[1]]
             doc = re.sub("([(]inherited from.*[)])?", "", doc)
-            doc = re.sub("[~]([a-zA-Z]+\.)+", "", doc)
+            doc = re.sub(r"[~]([a-zA-Z]+\.)+", "", doc)
             doc = re.sub("(:class:)?", "", doc)
             doc = re.sub("(<.*>)?", "", doc)
             doc = re.sub("`", "", doc)
-            doc = re.sub("[~]\.", "", doc)
+            doc = re.sub(r"[~]\.", "", doc)
             doc = f"{attr}: {doc}"
             return doc
     return ""
@@ -404,6 +402,7 @@ def isSimpleIterable(obj) -> bool:
     return isSimpleIterableType(type(obj))
 
 
+@functools.lru_cache(maxsize=None)  # pure function of class signatures; hot in item init
 def getAttrTypeHint(objType, attr: str, delOptional: bool = True):
     params = getReqParams4init(objType, rmDefParams=False, delOptional=delOptional)
 
@@ -417,8 +416,7 @@ def getAttrTypeHint(objType, attr: str, delOptional: bool = True):
     except KeyError:
         raise KeyError(f"Attribute {attr} not found in {objType}")
     except Exception as e:
-        logging.exception(e)
-        raise KeyError(f"Failed to get type hint for attribute {attr} in {objType}")
+        raise KeyError(f"Failed to get type hint for attribute {attr} in {objType}") from e
 
     # Process type hint arguments to remove Ellipsis if present
     try:

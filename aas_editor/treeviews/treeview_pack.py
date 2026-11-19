@@ -23,12 +23,13 @@ import traceback
 import typing
 from functools import partial
 from pathlib import Path
-from typing import Optional
+from typing import Callable, Optional
 
 from PyQt6 import QtCore
-from PyQt6.QtCore import Qt, QModelIndex, QPoint
+from PyQt6.QtCore import Qt, QModelIndex, QPoint, QThreadPool, pyqtSignal
 from PyQt6.QtGui import QDropEvent, QDragEnterEvent, QKeyEvent, QClipboard, QAction
-from PyQt6.QtWidgets import QMessageBox, QFileDialog, QMenu, QWidget, QApplication
+from PyQt6.QtWidgets import QMessageBox, QFileDialog, QMenu, QWidget, QApplication, \
+    QProgressDialog
 from basyx.aas.adapter.aasx import AASXReader, DictSupplementaryFileContainer
 from basyx.aas.adapter.json import read_aas_json_file, AASToJsonEncoder
 from basyx.aas.adapter.xml import read_aas_xml_file
@@ -53,6 +54,12 @@ from aas_editor.utils.util import getDefaultVal, getReqParams4init, getAttrTypeH
 from aas_editor.utils.util_classes import ClassesInfo
 from aas_editor.treeviews.base import HeaderView, TreeView
 from aas_editor import dialogs
+
+# Own pool: one reader keeps open order and avoids GIL contention; macOS pool
+# threads get 512 KB stacks, too small for deeply nested files (SIGBUS)
+READ_POOL = QThreadPool()
+READ_POOL.setMaxThreadCount(1)
+READ_POOL.setStackSize(16 * 1024 * 1024)
 
 
 class PackHeaderView(HeaderView):
@@ -142,6 +149,9 @@ class PackHeaderView(HeaderView):
 class PackTreeView(TreeView):
     EMPTY_VIEW_MSG = "Drop AAS files here"
     EMPTY_VIEW_ICON = OPEN_DRAG_ICON
+    # Emitted from pool threads; queued to the GUI thread as the view lives there
+    packRead = pyqtSignal(str, object)
+    packReadFailed = pyqtSignal(str, bool, str)
 
     def __init__(self, parent=None, **kwargs):
         self.copyBufferObjStores = dict()
@@ -155,6 +165,11 @@ class PackTreeView(TreeView):
         self.setExpandsOnDoubleClick(False)
         self.setSelectionBehavior(self.SelectionBehavior.SelectItems)
         self.setHeader(PackHeaderView(Qt.Orientation.Horizontal, self))
+        # Files being read in the background -> callback run once opened
+        self._loading: dict[Path, Optional[Callable[[Package], None]]] = {}
+        self._loadProgress: Optional[QProgressDialog] = None
+        self.packRead.connect(self._onPackRead)
+        self.packReadFailed.connect(self._onPackReadFailed)
 
     # Scan the folder SUBMODEL_TEMPLATES_FOLDER and create a set filesObjStores of SetIdentifiableStore elements and its names
     def scanFolderForExistFiles(self):
@@ -596,16 +611,9 @@ class PackTreeView(TreeView):
                 return
 
     def openPackWithDialog(self, filter=FILTER_AAS_FILES):
-        opened = False
-        file = ""
-        while not opened:
-            file, _ = QFileDialog.getOpenFileName(self, "Open AAS file", file,
-                                                  filter=filter)
-            if file:
-                opened = self.openPack(file)
-            else:
-                # cancel pressed
-                return
+        file, _ = QFileDialog.getOpenFileName(self, "Open AAS file", "", filter=filter)
+        if file:
+            self.openPack(file)
 
     def addFileWithDialog(self, parent: QModelIndex):
         opened = False
@@ -619,39 +627,90 @@ class PackTreeView(TreeView):
                 # cancel pressed
                 return
 
-    def openPack(self, file: str) -> Optional[Package]:
-        try:
+    def openPack(self, file: str, *,
+                 onOpened: Optional[Callable[[Package], None]] = None) -> None:
+        """Read the file in a background thread, then add it to the tree.
+
+        Returns at once; onOpened gets the package once it is in the tree.
+        """
+        absFile = Path(file).absolute()
+        if absFile in self._loading:
+            return
+        if absFile in self.model().data(QModelIndex(), OPENED_FILES_ROLE):
+            QMessageBox.critical(self, "Error", f"Package {file} is already opened")
+            return
+        self._loading[absFile] = onOpened
+        self._readPackInBackground(file, failsafe=False)
+        self._updateLoadProgress()
+
+    def loadingFiles(self) -> set[Path]:
+        return set(self._loading)
+
+    def _readPackInBackground(self, file: str, failsafe: bool) -> None:
+        def read() -> None:
+            # Plain Python only here: no Qt widget or model access off the GUI thread
             try:
-                pack = Package(file, failsafe=False)
-            except Exception as e:
-                msgBox = QMessageBox()
-                msgBox.setIcon(QMessageBox.Icon.Warning)
-                msgBox.setText(f"Error while reading package:\n{file}")
-                msgBox.setInformativeText(
-                    "The file might not align with the official schema. "
-                    "Verify with the Tools/compliance tool for specifics. \n\n"
-                    "Proceeding may result in missing or incorrect objects. Continue anyway?")
-                msgBox.setStandardButtons(QMessageBox.StandardButton.Cancel | QMessageBox.StandardButton.Yes)
-                msgBox.setDefaultButton(QMessageBox.StandardButton.Yes)
-                msgBox.setDetailedText(f"{traceback.format_exc()}")
-                ret = msgBox.exec()
-                if ret == QMessageBox.StandardButton.Yes:
-                    pack = Package(file, failsafe=True)
-                else:
-                    return None
-            absFile = pack.file.absolute().as_posix()
-            self.updateRecentFiles(absFile)
-        except Exception as e:
-            self.removeFromRecentFiles(file)
-            widgets.messsageBoxes.ErrorMessageBox.withTraceback(self, f"Package {file} couldn't be opened: {e}").exec()
-        else:
-            openedPacks = self.model().data(QModelIndex(), OPENED_FILES_ROLE)
-            if Path(file).absolute() in openedPacks:
-                QMessageBox.critical(self, "Error", f"Package {file} is already opened")
+                pack = Package(file, failsafe=failsafe)
+            except BaseException:  # anything else would leave the file loading forever
+                self.packReadFailed.emit(file, failsafe, traceback.format_exc())
             else:
-                self.add_pack_to_tree(pack)
-                return pack
-        return None
+                self.packRead.emit(file, pack)
+
+        READ_POOL.start(read)
+
+    def _finishLoad(self, file: str) -> Optional[Callable[[Package], None]]:
+        onOpened = self._loading.pop(Path(file).absolute(), None)
+        self._updateLoadProgress()
+        return onOpened
+
+    def _updateLoadProgress(self) -> None:
+        if not self._loading:
+            if self._loadProgress is not None:
+                self._loadProgress.close()
+                self._loadProgress.deleteLater()
+                self._loadProgress = None
+            return
+        if self._loadProgress is None:
+            self._loadProgress = QProgressDialog(self)
+            self._loadProgress.setWindowTitle("Opening AAS file")
+            self._loadProgress.setCancelButton(None)
+            self._loadProgress.setRange(0, 0)  # busy indicator
+            # Small files finish before the dialog would show up
+            self._loadProgress.setMinimumDuration(300)
+            self._loadProgress.setValue(0)
+        names = "\n".join(file.name for file in self._loading)
+        self._loadProgress.setLabelText(f"Opening:\n{names}")
+
+    def _onPackRead(self, file: str, pack: Package) -> None:
+        onOpened = self._finishLoad(file)
+        self.updateRecentFiles(pack.file.absolute().as_posix())
+        self.add_pack_to_tree(pack)
+        if onOpened is not None:
+            onOpened(pack)
+
+    def _onPackReadFailed(self, file: str, failsafe: bool, tb: str) -> None:
+        if failsafe:
+            self._finishLoad(file)
+            self.removeFromRecentFiles(file)
+            error = tb.strip().splitlines()[-1]
+            widgets.messsageBoxes.ErrorMessageBox.withDetailedText(
+                self, f"Package {file} couldn't be opened: {error}\n\n{tb}").exec()
+            return
+        msgBox = QMessageBox()
+        msgBox.setIcon(QMessageBox.Icon.Warning)
+        msgBox.setText(f"Error while reading package:\n{file}")
+        msgBox.setInformativeText(
+            "The file might not align with the official schema. "
+            "Verify with the Tools/compliance tool for specifics. \n\n"
+            "Proceeding may result in missing or incorrect objects. Continue anyway?")
+        msgBox.setStandardButtons(
+            QMessageBox.StandardButton.Cancel | QMessageBox.StandardButton.Yes)
+        msgBox.setDefaultButton(QMessageBox.StandardButton.Yes)
+        msgBox.setDetailedText(tb)
+        if msgBox.exec() == QMessageBox.StandardButton.Yes:
+            self._readPackInBackground(file, failsafe=True)
+        else:
+            self._finishLoad(file)
 
     def add_pack_to_tree(self, pack: Package):
         self.model().setData(QModelIndex(), pack, ADD_ITEM_ROLE)

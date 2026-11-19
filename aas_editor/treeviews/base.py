@@ -543,6 +543,8 @@ class TreeView(BasicTreeView):
 
     def onCurrentChanged(self, current: QModelIndex, previous: QModelIndex):
         self.updateActions(current)
+        # ColorDelegate highlights the whole current row; repaint its sibling cells too
+        self.viewport().update()
 
     def onDataChanged(self, topLeft: QModelIndex, bottomRight: QModelIndex, roles):
         self.itemDataChangeFailed(topLeft, bottomRight, roles)

@@ -106,6 +106,7 @@ TYPE_HINT_COLUMN = 3
 SETTINGS = QSettings(QSettings.Format.IniFormat, QSettings.Scope.UserScope, IAT, APPLICATION_NAME)
 SETTINGS_FILE = Path(SETTINGS.fileName())
 RECOVERY_DIR = SETTINGS_FILE.with_suffix("") / "recovery"
+LOG_FILE = SETTINGS_FILE.with_suffix("") / "log.log"
 # Interval between periodic recovery writes, so a native crash loses at most this
 # window of edits.
 RECOVERY_INTERVAL_MS = 300_000

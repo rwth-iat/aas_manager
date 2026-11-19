@@ -9,6 +9,7 @@
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
 import sys
+import time
 from pathlib import Path
 from unittest import TestCase
 
@@ -31,6 +32,12 @@ class TestUi(TestCase):
         self.app = QApplication.instance() or QApplication(sys.argv)
         self.window = EditorApp(fileToOpen=str(AASX_FILE))
         self.window.show()
+        # The file is read in the background: wait until its pack is in the tree
+        deadline = time.monotonic() + 30
+        while self.window.mainTreeView.loadingFiles() and time.monotonic() < deadline:
+            self.app.processEvents()
+            time.sleep(0.005)
+        self.assertIn(AASX_FILE.absolute(), self.window.packTreeModel.openedFiles())
 
         self.packTreeView: PackTreeView = self.window.mainTreeView
         self.packTreeView.expandAll()

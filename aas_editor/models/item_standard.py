@@ -119,14 +119,14 @@ class StandardItem(QObject):
         try:
             self.typehintName = getTypeHintName(self.typehint)
         except TypeError as e:
-            logging.exception(e)
+            logging.debug(e)
             self.typehintName = str(self.typehint)
 
     def updateIcon(self):
         if isinstance(self.obj, StoredFile):
             self.obj: StoredFile
             content_type: str = settings.MEDIA_TYPES_INFOS.get(
-                type(self.obj),{settings.CONTENT_TYPE_ATTR: "N\A"})[settings.CONTENT_TYPE_ATTR]
+                type(self.obj),{settings.CONTENT_TYPE_ATTR: "N/A"})[settings.CONTENT_TYPE_ATTR]
             self.icon = QIcon(settings.MIME_TYPE_ICON_DICT.get(content_type, settings.FILE_ICON))
         else:
             try:
@@ -254,7 +254,8 @@ class StandardItem(QObject):
                 data.resolve(self.package.objStore)
                 return True
             except (AttributeError, KeyError, NotImplementedError, TypeError, IndexError, ValueError) as e:
-                logging.exception(e)
+                # External/dangling references are normal; this runs on every paint
+                logging.debug(e)
                 return False
         return False
 
@@ -282,8 +283,9 @@ class StandardItem(QObject):
         try:
             attrTypehint = getAttrTypeHint(type(self.parentObj), attrName, delOptional=False)
             return attrTypehint
-        except KeyError:
-            logging.exception("Typehint could not be gotten")
+        except KeyError as e:
+            # Expected for items in iterables; resolved by the fallback below
+            logging.debug(e)
 
         if isIterable(self.parentObj):
             attrTypehint = ClassesInfo.addType(type(self.parentObj))

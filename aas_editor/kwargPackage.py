@@ -131,17 +131,12 @@ class KwargObject:
     def _updateKwargsWithDefaults(self):
         params, defaults = getParamsAndTypehints4init(self.objtype)
         self.kwargsTypehints = params
-        if params and defaults:
-            params = list(params.keys())
-            revParams = list(reversed(params))
-            defValues = list(defaults.values())
-            revDefaults = list(reversed(defValues))
-            for n, default in enumerate(revDefaults):
-                param = revParams[n]
-                if param not in self.kwargs:
-                    if isinstance(default, tuple):
-                        default = list(default)
-                    self.kwargs[param] = default
+        # reversed: keeps the existing kwargs insertion order (last param first)
+        for param, default in reversed(defaults.items()):
+            if param not in self.kwargs:
+                if isinstance(default, tuple):
+                    default = list(default)
+                self.kwargs[param] = default
 
     def _updateKwargsOptional(self):
         self.kwargsOptional = copy.copy(self.kwargsTypehints)

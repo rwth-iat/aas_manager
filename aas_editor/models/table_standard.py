@@ -48,10 +48,11 @@ class StandardTable(QAbstractItemModel):
         self.redo: List[SetDataItem] = []
 
     def index(self, row: int, column: int = 0, parent: QModelIndex = QModelIndex()) -> QModelIndex:
-        if not self.hasIndex(row, column, parent):
-            return QModelIndex()
-        parentObj = self.objByIndex(parent)
-        return self.createIndex(row, column, parentObj.children()[row])
+        # Called per role at every paint via the proxy: avoid hasIndex() -> rowCount()
+        children = self.objByIndex(parent).children()
+        if 0 <= row < len(children) and 0 <= column < len(self._columns):
+            return self.createIndex(row, column, children[row])
+        return QModelIndex()
 
     def parent(self, child: QModelIndex) -> QModelIndex:
         if not child.isValid():
@@ -84,11 +85,17 @@ class StandardTable(QAbstractItemModel):
             return self._columns[section]
 
     def flags(self, index: QModelIndex) -> Qt.ItemFlag:
-        if not index.isValid() or index.data(Qt.ItemDataRole.DisplayRole) is None:
+        if not index.isValid():
             return Qt.ItemFlag.NoItemFlags
 
-        if index.column() in (TYPE_COLUMN, TYPE_HINT_COLUMN):
+        column = index.column()
+        if column in (TYPE_COLUMN, TYPE_HINT_COLUMN):
             return Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
+
+        # Fixed columns always have display text; rendering it per paint is costly
+        isFixedColumn = column in (ATTRIBUTE_COLUMN, VALUE_COLUMN)
+        if not isFixedColumn and index.data(Qt.ItemDataRole.DisplayRole) is None:
+            return Qt.ItemFlag.NoItemFlags
 
         return Qt.ItemFlag.ItemIsEditable | Qt.ItemFlag.ItemIsEnabled | Qt.ItemFlag.ItemIsSelectable
 
@@ -160,6 +167,8 @@ class StandardTable(QAbstractItemModel):
     def addItem(self, obj: Union[Package, 'SubmodelElement', Iterable],
                 parent: QModelIndex = QModelIndex()):
         parent = parent.siblingAtColumn(0)
+        # Build lazy children first, else populate() would add obj a second time
+        self.rowCount(parent)
         self._addItemObjToParentObj(obj, parent)
         itemInitKwargs = self._getKwargsForItemInit(obj, parent)
         return self._addItem(parent, itemInitKwargs)

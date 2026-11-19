@@ -1,20 +1,16 @@
-name: Create release on push to master
+name: Create release on version tag
 
+# Release by pushing a tag vX.Y.Z that matches the version in pyproject.toml.
+# Merges to master do not release.
 on:
   workflow_dispatch:
   push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
-    types:
-      - closed
+    tags:
+      - "v*"
 
 jobs:
   create_release:
     name: Create Release
-    if: github.event_name == 'push' || github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
@@ -37,6 +33,14 @@ jobs:
         run: |
           VERSION=$(python -c "import toml; print(toml.load('pyproject.toml')['project']['version'])")
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Check tag matches version
+        if: github.ref_type == 'tag'
+        run: |
+          if [ "${{ github.ref_name }}" != "v${{ steps.get_version.outputs.version }}" ]; then
+            echo "Tag ${{ github.ref_name }} does not match pyproject.toml version ${{ steps.get_version.outputs.version }}"
+            exit 1
+          fi
 
       - name: Get previous tag
         id: get_prev_tag

@@ -27,7 +27,7 @@ dependencies = [
     "jsonschema",
 ]
 
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 authors = [
   {name = "Igor Garmaev", email = "i.garmaev@iat.rwth-aachen.de"},
 ]

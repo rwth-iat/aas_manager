@@ -142,7 +142,7 @@ class SearchBar(ToolBar):
         self.searchLine.setFocus()
 
     def initLayout(self):
-        pathLayout = QHBoxLayout(self)
+        pathLayout = QHBoxLayout()
         pathLayout.setContentsMargins(0, 0, 0, 0)
         pathLayout.setSpacing(0)
         pathLayout.addWidget(self.searchLine)
