@@ -13,8 +13,12 @@ Deviations from guidelines are permitted in individual cases, if necessary after
 
 - We use Git for version control.
 - We use the [Git Feature Branch Workflow](https://www.atlassian.com/git/tutorials/comparing-workflows/feature-branch-workflow), which means one new branch per feature.
-    - Code is merged into `master` only after successful review.
-    - Code in `master` should be functional and rollable at all times.
+    - Feature and fix branches start from `develop`, and their pull requests target `develop`.
+    - Code is merged only after successful review.
+    - `master` holds released versions only.
+      Pushes and pull requests to `master` run the release workflow, so `develop` is merged into `master` only to release.
+    - Code in `develop` and `master` should be functional and rollable at all times.
+- Commits reference their GitHub issue in the body, e.g. `Fixes #87` or `Refs #87`.
 - We follow [The seven rules of a great Git commit message](https://chris.beams.io/posts/git-commit/#seven-rules), but use bodies only when necessary:
   ```
     1. Separate subject from body with a blank line
@@ -26,11 +30,20 @@ Deviations from guidelines are permitted in individual cases, if necessary after
     7. Use the body to explain what and why vs. how
   ```
 
+## Testing
+
+- We write a failing test first, then the fix (test-driven development).
+- Tests live in `aas_editor_test/` and run headless:
+  ```sh
+  QT_QPA_PLATFORM=offscreen uv run --extra dev python -m pytest aas_editor_test --ignore=aas_editor_test/main_test.py
+  ```
+- `main_test.py` is a full GUI integration test and is excluded from CI.
+
 ## Coding
 
 - Our standard programming language is Python 3.11 or newer (required by the basyx fork).
 - We write code (variable names, comments) and commit messages in English.
-- We record external dependencies in a structured way, e.g. in `requirements.txt`.
+- We record external dependencies in `pyproject.toml`; `uv.lock` pins the resolved versions.
 - The static part of error messages and log messages comes before the dynamic part if possible.  
   Good:
   ```py
