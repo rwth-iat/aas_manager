@@ -22,7 +22,7 @@ from basyx.aas.adapter.aasx import DictSupplementaryFileContainer, AASXReader, A
 from basyx.aas.adapter.json import write_aas_json_file, read_aas_json_file_into
 from basyx.aas.adapter.xml import write_aas_xml_file, read_aas_xml_file_into
 from basyx.aas.model import AssetAdministrationShell, Submodel, ConceptDescription, \
-    SetObjectStore, Key, ModelReference
+    SetIdentifiableStore, Key, ModelReference
 
 from aas_editor.settings.defaults import DEFAULT_COMPLETIONS
 from aas_editor.settings.app_settings import AppSettings
@@ -31,13 +31,14 @@ from aas_editor.settings.app_settings import AppSettings
 class Package:
     def __init__(self, file: Union[str, Path] = "", failsafe=False):
         """:raise TypeError if file has wrong file type"""
-        self.objStore = SetObjectStore()
+        self.objStore = SetIdentifiableStore()
         self.fileStore = DictSupplementaryFileContainer()
         self.file = file
         if file:
             self._read(failsafe)
         for obj in self.objStore:
-            DEFAULT_COMPLETIONS[Key]["value"].append(obj.id)
+            if obj.id not in DEFAULT_COMPLETIONS[Key]["value"]:
+                DEFAULT_COMPLETIONS[Key]["value"].append(obj.id)
         self._changed = False
 
     @property
@@ -92,29 +93,37 @@ class Package:
             raise TypeError("Wrong file type:", self.file.suffix)
 
     def write(self, file: str = None):
-        if self.allSubmodelRefsToAas:
+        # With several shells it is unknown which submodel belongs to which shell
+        if self.allSubmodelRefsToAas and self.numOfShells == 1:
             self.all_submodels_to_aas()
         if file:
             self.file: Path = file
 
         fileType = self.file.suffix.lower().strip()
-        if fileType == ".xml":
-            # The file must be opened in binary mode! The XML writer will handle
-            # character encoding internally.
-            with open(self.file.as_posix(), 'wb') as xml_file:
-                write_aas_xml_file(xml_file, self.objStore)
-        elif fileType == ".json":
-            with open(self.file.as_posix(), "w", encoding='utf-8') as fileIO:
-                indent = 2 if self.writePrettyJson else None
-                sort_keys = True if self.sortKeysInJson else False
-                write_aas_json_file(fileIO, self.objStore, indent=indent, sort_keys=sort_keys)
+        # Temp file first: a write that fails halfway must not destroy the existing file.
+        tmp_path = self.file.with_name(f"{self.file.name}.tmp")
+        try:
+            if fileType == ".xml":
+                # The file must be opened in binary mode! The XML writer will handle
+                # character encoding internally.
+                with open(tmp_path, 'wb') as xml_file:
+                    write_aas_xml_file(xml_file, self.objStore)
+            elif fileType == ".json":
+                with open(tmp_path, "w", encoding='utf-8') as fileIO:
+                    indent = 2 if self.writePrettyJson else None
+                    sort_keys = True if self.sortKeysInJson else False
+                    write_aas_json_file(fileIO, self.objStore, indent=indent, sort_keys=sort_keys)
 
-        elif fileType == ".aasx":
-            with AASXWriter(self.file.as_posix()) as writer:
-                writer.write_all_aas_objects("/aasx/data.{}".format("json" if self.writeJsonInAasx else "xml"),
-                                             self.objStore, self.fileStore, self.writeJsonInAasx)
-        else:
-            raise TypeError("Wrong file type:", self.file.suffix)
+            elif fileType == ".aasx":
+                with AASXWriter(tmp_path.as_posix()) as writer:
+                    writer.write_all_aas_objects("/aasx/data.{}".format("json" if self.writeJsonInAasx else "xml"),
+                                                 self.objStore, self.fileStore, self.writeJsonInAasx)
+            else:
+                raise TypeError("Wrong file type:", self.file.suffix)
+            os.replace(tmp_path, self.file)
+        except Exception:
+            tmp_path.unlink(missing_ok=True)
+            raise
 
     def _recovery_stem(self, for_file: Path = None) -> str:
         file = self.file if for_file is None else Path(for_file)
@@ -179,7 +188,7 @@ class Package:
         if pack.file.suffix.lower() == ".aasx":
             if pack.file.exists():
                 reader = AASXReader(pack.file.as_posix())
-                reader.read_into(SetObjectStore(), pack.fileStore)
+                reader.read_into(SetIdentifiableStore(), pack.fileStore)
             else:
                 logging.warning("Original AASX missing, supplementary files not recovered: %s", pack.file)
         return pack
@@ -214,13 +223,6 @@ class Package:
     @property
     def concept_descriptions(self) -> Iterable[ConceptDescription]:
         return self._iter_objects(ConceptDescription)
-
-    # @property
-    # def others(self):
-    #     for obj in self.objStore:
-    #         if not isinstance(obj,
-    #                           (AssetAdministrationShell, Asset, Submodel, ConceptDescription)):
-    #             yield obj
 
     def _iter_objects(self, objtype):
         for obj in self.objStore:

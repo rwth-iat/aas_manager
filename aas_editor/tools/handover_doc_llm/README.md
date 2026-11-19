@@ -7,7 +7,6 @@ The Handover Documentation Tool is an extension of the AAS Manager that allows u
 - Select the "Handover Documentation tool" from the "Tools" menu.
 - In the opened dialog, select the LLM provider and model you want to use.
 - For cloud providers: provide your API key. For Ollama: optionally provide a custom base URL.
-- Select the embedding provider to use for RAG on large documents. For Ollama embeddings, optionally specify a custom embedding model and base URL.
 - Drag and drop or select the PDF file you want to use.
 - Check and adjust the extracted data if necessary.
 - The Handover Documentation Submodel will be added to the current AAS file or a new file.
@@ -15,7 +14,7 @@ The Handover Documentation Tool is an extension of the AAS Manager that allows u
 ## How it works
 
 The tool uses the [LangChain](https://python.langchain.com/docs/) library for interaction with LLMs.
-For large documents it splits the PDF into smaller chunks, stores them in a FAISS vector store, and uses a RAG chain to query the LLM with the relevant context. Small documents are passed directly to the LLM without RAG.
+It sends the text of the first and last pages of the PDF (3 + 3 by default, adjustable in the dialog) directly to the LLM. The text is capped at 60,000 characters.
 
 ## Supported LLM providers
 
@@ -34,20 +33,8 @@ For large documents it splits the PDF into smaller chunks, stores them in a FAIS
 2. Pull a model, e.g.: `ollama pull llama3.2`
 3. Select **Ollama** as the LLM provider in the dialog.
 4. Enter the model name (e.g. `llama3.2`). Leave the Base URL empty to use the default (`http://localhost:11434`).
-5. Select **Ollama** as the embedding provider. Optionally enter a custom embedding model name (default: `nomic-embed-text`) and base URL.
-6. Pull the embedding model: `ollama pull nomic-embed-text`
 
 Recommended models for this task: `llama3.2`, `qwen2.5`, `mistral`.
-
-## Supported embedding providers
-
-| Provider | Type | Notes |
-|----------|------|-------|
-| HuggingFace | Local | Default; uses `sentence-transformers/all-mpnet-base-v2`; no key required |
-| OpenAI | Cloud API | Requires a separate OpenAI API key |
-| Ollama | Local | Custom model (default: `nomic-embed-text`) and base URL configurable |
-
-The embedding provider is selected automatically based on the chosen LLM provider but can be changed manually.
 
 ## Disclaimer
 

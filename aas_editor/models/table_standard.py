@@ -46,7 +46,6 @@ class StandardTable(QAbstractItemModel):
         self.lastErrorMsg = ""
         self.undo: deque[SetDataItem] = deque(maxlen=MAX_UNDOS)
         self.redo: List[SetDataItem] = []
-        self.changedItems: List[QModelIndex] = []
 
     def index(self, row: int, column: int = 0, parent: QModelIndex = QModelIndex()) -> QModelIndex:
         if not self.hasIndex(row, column, parent):
@@ -354,7 +353,7 @@ class StandardTable(QAbstractItemModel):
                     self.redo.append(self.undo.pop())
                     return True
             elif isIterable(value):
-                self.undo = deque(value)
+                self.undo = deque(value, maxlen=MAX_UNDOS)
                 return True
         elif role == REDO_ROLE:
             if value == NOT_GIVEN and self.redo:
@@ -425,11 +424,6 @@ class StandardTable(QAbstractItemModel):
             selection = QItemSelection(topLeft, bottomRight)
             for index in selection.indexes():
                 self.objByIndex(index).changed = changed
-                if changed:
-                    self.changedItems.append(index)
-                else:
-                    self.changedItems.append(index)
-
                 if index.parent().isValid():
                     self.setChanged(index.parent())
                 else:

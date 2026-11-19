@@ -20,7 +20,7 @@ jobs:
         python-version: 3.12
     - name: Install dependencies
       run: |
-        pip install -e .
+        pip install -e .[build]
     - name: Build with pyinstaller for Windows
       run: |
         pyinstaller aas_manager.spec

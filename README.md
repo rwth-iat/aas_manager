@@ -56,6 +56,7 @@ OR
 
 3. Freeze an application into stand-alone executable
    ```sh
+   pip install ".[build]"
    pyinstaller aas_manager.spec
    ```
 4. Run the executable in ``dist`` folder
