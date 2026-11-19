@@ -1,5 +1,6 @@
 import sys
 import logging
+import traceback
 from PyQt6 import QtWidgets
 
 _on_crash_callback = None
@@ -40,7 +41,9 @@ def handle_exception(exc_type, exc_value, exc_traceback):
         box = QtWidgets.QMessageBox(None)
         box.setIcon(QtWidgets.QMessageBox.Icon.Critical)
         box.setText(f"An Exception was raised. Caught Exception: {exc_value}")
-        box.setDetailedText(f"Traceback: {exc_traceback}")
+        box.setDetailedText(
+            "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+        )
         box.exec()
     finally:
         _handling_exception = False
