@@ -28,7 +28,7 @@ Deviations from guidelines are permitted in individual cases, if necessary after
 
 ## Coding
 
-- Our standard programming language is Python 3.7.
+- Our standard programming language is Python 3.11 or newer (required by the basyx fork).
 - We write code (variable names, comments) and commit messages in English.
 - We record external dependencies in a structured way, e.g. in `requirements.txt`.
 - The static part of error messages and log messages comes before the dynamic part if possible.  
