@@ -375,3 +375,21 @@ class TestLazyPackTree:
         rows = range(model.rowCount(fax))
         assert [model.index(r, 0, fax).data(NAME_ROLE) for r in rows] == [
             "FaxNumber", "TypeOfFaxNumber"]
+
+
+class TestIsIterableCache:
+    def test_iterability_checked_once_per_class(self, qapp, monkeypatch) -> None:
+        from aas_editor.utils import util_type
+
+        class Probe(list):
+            pass
+
+        calls = []
+        realIsIterableType = util_type.isIterableType
+        monkeypatch.setattr(util_type, "isIterableType",
+                            lambda t: calls.append(t) or realIsIterableType(t))
+
+        assert util_type.isIterable(Probe()) and util_type.isIterable(Probe())
+        assert not util_type.isIterable("text")
+
+        assert calls.count(Probe) <= 1

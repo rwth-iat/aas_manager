@@ -16,6 +16,7 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
+import functools
 import inspect
 import logging
 import typing
@@ -320,7 +321,12 @@ def isIterableType(objType):
 
 
 def isIterable(obj):
-    return isIterableType(type(obj))
+    return _isIterableClass(type(obj))
+
+
+@functools.lru_cache(maxsize=None)  # per class, hot in tree item checks
+def _isIterableClass(cls: type) -> bool:
+    return isIterableType(cls)
 
 
 def typeHintToType(typeHint):
