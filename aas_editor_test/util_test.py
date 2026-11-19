@@ -23,6 +23,14 @@ from aas_editor.utils.util_type import checkType, issubtype, isoftype
 
 
 class TestUtilFuncs(TestCase):
+    def test_isoftype_logs_no_errors_for_tuples_and_classes(self):
+        # Tuples and plain classes are normal arguments, not errors to log
+        with self.assertNoLogs(level="ERROR"):
+            self.assertTrue(isoftype(1, (str, int)))
+            self.assertFalse(isoftype(1.5, (str, int)))
+            self.assertTrue(isoftype(1, int))
+            self.assertFalse(isoftype("a", int))
+
     def test_issubtype(self):
         self.assertTrue(issubtype(int, int))
         self.assertTrue(issubtype(ModelReference, ModelReference))

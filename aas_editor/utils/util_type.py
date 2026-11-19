@@ -276,19 +276,20 @@ def isoftype(obj, types: Union[type, Tuple[Union[type, tuple], ...]]) -> bool:
         if not isTypehint(types):
             raise TypeError("Arg 2 must be type, typehint or tuple of types/typehints:", types)
 
+    # The TypeErrors below are expected: types may be a tuple (not a class)
+    # or a single class (not iterable)
     try:
         if issubclass(types, Enum):
             return _isoftype(obj, types)
-    except TypeError as e:
-        logging.exception(e)
+    except TypeError:
+        pass
 
     try:
         for tp in types:
             if _isoftype(obj, tp):
                 return True
         return False
-    except TypeError as e:
-        logging.exception(e)
+    except TypeError:
         return _isoftype(obj, types)
 
 
