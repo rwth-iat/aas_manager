@@ -8,11 +8,11 @@ import aas_editor
 from aas_editor.widgets.search import SearchBar  # before QApplication: WebEngine
 
 
-def testItemStandardCompilesWithoutSyntaxWarning() -> None:
-    path = Path(aas_editor.__file__).parent / "models" / "item_standard.py"
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
-        compile(path.read_text(), str(path), "exec")
+def testPackageCompilesWithoutSyntaxWarning() -> None:
+    for path in Path(aas_editor.__file__).parent.rglob("*.py"):
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            compile(path.read_text(), str(path), "exec")
 
 
 def testSearchBarSetsNoSecondLayout(qapp) -> None:

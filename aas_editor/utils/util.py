@@ -115,7 +115,7 @@ def simplifyInfo(obj, attrName: str = "") -> str:
     res = str(obj)
     try:
         if isinstance(obj, settings.ATTR_INFOS_TO_SIMPLIFY):
-            res = re.sub("^[A-Z]\w*[(]", "", res)
+            res = re.sub(r"^[A-Z]\w*[(]", "", res)
             res = res.rstrip(")")
         elif issubclass(type(obj), Reference):
             lastKey = obj.key[-1]
@@ -323,11 +323,11 @@ def _parseAttrDoc(attr: str, doc: str) -> str:
             reg = res.regs[1]
             doc = doc[reg[0]: reg[1]]
             doc = re.sub("([(]inherited from.*[)])?", "", doc)
-            doc = re.sub("[~]([a-zA-Z]+\.)+", "", doc)
+            doc = re.sub(r"[~]([a-zA-Z]+\.)+", "", doc)
             doc = re.sub("(:class:)?", "", doc)
             doc = re.sub("(<.*>)?", "", doc)
             doc = re.sub("`", "", doc)
-            doc = re.sub("[~]\.", "", doc)
+            doc = re.sub(r"[~]\.", "", doc)
             doc = f"{attr}: {doc}"
             return doc
     return ""
