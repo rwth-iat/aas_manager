@@ -21,91 +21,83 @@ from typing import List
 from PyQt6.QtWebEngineCore import QWebEngineSettings, QWebEngineProfile
 from PyQt6.QtWebEngineWidgets import QWebEngineView
 from PyQt6.QtCore import pyqtSignal, QModelIndex, QPersistentModelIndex, QPoint, QMimeData, QUrl, \
-    QStandardPaths, Qt, QObject, QAbstractProxyModel, qDebug, qCritical, QAbstractItemModel
+    QStandardPaths, Qt
 from PyQt6.QtGui import QPixmap, QRegion, QDrag, QCursor, QMouseEvent, \
-    QDragEnterEvent, QDragLeaveEvent, QDropEvent, QCloseEvent, QAction, QShortcut
+    QDragEnterEvent, QDragLeaveEvent, QDropEvent, QCloseEvent, QAction, QShortcut, QIcon, \
+    QResizeEvent
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QTabWidget, QHBoxLayout, QFrame, \
-    QTabBar, QMenu, QSplitter, QPushButton, QMessageBox, QToolButton, QFileDialog, QCompleter, QStyledItemDelegate
+    QTabBar, QMenu, QSplitter, QPushButton, QMessageBox, QToolButton, QFileDialog, QLabel, QLayout, \
+    QSizePolicy
 
 from aas_editor.settings.app_settings import *
 from aas_editor.settings.icons import FORWARD_ICON, BACK_ICON, SPLIT_VERT_ICON, SPLIT_HORIZ_ICON, ZOOM_IN_ICON, \
     ZOOM_OUT_ICON, SETTINGS_ICON
 from aas_editor.settings.shortcuts import SC_BACK, SC_FORWARD, SC_SEARCH
+from aas_editor.utils.util_classes import ClassesInfo
 from aas_editor.utils.util_type import getTypeName
 from aas_editor.widgets import SearchBar, ToolBar
-from aas_editor.utils.util import getTreeItemPath
-from aas_editor.models import StandardTable
 from aas_editor.widgets import LineEdit
 
-COMPLETION_ROLE = Qt.ItemDataRole.DisplayRole
-CASE_SENSITIVITY = Qt.CaseSensitivity.CaseInsensitive
+class PathBar(QWidget):
+    """Path of the open item as clickable segments, like the Finder path bar"""
+    itemClicked = pyqtSignal(QModelIndex)
 
-
-class Signal(QObject):
-    modelChanged = pyqtSignal(['QAbstractItemModel'])
-
-
-class AddressLine(LineEdit):
-    """Class for address line used in tabs"""
-    signal = Signal()
-    _model: StandardTable = None
-
-    def __init__(self, parent: 'Tab') -> None:
+    def __init__(self, parent: QWidget = None) -> None:
         super().__init__(parent)
-        self.tab = parent
+        self.segments: List[QToolButton] = []
+        # Any width: segments collapse to icons, then get clipped
+        self.setSizePolicy(QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
+        layout = QHBoxLayout(self)
+        layout.setSizeConstraint(QLayout.SizeConstraint.SetNoConstraint)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addStretch()
 
-        self.setCompleter(AddressLineCompleter(self))
-        self.completer().setCompletionRole(COMPLETION_ROLE)
-        self.completer().setCaseSensitivity(CASE_SENSITIVITY)
-        if AddressLine._model:
-            self.completer().setModel(AddressLine._model)
-            self.completer().activated[QModelIndex].connect(self.onReturnPressed)
-            self.returnPressed.connect(self.onReturnPressed)
-            self.clicked.connect(self.completer().complete)
-        AddressLine.signal.modelChanged.connect(self.onModelChanged)
-        self.setPlaceholderText("Address Line")
+    def setIndex(self, index: QModelIndex) -> None:
+        layout = self.layout()
+        while layout.count() > 1:
+            layout.takeAt(0).widget().setParent(None)
+        self.segments = []
+        while index.isValid():
+            parentObj = index.parent().data(OBJECT_ROLE)
+            if self.segments and ClassesInfo.hasPackViewAttrs(type(parentObj)):
+                index = index.parent()  # group like "submodels": skip, unless open
+                continue
+            name = index.data(Qt.ItemDataRole.DisplayRole)
+            button = QToolButton(self, text=name, toolTip=name, autoRaise=True,
+                                 icon=index.data(Qt.ItemDataRole.DecorationRole) or QIcon())
+            item = QPersistentModelIndex(index)
+            button.clicked.connect(lambda _, item=item: self.itemClicked.emit(QModelIndex(item)))
+            self.segments.insert(0, button)
+            index = index.parent()
+        for i, button in enumerate(self.segments):
+            if i:
+                layout.insertWidget(layout.count() - 1, QLabel("›", self))
+            layout.insertWidget(layout.count() - 1, button)
+        self._fit()
 
-    @classmethod
-    def setModel(cls, model: StandardTable):
-        cls._model = model
-        cls.signal.modelChanged.emit(model)
-        logging.debug("New model for address completer was set")
+    def resizeEvent(self, event: QResizeEvent) -> None:
+        super().resizeEvent(event)
+        self._fit()
 
-    def onModelChanged(self):
-        self.completer().setModel(AddressLine._model)
-        self.returnPressed.connect(self.onReturnPressed)
-
-    def open(self, index: QModelIndex):
-        model: QAbstractProxyModel = index.model()
-        if model and index.isValid():
-            qDebug(f"Open address: {self.text()}")
-            index = model.mapToSource(index)
-            self.tab.openItem(index)
-        else:
-            qCritical(f"Index was not found for address {self.text()}")
-            QMessageBox.critical(self, "Error", f"Item not found: {self.text()}")
-
-    def onReturnPressed(self):
-        self.completer().setCompletionPrefix(self.text().rstrip("/"))
-        if self.completer().currentCompletion() == self.text():
-            index = self.completer().currentIndex()
-            self.open(index)
-        else:
-            QMessageBox.critical(self, "Error", f"Item not found: {self.text()}")
-
-
-class AddressLineCompleter(QCompleter):
-    mCompleterItemDelegate = QStyledItemDelegate()
-
-    def pathFromIndex(self, index: QModelIndex) -> str:
-        return getTreeItemPath(index, role=self.completionRole())
-
-    def splitPath(self, path: str) -> List[str]:
-        return path.split("/")
-
-    def setModel(self, c: QAbstractItemModel) -> None:
-        super(AddressLineCompleter, self).setModel(c)
-        self.popup().setItemDelegate(self.mCompleterItemDelegate)
+    def _fit(self) -> None:
+        """Show names; if too narrow, show leading segments as icons only"""
+        for button in self.segments:
+            button.setText(button.toolTip())
+            button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        for button in self.segments[:-1]:
+            if self.layout().sizeHint().width() <= self.width():
+                break
+            if button.icon().isNull():
+                button.setText("…")
+            else:
+                button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
+        overflow = self.layout().sizeHint().width() - self.width()
+        if self.segments and overflow > 0:
+            last = self.segments[-1]
+            metrics = last.fontMetrics()
+            last.setText(metrics.elidedText(last.text(), Qt.TextElideMode.ElideRight,
+                                            metrics.horizontalAdvance(last.text()) - overflow))
 
 
 class TabBar(QTabBar):
@@ -301,13 +293,10 @@ class TabWithTreeView(QWidget):
         self.icon = QIcon()
         self.initActions()
 
-        self.pathToolBar = ToolBar(self)
-        self.pathToolBar.addAction(self.backAct)
-        self.pathToolBar.addAction(self.forwardAct)
-
         self.pathWidget = QWidget(self)
         self.pathWidget.show()
-        self.pathLine: AddressLine = AddressLine(self)
+        self.pathBar = PathBar(self)
+        self.pathBar.itemClicked.connect(self.openItem)
         self.objTypeLine = LineEdit(self, placeholderText="Object Type")
         self.objTypeLine.setFixedWidth(168)
         self.objTypeLine.setReadOnly(True)
@@ -353,6 +342,9 @@ class TabWithTreeView(QWidget):
 
     def initToolbar(self):
         self.toolBar = ToolBar(self)
+        self.toolBar.addAction(self.backAct)
+        self.toolBar.addAction(self.forwardAct)
+        self.toolBar.addSeparator()
 
         settingsBtn = QToolButton(icon=SETTINGS_ICON)
         settingsBtn.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
@@ -430,7 +422,7 @@ class TabWithTreeView(QWidget):
 
         self.packItemObj = self.packItem.data(OBJECT_ROLE)
         self.updateMediaWidget()
-        self.pathLine.setText(getTreeItemPath(self.packItem))
+        self.pathBar.setIndex(QModelIndex(self.packItem))
         self.objTypeLine.setText(getTypeName(type(self.packItemObj)))
 
         icon = self.packItem.data(Qt.ItemDataRole.DecorationRole)
@@ -502,15 +494,14 @@ class TabWithTreeView(QWidget):
         toolBarLayout.setContentsMargins(0, 0, 0, 0)
         toolBarLayout.addWidget(self.toolBar)
         toolBarLayout.addStretch()
+        toolBarLayout.addWidget(self.objTypeLine)
         toolBarWidget.setFixedHeight(TOOLBARS_HEIGHT)
 
-        # Own row: beside the toolbar the path field got only ~100 px
+        # Own row at the bottom, like the Finder path bar
         pathBarWidget = QWidget()
         pathBarLayout = QHBoxLayout(pathBarWidget)
         pathBarLayout.setContentsMargins(0, 0, 0, 0)
-        pathBarLayout.addWidget(self.pathToolBar)
-        pathBarLayout.addWidget(self.pathLine)
-        pathBarLayout.addWidget(self.objTypeLine)
+        pathBarLayout.addWidget(self.pathBar)
         pathBarWidget.setFixedHeight(TOOLBARS_HEIGHT)
 
         treeViewWidget = QWidget()
@@ -527,9 +518,9 @@ class TabWithTreeView(QWidget):
         layout = QVBoxLayout(self)
         layout.setObjectName("tabLayout")
         layout.addWidget(toolBarWidget)
-        layout.addWidget(pathBarWidget)
         layout.addWidget(self.searchBar)
         layout.addWidget(self.splitter)
+        layout.addWidget(pathBarWidget)
         layout.setSpacing(2)
         layout.setContentsMargins(0, 2, 0, 2)
 

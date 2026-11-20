@@ -17,6 +17,14 @@ from PyQt6.QtWidgets import QMenu, QSizePolicy, QToolBar, QWidget
 from aas_editor.settings.app_settings import TOOLBARS_HEIGHT, Setting
 
 TOOLBAR_ICON_SIZE = 20  # smaller than the bar: buttons get padding, more of them fit
+# Native styles put wide padding, gaps and separators between buttons
+COMPACT_STYLE = """
+QToolBar { spacing: 0px; padding: 0px; border: none; }
+QToolBar QToolButton { padding: 2px; margin: 0px; border: none; }
+QToolBar QToolButton:hover { background: rgba(128, 128, 128, 0.25); border-radius: 3px; }
+QToolBar::separator { width: 1px; margin: 4px 3px; border: none;
+    border-image: none; background: rgba(128, 128, 128, 0.5); }
+"""
 
 
 class ToolBar(QToolBar):
@@ -24,6 +32,7 @@ class ToolBar(QToolBar):
         super(ToolBar, self).__init__(parent)
         self.setFixedHeight(TOOLBARS_HEIGHT)
         self.setIconSize(QSize(TOOLBAR_ICON_SIZE, TOOLBAR_ICON_SIZE))
+        self.setStyleSheet(COMPACT_STYLE)
         # Keep all buttons: search and path fields beside the bar shrink instead
         self.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
         # (label, action) in toolbar order; separators have label None

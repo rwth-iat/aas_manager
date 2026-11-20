@@ -30,7 +30,7 @@ AASX_FILE = Path(__file__).parent / "aas_files" / "TestPackage.aasx"
 class TestUi(TestCase):
     def setUp(self) -> None:
         # Class attribute: if the app were freed after a test, PyQt would delete
-        # all Qt objects, including class-level ones like AddressLine.signal
+        # all Qt objects, including class-level ones
         TestUi.app = QApplication.instance() or QApplication(sys.argv)
         self.window = EditorApp(fileToOpen=str(AASX_FILE))
         self.window.show()

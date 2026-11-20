@@ -89,3 +89,22 @@ def test_text_field_beside_bar_shrinks_first(qapp) -> None:
     overflow = [b for b in bar.findChildren(QToolButton)
                 if b.objectName() == "qt_toolbar_ext_button"]
     assert not any(b.isVisible() for b in overflow)
+
+
+def test_buttons_sit_close_together(qapp) -> None:
+    from PyQt6.QtWidgets import QToolButton
+
+    from aas_editor.widgets.toolbar import TOOLBAR_ICON_SIZE, ToolBar
+
+    bar = ToolBar(None)
+    for name in "AB":
+        bar.addButton(QAction(name, bar), name)
+    bar.addSeparator()
+    bar.addButton(QAction("C", bar), "C")
+    bar.show()
+    qapp.processEvents()
+    a, b, c = sorted((btn.geometry() for btn in bar.findChildren(QToolButton)
+                      if btn.isVisible()), key=lambda g: g.x())
+    assert a.width() <= TOOLBAR_ICON_SIZE + 6
+    assert b.x() - a.right() <= 2  # no gap between buttons
+    assert c.x() - b.right() <= 10  # thin separator

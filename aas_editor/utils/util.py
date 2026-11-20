@@ -353,14 +353,6 @@ def inheritors(klass) -> set:
     return subclasses
 
 
-def getTreeItemPath(index: QModelIndex, role=Qt.ItemDataRole.DisplayRole, separator="/") -> str:
-    path = ""
-    while index.isValid():
-        path = f"{index.data(role)}{separator}{path}"
-        index = index.parent()
-    return path.rstrip(separator)
-
-
 def toggleStylesheet(path: str) -> None:
     """
     Toggle the stylesheet to use the desired path in the Qt resource
