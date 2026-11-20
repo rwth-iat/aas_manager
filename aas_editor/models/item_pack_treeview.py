@@ -43,7 +43,7 @@ class PackTreeViewItem(StandardItem):
             # A generator can be iterated once only; parent then replaces obj
             self.populate()
 
-    def children(self) -> list:
+    def children(self) -> tuple:
         if not self.populated:
             self.populate()
         return super().children()

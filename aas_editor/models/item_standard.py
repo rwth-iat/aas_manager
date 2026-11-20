@@ -19,9 +19,10 @@
 import io
 import logging
 from collections import namedtuple
+from typing import Dict, Optional, Tuple
 
 from PyQt6.QtGui import QIcon
-from PyQt6.QtCore import QObject, QVariant
+from PyQt6.QtCore import QObject, QVariant, QEvent, QChildEvent
 
 from aas_editor.package import StoredFile
 from aas_editor import settings
@@ -35,6 +36,10 @@ MediaContent = namedtuple("MediaContent", ("value", "content_type"))
 
 
 class StandardItem(QObject):
+    # Model index()/parent()/rowCount() ask for children on every paint;
+    # QObject.children() builds a new list each call, so cache it per change
+    _childCache: Optional[Tuple[tuple, Dict["StandardItem", int]]] = None
+
     def __init__(self, obj, name=None, parent=None, new=True, typehint=None):
         super().__init__(parent)
         self.new = new
@@ -270,9 +275,26 @@ class StandardItem(QObject):
         value = self.obj.value
         return isinstance(value, str) and value.startswith(("http", "www."))
 
+    def children(self) -> tuple:
+        return self._cachedChildren()[0]
+
+    def childRow(self, child: "StandardItem") -> int:
+        return self._cachedChildren()[1][child]
+
+    def _cachedChildren(self) -> Tuple[tuple, Dict["StandardItem", int]]:
+        if self._childCache is None:
+            children = tuple(super().children())
+            self._childCache = (children, {c: row for row, c in enumerate(children)})
+        return self._childCache
+
+    def childEvent(self, event: QChildEvent) -> None:
+        if event.type() in (QEvent.Type.ChildAdded, QEvent.Type.ChildRemoved):
+            self._childCache = None
+        super().childEvent(event)
+
     def row(self):
         if self.parent():
-            return self.parent().children().index(self)
+            return self.parent().childRow(self)
         else:
             return 0
 
