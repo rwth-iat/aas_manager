@@ -1,3 +1,5 @@
+# QtWebEngineWidgets must be imported before the QApplication exists (qapp fixture)
+from PyQt6 import QtWebEngineWidgets  # noqa: F401
 from PyQt6.QtCore import QModelIndex
 
 
@@ -54,3 +56,51 @@ class TestChildCache:
         child = model.index(0, 0, model.index(300, 0))
         assert model.objByIndex(child) is grandChild
         assert model.parent(child).row() == 300
+
+
+class TestPackageAttrsReadOnly:
+    def test_package_attributes_are_not_editable(self, qapp: object, aasx_file) -> None:
+        from PyQt6.QtCore import Qt
+        from aas_editor.models import DetailedInfoTable
+        from aas_editor.package import Package
+        from aas_editor.settings.app_settings import NAME_ROLE, VALUE_COLUMN
+        from aas_editor_test.test_performance import newPackTreeView
+
+        view = newPackTreeView()
+        view.add_pack_to_tree(Package(aasx_file))
+        detailed = DetailedInfoTable(view.sourceModel().index(0, 0))
+        names = []
+        for row in range(detailed.rowCount()):
+            index = detailed.index(row, VALUE_COLUMN)
+            names.append(index.data(NAME_ROLE))
+            assert not index.flags() & Qt.ItemFlag.ItemIsEditable, names[-1]
+        assert {"file", "objStore", "files", "writeJsonInAasx"} <= set(names)
+
+
+class TestInsertAt:
+    def test_list(self, qapp: object) -> None:
+        from aas_editor.models.table_standard import insertAt
+
+        items = ["a", "c"]
+        insertAt(items, "b", 1)
+        insertAt(items, "d", None)
+        assert items == ["a", "b", "c", "d"]
+
+    def test_namespace_set_keeps_order_and_parent(self, qapp: object) -> None:
+        from basyx.aas import model
+        from aas_editor.models.table_standard import insertAt
+
+        submodel = model.Submodel("urn:sm", submodel_element=[
+            model.Property(name, model.datatypes.String) for name in ("a", "c")])
+        b = model.Property("b", model.datatypes.String)
+        insertAt(submodel.submodel_element, b, 1)
+        assert [e.id_short for e in submodel.submodel_element] == ["a", "b", "c"]
+        assert all(e.parent is submodel for e in submodel.submodel_element)
+
+    def test_dict(self, qapp: object) -> None:
+        from aas_editor.additional.classes import DictItem
+        from aas_editor.models.table_standard import insertAt
+
+        items = {"a": 1, "c": 3}
+        insertAt(items, DictItem("b", 2), 1)
+        assert list(items.items()) == [("a", 1), ("b", 2), ("c", 3)]

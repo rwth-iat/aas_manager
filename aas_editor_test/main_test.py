@@ -136,8 +136,7 @@ class TestUi(TestCase):
         self.modalCloser.start()
         self.assertEqual(self.app.exec(), 0)
         self.modalCloser.stop()
-        for error in self.errors:
-            print(f"Error box: {error}")
+        self.assertEqual(self.errors, [], "Error boxes were shown")
 
     def _closeModal(self):
         dialog = QApplication.activeModalWidget()

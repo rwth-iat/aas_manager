@@ -12,7 +12,7 @@ import copy
 import logging
 import traceback
 from collections import namedtuple, deque
-from typing import Any, Iterable, Union, AbstractSet, List
+from typing import Any, Iterable, Union, AbstractSet, List, Optional
 
 from PyQt6.QtCore import QAbstractItemModel, QVariant, QModelIndex, Qt, QItemSelection, QSize, \
     QPersistentModelIndex
@@ -34,6 +34,27 @@ from aas_editor.additional.classes import DictItem
 from aas_editor.utils.util_type import isIterable
 
 SetDataItem = namedtuple("SetDataItem", ("index", "value", "role"))
+# ADD_ITEM_ROLE value of a delete's undo: re-add obj at its old row
+Reinsert = namedtuple("Reinsert", ("obj", "row"))
+
+
+def insertAt(container: Union[list, dict, AbstractSet], obj, row: Optional[int]) -> None:
+    """Add obj to the container so that iterating it yields obj at row."""
+    if isinstance(container, list):
+        container.insert(len(container) if row is None else row, obj)
+        return
+    # Sets and dicts keep insertion order: re-add the items after row
+    tail = [] if row is None else list(container)[row:]
+    if isinstance(container, dict):
+        tailItems = [(key, container.pop(key)) for key in tail]
+        container[obj.key] = obj.value
+        container.update(tailItems)
+    else:
+        for item in tail:
+            container.discard(item)
+        container.add(obj)
+        for item in tail:
+            container.add(item)
 
 
 class StandardTable(QAbstractItemModel):
@@ -165,13 +186,14 @@ class StandardTable(QAbstractItemModel):
             return super(StandardTable, self).match(start, role, value, **kwargs)
 
     def addItem(self, obj: Union[Package, 'SubmodelElement', Iterable],
-                parent: QModelIndex = QModelIndex()):
+                parent: QModelIndex = QModelIndex(), row: Optional[int] = None):
+        """Add obj as last child of parent, or at row (undo of a delete)."""
         parent = parent.siblingAtColumn(0)
         # Build lazy children first, else populate() would add obj a second time
         self.rowCount(parent)
-        self._addItemObjToParentObj(obj, parent)
+        self._addItemObjToParentObj(obj, parent, row)
         itemInitKwargs = self._getKwargsForItemInit(obj, parent)
-        return self._addItem(parent, itemInitKwargs)
+        return self._addItem(parent, itemInitKwargs, row)
 
     def _getKwargsForItemInit(self, obj: Union[Package, 'SubmodelElement', Iterable], parent):
         parentItem = self.objByIndex(parent)
@@ -181,21 +203,25 @@ class StandardTable(QAbstractItemModel):
         }
         return kwargs
 
-    def _addItemObjToParentObj(self, obj: Union[Package, 'SubmodelElement', Iterable], parent: QModelIndex):
+    def _addItemObjToParentObj(self, obj: Union[Package, 'SubmodelElement', Iterable],
+                               parent: QModelIndex, row: Optional[int] = None):
         parentObj = parent.data(OBJECT_ROLE)
-        if isinstance(parentObj, AbstractSet):
-            parentObj.add(obj)
-        elif isinstance(parentObj, list):
-            parentObj.append(obj)
-        elif isinstance(parentObj, dict):
-            parentObj[obj.key] = obj.value
+        if isinstance(parentObj, (AbstractSet, list, dict)):
+            insertAt(parentObj, obj, row)
         else:
             raise AttributeError(
                 f"Object couldn't be added: parent obj type is not appendable: {type(parentObj)}")
 
-    def _addItem(self, parent: QModelIndex, itemInitKwargs):
-        self.beginInsertRows(parent, self.rowCount(parent), self.rowCount(parent))
+    def _addItem(self, parent: QModelIndex, itemInitKwargs, row: Optional[int] = None):
+        row = self.rowCount(parent) if row is None else row
+        self.beginInsertRows(parent, row, row)
         item = self.itemTyp(**itemInitKwargs)
+        # The new item is the last child: re-parent the siblings after row to
+        # move it there (Qt keeps children in order of setParent)
+        parentItem = item.parent()
+        for sibling in parentItem.children()[row:-1]:
+            sibling.setParent(None)
+            sibling.setParent(parentItem)
         self.endInsertRows()
         itemIndex = self.index(item.row(), 0, parent)
         self.undo.append(SetDataItem(index=QPersistentModelIndex(itemIndex), value=NOT_GIVEN, role=CLEAR_ROW_ROLE))
@@ -323,7 +349,10 @@ class StandardTable(QAbstractItemModel):
                 return True
         elif role == ADD_ITEM_ROLE:
             try:
-                self.addItem(value, index)
+                if isinstance(value, Reinsert):
+                    self.addItem(value.obj, index, value.row)
+                else:
+                    self.addItem(value, index)
                 return True
             except Exception as e:
                 tb = traceback.format_exc()
@@ -483,7 +512,8 @@ class StandardTable(QAbstractItemModel):
                         f"object could not be deleted or set to default: "
                         f"{type(parentObj)}")
                 self.removeRow(currRow, parent)
-                self.undo.append(SetDataItem(index=QPersistentModelIndex(parent), value=oldValue, role=ADD_ITEM_ROLE))
+                self.undo.append(SetDataItem(index=QPersistentModelIndex(parent),
+                                             value=Reinsert(oldValue, currRow), role=ADD_ITEM_ROLE))
                 self.redo.clear()
             else:
                 if not defaultVal == NOT_GIVEN:

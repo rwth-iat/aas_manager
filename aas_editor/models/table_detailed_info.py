@@ -18,12 +18,13 @@
 
 from typing import Any
 
-from PyQt6.QtCore import QModelIndex, QPersistentModelIndex
+from PyQt6.QtCore import QModelIndex, QPersistentModelIndex, Qt
 from PyQt6.QtGui import QFont
 
 from aas_editor.models import DetailedInfoItem, StandardTable
+from aas_editor.package import Package
 from aas_editor.settings.app_settings import PACKAGE_ROLE, NAME_ROLE, OBJECT_ROLE, DEFAULT_COLUMNS_IN_DETAILED_INFO,\
-    PACK_ITEM_ROLE, DEFAULT_FONT
+    PACK_ITEM_ROLE, DEFAULT_FONT, PARENT_OBJ_ROLE
 
 
 class DetailedInfoTable(StandardTable):
@@ -43,3 +44,11 @@ class DetailedInfoTable(StandardTable):
             return QModelIndex(self.packItem)
         else:
             return super(DetailedInfoTable, self).data(index, role)
+
+    def flags(self, index: QModelIndex) -> Qt.ItemFlag:
+        flags = super().flags(index)
+        # Package attributes are read-only info (file, stores, app settings);
+        # neither the cell editor nor the edit dialog can handle them
+        if isinstance(index.data(PARENT_OBJ_ROLE), Package):
+            flags &= ~Qt.ItemFlag.ItemIsEditable
+        return flags
