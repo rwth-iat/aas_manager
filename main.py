@@ -26,6 +26,11 @@ def main():
     logging.basicConfig(level=logging.INFO, filename=LOG_FILE, filemode="w",
                         force=True, format="%(asctime)s | %(levelname)s | %(message)s")
 
+    from aas_editor.splash import newSplash
+    splash = newSplash()
+    splash.show()
+    app.processEvents()  # paint the splash before the slow imports below
+
     from aas_editor.settings.icons import initialize_all_icons
     # Initialize icons after QApp initialization to fix PyInstaller build errors.
     # QPixmap requires an active QApplication context; importing them earlier 
@@ -41,8 +46,8 @@ def main():
     window = CurrentApp(fileToOpen)
 
     window.show()
+    splash.finish(window)
 
-    # splash.setFocus()
     app.exec()
     # A file still being read on quit: let its thread end before Python shuts down
     READ_POOL.waitForDone()
