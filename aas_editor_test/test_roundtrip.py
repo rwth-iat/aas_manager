@@ -236,28 +236,24 @@ def test_undo_edit_add_delete_restores_original(qapp, tmp_path, editableSample) 
     assert model.setData(QModelIndex(), NOT_GIVEN, UNDO_ROLE)
 
     saved = saveAndReload(pack, tmp_path, "aasx")
-    # Undo of a delete appends the element (see the xfail test below)
-    assert sortedElements(savedPackage(saved, "aasx")) == \
-        sortedElements(expectedPackage(editableSample, lambda p: None, "aasx"))
+    assert savedPackage(saved, "aasx") == expectedPackage(editableSample, lambda p: None, "aasx")
 
 
-def sortedElements(content: dict) -> dict:
-    for submodel in content["aas"].get("submodels", []):
-        submodel.get("submodelElements", []).sort(key=lambda e: e["idShort"])
-    return content
-
-
-@pytest.mark.xfail(strict=True, reason="undo of delete re-adds the element at the end")
 def test_undo_delete_keeps_element_position(qapp, tmp_path, editableSample) -> None:
     from aas_editor.settings.app_settings import (CLEAR_ROW_ROLE, NOT_GIVEN, OBJECT_ROLE,
-                                                  PACKAGE_ROLE, UNDO_ROLE)
+                                                  PACKAGE_ROLE, REDO_ROLE, UNDO_ROLE)
 
     model, packIndex = openInPackTree(editableSample)
     pack = packIndex.data(PACKAGE_ROLE)
     _, _, find = propertyFinder(pack)
     prop = find(pack)
     propIndex = findIndex(model, lambda i: i.data(OBJECT_ROLE) is prop)
+    row, parent = propIndex.row(), propIndex.parent()
     assert model.setData(propIndex, NOT_GIVEN, CLEAR_ROW_ROLE)
+    assert model.setData(QModelIndex(), NOT_GIVEN, UNDO_ROLE)
+    assert model.index(row, 0, parent).data(OBJECT_ROLE) is prop  # same tree row
+    assert model.setData(QModelIndex(), NOT_GIVEN, REDO_ROLE)
+    assert model.index(row, 0, parent).data(OBJECT_ROLE) is not prop  # deleted again
     assert model.setData(QModelIndex(), NOT_GIVEN, UNDO_ROLE)
 
     saved = saveAndReload(pack, tmp_path, "aasx")

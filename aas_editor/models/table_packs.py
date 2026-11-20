@@ -8,12 +8,13 @@
 #
 #  A copy of the GNU General Public License is available at http://www.gnu.org/licenses/
 
-from typing import Any, Union, Iterable
+from typing import Any, Iterable, Optional, Union
 
 from PyQt6.QtCore import QModelIndex, Qt
 from PyQt6.QtGui import QFont
 
 from aas_editor.models import StandardTable, PackTreeViewItem
+from aas_editor.models.table_standard import insertAt
 from aas_editor.package import Package
 from aas_editor.settings.app_settings import PACKAGE_ROLE, DEFAULT_FONT, OPENED_PACKS_ROLE, OPENED_FILES_ROLE, \
     DEFAULT_COLUMNS_IN_PACKS_TABLE, OBJECT_ROLE, COLUMN_NAME_ROLE, NAME_ROLE
@@ -75,7 +76,8 @@ class PacksTable(StandardTable):
         else:
             return super().editItem(index, value)
 
-    def _addItemObjToParentObj(self, obj: Union[Package, 'SubmodelElement', Iterable], parent: QModelIndex):
+    def _addItemObjToParentObj(self, obj: Union[Package, 'SubmodelElement', Iterable],
+                               parent: QModelIndex, row: Optional[int] = None):
         parentObj = parent.data(OBJECT_ROLE)
         parentObjCls = type(parentObj)
         parentName = parent.data(NAME_ROLE)
@@ -86,9 +88,9 @@ class PacksTable(StandardTable):
             package.add(obj)
         elif ClassesInfo.changedParentObject(parentObjCls): #FIXME: Refactor
             parentObj = getattr(parentObj, ClassesInfo.changedParentObject(parentObjCls))
-            parentObj.add(obj)
+            insertAt(parentObj, obj, row)
         else:
-            return super()._addItemObjToParentObj(obj, parent)
+            return super()._addItemObjToParentObj(obj, parent, row)
 
     def _getKwargsForItemInit(self, obj: Union[Package, 'SubmodelElement', Iterable], parent):
         kwargs = super()._getKwargsForItemInit(obj, parent)

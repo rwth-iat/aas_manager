@@ -75,3 +75,32 @@ class TestPackageAttrsReadOnly:
             names.append(index.data(NAME_ROLE))
             assert not index.flags() & Qt.ItemFlag.ItemIsEditable, names[-1]
         assert {"file", "objStore", "files", "writeJsonInAasx"} <= set(names)
+
+
+class TestInsertAt:
+    def test_list(self, qapp: object) -> None:
+        from aas_editor.models.table_standard import insertAt
+
+        items = ["a", "c"]
+        insertAt(items, "b", 1)
+        insertAt(items, "d", None)
+        assert items == ["a", "b", "c", "d"]
+
+    def test_namespace_set_keeps_order_and_parent(self, qapp: object) -> None:
+        from basyx.aas import model
+        from aas_editor.models.table_standard import insertAt
+
+        submodel = model.Submodel("urn:sm", submodel_element=[
+            model.Property(name, model.datatypes.String) for name in ("a", "c")])
+        b = model.Property("b", model.datatypes.String)
+        insertAt(submodel.submodel_element, b, 1)
+        assert [e.id_short for e in submodel.submodel_element] == ["a", "b", "c"]
+        assert all(e.parent is submodel for e in submodel.submodel_element)
+
+    def test_dict(self, qapp: object) -> None:
+        from aas_editor.additional.classes import DictItem
+        from aas_editor.models.table_standard import insertAt
+
+        items = {"a": 1, "c": 3}
+        insertAt(items, DictItem("b", 2), 1)
+        assert list(items.items()) == [("a", 1), ("b", 2), ("c", 3)]
