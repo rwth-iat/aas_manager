@@ -118,7 +118,8 @@ class SearchBar(ToolBar):
                        statusTip="Show/hide search bar",
                        toggled=self.toggleView,
                        checkable=True,
-                       checked=self.isVisible())
+                       # isHidden: isVisible is False until the window is shown
+                       checked=not self.isHidden())
 
     def toggleView(self, toggled: bool):
         if toggled:

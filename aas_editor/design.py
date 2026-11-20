@@ -47,7 +47,6 @@ class Ui_MainWindow(object):
         self.toolBar = ToolBar(self.mainLayoutWidget)
         self.searchBarPack = SearchBar(self.mainTreeView, filterColumns=[ATTRIBUTE_COLUMN],
                                        parent=self.mainLayoutWidget, closable=True)
-        self.searchBarPack.closeBar()
         self.toolBarWidget = self.setupToolbar(widgetsInside=(self.toolBar, self.searchBarPack))
 
         self.mainVerticalLayout.addWidget(self.toolBarWidget)

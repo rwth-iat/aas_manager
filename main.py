@@ -10,8 +10,10 @@
 
 import sys
 import logging
+import time
 
 from PyQt6 import QtWidgets
+from PyQt6.QtCore import QTimer
 from aas_editor.utils import exceptionhook  # noqa: F401
 from PyQt6 import QtWebEngineWidgets
 
@@ -26,9 +28,10 @@ def main():
     logging.basicConfig(level=logging.INFO, filename=LOG_FILE, filemode="w",
                         force=True, format="%(asctime)s | %(levelname)s | %(message)s")
 
-    from aas_editor.splash import newSplash
+    from aas_editor.splash import newSplash, splashRemainingMs
     splash = newSplash()
     splash.show()
+    splashShownAt = time.monotonic()
     app.processEvents()  # paint the splash before the slow imports below
 
     from aas_editor.settings.icons import initialize_all_icons
@@ -45,12 +48,14 @@ def main():
 
     window = CurrentApp(fileToOpen)
 
-    window.show()
-    splash.finish(window)
+    def showWindow():
+        window.show()
+        splash.finish(window)
+        from aas_editor.update_check import askToCheckForUpdates, updateCheckDue
+        if askToCheckForUpdates(window) and updateCheckDue():
+            window.checkForUpdates()
 
-    from aas_editor.update_check import askToCheckForUpdates, updateCheckDue
-    if askToCheckForUpdates(window) and updateCheckDue():
-        window.checkForUpdates()
+    QTimer.singleShot(splashRemainingMs(splashShownAt, time.monotonic()), showWindow)
 
     app.exec()
     # A file still being read on quit: let its thread end before Python shuts down
