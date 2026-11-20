@@ -20,5 +20,5 @@ from .settingWidgets import SettingsDialog, RadioBtnsGroupBox
 from .editWidgets import LineEdit, ComboBox, CompleterComboBox, CompleterLineEdit, CompleterComboBox
 from .toolbar import ToolBar
 from .search import SearchBar
-from .tab import TabWidget, TabBar, TabWithTreeView, AddressLine
+from .tab import TabWidget, TabBar, TabWithTreeView, PathBar
 from .messsageBoxes import AboutMessageBox, ErrorMessageBox

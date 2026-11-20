@@ -28,7 +28,6 @@ from aas_editor.settings.icons import EXIT_ICON, SETTINGS_ICON, NEW_PACK_ICON
 from aas_editor.settings import APPLICATION_NAME, REPORT_ERROR_LINK
 from aas_editor.widgets.settingWidgets import SettingsDialog
 from aas_editor.tools.aas_test.aas_test_engines_tool import AasTestEnginesToolDialog
-from aas_editor.widgets import AddressLine
 from aas_editor import design
 from aas_editor.models import DetailedInfoTable, PacksTable
 from aas_editor.utils.util import toggleStylesheet
@@ -43,7 +42,6 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.loadThemes()
 
         widgets.groupBoxes.ModelReferenceGroupBox.CHOOSE_FRM_VIEW = self.mainTreeView
-        AddressLine.setModel(self.mainTreeView.model())
         welcomeTabKwargs = self.mainTabWidget.tabClsKwargs if self.mainTabWidget.tabClsKwargs else {}
         welcomeTab = self.mainTabWidget.addTab(self.mainTabWidget.tabCls(parent=self.mainTabWidget, **welcomeTabKwargs),
                                                "Welcome")
