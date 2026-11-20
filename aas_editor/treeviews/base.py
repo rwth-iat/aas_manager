@@ -537,8 +537,9 @@ class TreeView(BasicTreeView):
         self.selectionModel().currentChanged.connect(self.onCurrentChanged)
         self.setCurrentIndex(self.rootIndex())
         self.model().dataChanged.connect(self.onDataChanged)
-        self.model().rowsInserted.connect(self.onRowsInserted)
-        self.model().rowsRemoved.connect(self.onRowsRemoved)
+        # Source, not proxy: filtering hides rows but must not move the selection
+        self.sourceModel().rowsInserted.connect(self.onRowsInserted)
+        self.sourceModel().rowsRemoved.connect(self.onRowsRemoved)
         self.header().updateMenu()
 
     def onCurrentChanged(self, current: QModelIndex, previous: QModelIndex):
@@ -553,13 +554,20 @@ class TreeView(BasicTreeView):
         # self.setCurrentIndex(bottomRight)
 
     def onRowsInserted(self, parent: QModelIndex, first: int, last: int):
-        index = self.model().index(last, 0, parent)
-        self.setCurrentIndex(index)
+        self.setCurrentFromSource(self.sourceModel().index(last, 0, parent))
         QTimer.singleShot(100, self.updateUndoRedoActs)
 
     def onRowsRemoved(self, parent: QModelIndex, first: int, last: int):
-        self.setCurrentIndex(parent)
+        self.setCurrentFromSource(parent)
         QTimer.singleShot(100, self.updateUndoRedoActs)
+
+    def setCurrentFromSource(self, index: QModelIndex) -> None:
+        model = self.model()
+        if model is not self.sourceModel():
+            index = model.mapFromSource(index)
+            if not index.isValid():
+                return  # hidden by the search filter: keep the current item
+        self.setCurrentIndex(index)
 
     def updateActions(self, index: QModelIndex):
         if self.editEnabled:

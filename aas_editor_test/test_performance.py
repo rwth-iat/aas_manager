@@ -323,8 +323,8 @@ class TestLazyPackTree:
         searchBar = SearchBar(view, filterColumns=[ATTRIBUTE_COLUMN], parent=window)
 
         searchBar.searchLine.setText("TypeOfFaxNumber")
+        searchBar.search()  # typing waits for a pause; search now
 
-        # Found items include the ancestors kept visible by recursive filtering
         assert "TypeOfFaxNumber" in [QModelIndex(i).data(NAME_ROLE)
                                      for i in searchBar.foundItems]
 

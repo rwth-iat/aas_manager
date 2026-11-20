@@ -361,16 +361,6 @@ def getTreeItemPath(index: QModelIndex, role=Qt.ItemDataRole.DisplayRole, separa
     return path.rstrip(separator)
 
 
-def absRow(index: QModelIndex):
-    maxChildren = 100
-    row = 0
-    while index.isValid():
-        row /= maxChildren
-        row += index.row() + 1
-        index = index.parent()
-    return row
-
-
 def toggleStylesheet(path: str) -> None:
     """
     Toggle the stylesheet to use the desired path in the Qt resource
