@@ -209,6 +209,7 @@ class AppSettings:
         default=False,
         type=bool
     )
+    TOOLBAR_HIDDEN_BUTTONS = Setting("toolbarHiddenButtons", ["Save"], list)
     LAST_UPDATE_CHECK = Setting("lastUpdateCheck", 0.0, float)  # Unix time
 
     SETTINGS_TO_CHOOSE_BY_USER = [DEFAULT_NEW_FILETYPE, WRITE_JSON_IN_AASX, ALL_SUBMODEL_REFS_TO_AAS, WRITE_PRETTY_JSON,
