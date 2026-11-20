@@ -74,7 +74,9 @@ class TestPackageAttrsReadOnly:
             index = detailed.index(row, VALUE_COLUMN)
             names.append(index.data(NAME_ROLE))
             assert not index.flags() & Qt.ItemFlag.ItemIsEditable, names[-1]
-        assert {"file", "objStore", "files", "writeJsonInAasx"} <= set(names)
+        # Internals (store objects, save options, change flag) are not shown
+        assert sorted(names) == ["file", "name", "numOfConceptDescriptions",
+                                 "numOfShells", "numOfSubmodels"]
 
 
 class TestInsertAt:

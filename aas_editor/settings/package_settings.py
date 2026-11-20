@@ -14,7 +14,10 @@ MEDIA_TYPES_INFOS[StoredFile] = {
 }
 
 CLASSES_INFO[Package] = {
-    HIDDEN_ATTRS: ("ATTRS_INFO", "shells", "assets", "submodels", "concept_descriptions", "others", "fileStore"),
+    HIDDEN_ATTRS: ("ATTRS_INFO", "shells", "assets", "submodels", "concept_descriptions", "others", "fileStore",
+                   # Internals: stores, change flag, save options (set in app Settings)
+                   "objStore", "files", "changed", "writeJsonInAasx", "writePrettyJson",
+                   "sortKeysInJson", "allSubmodelRefsToAas"),
     ADD_ACT_AAS_TXT: "Add package",
     ADD_TYPE: Package,
     PACKVIEW_ATTRS_INFO: {
