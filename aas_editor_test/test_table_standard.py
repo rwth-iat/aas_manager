@@ -1,3 +1,5 @@
+# QtWebEngineWidgets must be imported before the QApplication exists (qapp fixture)
+from PyQt6 import QtWebEngineWidgets  # noqa: F401
 from PyQt6.QtCore import QModelIndex
 
 
@@ -54,3 +56,22 @@ class TestChildCache:
         child = model.index(0, 0, model.index(300, 0))
         assert model.objByIndex(child) is grandChild
         assert model.parent(child).row() == 300
+
+
+class TestPackageAttrsReadOnly:
+    def test_package_attributes_are_not_editable(self, qapp: object, aasx_file) -> None:
+        from PyQt6.QtCore import Qt
+        from aas_editor.models import DetailedInfoTable
+        from aas_editor.package import Package
+        from aas_editor.settings.app_settings import NAME_ROLE, VALUE_COLUMN
+        from aas_editor_test.test_performance import newPackTreeView
+
+        view = newPackTreeView()
+        view.add_pack_to_tree(Package(aasx_file))
+        detailed = DetailedInfoTable(view.sourceModel().index(0, 0))
+        names = []
+        for row in range(detailed.rowCount()):
+            index = detailed.index(row, VALUE_COLUMN)
+            names.append(index.data(NAME_ROLE))
+            assert not index.flags() & Qt.ItemFlag.ItemIsEditable, names[-1]
+        assert {"file", "objStore", "files", "writeJsonInAasx"} <= set(names)
