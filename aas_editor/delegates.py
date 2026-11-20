@@ -13,9 +13,8 @@ from basyx.aas.model.concept import *
 from basyx.aas.model.submodel import *
 
 from enum import Enum
-from typing import Dict
 
-from PyQt6.QtGui import QPainter, QBrush, QIntValidator
+from PyQt6.QtGui import QPainter, QIntValidator
 from PyQt6.QtWidgets import QWidget, QStyledItemDelegate, QStyleOptionViewItem, QStyle, \
     QCompleter, QCheckBox
 from PyQt6 import QtCore
@@ -30,7 +29,6 @@ from aas_editor.widgets.editWidgets import ComboBox, CompleterComboBox, DictItem
 class ColorDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.indexColors: Dict[QModelIndex, QBrush] = {}
         self.hoverIndex = QModelIndex()
 
     def paint(self, painter: QPainter, option: QStyleOptionViewItem, index: QModelIndex):
@@ -43,26 +41,12 @@ class ColorDelegate(QStyledItemDelegate):
             if not opt.state & QStyle.StateFlag.State_MouseOver and index.siblingAtColumn(0) == hoverIndex.siblingAtColumn(0):
                 opt.state |= QStyle.StateFlag.State_MouseOver
 
-        if index.isValid() and index in self.indexColors:
-            self.initStyleOption(opt, index)
-            opt.backgroundBrush = self.indexColors[index]
-            widget = opt.widget
-            style = widget.style()
-            style.drawControl(QStyle.ControlElement.CE_ItemViewItem, opt, painter, widget)
-        else:
-            super(ColorDelegate, self).paint(painter, opt, index)
-
-    def setBgColor(self, index: QModelIndex, val: QBrush):
-        self.indexColors[index] = val
-
-    def bgColor(self, index: QModelIndex):
-        return self.indexColors[index]
-
-    def removeBgColor(self, index: QModelIndex):
-        self.indexColors.pop(index)
-
-    def clearBgColors(self):
-        self.indexColors.clear()
+        # Search highlight from the model; filled here because QSS item styling
+        # ignores BackgroundRole
+        highlight = index.data(Qt.ItemDataRole.BackgroundRole)
+        if highlight is not None:
+            painter.fillRect(opt.rect, highlight)
+        super(ColorDelegate, self).paint(painter, opt, index)
 
 
 class EditDelegate(ColorDelegate):

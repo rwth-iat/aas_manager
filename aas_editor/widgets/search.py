@@ -19,11 +19,10 @@
 from typing import List
 
 from PyQt6.QtCore import QModelIndex, QPersistentModelIndex, QTimer
-from PyQt6.QtGui import QBrush, QAction
+from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QToolButton, QTreeView
 
 from aas_editor.models.search_proxy_model import SearchProxyModel, treePath
-from aas_editor.settings.colors import HIGHLIGHT_YELLOW
 from aas_editor.settings.icons import NEXT_ICON, PREV_ICON, FILTER_ICON, REGEX_ICON, CASE_ICON, CLOSE_ICON
 from aas_editor.widgets.toolbar import ToolBar
 from aas_editor.widgets.editWidgets import LineEdit
@@ -90,7 +89,6 @@ class SearchBar(ToolBar):
 
     def search(self):
         self.searchTimer.stop()
-        self.view.itemDelegate().clearBgColors()
         # Drop old hits first: Qt updates every live persistent index on refilter
         self.foundItems = []
         self.foundItems = self.model.search(self.searchLine.text(),
@@ -100,8 +98,6 @@ class SearchBar(ToolBar):
                                             matchCase=self.caseBtn.isChecked())
         if self.foundItems:
             self.view.setCurrentIndex(QModelIndex(self.foundItems[0]))
-            for item in self.foundItems:
-                self.view.itemDelegate().setBgColor(QModelIndex(item), QBrush(HIGHLIGHT_YELLOW))
         self.view.viewport().update()
 
     def next(self):

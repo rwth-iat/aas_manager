@@ -109,6 +109,41 @@ class TestSearchProxyModel:
         assert len(visibleNames(view)) == 8
 
 
+def highlighted(view) -> List[str]:
+    """Texts of all cells painted with a search highlight, in view order."""
+    model = view.model()
+    result = []
+
+    def walk(parent: QModelIndex) -> None:
+        for r in range(model.rowCount(parent)):
+            for column in range(model.columnCount(parent)):
+                index = model.index(r, column, parent)
+                if index.data(Qt.ItemDataRole.BackgroundRole) is not None:
+                    result.append(index.data())
+            walk(model.index(r, 0, parent))
+
+    walk(QModelIndex())
+    return result
+
+
+class TestHighlight:
+    def test_only_matching_cells_are_highlighted(self, view) -> None:
+        search(view, "apple", columns=(0, 1), regExp=False)
+        assert highlighted(view) == ["apple", "apple-red", "pineapple"]
+
+    def test_highlight_follows_sort_and_new_rows(self, view) -> None:
+        search(view, "apple", regExp=False)
+        view.sortByColumn(0, Qt.SortOrder.DescendingOrder)
+        source = view.sourceModel()
+        source.itemFromIndex(source.index(1, 0)).appendRow(row("crabapple"))
+        assert highlighted(view) == ["crabapple", "pineapple", "apple"]
+
+    def test_empty_search_clears_highlight(self, view) -> None:
+        search(view, "apple")
+        search(view, "")
+        assert highlighted(view) == []
+
+
 class TestSearchBar:
     def test_typing_searches_after_pause(self, qapp, bar) -> None:
         bar.searchLine.setText("apple")

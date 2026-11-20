@@ -20,6 +20,9 @@ from typing import Any, Iterator, List, Optional, Tuple
 
 from PyQt6.QtCore import QSortFilterProxyModel, QModelIndex, Qt, \
     QPersistentModelIndex, QObject, QAbstractItemModel, QRegularExpression
+from PyQt6.QtGui import QBrush
+
+from aas_editor.settings.colors import HIGHLIGHT_YELLOW
 
 
 class SearchProxyModel(QSortFilterProxyModel):
@@ -29,6 +32,9 @@ class SearchProxyModel(QSortFilterProxyModel):
         self.setRecursiveFilteringEnabled(True)
         self._filterRegex: Optional[QRegularExpression] = None
         self._filterColumns: List[int] = []
+        # Highlight is computed on paint, so it stays right after sort/insert/remove
+        self._highlightRegex: Optional[QRegularExpression] = None
+        self._highlightColumns: List[int] = []
         if sourceModel:
             self.setSourceModel(sourceModel)
 
@@ -44,6 +50,8 @@ class SearchProxyModel(QSortFilterProxyModel):
         """Return the matching cells in view order; hide the rest if filter is set."""
         regex = self._regex(pattern, regExp, matchCase)
         self._setFilter(regex if filter else None, filterColumns)
+        self._highlightRegex = regex
+        self._highlightColumns = list(filterColumns)
         if regex is None or self.sourceModel() is None:
             return []
 
@@ -56,6 +64,13 @@ class SearchProxyModel(QSortFilterProxyModel):
         # The view may sort: order hits as the user sees them
         foundItems.sort(key=treePath)
         return [QPersistentModelIndex(index) for index in foundItems]
+
+    def data(self, index: QModelIndex, role: int = Qt.ItemDataRole.DisplayRole) -> Any:
+        if role == Qt.ItemDataRole.BackgroundRole and self._highlightRegex is not None \
+                and index.column() in self._highlightColumns \
+                and self._matches(self._highlightRegex, index):
+            return QBrush(HIGHLIGHT_YELLOW)
+        return super().data(index, role)
 
     @staticmethod
     def _regex(pattern: str, regExp: bool, matchCase: bool) -> Optional[QRegularExpression]:
