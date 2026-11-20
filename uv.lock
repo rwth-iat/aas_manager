@@ -16,6 +16,7 @@ source = { editable = "." }
 dependencies = [
     { name = "aas-test-engines" },
     { name = "basyx-python-sdk" },
+    { name = "certifi" },
     { name = "jsonschema" },
     { name = "langchain-anthropic" },
     { name = "langchain-core" },
@@ -44,6 +45,7 @@ dev = [
 requires-dist = [
     { name = "aas-test-engines", specifier = "==1.0.3" },
     { name = "basyx-python-sdk", git = "https://github.com/rwth-iat/basyx-python-sdk?subdirectory=sdk&rev=aas_manager%2Fdevelop" },
+    { name = "certifi" },
     { name = "jsonschema" },
     { name = "langchain-anthropic", specifier = "==1.3.1" },
     { name = "langchain-core", specifier = "==1.2.6" },
@@ -1524,7 +1526,7 @@ name = "macholib"
 version = "1.16.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "altgraph" },
+    { name = "altgraph", marker = "python_full_version != '3.12.*' or sys_platform != 'emscripten'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/10/2f/97589876ea967487978071c9042518d28b958d87b17dceb7cdc1d881f963/macholib-1.16.4.tar.gz", hash = "sha256:f408c93ab2e995cd2c46e34fe328b130404be143469e41bc366c807448979362", size = 59427, upload-time = "2025-11-22T08:28:38.373Z" }
 wheels = [

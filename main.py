@@ -48,6 +48,10 @@ def main():
     window.show()
     splash.finish(window)
 
+    from aas_editor.update_check import askToCheckForUpdates, updateCheckDue
+    if askToCheckForUpdates(window) and updateCheckDue():
+        window.checkForUpdates()
+
     app.exec()
     # A file still being read on quit: let its thread end before Python shuts down
     READ_POOL.waitForDone()

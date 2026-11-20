@@ -11,6 +11,7 @@ import json
 import logging
 import webbrowser
 from pathlib import Path
+from typing import Optional
 
 from PyQt6.QtCore import QModelIndex, QTimer
 from PyQt6.QtGui import *
@@ -31,6 +32,7 @@ from aas_editor.widgets import AddressLine
 from aas_editor import design
 from aas_editor.models import DetailedInfoTable, PacksTable
 from aas_editor.utils.util import toggleStylesheet
+from aas_editor.update_check import Release, UpdateChecker, isNewer
 from aas_editor.treeviews.base import HeaderView
 
 
@@ -69,10 +71,33 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self._recoveryStatusLabel.setStyleSheet("color: #c0392b;")
         self._recoveryStatusLabel.hide()
         self.statusBar().addPermanentWidget(self._recoveryStatusLabel)
+        self._updateLabel = QLabel(openExternalLinks=True)
+        self._updateLabel.hide()
+        self.statusBar().addPermanentWidget(self._updateLabel)
         if fileToOpen:
             self.openAASFile(fileToOpen)
         else:
             self.openLastSessionFiles()
+
+    def checkForUpdates(self, manual: bool = False) -> None:
+        self._updateChecker = UpdateChecker(parent=self)
+        self._updateChecker.finished.connect(
+            lambda release: self.showUpdateResult(release, manual))
+        self._updateChecker.start()
+
+    def showUpdateResult(self, release: Optional[Release], manual: bool) -> None:
+        """Newer release: link in the status bar. Manual check: always answer."""
+        if release and isNewer(release.version, VERSION):
+            text = (f"{APPLICATION_NAME} {release.version} is available: "
+                    f"<a href='{release.url}'>Download</a>")
+            self._updateLabel.setText(text)
+            self._updateLabel.show()
+        elif release:
+            text = f"You use the latest version ({VERSION})."
+        else:
+            text = "Could not reach GitHub to check for updates."
+        if manual:
+            QMessageBox.information(self, "Check for Updates", text)
 
     def loadThemes(self):
         self.themes = {}
@@ -106,6 +131,10 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.reportBugAct = QAction("Report Bug", self,
                                     statusTip="Report an error found",
                                     triggered=lambda: webbrowser.open(REPORT_ERROR_LINK))
+
+        self.checkForUpdatesAct = QAction("Check for Updates", self,
+                                          statusTip="Check GitHub for a newer release",
+                                          triggered=lambda: self.checkForUpdates(manual=True))
 
         # Theme actions
         self.themeActs = []
@@ -184,6 +213,7 @@ class EditorApp(QMainWindow, design.Ui_MainWindow):
         self.menuHelp = QMenu("&Help", self.menubar)
         self.menuHelp.addAction(self.aboutDialogAct)
         self.menuHelp.addAction(self.reportBugAct)
+        self.menuHelp.addAction(self.checkForUpdatesAct)
 
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuView.menuAction())
