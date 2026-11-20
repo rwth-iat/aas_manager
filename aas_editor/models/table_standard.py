@@ -69,7 +69,7 @@ class StandardTable(QAbstractItemModel):
             return QModelIndex()
 
         grandParentObj = parentObj.parent()
-        row = grandParentObj.children().index(parentObj)
+        row = grandParentObj.childRow(parentObj)
         return self.createIndex(row, 0, parentObj)
 
     def rowCount(self, parent: QModelIndex = QModelIndex()) -> int:
