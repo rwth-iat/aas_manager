@@ -17,7 +17,7 @@ import pytest
 pytest.importorskip('PyQt6.QtWebEngineCore', reason='PyQt6.QtWebEngineCore not available')
 
 from PyQt6.QtCore import QTimer
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication, QDialog, QMessageBox
 
 from aas_editor.editorApp import EditorApp
 from aas_editor.settings.app_settings import NAME_ROLE
@@ -29,7 +29,9 @@ AASX_FILE = Path(__file__).parent / "aas_files" / "TestPackage.aasx"
 
 class TestUi(TestCase):
     def setUp(self) -> None:
-        self.app = QApplication.instance() or QApplication(sys.argv)
+        # Class attribute: if the app were freed after a test, PyQt would delete
+        # all Qt objects, including class-level ones like AddressLine.signal
+        TestUi.app = QApplication.instance() or QApplication(sys.argv)
         self.window = EditorApp(fileToOpen=str(AASX_FILE))
         self.window.show()
         # The file is read in the background: wait until its pack is in the tree
@@ -49,6 +51,9 @@ class TestUi(TestCase):
 
         self.timer = QTimer()
         self.timer.setInterval(0)
+        # Dialogs block in exec(); close any that opens (also error boxes)
+        self.modalCloser = QTimer(interval=50, timeout=self._closeModal)
+        self.errors = []
 
     def tearDown(self) -> None:
         self.window.close()
@@ -107,10 +112,12 @@ class TestUi(TestCase):
         try:
             try:
                 if self.attrsTreeView.editCreateInDialogAct.isEnabled():
-                    # Edit current item if possible
+                    # Edit current item if possible; the dialog is closed by
+                    # modalCloser. Pause the test step meanwhile: the timer would
+                    # fire inside the dialog's event loop and open more dialogs.
+                    self.timer.stop()
                     self.attrsTreeView.editCreateInDialogAct.trigger()
-                    if self.app.activeWindow():
-                        self.app.activeWindow().close()
+                    self.timer.start()
                     self._nextItemInRightTree()
                     return
                 else:
@@ -126,7 +133,19 @@ class TestUi(TestCase):
     def _startTest(self, testFunc):
         self.timer.timeout.connect(testFunc)
         self.timer.start()
+        self.modalCloser.start()
         self.assertEqual(self.app.exec(), 0)
+        self.modalCloser.stop()
+        for error in self.errors:
+            print(f"Error box: {error}")
+
+    def _closeModal(self):
+        dialog = QApplication.activeModalWidget()
+        if isinstance(dialog, QMessageBox):
+            self.errors.append(dialog.text())
+        if isinstance(dialog, QDialog):
+            # done(), not close(): a QMessageBox without Escape button ignores close
+            dialog.done(QDialog.DialogCode.Rejected)
 
     def _nextItemInLeftTree(self):
         pack_index = next(self.itemsGenerator)
