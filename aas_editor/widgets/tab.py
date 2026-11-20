@@ -501,10 +501,17 @@ class TabWithTreeView(QWidget):
         toolBarLayout = QHBoxLayout(toolBarWidget)
         toolBarLayout.setContentsMargins(0, 0, 0, 0)
         toolBarLayout.addWidget(self.toolBar)
-        toolBarLayout.addWidget(self.pathToolBar)
-        toolBarLayout.addWidget(self.pathLine)
-        toolBarLayout.addWidget(self.objTypeLine)
+        toolBarLayout.addStretch()
         toolBarWidget.setFixedHeight(TOOLBARS_HEIGHT)
+
+        # Own row: beside the toolbar the path field got only ~100 px
+        pathBarWidget = QWidget()
+        pathBarLayout = QHBoxLayout(pathBarWidget)
+        pathBarLayout.setContentsMargins(0, 0, 0, 0)
+        pathBarLayout.addWidget(self.pathToolBar)
+        pathBarLayout.addWidget(self.pathLine)
+        pathBarLayout.addWidget(self.objTypeLine)
+        pathBarWidget.setFixedHeight(TOOLBARS_HEIGHT)
 
         treeViewWidget = QWidget()
         treeViewLayout = QVBoxLayout(treeViewWidget)
@@ -520,6 +527,7 @@ class TabWithTreeView(QWidget):
         layout = QVBoxLayout(self)
         layout.setObjectName("tabLayout")
         layout.addWidget(toolBarWidget)
+        layout.addWidget(pathBarWidget)
         layout.addWidget(self.searchBar)
         layout.addWidget(self.splitter)
         layout.setSpacing(2)
