@@ -16,6 +16,7 @@ from aas_editor.settings.app_settings import (COPYRIGHT_YEAR, ICONS_FOLDER, LICE
 
 WIDTH, HEIGHT = 600, 340
 SCALE = 2  # draw at double resolution, sharp on HiDPI screens
+SPLASH_MIN_SECONDS = 2.5
 
 
 def newSplash() -> QSplashScreen:
@@ -38,6 +39,11 @@ def newSplash() -> QSplashScreen:
         QColor("#555555"),
     )
     return splash
+
+
+def splashRemainingMs(shownAt: float, now: float) -> int:
+    """How much longer the splash must stay to be shown SPLASH_MIN_SECONDS."""
+    return max(0, round((SPLASH_MIN_SECONDS - (now - shownAt)) * 1000))
 
 
 def _drawCentered(painter: QPainter, image: QPixmap, top: int, width: int) -> None:

@@ -229,3 +229,15 @@ class TestSearchBar:
             bar.next()
             bar.previous()
         assert caplog.records == []
+
+
+def test_view_action_is_checked_for_bar_not_yet_shown(qapp) -> None:
+    from aas_editor.treeviews.base import TreeView
+    from aas_editor.widgets.search import SearchBar
+
+    view = TreeView()
+    parent = QWidget()  # not shown yet, as in the main window during setup
+    bar = SearchBar(view, filterColumns=[0], parent=parent)
+    assert bar.toggleViewAction().isChecked()
+    bar.closeBar()
+    assert not bar.toggleViewAction().isChecked()
