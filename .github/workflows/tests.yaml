@@ -38,4 +38,8 @@ jobs:
         env:
           QT_QPA_PLATFORM: offscreen
           QTWEBENGINE_CHROMIUM_FLAGS: "--no-sandbox --disable-gpu"
-        run: python -m pytest aas_editor_test/main_test.py -v --tb=short -o faulthandler_timeout=300
+        # One process per test: each builds and tears down a full EditorApp
+        run: |
+          for test in testViews testLinks testEditCreate; do
+            python -m pytest "aas_editor_test/main_test.py::TestUi::$test" -v --tb=short -o faulthandler_timeout=300 || exit 1
+          done
