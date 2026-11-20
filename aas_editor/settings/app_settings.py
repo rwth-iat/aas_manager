@@ -139,6 +139,9 @@ class Setting:
             args.append(self.type)
         return SETTINGS.value(*args)
 
+    def isSet(self) -> bool:
+        return SETTINGS.contains(self.name)
+
 
 class AppSettings:
     THEME = Setting('theme', DEFAULT_THEME, str)
@@ -198,5 +201,15 @@ class AppSettings:
         type=bool
     )
 
+    CHECK_FOR_UPDATES = Setting(
+        name="checkForUpdates",
+        display_name="Check for updates on start",
+        description="If enabled, AAS Manager asks GitHub once a day on start whether a newer release exists.",
+        options={"Yes": True, "No": False},
+        default=False,
+        type=bool
+    )
+    LAST_UPDATE_CHECK = Setting("lastUpdateCheck", 0.0, float)  # Unix time
+
     SETTINGS_TO_CHOOSE_BY_USER = [DEFAULT_NEW_FILETYPE, WRITE_JSON_IN_AASX, ALL_SUBMODEL_REFS_TO_AAS, WRITE_PRETTY_JSON,
-                                  SORT_KEYS_IN_JSON]
+                                  SORT_KEYS_IN_JSON, CHECK_FOR_UPDATES]
